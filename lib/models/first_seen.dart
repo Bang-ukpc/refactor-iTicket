@@ -1,0 +1,1 @@
+enum TypeFirstSeen { Active, Expired }
