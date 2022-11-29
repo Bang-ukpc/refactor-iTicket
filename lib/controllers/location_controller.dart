@@ -14,7 +14,6 @@ class LocationController {
     try {
       final response =
           await dio.get('/location/location-of-the-day-by-warden/$idWarden');
-      print(response.data);
       List<dynamic> temp = response.data;
       List<LocationWithZones> locations =
           temp.map((model) => LocationWithZones.fromJson(model)).toList();

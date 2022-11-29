@@ -1,16 +1,18 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button.dart';
+import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/directions_repository_controller.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
 import 'package:iWarden/screens/read_regulation_screen.dart';
 import 'package:iWarden/theme/color.dart';
@@ -31,9 +33,6 @@ class _LocationScreenState extends State<LocationScreen> {
   final TextEditingController _zoneText = TextEditingController();
   List<LocationWithZones> locationList = [];
   final Completer<GoogleMapController> _mapController = Completer();
-
-  static const _sourceLocation = LatLng(12.675576, 108.035409);
-  static const _destination = LatLng(12.679866, 108.044662);
   Directions? _info;
 
   void getLocationList(Locations locations) async {
@@ -44,25 +43,10 @@ class _LocationScreenState extends State<LocationScreen> {
     });
   }
 
-  Future<void> _goToDestination() async {
-    final GoogleMapController controller = await _mapController.future;
-    controller.animateCamera(
-      CameraUpdate.newLatLngBounds(
-        LatLngBounds(
-          southwest: _sourceLocation,
-          northeast: _destination,
-        ),
-        48,
-      ),
-    );
-    final directions = await directionsRepository.getDirections(
-        origin: _sourceLocation, destination: _destination);
-    setState(() => _info = directions);
-  }
-
   @override
   void initState() {
     super.initState();
+    currentLocationPosition.getCurrentLocation();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
       getLocationList(locations);
@@ -76,12 +60,21 @@ class _LocationScreenState extends State<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var statusBarHeight = MediaQuery.of(context).viewPadding.top;
+    // var statusBarHeight = MediaQuery.of(context).viewPadding.top;
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
+    final sourceLocation = LatLng(
+      currentLocationPosition.currentLocation?.latitude ?? 0,
+      currentLocationPosition.currentLocation?.longitude ?? 0,
+    );
+    final destination = LatLng(
+      locations.location?.Latitude ?? 0,
+      locations.location?.Longitude ?? 0,
+    );
 
     print(locations.location?.Name);
     print(locations.zone?.Name);
+    print(currentLocationPosition.currentLocation);
 
     void setZoneWhenSelectedLocation(LocationWithZones locationSelected) {
       locations.onSelectedZone(locationSelected.Zones!.isNotEmpty
@@ -90,6 +83,22 @@ class _LocationScreenState extends State<LocationScreen> {
       _zoneText.text = locationSelected.Zones!.isNotEmpty
           ? locationSelected.Zones![0].Id.toString()
           : '';
+    }
+
+    Future<void> goToDestination() async {
+      final GoogleMapController controller = await _mapController.future;
+      controller.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: sourceLocation,
+            northeast: destination,
+          ),
+          48,
+        ),
+      );
+      final directions = await directionsRepository.getDirections(
+          origin: sourceLocation, destination: destination);
+      setState(() => _info = directions);
     }
 
     return GestureDetector(
@@ -256,7 +265,20 @@ class _LocationScreenState extends State<LocationScreen> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: _goToDestination,
+                              onTap: locations.location != null
+                                  ? goToDestination
+                                  : () {
+                                      CherryToast.error(
+                                        displayCloseButton: false,
+                                        title: Text(
+                                          'Please select location first!',
+                                          style: CustomTextStyle.h5.copyWith(
+                                              color: ColorTheme.danger),
+                                        ),
+                                        toastPosition: Position.bottom,
+                                        borderRadius: 5,
+                                      ).show(context);
+                                    },
                               child: Container(
                                 padding: const EdgeInsets.all(14),
                                 color: ColorTheme.darkPrimary,
@@ -275,15 +297,41 @@ class _LocationScreenState extends State<LocationScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
                         ),
-                        child: MapScreen(
-                          screenHeight: MediaQuery.of(context).size.width < 400
-                              ? screenHeight / 2.5
-                              : screenHeight / 1.5,
-                          mapController: _mapController,
-                          sourceLocation: _sourceLocation,
-                          destination: _destination,
-                          info: _info,
-                        ),
+                        child: locations.location != null
+                            ? FutureBuilder(
+                                future: currentLocationPosition
+                                    .getCurrentLocation(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.data == null) {
+                                    return SizedBox(
+                                      height: screenHeight / 2.5,
+                                      child: const Center(
+                                        child: Text(
+                                          'Please allow the app to access your location!',
+                                        ),
+                                      ),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return SizedBox(
+                                      height: screenHeight / 2.5,
+                                      child: const ServerError(),
+                                    );
+                                  } else {
+                                    return MapScreen(
+                                      screenHeight:
+                                          MediaQuery.of(context).size.width <
+                                                  400
+                                              ? screenHeight / 2.5
+                                              : screenHeight / 1.5,
+                                      mapController: _mapController,
+                                      sourceLocation: sourceLocation,
+                                      destination: destination,
+                                      info: _info,
+                                    );
+                                  }
+                                },
+                              )
+                            : const SizedBox(),
                       ),
                     ],
                   ),

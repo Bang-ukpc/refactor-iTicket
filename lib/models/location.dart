@@ -11,8 +11,8 @@ class Location extends BaseModel {
   final int? CountryRegionId;
   final int CountrySubRegionId;
   final int? ClusterId;
-  final num? Longitude;
-  final num? Latitude;
+  final double? Longitude;
+  final double? Latitude;
   final String? Address;
   final String? Address1;
   final String? Address2;
@@ -66,8 +66,8 @@ class LocationWithZones extends Location {
     int? CountryRegionId,
     required int CountrySubRegionId,
     int? ClusterId,
-    num? Longitude,
-    num? Latitude,
+    double? Longitude,
+    double? Latitude,
     this.Zones,
     this.OperationalPeriods,
     this.GracePeriod,
@@ -77,9 +77,20 @@ class LocationWithZones extends Location {
           Created: Created,
           Deleted: Deleted,
           Address: Address,
-          Name: Name,
-          CountrySubRegionId: CountrySubRegionId,
+          Address1: Address1,
+          Address2: Address2,
+          Address3: Address3,
+          Town: Town,
+          Country: Country,
           Postcode: Postcode,
+          Name: Name,
+          LocationType: LocationType,
+          Revenue: Revenue,
+          CountryRegionId: CountryRegionId,
+          CountrySubRegionId: CountrySubRegionId,
+          ClusterId: ClusterId,
+          Latitude: Latitude,
+          Longitude: Longitude,
         );
 
   factory LocationWithZones.fromJson(Map<String, dynamic> json) =>
