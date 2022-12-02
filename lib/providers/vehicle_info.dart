@@ -2,9 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/providers/locations.dart';
 
 class VehicleInfo with ChangeNotifier {
   static final vehicleInfoController = VehicleInfoController();
+  Locations? locationsProvider;
   List<VehicleInformation> firstSeenList = [];
   List<VehicleInformation> gracePeriodList = [];
 
@@ -12,6 +14,7 @@ class VehicleInfo with ChangeNotifier {
       {int? page, int? pageSize}) async {
     final Pagination list = await vehicleInfoController.getVehicleInfoList(
       vehicleInfoType: VehicleInformationType.FIRST_SEEN.index,
+      zoneId: locationsProvider!.zone!.Id as int,
       page: page,
       pageSize: pageSize,
     );
@@ -24,11 +27,17 @@ class VehicleInfo with ChangeNotifier {
       {int? page, int? pageSize}) async {
     final Pagination list = await vehicleInfoController.getVehicleInfoList(
       vehicleInfoType: VehicleInformationType.GRACE_PERIOD.index,
+      zoneId: locationsProvider!.zone!.Id as int,
       page: page,
       pageSize: pageSize,
     );
     gracePeriodList =
         list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
     return gracePeriodList;
+  }
+
+  void update(Locations locations) {
+    locationsProvider = locations;
+    notifyListeners();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:iWarden/common/locate_car_screen.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
@@ -72,7 +73,12 @@ class CardItem extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     constraints:
                         const BoxConstraints(minWidth: 40, minHeight: 40),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(
+                        LocateCarScreen.routeName,
+                        arguments: vehicleInfo,
+                      );
+                    },
                     icon: SvgPicture.asset(
                       "assets/svg/IconLocation.svg",
                     ),

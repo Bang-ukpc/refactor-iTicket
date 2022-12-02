@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
+import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/contraventions.dart';
+import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/vehicle_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/screens/grace-period/add_grace_period.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
+import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
+import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -28,7 +36,6 @@ class HomeOverview extends StatefulWidget {
 }
 
 class _HomeOverviewState extends State<HomeOverview> {
-  bool stateLunch = false;
   List<VehicleInformation> firstSeenActive = [];
   List<VehicleInformation> firstSeenExpired = [];
   List<VehicleInformation> gracePeriodActive = [];
@@ -133,94 +140,168 @@ class _HomeOverviewState extends State<HomeOverview> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    final locations = Provider.of<Locations>(context, listen: false);
+    final wardersProvider = Provider.of<Auth>(context);
 
-    return Scaffold(
-      appBar: const MyAppBar(title: "Home"),
-      drawer: const MyDrawer(),
-      bottomSheet: BottomSheet2(buttonList: [
-        BottomNavyBarItem(
-            onPressed: () {
-              setState(() {
-                stateLunch = !stateLunch;
-              });
-            },
+    WardenEvent wardenEvent = WardenEvent(
+      type: TypeWardenEvent.CheckOut.index,
+      detail: 'Warden checked out',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardersProvider.wardens?.Id ?? 0,
+    );
+
+    WardenEvent wardenEventStartBreak = WardenEvent(
+      type: TypeWardenEvent.StartBreak.index,
+      detail: 'Warden has begun to rest',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardersProvider.wardens?.Id ?? 0,
+    );
+
+    void onCheckOut() async {
+      try {
+        await userController.createWardenEvent(wardenEvent).then((value) {
+          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+          locations.resetLocationWithZones();
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'Check out successfully',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        });
+      } catch (error) {
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            'Check out error, please try again',
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
+    }
+
+    void onStartBreak() async {
+      try {
+        await userController
+            .createWardenEvent(wardenEventStartBreak)
+            .then((value) {
+          Navigator.of(context).pushNamed(StartBreakScreen.routeName);
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'Take a break',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        });
+      } catch (error) {
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            'Start break error, please try again',
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
+    }
+
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        appBar: const MyAppBar(title: "Home"),
+        drawer: const MyDrawer(),
+        bottomSheet: BottomSheet2(buttonList: [
+          BottomNavyBarItem(
+            onPressed: onStartBreak,
             icon: SvgPicture.asset(
-              stateLunch
-                  ? "assets/svg/IconEndBreak.svg"
-                  : "assets/svg/IconStartBreak.svg",
+              'assets/svg/IconStartBreak.svg',
               color: ColorTheme.grey600,
             ),
-            label: Text(
-              !stateLunch ? "Start lunch" : "End lunch",
+            label: const Text(
+              "Start lunch",
               style: CustomTextStyle.h6,
-            )),
-        BottomNavyBarItem(
-            onPressed: () {},
+            ),
+          ),
+          BottomNavyBarItem(
+            onPressed: onCheckOut,
             icon: SvgPicture.asset("assets/svg/CheckOut.svg"),
             label: Text(
               "Check out",
               style: CustomTextStyle.h6.copyWith(color: ColorTheme.danger),
-            )),
-      ]),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            const SizedBox(
-              height: 10,
             ),
-            const InfoDrawer(
-              isDrawer: false,
-              assetImage: "assets/images/avatar.png",
-              name: "Tom Smiths",
-              location: "Castlepoint Shopping centre",
-              zone: "Car park 1",
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            CardHome(
-              width: width,
-              assetIcon: "assets/svg/IconFirstSeen.svg",
-              backgroundIcon: ColorTheme.lighterPrimary,
-              title: "First seen",
-              desc:
-                  "First seen list description \nFirst seen list description description",
-              infoRight: "Active: ${firstSeenActive.length}",
-              infoLeft: "Expired: ${firstSeenExpired.length}",
-              route: AddFirstSeenScreen.routeName,
-              routeView: ActiveFirstSeenScreen.routeName,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            CardHome(
-              width: width,
-              assetIcon: "assets/svg/IconGrace.svg",
-              backgroundIcon: ColorTheme.lightDanger,
-              title: "Consideration Period",
-              desc:
-                  "Grace period list description Grace period list description...",
-              infoRight: "Active: ${gracePeriodActive.length}",
-              infoLeft: "Expired: ${gracePeriodExpired.length}",
-              route: AddGracePeriod.routeName,
-              routeView: GracePeriodList.routeName,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            CardHome(
-              width: width,
-              assetIcon: "assets/svg/IconParkingChargesHome.svg",
-              backgroundIcon: ColorTheme.lighterSecondary,
-              title: "Parking Charges",
-              desc:
-                  "Parking charges list description Parking charges list description",
-              infoRight: "Issued: ${contraventionList.length}",
-              infoLeft: null,
-              route: IssuePCNFirstSeenScreen.routeName,
-              routeView: ParkingChargeList.routeName,
-            ),
-          ],
+          ),
+        ]),
+        body: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              const SizedBox(
+                height: 10,
+              ),
+              InfoDrawer(
+                isDrawer: false,
+                assetImage: "assets/images/avatar.png",
+                name: "Tom Smiths",
+                location: locations.location?.Name ?? 'Empty name!!',
+                zone: locations.zone?.Name ?? 'Empty name!!',
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              CardHome(
+                width: width,
+                assetIcon: "assets/svg/IconFirstSeen.svg",
+                backgroundIcon: ColorTheme.lighterPrimary,
+                title: "First seen",
+                desc:
+                    "First seen list description \nFirst seen list description description",
+                infoRight: "Active: ${firstSeenActive.length}",
+                infoLeft: "Expired: ${firstSeenExpired.length}",
+                route: AddFirstSeenScreen.routeName,
+                routeView: ActiveFirstSeenScreen.routeName,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              CardHome(
+                width: width,
+                assetIcon: "assets/svg/IconGrace.svg",
+                backgroundIcon: ColorTheme.lightDanger,
+                title: "Consideration Period",
+                desc:
+                    "Grace period list description Grace period list description...",
+                infoRight: "Active: ${gracePeriodActive.length}",
+                infoLeft: "Expired: ${gracePeriodExpired.length}",
+                route: AddGracePeriod.routeName,
+                routeView: GracePeriodList.routeName,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              CardHome(
+                width: width,
+                assetIcon: "assets/svg/IconParkingChargesHome.svg",
+                backgroundIcon: ColorTheme.lighterSecondary,
+                title: "Parking Charges",
+                desc:
+                    "Parking charges list description Parking charges list description",
+                infoRight: "Issued: ${contraventionList.length}",
+                infoLeft: null,
+                route: IssuePCNFirstSeenScreen.routeName,
+                routeView: ParkingChargeList.routeName,
+              ),
+            ],
+          ),
         ),
       ),
     );

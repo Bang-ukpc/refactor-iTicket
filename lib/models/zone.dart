@@ -7,6 +7,8 @@ class Zone extends BaseModel {
   final String PublicName;
   final List<Service>? Services;
   final String ExternalReference;
+  final int? GracePeriod;
+  final int? TimeLimit;
 
   const Zone({
     Id,
@@ -17,6 +19,8 @@ class Zone extends BaseModel {
     required this.PublicName,
     this.Services,
     required this.ExternalReference,
+    this.GracePeriod,
+    this.TimeLimit,
   }) : super(Id: Id, Created: Created, Deleted: Deleted);
 
   factory Zone.fromJson(Map<String, dynamic> json) => _$ZoneFromJson(json);
@@ -36,5 +40,7 @@ Zone _$ZoneFromJson(Map<String, dynamic> json) {
     PublicName: json['PublicName'],
     Services: servicesList,
     ExternalReference: json['ExternalReference'],
+    GracePeriod: json['GracePeriod'],
+    TimeLimit: json['TimeLimit'],
   );
 }

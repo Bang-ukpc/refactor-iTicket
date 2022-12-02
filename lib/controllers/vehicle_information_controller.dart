@@ -4,13 +4,17 @@ import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 
 class VehicleInfoController {
-  final dio = DioHelper.defaultApiClient;
+  static final dio = DioHelper.defaultApiClient;
   Future<Pagination> getVehicleInfoList(
-      {required int vehicleInfoType, int? page, int? pageSize}) async {
+      {required int vehicleInfoType,
+      required int zoneId,
+      int? page,
+      int? pageSize}) async {
     final bodyRequest = jsonEncode({
       "filter": {
         "type": vehicleInfoType,
         "CarLeft": false,
+        "zoneId": zoneId,
       },
       "page": page,
       "pageSize": pageSize,

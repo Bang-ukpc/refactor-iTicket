@@ -20,6 +20,7 @@ class Location extends BaseModel {
   final String? Town;
   final String? Country;
   final String? Postcode;
+  final String? Notes;
 
   Location({
     int? Id,
@@ -40,14 +41,13 @@ class Location extends BaseModel {
     this.ClusterId,
     this.Longitude,
     this.Latitude,
+    this.Notes,
   }) : super(Id: Id, Created: Created, Deleted: Deleted);
 }
 
 class LocationWithZones extends Location {
   final List<Zone>? Zones;
   final List<OperationalPeriod>? OperationalPeriods;
-  final int? GracePeriod;
-  final int? TimeLimit;
 
   LocationWithZones({
     int? Id,
@@ -68,10 +68,9 @@ class LocationWithZones extends Location {
     int? ClusterId,
     double? Longitude,
     double? Latitude,
+    String? Notes,
     this.Zones,
     this.OperationalPeriods,
-    this.GracePeriod,
-    this.TimeLimit,
   }) : super(
           Id: Id,
           Created: Created,
@@ -91,6 +90,7 @@ class LocationWithZones extends Location {
           ClusterId: ClusterId,
           Latitude: Latitude,
           Longitude: Longitude,
+          Notes: Notes,
         );
 
   factory LocationWithZones.fromJson(Map<String, dynamic> json) =>
@@ -121,9 +121,8 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     ClusterId: json['ClusterId'],
     Longitude: json['Longitude'],
     Latitude: json['Latitude'],
+    Notes: json['Notes'],
     Zones: zonesList,
     OperationalPeriods: json['OperationalPeriods'],
-    GracePeriod: json['GracePeriod'],
-    TimeLimit: json['TimeLimit'],
   );
 }

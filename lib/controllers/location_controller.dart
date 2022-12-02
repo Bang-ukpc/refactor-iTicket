@@ -8,12 +8,11 @@ final serviceURL = dotenv.get(
 );
 
 class LocationController {
-  final dio = DioHelper.defaultApiClient;
-  Future<List<LocationWithZones>> getAll() async {
-    int idWarden = 2;
+  static final dio = DioHelper.defaultApiClient;
+  Future<List<LocationWithZones>> getAll({required int wardenId}) async {
     try {
       final response =
-          await dio.get('/location/location-of-the-day-by-warden/$idWarden');
+          await dio.get('/location/location-of-the-day-by-warden/$wardenId');
       List<dynamic> temp = response.data;
       List<LocationWithZones> locations =
           temp.map((model) => LocationWithZones.fromJson(model)).toList();

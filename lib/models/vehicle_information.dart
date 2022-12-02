@@ -42,8 +42,8 @@ class VehicleInformation extends BaseModel {
   final int LocationId;
   final String BayNumber;
   final int Type;
-  final num Latitude;
-  final num Longitude;
+  final double Latitude;
+  final double Longitude;
   final bool CarLeft;
   final List<EvidencePhoto>? EvidencePhotos;
 
@@ -85,8 +85,8 @@ VehicleInformation _$VehicleInformationFromJson(Map<String, dynamic> json) {
     LocationId: json['LocationId'],
     BayNumber: json['BayNumber'],
     Type: json['Type'],
-    Latitude: json['Latitude'],
-    Longitude: json['Longitude'],
+    Latitude: json['Latitude'].toDouble(),
+    Longitude: json['Longitude'].toDouble(),
     CarLeft: json['CarLeft'] as bool,
     EvidencePhotos: evidencePhotosList,
   );

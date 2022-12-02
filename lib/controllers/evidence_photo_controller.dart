@@ -14,7 +14,7 @@ final serviceURL = dotenv.get(
 );
 
 class EvidencePhotoController {
-  final dio = DioHelper.defaultApiClient;
+  static final dio = DioHelper.defaultApiClient;
   Future<dynamic> uploadImage(File image) async {
     String fileName = image.path;
     var formData = FormData.fromMap({

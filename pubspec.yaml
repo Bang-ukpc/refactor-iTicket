@@ -108,6 +108,7 @@ flutter:
     - assets/svg/IconCharges2.svg
     - assets/svg/IconRefresh.svg
     - assets/svg/IconLocation.svg
+    - assets/svg/IconLocation3.svg
     - assets/svg/IconBack.svg
     - assets/svg/IconCamera.svg
     - assets/svg/IconCannel.svg

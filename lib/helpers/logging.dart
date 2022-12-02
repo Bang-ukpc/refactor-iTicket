@@ -1,11 +1,18 @@
+import 'package:aad_oauth/aad_oauth.dart';
 import 'package:dio/dio.dart';
 import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/login_screens.dart';
 
 class Logging extends Interceptor {
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     print('REQUEST[${options.method}] => PATH: ${options.path}');
+    final accessToken = await SharedPreferencesHelper.getStringValue(
+        PreferencesKeys.accessToken);
+    options.headers['content-Type'] = 'application/json';
+    options.headers["authorization"] = accessToken;
     return super.onRequest(options, handler);
   }
 
@@ -18,14 +25,16 @@ class Logging extends Interceptor {
   }
 
   @override
-  void onError(DioError err, ErrorInterceptorHandler handler) {
+  void onError(DioError err, ErrorInterceptorHandler handler) async {
+    final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     print(
       'ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}',
     );
     if (err.response?.statusCode == 401) {
+      await oauth.logout();
+      SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
       NavigationService.navigatorKey.currentState!
           .pushReplacementNamed(LoginScreen.routeName);
-      // print('ao ma');
     }
     return super.onError(err, handler);
   }

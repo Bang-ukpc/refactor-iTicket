@@ -52,7 +52,7 @@
                 -->
                 <data
                     android:host="io.anyline.flutter.examples"
-                    android:path="/gYfucgrOlZ3FLWgYctqk1bCxZbo="
+                    android:path="/VzSiQcXRmi2kyjzcA+mYLEtbGVs="
                     android:scheme="msauth" />
             </intent-filter>
         </activity>

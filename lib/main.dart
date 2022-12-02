@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/core/services/api.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/contraventions.dart';
 import 'package:iWarden/providers/vehicle_info.dart';
 import 'package:iWarden/providers/locations.dart';
-import 'package:iWarden/providers/print_issue_providers.dart' as print_pro;
+import 'package:iWarden/providers/print_issue_providers.dart' as print_issue;
 import 'package:iWarden/screens/connecting_screen.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
@@ -36,10 +38,18 @@ Future main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: Locations()),
-        ChangeNotifierProvider.value(value: print_pro.PrintIssueProviders()),
+        ChangeNotifierProvider.value(value: print_issue.PrintIssueProviders()),
         ChangeNotifierProvider.value(value: Auth()),
-        ChangeNotifierProvider.value(value: VehicleInfo()),
-        ChangeNotifierProvider.value(value: Contraventions()),
+        ChangeNotifierProxyProvider<Locations, VehicleInfo>(
+          update: (_, locations, vehicleInfo) =>
+              vehicleInfo!..update(locations),
+          create: (_) => VehicleInfo(),
+        ),
+        ChangeNotifierProxyProvider<Locations, Contraventions>(
+          update: (_, locations, contraventions) =>
+              contraventions!..update(locations),
+          create: (_) => Contraventions(),
+        ),
       ],
       child: MyApp(),
     ),
@@ -69,8 +79,16 @@ class MyApp extends StatelessWidget {
             return const Text('Something went wrong!');
           } else if (snapshot.hasData) {
             return Consumer<Auth>(
-              builder: (ctx, auth, _) =>
-                  auth.isAuth ? const LocationScreen() : const LocationScreen(),
+              builder: (ctx, auth, _) => FutureBuilder(
+                future: auth.isAuth(),
+                builder: ((context, snapshot) {
+                  if (snapshot.data == true) {
+                    return const ConnectingScreen();
+                  } else {
+                    return const LoginScreen();
+                  }
+                }),
+              ),
             );
           } else {
             return const Center(

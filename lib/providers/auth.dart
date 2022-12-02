@@ -1,16 +1,18 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:async';
-
+import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/screens/connecting_screen.dart';
+import 'package:iWarden/theme/color.dart';
+import 'package:iWarden/theme/text_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final serviceURL = dotenv.get(
@@ -20,54 +22,81 @@ final serviceURL = dotenv.get(
 
 class Auth with ChangeNotifier {
   String? _token;
-  String? _userId;
+  static Wardens? _wardens;
 
   String? get token {
     return _token;
   }
 
-  bool get isAuth {
-    return token != null;
+  Wardens? get wardens {
+    return _wardens;
   }
 
-  void loginWithMicrosoft() async {
+  Future<bool> isAuth() async {
+    String? token = await SharedPreferencesHelper.getStringValue(
+        PreferencesKeys.accessToken);
+    return token != null ? true : false;
+  }
+
+  Future<void> loginWithMicrosoft(
+      BuildContext context, VoidCallback onLoading) async {
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
-    await oauth.login();
+    await oauth.login().then((value) {
+      onLoading();
+    });
     final accessToken = await oauth.getIdToken();
     SharedPreferencesHelper.setStringValue(
-        PreferencesKeys.accessToken, accessToken);
-    loginWithJwt(accessToken ?? '');
+        PreferencesKeys.accessToken, 'Bearer $accessToken');
+    // ignore: use_build_context_synchronously
+    await loginWithJwt(accessToken ?? '', context, onLoading);
   }
 
-  void loginWithJwt(String jwt) async {
-    print('Logged in successfully, your access token: Bearer $jwt');
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> loginWithJwt(
+      String jwt, BuildContext context, VoidCallback onLoading) async {
+    log('Logged in successfully, your access token: Bearer $jwt');
+    final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     try {
-      final userController = UserController();
-      final responseData = await userController.getMe();
-      if (responseData['error'] != null) {
-        throw HttpException(responseData['error']['message']);
-      }
-      _token = jwt;
-      _userId = responseData['Id'].toString();
-      notifyListeners();
-      final userData = json.encode({
-        'token': _token,
-        'userId': _userId,
+      await userController.getMe().then((value) {
+        _wardens = value;
+        notifyListeners();
+        Navigator.of(context).pop();
+        Navigator.of(context).pushReplacementNamed(ConnectingScreen.routeName);
+        CherryToast.success(
+          displayCloseButton: false,
+          title: Text(
+            'Logged in successfully',
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
       });
-      prefs.setString('userData', userData);
+      _token = jwt;
+      notifyListeners();
     } catch (error) {
-      print(error);
+      Navigator.of(context).pop();
+      await oauth.logout();
+      SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
+      // ignore: use_build_context_synchronously
+      CherryToast.error(
+        displayCloseButton: false,
+        title: Text(
+          'Login failed. Please try again',
+          style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
       rethrow;
     }
   }
 
-  void logout() async {
+  Future<void> logout() async {
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     await oauth.logout();
     final prefs = await SharedPreferences.getInstance();
     SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
     prefs.clear();
-    print('Logout successfully!');
+    log('Logout successfully');
   }
 }

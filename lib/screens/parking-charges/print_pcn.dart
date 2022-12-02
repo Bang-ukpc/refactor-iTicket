@@ -46,7 +46,7 @@ class _PrintPCNState extends State<PrintPCN> {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Error creating! Please try again!',
+            'Error creating. Please try again',
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,

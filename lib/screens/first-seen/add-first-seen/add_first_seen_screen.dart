@@ -9,6 +9,7 @@ import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/vehicle_information.dart';
@@ -104,8 +105,8 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       LocationId: locationProvider.location!.Id as int,
       BayNumber: _bayNumberController.text,
       Type: VehicleInformationType.FIRST_SEEN.index,
-      Latitude: 16, // missing
-      Longitude: 10, // missing
+      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       CarLeft: false,
       EvidencePhotos: evidencePhotoList,
     );
@@ -179,7 +180,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
           CherryToast.success(
             displayCloseButton: false,
             title: Text(
-              'Add successfully!',
+              'Add successfully',
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
             ),
             toastPosition: Position.bottom,
@@ -200,7 +201,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Error creating! Please try again!',
+            'Error creating. Please try again',
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -235,7 +236,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                   CherryToast.success(
                     displayCloseButton: false,
                     title: Text(
-                      'Add successfully!',
+                      'Add successfully',
                       style: CustomTextStyle.h5
                           .copyWith(color: ColorTheme.success),
                     ),

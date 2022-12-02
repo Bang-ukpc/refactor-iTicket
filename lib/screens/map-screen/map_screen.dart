@@ -36,7 +36,7 @@ class _MapScreenState extends State<MapScreen> {
             onMapCreated: (GoogleMapController controller) {
               widget.mapController.complete(controller);
             },
-            myLocationEnabled: true,
+            myLocationEnabled: false,
             initialCameraPosition: CameraPosition(
               target: widget.sourceLocation,
               zoom: 17,

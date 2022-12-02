@@ -8,6 +8,12 @@ class NavItemMenu {
   final Color background;
   final bool? check;
   final VoidCallback? setCheck;
-  NavItemMenu(this.title, this.icon, this.route, this.background, this.check,
-      this.setCheck);
+  NavItemMenu({
+    required this.title,
+    required this.icon,
+    this.route,
+    required this.background,
+    this.check,
+    this.setCheck,
+  });
 }

@@ -8,7 +8,7 @@ import 'package:iWarden/models/abort_pcn.dart';
 import 'package:flutter/foundation.dart';
 
 class AbortController {
-  final dio = DioHelper.defaultApiClient;
+  static final dio = DioHelper.defaultApiClient;
 
   Future<List<CancellationReason>> getCancellationReasonList() async {
     try {

@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:provider/provider.dart';
 
 class InfoDrawer extends StatelessWidget {
   final String name;
@@ -20,7 +28,46 @@ class InfoDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _buildAvatar() {
+    final locations = Provider.of<Locations>(context, listen: false);
+    final wardersProvider = Provider.of<Auth>(context);
+
+    WardenEvent wardenEvent = WardenEvent(
+      type: TypeWardenEvent.CheckOut.index,
+      detail: 'Warden checked out',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardersProvider.wardens?.Id ?? 0,
+    );
+
+    void onCheckOut() async {
+      try {
+        await userController.createWardenEvent(wardenEvent).then((value) {
+          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+          locations.resetLocationWithZones();
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'Check out successfully',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        });
+      } catch (error) {
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            'Check out error, please try again',
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
+    }
+
+    buildAvatar() {
       if (isDrawer) {
         return Container(
             width: 64,
@@ -79,7 +126,7 @@ class InfoDrawer extends StatelessWidget {
           children: [
             Row(
               children: [
-                _buildAvatar(),
+                buildAvatar(),
                 const SizedBox(
                   width: 8,
                 ),
@@ -143,7 +190,7 @@ class InfoDrawer extends StatelessWidget {
                       "Check out",
                       style: CustomTextStyle.h6,
                     ),
-                    onPressed: () {},
+                    onPressed: onCheckOut,
                   ),
                 ),
               )
@@ -151,24 +198,3 @@ class InfoDrawer extends StatelessWidget {
         ));
   }
 }
-// Container(
-//           width: 500,
-//           height: 500,
-//           alignment: Alignment.center,
-//           decoration: const BoxDecoration(
-//               // border: Border.fromBorderSide(
-//               //   BorderSide(color: Colors.black12),
-//               // ),
-//               shape: BoxShape.circle,
-//               boxShadow: [
-//                 BoxShadow(
-//                     color: AppColor.grey600, blurRadius: 0, spreadRadius: -3),
-//                 BoxShadow(
-//                   color: Colors.white,
-//                   offset: Offset(-8, 15),
-//                   blurRadius: 18,
-//                   spreadRadius: 15,
-//                 ),
-//               ]),
-//           // child: Icon(Icons.pause, size: 70, color: Colors.black54),
-//         ),

@@ -12,7 +12,7 @@ import 'package:iWarden/models/pagination.dart';
 import 'package:http_parser/http_parser.dart';
 
 class ContraventionController {
-  final dio = DioHelper.defaultApiClient;
+  static final dio = DioHelper.defaultApiClient;
   Future<Contravention> createPCN(ContraventionCreateWardenCommand pcn) async {
     try {
       final response = await dio.post(
@@ -39,7 +39,8 @@ class ContraventionController {
   }
 
   Future<Pagination> getContraventionServiceList(
-      {int? page, int? pageSize}) async {
+      {required int zoneId, int? page, int? pageSize}) async {
+    print('zoneId: $zoneId');
     try {
       final response = await dio.post(
         '/contravention/filter',
@@ -49,6 +50,7 @@ class ContraventionController {
           "sorts": ["-Created"],
           "filter": {
             "status": ContraventionStatus.Open.index,
+            "zoneId": zoneId,
           }
         },
       );

@@ -20,28 +20,30 @@ class Locations with ChangeNotifier {
   }
 
   int get expiringTime {
-    final secondsOfLocations = (locationSelected!.TimeLimit ?? 0) +
-        (locationSelected!.GracePeriod ?? 0);
+    // final secondsOfLocations =
+    //     (zoneSelected?.TimeLimit ?? 0) + (zoneSelected!.GracePeriod ?? 0);
+    const secondsOfLocations = 2400;
     return secondsOfLocations;
   }
 
-  Future<List<LocationWithZones>> getLocationList() async {
-    locationList = await locationController.getAll();
+  Future<List<LocationWithZones>> getLocationList(
+      {required int wardenId}) async {
+    locationList = await locationController.getAll(wardenId: wardenId);
     return locationList;
   }
 
-  Future<List<LocationWithZones>> onSuggestLocation(String value) async {
-    final List<LocationWithZones> locationList =
-        await locationController.getAll();
-    final locations = locationList
-        .where(
-          (location) => location.Name.toLowerCase().contains(
-            value.toLowerCase(),
-          ),
-        )
-        .toList();
-    return locations;
-  }
+  // Future<List<LocationWithZones>> onSuggestLocation(String value) async {
+  //   final List<LocationWithZones> locationList =
+  //       await locationController.getAll();
+  //   final locations = locationList
+  //       .where(
+  //         (location) => location.Name.toLowerCase().contains(
+  //           value.toLowerCase(),
+  //         ),
+  //       )
+  //       .toList();
+  //   return locations;
+  // }
 
   void onSelectedLocation(LocationWithZones? location) {
     locationSelected = location;
@@ -62,6 +64,12 @@ class Locations with ChangeNotifier {
 
   void onSelectedZone(Zone? zone) {
     zoneSelected = zone;
+    notifyListeners();
+  }
+
+  void resetLocationWithZones() {
+    locationSelected = null;
+    zoneSelected = null;
     notifyListeners();
   }
 }

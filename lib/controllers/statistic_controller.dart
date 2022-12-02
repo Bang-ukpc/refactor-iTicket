@@ -16,7 +16,7 @@ final serviceURL = dotenv.get(
 );
 
 class StatisticController {
-  final dio = DioHelper.defaultApiClient;
+  static final dio = DioHelper.defaultApiClient;
   Future<StatisticWardenPropsData> getDataStatistic(
       StatisticWardenPropsFilter filter) async {
     final bodyRequest = jsonEncode({

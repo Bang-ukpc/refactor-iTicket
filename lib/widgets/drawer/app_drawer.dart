@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/autocomplete.dart';
+import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/location.dart';
+import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/login_screens.dart';
+import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
+import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/model/data.dart';
 import 'package:iWarden/widgets/drawer/model/menu_item.dart';
 import 'package:iWarden/widgets/drawer/model/nav_item.dart';
@@ -31,13 +38,83 @@ class _MyDrawerState extends State<MyDrawer> {
   Widget build(BuildContext context) {
     final heightScreen = MediaQuery.of(context).size.height;
     final widthScreen = MediaQuery.of(context).size.width;
-    final Uri smsLaunchUri = Uri(
-      scheme: 'sms',
-      path: '0118 999 881 999 119 7253',
-      queryParameters: <String, String>{
-        'body': Uri.encodeComponent('Example Subject & Symbols are allowed!'),
-      },
+    final wardersProvider = Provider.of<Auth>(context);
+
+    WardenEvent wardenEventStartBreak = WardenEvent(
+      type: TypeWardenEvent.StartBreak.index,
+      detail: 'Warden has begun to rest',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardersProvider.wardens?.Id ?? 0,
     );
+
+    WardenEvent wardenEventEndShift = WardenEvent(
+      type: TypeWardenEvent.EndShift.index,
+      detail: 'Warden has ended shift',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardersProvider.wardens?.Id ?? 0,
+    );
+
+    void onStartBreak() async {
+      try {
+        await userController
+            .createWardenEvent(wardenEventStartBreak)
+            .then((value) {
+          Navigator.of(context).pushNamed(StartBreakScreen.routeName);
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'Take a break',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        });
+      } catch (error) {
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            'Start break error, please try again',
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
+    }
+
+    void onEndShift(Auth auth) async {
+      try {
+        await userController
+            .createWardenEvent(wardenEventEndShift)
+            .then((value) {
+          auth.logout();
+          Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'End of shift',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        });
+      } catch (error) {
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            'End shift error, please try again',
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
+    }
+
     List<Widget> getList() {
       return DataMenuItem()
           .data
@@ -51,32 +128,44 @@ class _MyDrawerState extends State<MyDrawer> {
 
     List<NavItemMenu> navItem = [
       NavItemMenu(
-          'Emerg. call',
-          SvgPicture.asset(
-            'assets/svg/IconCall2.svg',
-          ),
-          HomeOverview.routeName,
-          ColorTheme.grey200,
-          null, () async {
-        final call = Uri.parse('tel:0981832226');
-        if (await canLaunchUrl(call)) {
-          launchUrl(call);
-        } else {
-          throw 'Could not launch $call';
-        }
-      }),
-      NavItemMenu('999', SvgPicture.asset('assets/svg/IconCall3.svg'),
-          HomeOverview.routeName, ColorTheme.grey200, null, null),
+        title: 'Emerg. call',
+        icon: SvgPicture.asset(
+          'assets/svg/IconCall2.svg',
+        ),
+        route: HomeOverview.routeName,
+        background: ColorTheme.grey200,
+        check: null,
+        setCheck: () async {
+          final call = Uri.parse('tel:0981832226');
+          if (await canLaunchUrl(call)) {
+            launchUrl(call);
+          } else {
+            throw 'Could not launch $call';
+          }
+        },
+      ),
       NavItemMenu(
-          'Start break',
-          SvgPicture.asset('assets/svg/IconStartBreak.svg'),
-          HomeOverview.routeName,
-          ColorTheme.lighterSecondary,
-          check, () {
-        setState(() {
-          check = !check;
-        });
-      }),
+        title: '999',
+        icon: SvgPicture.asset('assets/svg/IconCall3.svg'),
+        route: HomeOverview.routeName,
+        background: ColorTheme.grey200,
+        check: null,
+        setCheck: () async {
+          final call = Uri.parse('tel:999');
+          if (await canLaunchUrl(call)) {
+            launchUrl(call);
+          } else {
+            throw 'Could not launch $call';
+          }
+        },
+      ),
+      NavItemMenu(
+        title: 'Start break',
+        icon: SvgPicture.asset('assets/svg/IconStartBreak.svg'),
+        route: HomeOverview.routeName,
+        background: ColorTheme.lighterSecondary,
+        setCheck: onStartBreak,
+      ),
     ];
     List<Widget> getListNav() {
       return navItem
@@ -85,8 +174,6 @@ class _MyDrawerState extends State<MyDrawer> {
               ))
           .toList();
     }
-
-    final authProvider = Provider.of<Auth>(context);
 
     return GestureDetector(
       onTap: () {
@@ -100,12 +187,16 @@ class _MyDrawerState extends State<MyDrawer> {
               children: <Widget>[
                 Column(
                   children: <Widget>[
-                    const InfoDrawer(
-                      isDrawer: true,
-                      assetImage: "assets/images/avatar.png",
-                      name: "Tom Smiths",
-                      location: "Castlepoint Shopping centre",
-                      zone: "Car park 1",
+                    Consumer<Locations>(
+                      builder: (context, value, _) {
+                        return InfoDrawer(
+                          isDrawer: true,
+                          assetImage: "assets/images/avatar.png",
+                          name: "Tom Smiths",
+                          location: value.location?.Name ?? 'Empty name!!',
+                          zone: value.zone?.Name ?? 'Empty name!!',
+                        );
+                      },
                     ),
                     const SizedBox(
                       height: 24,
@@ -124,21 +215,22 @@ class _MyDrawerState extends State<MyDrawer> {
                     const SizedBox(
                       height: 10,
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: ItemMenuWidget(
-                        itemMenu: ItemMenu(
-                          "End shift",
-                          'assets/svg/IconEndShift.svg',
-                          null,
-                        ),
-                        onTap: () {
-                          authProvider.logout();
-                          Navigator.of(context).pushReplacementNamed(
-                            LoginScreen.routeName,
-                          );
-                        },
-                      ),
+                    Consumer<Auth>(
+                      builder: (context, auth, _) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: ItemMenuWidget(
+                            itemMenu: ItemMenu(
+                              "End shift",
+                              'assets/svg/IconEndShift.svg',
+                              null,
+                            ),
+                            onTap: () {
+                              onEndShift(auth);
+                            },
+                          ),
+                        );
+                      },
                     ),
                     SizedBox(height: heightScreen / 3.5),
                     Container(
@@ -147,8 +239,9 @@ class _MyDrawerState extends State<MyDrawer> {
                         vertical: 30,
                       ),
                       child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: getListNav()),
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: getListNav(),
+                      ),
                     )
                   ],
                 )

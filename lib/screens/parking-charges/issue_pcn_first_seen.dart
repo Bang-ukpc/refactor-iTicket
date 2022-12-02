@@ -13,11 +13,13 @@ import 'package:iWarden/common/drop_down_button.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/contraventions.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/demo-ocr/anyline_service.dart';
@@ -140,6 +142,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
+    final wardersProvider = Provider.of<Auth>(context);
     var rng = Random();
     var anyNumber = rng.nextInt(900) + 100;
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
@@ -153,13 +156,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       ContraventionReasonCode: _contraventionReasonController.text,
       EventDateTime: DateTime.now(),
       FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-      WardenId: 1, // missing
-      Longitude: 16, // missing
-      Latitude: 10, // missing
+      WardenId: wardersProvider.wardens?.Id ?? 0,
+      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       WardenComments:
           _commentController.text == '' ? ' ' : _commentController.text,
       BadgeNumber: 'test',
-      LocationAccuracy: 0,
+      LocationAccuracy: 0, // missing
     );
 
     void showLoading() {
@@ -240,7 +243,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Error creating! Please try again!',
+            'Error creating. Please try again',
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
