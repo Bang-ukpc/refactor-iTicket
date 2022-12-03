@@ -1,12 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
+import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:iWarden/widgets/drawer/model/menu_item.dart';
 
 class SpotCheck extends StatefulWidget {
   const SpotCheck({
@@ -27,22 +25,33 @@ class _SpotCheckState extends State<SpotCheck> {
         borderRadius: BorderRadius.circular(3),
       ),
       child: InkWell(
-        onTap: () async {
-          final results = await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CameraPicker(
-                titleCamera: "Spot check",
-                front: true,
-                onDelete: (file) {
-                  return true;
-                },
-              ),
+        // onTap: () async {
+        //   final results = await Navigator.of(context).push(
+        //     MaterialPageRoute(
+        //       builder: (context) => CameraPicker(
+        //         titleCamera: "Spot check",
+        //         front: true,
+        //         onDelete: (file) {
+        //           return true;
+        //         },
+        //       ),
+        //     ),
+        //   );
+        //   if (results != null) {
+        //     await evidencePhotoController.uploadImage(results[0]);
+        //   }
+        // },
+        onTap: () {
+          Navigator.of(context).pop();
+          CherryToast.info(
+            displayCloseButton: false,
+            title: Text(
+              'Comming soon',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.primary),
             ),
-          );
-          if (results != null) {
-            // print(results[0]);
-            await evidencePhotoController.uploadImage(results[0]);
-          }
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
         },
         child: Row(
           children: [
@@ -64,8 +73,3 @@ class _SpotCheckState extends State<SpotCheck> {
     );
   }
 }
-//  color: itemMenu.route == "checkout"
-//                         ? ColorTheme.danger
-//                         : activeRoute()
-//                             ? ColorTheme.darkPrimary
-//                             : ColorTheme.grey600)

@@ -4,8 +4,8 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -29,7 +29,7 @@ class InfoDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context, listen: false);
-    final wardersProvider = Provider.of<Auth>(context);
+    final wardersProvider = Provider.of<WardensInfo>(context);
 
     WardenEvent wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckOut.index,
@@ -80,6 +80,10 @@ class InfoDrawer extends StatelessWidget {
               borderRadius: BorderRadius.circular(50),
               child: Image.asset(
                 assetImage,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.error_outline,
+                  color: ColorTheme.danger,
+                ),
                 fit: BoxFit.cover,
               ),
             ));
@@ -105,6 +109,10 @@ class InfoDrawer extends StatelessWidget {
               borderRadius: BorderRadius.circular(50),
               child: Image.asset(
                 assetImage,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.error_outline,
+                  color: ColorTheme.danger,
+                ),
                 fit: BoxFit.cover,
               ),
             ),

@@ -5,8 +5,8 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -26,7 +26,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context);
-    final wardersProvider = Provider.of<Auth>(context);
+    final wardersProvider = Provider.of<WardensInfo>(context);
 
     WardenEvent wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckIn.index,
@@ -104,28 +104,30 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
     }
 
     return Scaffold(
-      bottomSheet: SizedBox(
-        height: 42,
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          style: ButtonStyle(
-            shape: MaterialStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(0),
+      bottomSheet: checkbox
+          ? SizedBox(
+              height: 42,
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ButtonStyle(
+                  shape: MaterialStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: checkNextPage,
+                icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
+                label: Text(
+                  'Check in',
+                  style: CustomTextStyle.h6.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          onPressed: checkNextPage,
-          icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
-          label: Text(
-            'Check in',
-            style: CustomTextStyle.h6.copyWith(
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
+            )
+          : const SizedBox(),
       body: SafeArea(
           child: SingleChildScrollView(
         child: Padding(

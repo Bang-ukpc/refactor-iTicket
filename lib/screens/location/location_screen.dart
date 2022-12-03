@@ -11,15 +11,14 @@ import 'package:iWarden/controllers/directions_repository_controller.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
-import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
 import 'package:iWarden/screens/read_regulation_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
-import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
 class LocationScreen extends StatefulWidget {
@@ -56,7 +55,7 @@ class _LocationScreenState extends State<LocationScreen> {
     currentLocationPosition.getCurrentLocation();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
-      final wardersProvider = Provider.of<Auth>(context, listen: false);
+      final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
       getLocationList(locations, wardersProvider.wardens?.Id ?? 0);
     });
   }
@@ -71,6 +70,8 @@ class _LocationScreenState extends State<LocationScreen> {
     // var statusBarHeight = MediaQuery.of(context).viewPadding.top;
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
+
     final sourceLocation = LatLng(
       currentLocationPosition.currentLocation?.latitude ?? 0,
       currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -153,9 +154,10 @@ class _LocationScreenState extends State<LocationScreen> {
                   const SizedBox(
                     height: 8,
                   ),
-                  const InfoDrawer(
-                    assetImage: "assets/images/avatar.png",
-                    name: "Hello Tom Smiths",
+                  InfoDrawer(
+                    assetImage: wardensProvider.wardens?.Picture ??
+                        "assets/images/avatar.png",
+                    name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
                     location: null,
                     zone: null,
                     isDrawer: false,

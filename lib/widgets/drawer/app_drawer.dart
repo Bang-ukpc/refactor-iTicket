@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:iWarden/common/autocomplete.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
-import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
@@ -18,10 +17,11 @@ import 'package:iWarden/widgets/drawer/model/nav_item.dart';
 import 'package:iWarden/widgets/drawer/nav_item.dart';
 import 'package:iWarden/widgets/drawer/spot_check.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../theme/color.dart';
 import 'info_drawer.dart';
 import 'item_menu_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MyDrawer extends StatefulWidget {
   const MyDrawer({Key? key}) : super(key: key);
@@ -31,21 +31,20 @@ class MyDrawer extends StatefulWidget {
 }
 
 class _MyDrawerState extends State<MyDrawer> {
-  final TextEditingController _locationController = TextEditingController();
   bool check = false;
 
   @override
   Widget build(BuildContext context) {
     final heightScreen = MediaQuery.of(context).size.height;
     final widthScreen = MediaQuery.of(context).size.width;
-    final wardersProvider = Provider.of<Auth>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
 
     WardenEvent wardenEventStartBreak = WardenEvent(
       type: TypeWardenEvent.StartBreak.index,
       detail: 'Warden has begun to rest',
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardersProvider.wardens?.Id ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
     );
 
     WardenEvent wardenEventEndShift = WardenEvent(
@@ -53,7 +52,7 @@ class _MyDrawerState extends State<MyDrawer> {
       detail: 'Warden has ended shift',
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardersProvider.wardens?.Id ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
     );
 
     void onStartBreak() async {
@@ -120,8 +119,23 @@ class _MyDrawerState extends State<MyDrawer> {
           .data
           .map((e) => ItemMenuWidget(
                 itemMenu: e,
-                onTap: () =>
-                    Navigator.of(context).pushReplacementNamed(e.route!),
+                onTap: e.route != 'comming soon'
+                    ? () => Navigator.of(context).pushReplacementNamed(
+                          e.route!,
+                        )
+                    : () {
+                        Navigator.of(context).pop();
+                        CherryToast.info(
+                          displayCloseButton: false,
+                          title: Text(
+                            'Comming soon',
+                            style: CustomTextStyle.h5
+                                .copyWith(color: ColorTheme.primary),
+                          ),
+                          toastPosition: Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                      },
               ))
           .toList();
     }
@@ -191,8 +205,10 @@ class _MyDrawerState extends State<MyDrawer> {
                       builder: (context, value, _) {
                         return InfoDrawer(
                           isDrawer: true,
-                          assetImage: "assets/images/avatar.png",
-                          name: "Tom Smiths",
+                          assetImage: wardensProvider.wardens?.Picture ??
+                              "assets/images/avatar.png",
+                          name:
+                              "Hello ${wardensProvider.wardens?.FullName ?? ""}",
                           location: value.location?.Name ?? 'Empty name!!',
                           zone: value.zone?.Name ?? 'Empty name!!',
                         );

@@ -321,7 +321,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                             height: 16,
                           ),
                           TextFormField(
-                            style: CustomTextStyle.h6,
+                            style: CustomTextStyle.h5,
                             decoration: const InputDecoration(
                               labelText: 'Bay number',
                               hintText: "Enter bay number",

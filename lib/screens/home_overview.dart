@@ -7,10 +7,10 @@ import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/contraventions.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/vehicle_info.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/screens/grace-period/add_grace_period.dart';
@@ -141,14 +141,14 @@ class _HomeOverviewState extends State<HomeOverview> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final locations = Provider.of<Locations>(context, listen: false);
-    final wardersProvider = Provider.of<Auth>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
 
     WardenEvent wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckOut.index,
       detail: 'Warden checked out',
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardersProvider.wardens?.Id ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
     );
 
     WardenEvent wardenEventStartBreak = WardenEvent(
@@ -156,7 +156,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       detail: 'Warden has begun to rest',
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardersProvider.wardens?.Id ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
     );
 
     void onCheckOut() async {
@@ -250,8 +250,9 @@ class _HomeOverviewState extends State<HomeOverview> {
               ),
               InfoDrawer(
                 isDrawer: false,
-                assetImage: "assets/images/avatar.png",
-                name: "Tom Smiths",
+                assetImage: wardensProvider.wardens?.Picture ??
+                    "assets/images/avatar.png",
+                name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
                 location: locations.location?.Name ?? 'Empty name!!',
                 zone: locations.zone?.Name ?? 'Empty name!!',
               ),

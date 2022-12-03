@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:flutter/widgets.dart';
@@ -9,7 +7,6 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
-import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/screens/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -22,14 +19,9 @@ final serviceURL = dotenv.get(
 
 class Auth with ChangeNotifier {
   String? _token;
-  static Wardens? _wardens;
 
   String? get token {
     return _token;
-  }
-
-  Wardens? get wardens {
-    return _wardens;
   }
 
   Future<bool> isAuth() async {
@@ -57,7 +49,6 @@ class Auth with ChangeNotifier {
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     try {
       await userController.getMe().then((value) {
-        _wardens = value;
         notifyListeners();
         Navigator.of(context).pop();
         Navigator.of(context).pushReplacementNamed(ConnectingScreen.routeName);

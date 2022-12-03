@@ -4,7 +4,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -23,7 +23,7 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final wardersProvider = Provider.of<Auth>(context);
+    final wardersProvider = Provider.of<WardensInfo>(context);
 
     WardenEvent wardenEventEndBreak = WardenEvent(
       type: TypeWardenEvent.EndBreak.index,

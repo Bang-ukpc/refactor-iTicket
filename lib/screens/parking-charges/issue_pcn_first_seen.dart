@@ -19,9 +19,9 @@ import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
-import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/contraventions.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/demo-ocr/anyline_service.dart';
 import 'package:iWarden/screens/demo-ocr/result.dart';
 import 'package:iWarden/screens/demo-ocr/scan_modes.dart';
@@ -33,7 +33,6 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
-import 'package:path/path.dart' as p;
 
 class IssuePCNFirstSeenScreen extends StatefulWidget {
   static const routeName = '/issue-pcn';
@@ -142,7 +141,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
-    final wardersProvider = Provider.of<Auth>(context);
+    final wardersProvider = Provider.of<WardensInfo>(context);
     var rng = Random();
     var anyNumber = rng.nextInt(900) + 100;
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
@@ -428,6 +427,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                   _contraventionReasonController.text.isNotEmpty
                                       ? _contraventionReasonController.text
                                       : null,
+                              validator: ((value) {
+                                if (value == null) {
+                                  return 'Please select contravention';
+                                }
+                                return null;
+                              }),
                             ),
                           ),
                           const SizedBox(

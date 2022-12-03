@@ -8,6 +8,7 @@ import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -143,7 +144,9 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wardersProvider = Provider.of<Auth>(context);
+    final wardersProvider = Provider.of<WardensInfo>(context);
+
+    print('Warden Id: ${wardersProvider.wardens?.Id}');
 
     WardenEvent wardenEventStartShift = WardenEvent(
       type: TypeWardenEvent.StartShift.index,

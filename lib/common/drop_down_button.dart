@@ -63,7 +63,7 @@ class DropDownButtonWidget extends StatelessWidget {
         }),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 0,
+          horizontal: 12,
           vertical: 13,
         ),
         hintText: hintText,
@@ -108,7 +108,7 @@ class DropDownButtonWidget extends StatelessWidget {
       scrollbarThickness: 6,
       offset: const Offset(0, -13),
       buttonPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
+        horizontal: 0,
         vertical: 0,
       ),
       dropdownElevation: 0,

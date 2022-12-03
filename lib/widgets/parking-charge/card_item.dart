@@ -42,7 +42,7 @@ class CardItemParkingCharge extends StatelessWidget {
               "$azureContainerImageUrl/$image",
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Icon(
-                Icons.error,
+                Icons.error_outline,
                 color: ColorTheme.danger,
               ),
             ),
