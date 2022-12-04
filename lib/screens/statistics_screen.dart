@@ -5,8 +5,8 @@ import 'package:camera/camera.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:gps_connectivity/gps_connectivity.dart';
 import 'package:iWarden/common/drop_down_button.dart';
 import 'package:iWarden/controllers/statistic_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
@@ -20,6 +20,7 @@ import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:iWarden/widgets/statistic/statistic_item.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class StatisticScreen extends StatefulWidget {
   static const routeName = '/statistic';
@@ -50,7 +51,21 @@ class _StatisticScreenState extends State<StatisticScreen> {
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
-  late StreamSubscription<bool> connectivitySubscriptionGps;
+  final bool connected = true;
+  bool checkGps = false;
+  bool checkBluetooth = false;
+  bool checkCamera = false;
+  late CameraController controller;
+
+  // check GPS
+  void _checkDeviceLocationIsOn() async {
+    var check = await Permission.locationWhenInUse.isGranted;
+    setState(() {
+      checkGps = check;
+    });
+  }
+
+  // Check network connection
   Future<void> initConnectivity() async {
     late ConnectivityResult result;
     try {
@@ -67,43 +82,28 @@ class _StatisticScreenState extends State<StatisticScreen> {
     return _updateConnectionStatus(result);
   }
 
-  Future<void> initConnectivityGPS() async {
-    late bool result;
-    try {
-      result = await GpsConnectivity().checkGpsConnectivity();
-    } on PlatformException catch (e) {
-      developer.log('Couldn\'t check connectivity status', error: e);
-      return;
-    }
-
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    return _updateConnectionGPSStatus(result);
-  }
-
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
     setState(() {
       _connectionStatus = result;
     });
   }
 
-  Future<void> _updateConnectionGPSStatus(bool result) async {
+  // Check bluetooth
+  void checkBluetoothConnectionState() async {
+    var check = await FlutterBlue.instance.isOn;
     setState(() {
-      checkGps = result;
+      checkBluetooth = check;
     });
   }
 
-  @override
-  void dispose() {
-    _connectivitySubscription.cancel();
-    super.dispose();
+  // Check camera
+  void checkCameraPermission() async {
+    var check = await Permission.camera.isGranted;
+    setState(() {
+      checkCamera = check;
+    });
   }
 
-  final bool connected = true;
-  bool checkGps = false;
-  late CameraController controller;
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -113,13 +113,12 @@ class _StatisticScreenState extends State<StatisticScreen> {
           formatDate.startOfDay(DateTime.now()),
           formatDate.endOfDay(DateTime.now()));
     });
-    connectivitySubscriptionGps = GpsConnectivity()
-        .onGpsConnectivityChanged
-        .listen(_updateConnectionGPSStatus);
+    _checkDeviceLocationIsOn();
     initConnectivity();
-    initConnectivityGPS();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    checkBluetoothConnectionState();
+    checkCameraPermission();
 
     super.initState();
   }
@@ -140,6 +139,12 @@ class _StatisticScreenState extends State<StatisticScreen> {
   }
 
   @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Widget listDevice = Container(
       height: 56,
@@ -156,8 +161,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                 const SizedBox(
                   height: 8,
                 ),
-                _buildDevice("Bluetooth", true),
-                // _buildDevice("Network status", false),
+                _buildDevice("Bluetooth", checkBluetooth),
               ],
             ),
           ),
@@ -171,8 +175,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                 const SizedBox(
                   height: 8,
                 ),
-                _buildDevice("Camera", true),
-                // _buildDevice("Network status", false),
+                _buildDevice("Camera", checkCamera),
               ],
             ),
           ),

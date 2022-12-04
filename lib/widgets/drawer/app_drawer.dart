@@ -206,7 +206,7 @@ class _MyDrawerState extends State<MyDrawer> {
                         return InfoDrawer(
                           isDrawer: true,
                           assetImage: wardensProvider.wardens?.Picture ??
-                              "assets/images/avatar.png",
+                              "assets/images/userAvatar.png",
                           name:
                               "Hello ${wardensProvider.wardens?.FullName ?? ""}",
                           location: value.location?.Name ?? 'Empty name!!',

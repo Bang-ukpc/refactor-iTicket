@@ -7,6 +7,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -18,6 +19,7 @@ final serviceURL = dotenv.get(
 );
 
 class Auth with ChangeNotifier {
+  WardensInfo? _wardensInfo;
   String? _token;
 
   String? get token {
@@ -49,7 +51,7 @@ class Auth with ChangeNotifier {
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     try {
       await userController.getMe().then((value) {
-        notifyListeners();
+        _wardensInfo!.updateWardenInfo(value);
         Navigator.of(context).pop();
         Navigator.of(context).pushReplacementNamed(ConnectingScreen.routeName);
         CherryToast.success(
@@ -89,5 +91,10 @@ class Auth with ChangeNotifier {
     SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
     prefs.clear();
     log('Logout successfully');
+  }
+
+  void update(WardensInfo wardensInfo) {
+    _wardensInfo = wardensInfo;
+    notifyListeners();
   }
 }

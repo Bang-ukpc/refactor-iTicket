@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/theme/color.dart';

@@ -251,7 +251,7 @@ class _HomeOverviewState extends State<HomeOverview> {
               InfoDrawer(
                 isDrawer: false,
                 assetImage: wardensProvider.wardens?.Picture ??
-                    "assets/images/avatar.png",
+                    "assets/images/userAvatar.png",
                 name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
                 location: locations.location?.Name ?? 'Empty name!!',
                 zone: locations.zone?.Name ?? 'Empty name!!',

@@ -80,10 +80,8 @@ class InfoDrawer extends StatelessWidget {
               borderRadius: BorderRadius.circular(50),
               child: Image.asset(
                 assetImage,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.error_outline,
-                  color: ColorTheme.danger,
-                ),
+                errorBuilder: (context, error, stackTrace) =>
+                    Image.asset('assets/images/userAvatar.png'),
                 fit: BoxFit.cover,
               ),
             ));
@@ -109,10 +107,8 @@ class InfoDrawer extends StatelessWidget {
               borderRadius: BorderRadius.circular(50),
               child: Image.asset(
                 assetImage,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.error_outline,
-                  color: ColorTheme.danger,
-                ),
+                errorBuilder: (context, error, stackTrace) =>
+                    Image.asset('assets/images/userAvatar.png'),
                 fit: BoxFit.cover,
               ),
             ),

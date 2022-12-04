@@ -26,7 +26,10 @@ Future main() async {
         ChangeNotifierProvider.value(value: WardensInfo()),
         ChangeNotifierProvider.value(value: Locations()),
         ChangeNotifierProvider.value(value: print_issue.PrintIssueProviders()),
-        ChangeNotifierProvider.value(value: Auth()),
+        ChangeNotifierProxyProvider<WardensInfo, Auth>(
+          update: (_, wardensInfo, auth) => auth!..update(wardensInfo),
+          create: (_) => Auth(),
+        ),
         ChangeNotifierProxyProvider<Locations, VehicleInfo>(
           update: (_, locations, vehicleInfo) =>
               vehicleInfo!..update(locations),

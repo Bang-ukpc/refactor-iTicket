@@ -9,6 +9,7 @@
     "Debouncer",
     "dotenv",
     "firestore",
+    "flutterbluetoothadapter",
     "fluttertoast",
     "Goku",
     "Goteta",

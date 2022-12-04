@@ -137,7 +137,7 @@ class _SendFormScreenState extends State<SendFormScreen> {
             Container(
               color: Colors.white,
               child: AddImage(
-                  listImage: [],
+                  listImage: const [],
                   onAddImage: () {},
                   displayTitle: true,
                   isCamera: true,

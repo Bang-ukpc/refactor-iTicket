@@ -40,7 +40,6 @@ dependencies:
   fluttertoast: ^8.0.9
   shared_preferences: ^2.0.15
   anyline_plugin: ^41.0.1
-  http: ^0.13.5
   image: ^3.2.0
   camera: ^0.10.0+3
   collection: ">=1.15.0 <2.0.0"
@@ -63,6 +62,8 @@ dependencies:
   hooks_riverpod: ^2.1.1
   gps_connectivity: ^0.0.4
   connectivity_plus: ^3.0.2
+  flutter_blue: ^0.8.0
+  permission_handler: ^9.2.0
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +91,7 @@ flutter:
     - assets/images/avatar.png
     - assets/images/car.png
     - assets/images/LogoUKPC.png
+    - assets/images/userAvatar.png
     - assets/svg/Vector.svg
     - assets/svg/IconNext.svg
     - assets/svg/PositionIcon.svg

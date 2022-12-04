@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+
 import '../models/wardens.dart';
 
 class WardensInfo with ChangeNotifier {
@@ -14,5 +15,10 @@ class WardensInfo with ChangeNotifier {
       _wardens = value;
       notifyListeners();
     });
+  }
+
+  void updateWardenInfo(Wardens wardens) {
+    _wardens = wardens;
+    notifyListeners();
   }
 }

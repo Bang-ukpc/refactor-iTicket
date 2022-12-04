@@ -142,13 +142,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
     final wardersProvider = Provider.of<WardensInfo>(context);
-    var rng = Random();
-    var anyNumber = rng.nextInt(900) + 100;
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
 
     ContraventionCreateWardenCommand pcn = ContraventionCreateWardenCommand(
       ExternalReference: locationProvider.zone!.ExternalReference,
-      ContraventionReference: '1234567890$anyNumber',
+      ContraventionReference: '',
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
       VehicleColour: _vehicleColorController.text,
@@ -158,8 +156,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       WardenId: wardersProvider.wardens?.Id ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      WardenComments:
-          _commentController.text == '' ? ' ' : _commentController.text,
+      WardenComments: _commentController.text,
       BadgeNumber: 'test',
       LocationAccuracy: 0, // missing
     );
@@ -188,8 +185,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
     Future<void> createPCN() async {
       final isValid = _formKey.currentState!.validate();
-      anyNumber = rng.nextInt(900) + 100;
-      pcn.ContraventionReference = '1234567890$anyNumber';
       Contravention? contravention;
       bool check = false;
 

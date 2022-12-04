@@ -104,30 +104,31 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
     }
 
     return Scaffold(
-      bottomSheet: checkbox
-          ? SizedBox(
-              height: 42,
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ButtonStyle(
-                  shape: MaterialStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(0),
-                    ),
-                  ),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                onPressed: checkNextPage,
-                icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
-                label: Text(
-                  'Check in',
-                  style: CustomTextStyle.h6.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
+      bottomSheet: SizedBox(
+        height: 42,
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(
+              checkbox ? ColorTheme.primary : ColorTheme.grey400,
+            ),
+            shape: MaterialStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0),
               ),
-            )
-          : const SizedBox(),
+            ),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          onPressed: checkbox ? checkNextPage : null,
+          icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
+          label: Text(
+            'Check in',
+            style: CustomTextStyle.h6.copyWith(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
           child: SingleChildScrollView(
         child: Padding(

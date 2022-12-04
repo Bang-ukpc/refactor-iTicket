@@ -97,7 +97,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     VehicleInformation vehicleInfo = VehicleInformation(
       ExpiredAt: DateTime.now().add(
         Duration(
-          seconds: locationProvider.expiringTime,
+          seconds: locationProvider.expiringTimeFirstSeen,
         ),
       ),
       Plate: _vrnController.text,

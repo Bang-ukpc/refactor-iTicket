@@ -51,8 +51,15 @@ Service _$ServiceFromJson(Map<String, dynamic> json) => Service(
 class ServiceConfigModel {
   final String? WardenNotes;
   final IssuePCNTypeModel IssuePCNType;
+  final int FirstSeenPeriod;
+  final int GracePeriod;
 
-  ServiceConfigModel({this.WardenNotes, required this.IssuePCNType});
+  ServiceConfigModel({
+    this.WardenNotes,
+    required this.IssuePCNType,
+    required this.FirstSeenPeriod,
+    required this.GracePeriod,
+  });
 
   factory ServiceConfigModel.fromJson(Map<String, dynamic> json) =>
       _$ServiceConfigModelFromJson(json);
@@ -64,6 +71,8 @@ ServiceConfigModel _$ServiceConfigModelFromJson(Map<String, dynamic> json) {
     IssuePCNType: IssuePCNTypeModel.fromJson(
       json['IssuePCNType'],
     ),
+    FirstSeenPeriod: json['FirstSeenPeriod'],
+    GracePeriod: json['GracePeriod'],
   );
 }
 

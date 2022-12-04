@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/theme/color.dart';
@@ -41,10 +40,8 @@ class CardItemParkingCharge extends StatelessWidget {
             child: Image.network(
               "$azureContainerImageUrl/$image",
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Icon(
-                Icons.error_outline,
-                color: ColorTheme.danger,
-              ),
+              errorBuilder: (context, error, stackTrace) =>
+                  Image.asset('assets/images/userAvatar.png'),
             ),
           ),
         ),

@@ -19,10 +19,19 @@ class Locations with ChangeNotifier {
     return zoneSelected;
   }
 
-  int get expiringTime {
-    // final secondsOfLocations =
-    //     (zoneSelected?.TimeLimit ?? 0) + (zoneSelected!.GracePeriod ?? 0);
-    const secondsOfLocations = 2400;
+  int get expiringTimeFirstSeen {
+    final secondsOfLocations =
+        ((zoneSelected?.Services?[0].ServiceConfig.FirstSeenPeriod ?? 0) +
+                (zoneSelected?.Services?[0].ServiceConfig.GracePeriod ?? 0)) *
+            60;
+
+    return secondsOfLocations;
+  }
+
+  int get expiringTimeGracePeriod {
+    final secondsOfLocations =
+        ((zoneSelected?.Services?[0].ServiceConfig.GracePeriod ?? 0)) * 60;
+
     return secondsOfLocations;
   }
 

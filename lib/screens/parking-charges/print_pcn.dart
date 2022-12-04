@@ -5,7 +5,6 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
-import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/print_issue.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';

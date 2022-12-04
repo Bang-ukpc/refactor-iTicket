@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:iWarden/configs/configs.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AuthLayout extends StatefulWidget {
   final Widget child;
@@ -15,6 +14,10 @@ class AuthLayout extends StatefulWidget {
 }
 
 class _AuthLayoutState extends State<AuthLayout> {
+  void _askPermission() {
+    Permission.locationAlways.request();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +32,7 @@ class _AuthLayoutState extends State<AuthLayout> {
         });
       }
     });
+    _askPermission();
   }
 
   @override

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:iWarden/theme/color.dart';
 
 class AppSettings {
   void settings() {

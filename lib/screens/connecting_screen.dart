@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -7,18 +10,15 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:gps_connectivity/gps_connectivity.dart';
-import 'dart:async';
-import 'dart:developer' as developer;
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:gps_connectivity/gps_connectivity.dart';
+import 'package:flutter_blue/flutter_blue.dart';
 
 enum StateDevice { connected, pending, disconnect }
 
@@ -56,27 +56,23 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   LocationData? currentLocationOfWarder;
-  ConnectivityResult connectionStatus = ConnectivityResult.none;
+  late StreamSubscription<bool> connectivitySubscriptionGps;
+  final bool connected = true;
+  bool? checkGps;
+  bool? checkBluetooth;
+  ConnectivityResult _connectionStatus = ConnectivityResult.none;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
-  late StreamSubscription<bool> connectivitySubscriptionGps;
 
-  Future<void> initConnectivity() async {
-    late ConnectivityResult result;
-    try {
-      result = await _connectivity.checkConnectivity();
-    } on PlatformException catch (e) {
-      developer.log('Couldn\'t check connectivity status', error: e);
-      return;
-    }
-
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    return _updateConnectionStatus(result);
+  // Check bluetooth connection
+  void checkBluetoothConnectionState() async {
+    var check = await FlutterBlue.instance.isOn;
+    setState(() {
+      checkBluetooth = check;
+    });
   }
 
+  // Check GPS connection
   Future<void> initConnectivityGPS() async {
     late bool result;
     try {
@@ -93,18 +89,36 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     return _updateConnectionGPSStatus(result);
   }
 
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    setState(() {
-      connectionStatus = result;
-    });
-  }
-
   Future<void> _updateConnectionGPSStatus(bool result) async {
     setState(() {
       checkGps = result;
     });
   }
 
+  // Check network connection
+  Future<void> initConnectivity() async {
+    late ConnectivityResult result;
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      developer.log('Couldn\'t check connectivity status', error: e);
+      return;
+    }
+
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    setState(() {
+      _connectionStatus = result;
+    });
+  }
+
+  // Get current location
   void getCurrentLocationOfWarden() async {
     await currentLocationPosition.getCurrentLocation().then((value) {
       setState(() {
@@ -113,18 +127,17 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     });
   }
 
-  final bool connected = true;
-  bool? checkGps;
   @override
   void initState() {
     getCurrentLocationOfWarden();
     connectivitySubscriptionGps = GpsConnectivity()
         .onGpsConnectivityChanged
         .listen(_updateConnectionGPSStatus);
-    initConnectivity();
     initConnectivityGPS();
+    initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    checkBluetoothConnectionState();
     super.initState();
   }
 
@@ -232,9 +245,17 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Column(
                   children: [
-                    _buildConnect("1. Connect Bluetooth", StateDevice.pending),
-                    _buildConnect("2. Connect Network", StateDevice.pending),
-                    _buildConnect("3. GPS", checkState(checkGps == true)),
+                    _buildConnect("1. Connect Bluetooth",
+                        checkState(checkBluetooth == true)),
+                    _buildConnect(
+                      "2. Connect Network",
+                      checkState(
+                        _connectionStatus == ConnectivityResult.mobile ||
+                            _connectionStatus == ConnectivityResult.wifi,
+                      ),
+                    ),
+                    _buildConnect("3. GPS has been turned on",
+                        checkState(checkGps == true)),
                   ],
                 ),
               ),

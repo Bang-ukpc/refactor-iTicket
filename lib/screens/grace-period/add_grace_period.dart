@@ -99,7 +99,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
     VehicleInformation vehicleInfo = VehicleInformation(
       ExpiredAt: DateTime.now().add(
         Duration(
-          seconds: locationProvider.expiringTime,
+          seconds: locationProvider.expiringTimeGracePeriod,
         ),
       ),
       Plate: _vrnController.text,

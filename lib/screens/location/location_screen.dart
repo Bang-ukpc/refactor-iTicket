@@ -156,7 +156,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   ),
                   InfoDrawer(
                     assetImage: wardensProvider.wardens?.Picture ??
-                        "assets/images/avatar.png",
+                        "assets/images/userAvatar.png",
                     name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
                     location: null,
                     zone: null,

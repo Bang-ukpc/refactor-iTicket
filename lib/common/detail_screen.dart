@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
+import 'package:iWarden/common/locate_car_screen.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
@@ -194,7 +195,12 @@ class _DetailScreenState extends State<DetailScreen> {
                 SizedBox(
                   width: ((widthScreen / divisor) - padding) - divisor2,
                   child: TextButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(
+                          LocateCarScreen.routeName,
+                          arguments: args,
+                        );
+                      },
                       icon: SvgPicture.asset(
                         "assets/svg/IconLocation.svg",
                         width: 16,
