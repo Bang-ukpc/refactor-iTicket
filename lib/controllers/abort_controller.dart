@@ -26,10 +26,11 @@ class AbortController {
 
   Future<void> abortPCN(AbortPCN abortPcn) async {
     try {
-      await dio.post(
+      final response = await dio.post(
         '/contravention/abort-pcn',
         data: abortPcn.toJson(),
       );
+      return response.data;
     } catch (error) {
       rethrow;
     }

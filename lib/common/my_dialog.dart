@@ -8,10 +8,13 @@ class MyDialog extends StatelessWidget {
   final Widget title;
   final Widget subTitle;
   final Widget func;
+  final bool? buttonCancel;
+
   const MyDialog({
     required this.title,
     required this.subTitle,
     required this.func,
+    this.buttonCancel = true,
     Key? key,
   }) : super(key: key);
 
@@ -46,20 +49,22 @@ class MyDialog extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Expanded(
+                    if (buttonCancel == true)
+                      Expanded(
                         child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: ColorTheme.grey300,
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: ColorTheme.grey300,
+                          ),
+                          child: const Text(
+                            "Cancel",
+                            style: CustomTextStyle.h5,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
                       ),
-                      child: const Text(
-                        "Cancel",
-                        style: CustomTextStyle.h5,
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    )),
                     const SizedBox(
                       width: 16,
                     ),

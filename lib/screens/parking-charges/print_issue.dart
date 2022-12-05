@@ -1,10 +1,14 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/my_dialog.dart';
+import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/controllers/contravention_controller.dart';
+import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
@@ -30,13 +34,33 @@ class _PrintIssueState extends State<PrintIssue> {
     super.initState();
   }
 
-  bool check = false;
-
   @override
   Widget build(BuildContext context) {
     final printIssue = Provider.of<PrintIssueProviders>(context);
     final contravention =
         ModalRoute.of(context)!.settings.arguments as Contravention;
+
+    void showLoading() {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CircularProgressIndicator(
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
 
     void takeAPhoto() async {
       await printIssue.getIdIssue(printIssue.findIssueNoImage().id);
@@ -53,7 +77,7 @@ class _PrintIssueState extends State<PrintIssue> {
       );
     }
 
-    Future<void> _showMyDialog() async {
+    Future<void> showMyDialog() async {
       return showDialog<void>(
         context: context,
         barrierDismissible: false,
@@ -64,6 +88,7 @@ class _PrintIssueState extends State<PrintIssue> {
             subTitle: const Text(
               "Please take enough proof photos to complete.",
               textAlign: TextAlign.center,
+              style: CustomTextStyle.body1,
             ),
             func: ElevatedButton(
               child: const Text("Ok"),
@@ -75,6 +100,49 @@ class _PrintIssueState extends State<PrintIssue> {
           );
         },
       );
+    }
+
+    void onCompleteTakePhotos() async {
+      bool check = false;
+      showLoading();
+      try {
+        if (printIssue.data.isNotEmpty) {
+          for (int i = 0; i < printIssue.data.length; i++) {
+            await contraventionController.uploadContraventionImage(
+              ContraventionCreatePhoto(
+                contraventionReference: contravention.reference ?? '',
+                originalFileName:
+                    printIssue.data[i].image!.path.split('/').last,
+                capturedDateTime: DateTime.now(),
+                file: printIssue.data[i].image,
+              ),
+            );
+            if (i == printIssue.data.length - 1) {
+              check = true;
+            }
+          }
+        }
+        if (check == true) {
+          printIssue.resetData();
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pop();
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+        }
+      } on DioError catch (error) {
+        Navigator.of(context).pop();
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            error.response!.data['message'].toString().length > 30
+                ? 'Something went wrong'
+                : error.response!.data['message'],
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
     }
 
     return WillPopScope(
@@ -127,10 +195,9 @@ class _PrintIssueState extends State<PrintIssue> {
             BottomNavyBarItem(
               onPressed: () {
                 if (printIssue.findIssueNoImage().title != 'null') {
-                  _showMyDialog();
+                  showMyDialog();
                 } else {
-                  printIssue.resetData();
-                  Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+                  onCompleteTakePhotos();
                 }
               },
               icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
@@ -169,67 +236,55 @@ class _PrintIssueState extends State<PrintIssue> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                             child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    "Please take required photos as below:",
-                                    style: CustomTextStyle.h5.copyWith(
-                                      color: ColorTheme.grey600,
-                                    ),
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Please take required photos as below:",
+                                  style: CustomTextStyle.h5.copyWith(
+                                    color: ColorTheme.grey600,
                                   ),
-                                  Consumer<PrintIssueProviders>(
-                                      builder: (_, value, __) {
-                                    return Column(
-                                      children: value.data
-                                          .map((e) => TakePhotoItem(
-                                                func: () async {
-                                                  await printIssue.getIdIssue(
-                                                      printIssue
-                                                          .findIssueNoImage()
-                                                          .id);
-                                                  await Navigator.of(context)
-                                                      .push(
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          CameraPicker(
-                                                        titleCamera: printIssue
-                                                            .findIssueNoImage()
-                                                            .title,
-                                                        previewImage: true,
-                                                        onDelete: (file) {
-                                                          return true;
-                                                        },
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                                title: e.title,
-                                                image: e.image != null
-                                                    ? File(e.image!.path)
-                                                    : null,
-                                                state: e.id ==
+                                ),
+                                Consumer<PrintIssueProviders>(
+                                    builder: (_, value, __) {
+                                  return Column(
+                                    children: value.data
+                                        .map((e) => TakePhotoItem(
+                                              func: () async {
+                                                await printIssue.getIdIssue(
                                                     printIssue
                                                         .findIssueNoImage()
-                                                        .id,
-                                              ))
-                                          .toList(),
-                                    );
-                                  }),
-                                ]),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
+                                                        .id);
+                                                await Navigator.of(context)
+                                                    .push(
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        CameraPicker(
+                                                      titleCamera: printIssue
+                                                          .findIssueNoImage()
+                                                          .title,
+                                                      previewImage: true,
+                                                      onDelete: (file) {
+                                                        return true;
+                                                      },
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              title: e.title,
+                                              image: e.image != null
+                                                  ? File(e.image!.path)
+                                                  : null,
+                                              state: e.id ==
+                                                  printIssue
+                                                      .findIssueNoImage()
+                                                      .id,
+                                            ))
+                                        .toList(),
+                                  );
+                                }),
+                              ],
                             ),
-                            child: TextFormField(
-                              decoration: const InputDecoration(
-                                hintText: 'Enter comment',
-                                hintMaxLines: 1,
-                              ),
-                              maxLines: 3,
-                            ),
                           ),
-                          const SizedBox(height: 30),
                         ],
                       ),
                     ),

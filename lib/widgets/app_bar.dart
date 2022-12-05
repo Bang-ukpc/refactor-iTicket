@@ -5,6 +5,7 @@ import 'package:iWarden/theme/text_theme.dart';
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool automaticallyImplyLeading;
+  final bool? isOpenDrawer;
   final VoidCallback? onRedirect;
 
   const MyAppBar({
@@ -12,6 +13,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.automaticallyImplyLeading = false,
     this.onRedirect,
+    this.isOpenDrawer = true,
   }) : super(key: key);
 
   @override
@@ -44,13 +46,15 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : null,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
-          tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-        )
+        isOpenDrawer == true
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+              )
+            : const SizedBox(),
       ],
     );
   }

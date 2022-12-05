@@ -4,6 +4,7 @@ import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_detail.dart';
+import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/parking-charge/detail_car.dart';
@@ -15,7 +16,12 @@ final azureContainerImageUrl = dotenv.get(
 
 class DetailParkingCommon extends StatefulWidget {
   final Contravention? contravention;
-  const DetailParkingCommon({this.contravention, super.key});
+  final bool? isDisplayPrintPCN;
+  const DetailParkingCommon({
+    this.contravention,
+    this.isDisplayPrintPCN = false,
+    super.key,
+  });
 
   @override
   State<DetailParkingCommon> createState() => _DetailParkingCommonState();
@@ -34,8 +40,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          if (ModalRoute.of(context)!.settings.name !=
-              ParkingChargeDetail.routeName)
+          if (widget.isDisplayPrintPCN == true)
             Container(
               width: double.infinity,
               color: ColorTheme.darkPrimary,

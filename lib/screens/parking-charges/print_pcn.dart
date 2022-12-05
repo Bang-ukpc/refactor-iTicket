@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
@@ -20,55 +19,25 @@ class PrintPCN extends StatefulWidget {
 }
 
 class _PrintPCNState extends State<PrintPCN> {
-  Contravention? contravention;
-  int contraventionId = 0;
-
-  void getContraventionDetail(int id) async {
-    await contraventionController.getContraventionDetail(id).then((value) {
-      setState(() {
-        contravention = value;
-      });
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      try {
-        final args =
-            ModalRoute.of(context)!.settings.arguments as Contravention;
-        contraventionId = args.id as int;
-        getContraventionDetail(args.id as int);
-      } catch (error) {
-        Navigator.of(context).pop();
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            'Error creating. Please try again',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)!.settings.arguments as Contravention;
+
     return WillPopScope(
       onWillPop: () async => false,
-      child: Scaffold(
-        drawer: const MyDrawer(),
-        bottomSheet: BottomSheet2(
-          buttonList: contravention != null
-              ? [
+      child: FutureBuilder(
+        future: contraventionController.getContraventionDetail(args.id as int),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Scaffold(
+              drawer: const MyDrawer(),
+              bottomSheet: BottomSheet2(
+                buttonList: [
                   BottomNavyBarItem(
                     onPressed: () {
                       Navigator.of(context).pushNamed(
                         AbortScreen.routeName,
-                        arguments: contravention,
+                        arguments: snapshot.data as Contravention,
                       );
                     },
                     icon: SvgPicture.asset('assets/svg/IconAbort.svg'),
@@ -89,7 +58,7 @@ class _PrintPCNState extends State<PrintPCN> {
                     onPressed: () {
                       Navigator.of(context).pushNamed(
                         PrintIssue.routeName,
-                        arguments: contravention,
+                        arguments: snapshot.data as Contravention,
                       );
                     },
                     icon: SvgPicture.asset('assets/svg/IconComplete.svg'),
@@ -98,21 +67,19 @@ class _PrintPCNState extends State<PrintPCN> {
                       style: CustomTextStyle.h6,
                     ),
                   ),
-                ]
-              : [],
-        ),
-        body: FutureBuilder(
-          future:
-              contraventionController.getContraventionDetail(contraventionId),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return SafeArea(
+                ],
+              ),
+              body: SafeArea(
                 child: DetailParkingCommon(
-                  contravention: contravention,
+                  contravention: snapshot.data as Contravention,
+                  isDisplayPrintPCN: true,
                 ),
-              );
-            } else if (snapshot.hasError) {
-              return Center(
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Scaffold(
+              drawer: const MyDrawer(),
+              body: Center(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -144,12 +111,15 @@ class _PrintPCNState extends State<PrintPCN> {
                     ),
                   ],
                 ),
-              );
-            } else {
-              return const Center(child: CircularProgressIndicator());
-            }
-          },
-        ),
+              ),
+            );
+          } else {
+            return const Scaffold(
+              drawer: MyDrawer(),
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+        },
       ),
     );
   }

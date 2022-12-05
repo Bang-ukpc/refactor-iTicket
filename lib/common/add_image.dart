@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_detail.dart';
-import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
@@ -131,8 +129,9 @@ class _AddImageState extends State<AddImage> {
                             child: SizedBox(
                               width: 24.0,
                               height: 24.0,
-                              child:
-                                  SvgPicture.asset("assets/svg/IconCamera.svg"),
+                              child: SvgPicture.asset(
+                                "assets/svg/IconCamera.svg",
+                              ),
                             ),
                           ),
                         ),

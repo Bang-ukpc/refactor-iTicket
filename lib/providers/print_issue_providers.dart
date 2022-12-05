@@ -14,12 +14,12 @@ class PrintIssueProviders with ChangeNotifier {
     PrintIssue(id: 1, title: "Vehicle & Background", image: null),
     PrintIssue(id: 2, title: "Screen with ticket on", image: null),
     PrintIssue(id: 3, title: "Close up of contravention", image: null),
-    // PrintIssue(id: 4, title: "Vehicle & Signage", image: null),
-    // PrintIssue(id: 5, title: "Signage", image: null),
-    // PrintIssue(id: 6, title: "Optional photo 1", image: null),
-    // PrintIssue(id: 7, title: "Optional photo 2", image: null),
-    // PrintIssue(id: 8, title: "Optional photo 3", image: null),
-    // PrintIssue(id: 9, title: "Optional photo 4", image: null),
+    PrintIssue(id: 4, title: "Vehicle & Signage", image: null),
+    PrintIssue(id: 5, title: "Signage", image: null),
+    PrintIssue(id: 6, title: "Optional photo 1", image: null),
+    PrintIssue(id: 7, title: "Optional photo 2", image: null),
+    PrintIssue(id: 8, title: "Optional photo 3", image: null),
+    PrintIssue(id: 9, title: "Optional photo 4", image: null),
   ];
 
   late int idIssue;

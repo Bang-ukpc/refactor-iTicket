@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/widgets/app_bar.dart';
-import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:iWarden/widgets/parking-charge/preview_image_item.dart';
 import 'package:provider/provider.dart';
 
@@ -35,8 +34,9 @@ class PreviewPhoto extends StatelessWidget {
       appBar: const MyAppBar(
         title: "Preview",
         automaticallyImplyLeading: true,
+        isOpenDrawer: false,
       ),
-      drawer: const MyDrawer(),
+      // drawer: const MyDrawer(),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(16),

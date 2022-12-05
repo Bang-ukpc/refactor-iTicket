@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/button_radio.dart';
 import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/drop_down_button.dart';
 import 'package:iWarden/common/label_require.dart';
+import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -25,7 +26,7 @@ import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/demo-ocr/anyline_service.dart';
 import 'package:iWarden/screens/demo-ocr/result.dart';
 import 'package:iWarden/screens/demo-ocr/scan_modes.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_detail.dart';
+import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/theme/color.dart';
@@ -33,6 +34,11 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
+
+List<SelectModel> typeOfPCN = [
+  SelectModel(label: 'Virtual ticket (Highly recommended)', value: 0),
+  SelectModel(label: 'Physical PCN', value: 1),
+];
 
 class IssuePCNFirstSeenScreen extends StatefulWidget {
   static const routeName = '/issue-pcn';
@@ -52,6 +58,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final TextEditingController _vehicleColorController = TextEditingController();
   final TextEditingController _contraventionReasonController =
       TextEditingController();
+  final TextEditingController _typeOfPcnController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   List<ContraventionReasonTranslations> contraventionReasonList = [];
   int selectedButton = 0;
@@ -68,11 +75,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     });
   }
 
-  void onSearchVehicleInfoByPlate(String plate) {
-    contraventionController.getVehicleDetailByPlate(plate: plate).then((value) {
+  void onSearchVehicleInfoByPlate(String plate) async {
+    await contraventionController
+        .getVehicleDetailByPlate(plate: plate)
+        .then((value) {
       setState(() {
-        _vehicleMakeController.text = value['make'] ?? '';
-        _vehicleColorController.text = value['colour'] ?? '';
+        _vehicleMakeController.text = value?.make ?? '';
+        _vehicleColorController.text = value?.colour ?? '';
       });
     });
   }
@@ -81,6 +90,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   void initState() {
     super.initState();
     _anylineService = AnylineServiceImpl();
+    _typeOfPcnController.text = '0';
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final contraventionProvider =
           Provider.of<Contraventions>(context, listen: false);
@@ -133,6 +143,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     _vrnController.dispose();
     _vehicleMakeController.dispose();
     _vehicleColorController.dispose();
+    _typeOfPcnController.dispose();
     _commentController.dispose();
     _contraventionReasonController.dispose();
     super.dispose();
@@ -144,7 +155,26 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final wardersProvider = Provider.of<WardensInfo>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
 
-    ContraventionCreateWardenCommand pcn = ContraventionCreateWardenCommand(
+    ContraventionCreateWardenCommand physicalPCN =
+        ContraventionCreateWardenCommand(
+      ExternalReference: locationProvider.zone!.ExternalReference,
+      ContraventionReference: '',
+      Plate: _vrnController.text,
+      VehicleMake: _vehicleMakeController.text,
+      VehicleColour: _vehicleColorController.text,
+      ContraventionReasonCode: _contraventionReasonController.text,
+      EventDateTime: DateTime.now(),
+      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+      WardenId: wardersProvider.wardens?.Id ?? 0,
+      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      WardenComments: _commentController.text,
+      BadgeNumber: 'test',
+      LocationAccuracy: 0, // missing
+    );
+
+    ContraventionCreateWardenCommand virtualTicket =
+        ContraventionCreateWardenCommand(
       ExternalReference: locationProvider.zone!.ExternalReference,
       ContraventionReference: '',
       Plate: _vrnController.text,
@@ -183,7 +213,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       );
     }
 
-    Future<void> createPCN() async {
+    Future<void> createPhysicalPCN() async {
       final isValid = _formKey.currentState!.validate();
       Contravention? contravention;
       bool check = false;
@@ -206,14 +236,14 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         showLoading();
       }
       try {
-        await contraventionController.createPCN(pcn).then((value) {
+        await contraventionController.createPCN(physicalPCN).then((value) {
           contravention = value;
         });
-        if (arrayImage.isNotEmpty) {
+        if (arrayImage.isNotEmpty && contravention != null) {
           for (int i = 0; i < arrayImage.length; i++) {
             await contraventionController.uploadContraventionImage(
               ContraventionCreatePhoto(
-                contraventionReference: pcn.ContraventionReference,
+                contraventionReference: contravention?.reference ?? '',
                 originalFileName: arrayImage[i].path.split('/').last,
                 capturedDateTime: DateTime.now(),
                 file: arrayImage[i],
@@ -231,13 +261,52 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           Navigator.of(context)
               .pushNamed(PrintPCN.routeName, arguments: contravention);
         }
-      } catch (error) {
-        Navigator.of(context).pop();
-        // ignore: use_build_context_synchronously
+      } on DioError catch (error) {
+        if (error.response!.statusCode == 400) {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 2),
+            displayCloseButton: true,
+            title: Text(
+              error.response!.data['message'].toString().length > 30
+                  ? 'Something went wrong'
+                  : error.response!.data['message'],
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        } else {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            displayCloseButton: false,
+            title: Text(
+              error.response!.data['message'].toString().length > 30
+                  ? 'Something went wrong'
+                  : error.response!.data['message'],
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
+      }
+
+      _formKey.currentState!.save();
+    }
+
+    Future<void> createVirtualTicket() async {
+      final isValid = _formKey.currentState!.validate();
+      Contravention? contravention;
+      bool check = false;
+
+      if (arrayImage.isEmpty) {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Error creating. Please try again',
+            'Please take at least 1 picture',
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -245,8 +314,134 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         ).show(context);
         return;
       }
+      if (!isValid) {
+        return;
+      } else {
+        showLoading();
+      }
+      try {
+        await contraventionController.createPCN(virtualTicket).then((value) {
+          contravention = value;
+        });
+        if (arrayImage.isNotEmpty && contravention != null) {
+          for (int i = 0; i < arrayImage.length; i++) {
+            await contraventionController.uploadContraventionImage(
+              ContraventionCreatePhoto(
+                contraventionReference: contravention?.reference ?? '',
+                originalFileName: arrayImage[i].path.split('/').last,
+                capturedDateTime: DateTime.now(),
+                file: arrayImage[i],
+              ),
+            );
+            if (i == arrayImage.length - 1) {
+              check = true;
+            }
+          }
+        }
+        if (contravention != null && check == true) {
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pop();
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pushNamed(
+            ParkingChargeInfo.routeName,
+            arguments: contravention,
+          );
+        }
+      } on DioError catch (error) {
+        if (error.response!.statusCode == 400) {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 2),
+            displayCloseButton: true,
+            title: Text(
+              error.response!.data['message'].toString().length > 30
+                  ? 'Something went wrong'
+                  : error.response!.data['message'],
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        } else {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            displayCloseButton: false,
+            title: Text(
+              error.response!.data['message'].toString().length > 30
+                  ? 'Something went wrong'
+                  : error.response!.data['message'],
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
+      }
 
       _formKey.currentState!.save();
+    }
+
+    Future<void> showMyDialog() async {
+      return showDialog<void>(
+        context: context,
+        barrierColor: ColorTheme.backdrop,
+        builder: (BuildContext context) {
+          return MyDialog(
+            buttonCancel: false,
+            title: const Text(
+              "Suggestion for you",
+              style: TextStyle(color: ColorTheme.success),
+            ),
+            subTitle: const Text(
+              "Virtual ticketing is enabled for this site, we would encourage you to use virtual ticketing.",
+              textAlign: TextAlign.center,
+              style: CustomTextStyle.body2,
+            ),
+            func: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      elevation: MaterialStateProperty.all(0),
+                    ),
+                    child: const Text("Switch to virtual ticketing"),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      createVirtualTicket();
+                    },
+                  ),
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        ColorTheme.grey300,
+                      ),
+                      elevation: MaterialStateProperty.all(0),
+                      foregroundColor: MaterialStateProperty.all(
+                        ColorTheme.textPrimary,
+                      ),
+                    ),
+                    child: const Text("Proceed with physical ticketing"),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      createPhysicalPCN();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
     }
 
     return WillPopScope(
@@ -267,11 +462,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           drawer: const MyDrawer(),
           bottomSheet: BottomSheet2(
             buttonList: [
-              if (selectedButton == 1)
+              if (_typeOfPcnController.text == '0')
                 BottomNavyBarItem(
                   onPressed: () {
-                    Navigator.of(context)
-                        .pushNamed(ParkingChargeDetail.routeName);
+                    createVirtualTicket();
                   },
                   icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
                   label: const Text(
@@ -279,11 +473,28 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                     style: CustomTextStyle.h6,
                   ),
                 ),
-              if (selectedButton == 0)
+              if (_typeOfPcnController.text == '1')
                 BottomNavyBarItem(
-                  onPressed: () async {
-                    // Navigator.of(context).pushNamed(PrintPCN.routeName);
-                    createPCN();
+                  onPressed: () {
+                    final isValid = _formKey.currentState!.validate();
+                    if (arrayImage.isEmpty) {
+                      CherryToast.error(
+                        displayCloseButton: false,
+                        title: Text(
+                          'Please take at least 1 picture',
+                          style: CustomTextStyle.h5
+                              .copyWith(color: ColorTheme.danger),
+                        ),
+                        toastPosition: Position.bottom,
+                        borderRadius: 5,
+                      ).show(context);
+                      return;
+                    }
+                    if (!isValid) {
+                      return;
+                    } else {
+                      showMyDialog();
+                    }
                   },
                   icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
                   label: const Text(
@@ -313,6 +524,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                               Flexible(
                                 flex: 8,
                                 child: TextFormField(
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9]'),
+                                    ),
+                                  ],
+                                  textCapitalization:
+                                      TextCapitalization.characters,
                                   controller: _vrnController,
                                   style: CustomTextStyle.h5,
                                   decoration: const InputDecoration(
@@ -348,9 +566,14 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                             ],
                           ),
                           const SizedBox(
-                            height: 16,
+                            height: 20,
                           ),
                           TextFormField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[^\s]+\b\s?'),
+                              ),
+                            ],
                             style: CustomTextStyle.h5,
                             controller: _vehicleMakeController,
                             decoration: const InputDecoration(
@@ -370,9 +593,14 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 AutovalidateMode.onUserInteraction,
                           ),
                           const SizedBox(
-                            height: 16,
+                            height: 20,
                           ),
                           TextFormField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[^\s]+\b\s?'),
+                              ),
+                            ],
                             style: CustomTextStyle.h5,
                             controller: _vehicleColorController,
                             decoration: const InputDecoration(
@@ -392,7 +620,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 AutovalidateMode.onUserInteraction,
                           ),
                           const SizedBox(
-                            height: 16,
+                            height: 20,
                           ),
                           SizedBox(
                             child: DropDownButtonWidget(
@@ -431,59 +659,46 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                             ),
                           ),
                           const SizedBox(
-                            height: 16,
+                            height: 20,
                           ),
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(7, 16, 16, 4),
-                            decoration: BoxDecoration(
-                                color: ColorTheme.lighterPrimary,
-                                borderRadius: BorderRadius.circular(3)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 12),
-                                  child: Text(
-                                    "Please select type of PCN",
-                                    style: CustomTextStyle.h6,
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: OptionRadio(
-                                          text: 'Physical PCN',
-                                          index: 0,
-                                          selectedButton: selectedButton,
-                                          press: (val) {
-                                            selectedButton = val;
-                                            setState(() {});
-                                          }),
+                          SizedBox(
+                            child: DropDownButtonWidget(
+                              labelText: const LabelRequire(
+                                labelText: 'Type of PCN',
+                              ),
+                              hintText: 'Select type of PCN',
+                              item: typeOfPCN
+                                  .map(
+                                    (item) => DropdownMenuItem(
+                                      value: item.value.toString(),
+                                      child: Text(
+                                        item.label,
+                                        style: CustomTextStyle.h5,
+                                      ),
                                     ),
-                                    Expanded(
-                                      child: OptionRadio(
-                                          text: 'Virtual PCN',
-                                          index: 1,
-                                          selectedButton: selectedButton,
-                                          press: (val) {
-                                            selectedButton = val;
-                                            setState(() {});
-                                          }),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                  )
+                                  .toList(),
+                              onchanged: (value) {
+                                setState(() {
+                                  _typeOfPcnController.text = value.toString();
+                                });
+                              },
+                              value: _typeOfPcnController.text.isNotEmpty
+                                  ? _typeOfPcnController.text
+                                  : null,
                             ),
                           ),
                           const SizedBox(
-                            height: 16,
+                            height: 20,
                           ),
                           TextFormField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[^\s]+\b\s?'),
+                              ),
+                            ],
                             controller: _commentController,
-                            style: CustomTextStyle.h6,
+                            style: CustomTextStyle.h5,
                             keyboardType: TextInputType.multiline,
                             minLines: 3,
                             maxLines: 5,
@@ -526,4 +741,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       ),
     );
   }
+}
+
+class SelectModel {
+  final String label;
+  final int value;
+
+  SelectModel({required this.label, required this.value});
 }

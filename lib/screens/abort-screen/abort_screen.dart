@@ -1,7 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:dropdown_plus/dropdown_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button.dart';
+import 'package:iWarden/common/label_require.dart';
+import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
@@ -26,6 +30,7 @@ class AbortScreen extends StatefulWidget {
 }
 
 class _AbortScreenState extends State<AbortScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<CancellationReason> cancellationReasonList = [];
   final TextEditingController _cancellationReasonController =
       TextEditingController();
@@ -66,9 +71,29 @@ class _AbortScreenState extends State<AbortScreen> {
     );
 
     Future<void> abortPCN() async {
-      await abortController.abortPCN(abortPcnBody);
-      // ignore: use_build_context_synchronously
-      Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+      final isValid = _formKey.currentState!.validate();
+
+      if (!isValid) {
+        return;
+      }
+
+      try {
+        await abortController.abortPCN(abortPcnBody).then((value) {
+          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+        });
+      } on DioError catch (error) {
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            error.response!.data['message'].toString().length > 30
+                ? 'Something went wrong'
+                : error.response!.data['message'],
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
     }
 
     return WillPopScope(
@@ -124,65 +149,83 @@ class _AbortScreenState extends State<AbortScreen> {
                       horizontal: 20,
                       vertical: 10,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Please select the reasons and submit to abort this parking charge.',
-                          style: CustomTextStyle.body1.copyWith(
-                            color: ColorTheme.grey600,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        SizedBox(
-                          child: DropDownButtonWidget(
-                            hintText: 'Select reason',
-                            item: cancellationReasonList
-                                .map(
-                                  (itemValue) => DropdownMenuItem(
-                                    value: itemValue.Id.toString(),
-                                    child: Text(
-                                      itemValue.reason,
-                                      style: CustomTextStyle.h5,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onchanged: (value) {
-                              setState(() {
-                                _cancellationReasonController.text =
-                                    value as String;
-                              });
-                            },
-                            value: _cancellationReasonController.text.isNotEmpty
-                                ? _cancellationReasonController.text
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 40,
-                        ),
-                        TextFormField(
-                          style: CustomTextStyle.h5,
-                          controller: _commentController,
-                          decoration: const InputDecoration(
-                            hintText: 'Enter comment',
-                            label: Text(
-                              "Comment",
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Please select the reasons and submit to abort this parking charge.',
+                            style: CustomTextStyle.body1.copyWith(
+                              color: ColorTheme.grey600,
                             ),
-                            hintMaxLines: 1,
                           ),
-                          maxLines: 3,
-                          onSaved: (value) {
-                            _commentController.text = value as String;
-                          },
-                        ),
-                        const SizedBox(
-                          height: 4,
-                        ),
-                      ],
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          SizedBox(
+                            child: DropDownButtonWidget(
+                              labelText: const LabelRequire(
+                                labelText: 'Reason',
+                              ),
+                              hintText: 'Select reason',
+                              item: cancellationReasonList
+                                  .map(
+                                    (itemValue) => DropdownMenuItem(
+                                      value: itemValue.Id.toString(),
+                                      child: Text(
+                                        itemValue.reason,
+                                        style: CustomTextStyle.h5,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onchanged: (value) {
+                                setState(() {
+                                  _cancellationReasonController.text =
+                                      value as String;
+                                });
+                              },
+                              validator: ((value) {
+                                if (value == null) {
+                                  return 'Please select reason';
+                                }
+                                return null;
+                              }),
+                              value:
+                                  _cancellationReasonController.text.isNotEmpty
+                                      ? _cancellationReasonController.text
+                                      : null,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 30,
+                          ),
+                          TextFormField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[^\s]+\b\s?'),
+                              ),
+                            ],
+                            style: CustomTextStyle.h5,
+                            controller: _commentController,
+                            decoration: const InputDecoration(
+                              hintText: 'Enter comment',
+                              label: Text(
+                                "Comment",
+                              ),
+                              hintMaxLines: 1,
+                            ),
+                            maxLines: 3,
+                            onSaved: (value) {
+                              _commentController.text = value as String;
+                            },
+                          ),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -108,8 +108,9 @@ class CameraPicker extends HookWidget {
                 appBar: const MyAppBar(
                   title: "UKPC take picture",
                   automaticallyImplyLeading: true,
+                  isOpenDrawer: false,
                 ),
-                drawer: const MyDrawer(),
+                // drawer: const MyDrawer(),
                 bottomSheet: BottomSheet2(buttonList: [
                   BottomNavyBarItem(
                     onPressed: () {

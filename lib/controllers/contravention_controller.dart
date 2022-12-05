@@ -1,15 +1,10 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:iWarden/configs/configs.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
-import 'package:http/http.dart' as http;
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
-import 'package:http_parser/http_parser.dart';
+import 'package:iWarden/models/vehicle_registration.dart';
 
 class ContraventionController {
   static final dio = DioHelper.defaultApiClient;
@@ -20,6 +15,7 @@ class ContraventionController {
         data: pcn.toJson(),
       );
       Contravention contraventionResult = Contravention.fromJson(response.data);
+      print('Api create PCN: ${response.data}');
       return contraventionResult;
     } catch (error) {
       rethrow;
@@ -78,13 +74,19 @@ class ContraventionController {
     }
   }
 
-  Future<Map<String, dynamic>> getVehicleDetailByPlate(
+  Future<VehicleRegistration?> getVehicleDetailByPlate(
       {required String plate}) async {
     try {
       final response = await dio.get(
         '/contravention/vehicle-details/$plate',
       );
-      return response.data;
+      if (response.data != '') {
+        VehicleRegistration vehicleRegistration =
+            VehicleRegistration.fromJson(response.data);
+        return vehicleRegistration;
+      } else {
+        return null;
+      }
     } catch (error) {
       rethrow;
     }

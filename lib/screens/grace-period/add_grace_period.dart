@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
@@ -288,6 +289,13 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                               Flexible(
                                 flex: 8,
                                 child: TextFormField(
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9]'),
+                                    ),
+                                  ],
+                                  textCapitalization:
+                                      TextCapitalization.characters,
                                   controller: _vrnController,
                                   style: CustomTextStyle.h5,
                                   decoration: const InputDecoration(
@@ -318,10 +326,15 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                             ],
                           ),
                           const SizedBox(
-                            height: 16,
+                            height: 25,
                           ),
                           TextFormField(
-                            style: CustomTextStyle.h6,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[^\s]+\b\s?'),
+                              ),
+                            ],
+                            style: CustomTextStyle.h5,
                             decoration: const InputDecoration(
                               labelText: 'Bay number',
                               hintText: "Enter bay number",

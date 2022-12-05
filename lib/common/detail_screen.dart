@@ -41,7 +41,6 @@ class _DetailScreenState extends State<DetailScreen> {
     final padding = widget.type == TypeFirstSeen.Expired ? 30.0 : 05.0;
     final divisor = widget.type == TypeFirstSeen.Expired ? 3 : 2;
     final divisor2 = widget.type == TypeFirstSeen.Expired ? 0.00 : 12;
-    final bool isCamera = widget.type == TypeFirstSeen.Expired ? true : false;
     final args =
         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
     final calculateTime = CalculateTime();
@@ -112,7 +111,7 @@ class _DetailScreenState extends State<DetailScreen> {
       onWillPop: () async => false,
       child: Scaffold(
         appBar: MyAppBar(
-          title: args.Type == 0
+          title: args.Type == VehicleInformationType.FIRST_SEEN.index
               ? 'First seen details'
               : 'Consideration Period details',
           automaticallyImplyLeading: true,
@@ -262,7 +261,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 AddImage(
                   isSlideImage: true,
                   listImage: imgList,
-                  isCamera: isCamera,
+                  isCamera: false,
                   onAddImage: () async {
                     final results =
                         await Navigator.of(context).push(MaterialPageRoute(
