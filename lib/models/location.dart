@@ -21,6 +21,7 @@ class Location extends BaseModel {
   final String? Country;
   final String? Postcode;
   final String? Notes;
+  final double? Distance;
 
   Location({
     int? Id,
@@ -42,6 +43,7 @@ class Location extends BaseModel {
     this.Longitude,
     this.Latitude,
     this.Notes,
+    this.Distance,
   }) : super(Id: Id, Created: Created, Deleted: Deleted);
 }
 
@@ -69,6 +71,7 @@ class LocationWithZones extends Location {
     double? Longitude,
     double? Latitude,
     String? Notes,
+    double? Distance,
     this.Zones,
     this.OperationalPeriods,
   }) : super(
@@ -91,6 +94,7 @@ class LocationWithZones extends Location {
           Latitude: Latitude,
           Longitude: Longitude,
           Notes: Notes,
+          Distance: Distance,
         );
 
   factory LocationWithZones.fromJson(Map<String, dynamic> json) =>
@@ -122,7 +126,32 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Longitude: json['Longitude'],
     Latitude: json['Latitude'],
     Notes: json['Notes'],
+    Distance: json['Distance'],
     Zones: zonesList,
     OperationalPeriods: json['OperationalPeriods'],
   );
+}
+
+class ListLocationOfTheDayByWardenIdProps {
+  final double latitude;
+  final double longitude;
+  final int wardenId;
+
+  ListLocationOfTheDayByWardenIdProps({
+    required this.latitude,
+    required this.longitude,
+    required this.wardenId,
+  });
+
+  Map<String, dynamic> toJson() =>
+      _$ListLocationOfTheDayByWardenIdPropsToJson(this);
+}
+
+Map<String, dynamic> _$ListLocationOfTheDayByWardenIdPropsToJson(
+    ListLocationOfTheDayByWardenIdProps instance) {
+  return <String, dynamic>{
+    'Latitude': instance.latitude,
+    'Longitude': instance.longitude,
+    'WardenId': instance.wardenId,
+  };
 }

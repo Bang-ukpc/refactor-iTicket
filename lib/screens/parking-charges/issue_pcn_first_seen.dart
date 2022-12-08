@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,7 +10,7 @@ import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/button_scan.dart';
-import 'package:iWarden/common/drop_down_button.dart';
+import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/toast.dart';
@@ -26,6 +27,7 @@ import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/demo-ocr/anyline_service.dart';
 import 'package:iWarden/screens/demo-ocr/result.dart';
 import 'package:iWarden/screens/demo-ocr/scan_modes.dart';
+import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/screens/parking-charges/print_pcn.dart';
@@ -111,9 +113,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             .take(2)
             .toString()
             .split(',')[1]
+            .replaceAll(RegExp('[^A-Za-z0-9]'), '')
             .replaceAll(' ', '');
         setState(() {
-          _vrnController.text = resultText.substring(0, resultText.length - 1);
+          _vrnController.text = resultText.substring(0, resultText.length);
         });
       }
     } catch (e, s) {
@@ -623,69 +626,80 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                             height: 20,
                           ),
                           SizedBox(
-                            child: DropDownButtonWidget(
-                              labelText: const LabelRequire(
-                                labelText: 'Contravention',
+                            child:
+                                DropdownSearch<ContraventionReasonTranslations>(
+                              dropdownDecoratorProps: DropDownDecoratorProps(
+                                dropdownSearchDecoration: dropDownButtonStyle
+                                    .getInputDecorationCustom(
+                                  labelText: const LabelRequire(
+                                    labelText: 'Contravention',
+                                  ),
+                                  hintText: 'Select contravention',
+                                ),
                               ),
-                              hintText: 'Select contravention',
-                              item: contraventionReasonList
-                                  .map(
-                                    (itemValue) => DropdownMenuItem(
-                                      value:
-                                          itemValue.contraventionReason!.code,
-                                      child: Text(
-                                        itemValue.summary as String,
-                                        style: CustomTextStyle.h5,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onchanged: (value) {
+                              items: contraventionReasonList,
+                              itemAsString: (item) => item.summary as String,
+                              popupProps: PopupProps.menu(
+                                showSearchBox: true,
+                                fit: FlexFit.loose,
+                                constraints: const BoxConstraints(
+                                  maxHeight: 300,
+                                ),
+                                itemBuilder: (context, item, isSelected) =>
+                                    DropDownItem(
+                                  title: item.summary as String,
+                                ),
+                              ),
+                              onChanged: (value) {
                                 setState(() {
-                                  _contraventionReasonController.text =
-                                      value as String;
+                                  _contraventionReasonController.text = value!
+                                      .contraventionReason!.code
+                                      .toString();
                                 });
                               },
-                              value:
-                                  _contraventionReasonController.text.isNotEmpty
-                                      ? _contraventionReasonController.text
-                                      : null,
                               validator: ((value) {
                                 if (value == null) {
                                   return 'Please select contravention';
                                 }
                                 return null;
                               }),
+                              autoValidateMode:
+                                  AutovalidateMode.onUserInteraction,
                             ),
                           ),
                           const SizedBox(
                             height: 20,
                           ),
                           SizedBox(
-                            child: DropDownButtonWidget(
-                              labelText: const LabelRequire(
-                                labelText: 'Type of PCN',
+                            child: DropdownSearch<SelectModel>(
+                              dropdownDecoratorProps: DropDownDecoratorProps(
+                                dropdownSearchDecoration: dropDownButtonStyle
+                                    .getInputDecorationCustom(
+                                  labelText: const LabelRequire(
+                                    labelText: 'Type of PCN',
+                                  ),
+                                  hintText: 'Select type of PCN',
+                                ),
                               ),
-                              hintText: 'Select type of PCN',
-                              item: typeOfPCN
-                                  .map(
-                                    (item) => DropdownMenuItem(
-                                      value: item.value.toString(),
-                                      child: Text(
-                                        item.label,
-                                        style: CustomTextStyle.h5,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onchanged: (value) {
+                              items: typeOfPCN,
+                              selectedItem: typeOfPCN[0],
+                              itemAsString: (item) => item.label,
+                              popupProps: PopupProps.menu(
+                                fit: FlexFit.loose,
+                                constraints: const BoxConstraints(
+                                  maxHeight: 200,
+                                ),
+                                itemBuilder: (context, item, isSelected) =>
+                                    DropDownItem(
+                                  title: item.label,
+                                ),
+                              ),
+                              onChanged: (value) {
                                 setState(() {
-                                  _typeOfPcnController.text = value.toString();
+                                  _typeOfPcnController.text =
+                                      value!.value.toString();
                                 });
                               },
-                              value: _typeOfPcnController.text.isNotEmpty
-                                  ? _typeOfPcnController.text
-                                  : null,
                             ),
                           ),
                           const SizedBox(

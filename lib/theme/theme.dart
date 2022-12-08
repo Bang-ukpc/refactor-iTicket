@@ -79,6 +79,13 @@ ThemeData themeMain() {
         ),
         borderRadius: BorderRadius.circular(5),
       ),
+      disabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(
+          width: 1,
+          color: ColorTheme.grey300,
+        ),
+        borderRadius: BorderRadius.circular(5),
+      ),
       focusedBorder: OutlineInputBorder(
         borderSide: const BorderSide(
           width: 1,

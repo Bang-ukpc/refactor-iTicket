@@ -16,7 +16,7 @@ class VehicleInfo with ChangeNotifier {
       vehicleInfoType: VehicleInformationType.FIRST_SEEN.index,
       zoneId: locationsProvider!.zone!.Id as int,
       page: page,
-      pageSize: pageSize,
+      pageSize: 1000,
     );
     firstSeenList =
         list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
@@ -29,7 +29,7 @@ class VehicleInfo with ChangeNotifier {
       vehicleInfoType: VehicleInformationType.GRACE_PERIOD.index,
       zoneId: locationsProvider!.zone!.Id as int,
       page: page,
-      pageSize: pageSize,
+      pageSize: 1000,
     );
     gracePeriodList =
         list.rows.map((item) => VehicleInformation.fromJson(item)).toList();

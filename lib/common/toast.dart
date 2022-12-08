@@ -405,6 +405,8 @@ class _CherryToastState extends State<CherryToast>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       slideController.forward();
     });
+
+    if (!mounted) return;
   }
 
   @override

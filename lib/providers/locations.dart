@@ -35,9 +35,12 @@ class Locations with ChangeNotifier {
     return secondsOfLocations;
   }
 
-  Future<List<LocationWithZones>> getLocationList(
-      {required int wardenId}) async {
-    locationList = await locationController.getAll(wardenId: wardenId);
+  Future<List<LocationWithZones>> getLocationList({
+    required ListLocationOfTheDayByWardenIdProps
+        listLocationOfTheDayByWardenIdProps,
+  }) async {
+    locationList =
+        await locationController.getAll(listLocationOfTheDayByWardenIdProps);
     return locationList;
   }
 

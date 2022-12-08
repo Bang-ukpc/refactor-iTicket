@@ -57,9 +57,10 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
             .take(2)
             .toString()
             .split(',')[1]
+            .replaceAll(RegExp('[^A-Za-z0-9]'), '')
             .replaceAll(' ', '');
         setState(() {
-          _vrnController.text = resultText.substring(0, resultText.length - 1);
+          _vrnController.text = resultText.substring(0, resultText.length);
         });
       }
     } catch (e, s) {

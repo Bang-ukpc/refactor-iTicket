@@ -16,7 +16,7 @@ class Contraventions with ChangeNotifier {
         await contraventionController.getContraventionServiceList(
       zoneId: locationsProvider!.zone!.Id as int,
       page: page,
-      pageSize: pageSize,
+      pageSize: 1000,
     );
     contraventionList =
         list.rows.map((item) => Contravention.fromJson(item)).toList();

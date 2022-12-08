@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
-import 'package:iWarden/common/autocomplete.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/button_scan.dart';
@@ -14,7 +13,6 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
-import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/demo-ocr/anyline_service.dart';
@@ -59,9 +57,10 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
             .take(2)
             .toString()
             .split(',')[1]
+            .replaceAll(RegExp('[^A-Za-z0-9]'), '')
             .replaceAll(' ', '');
         setState(() {
-          _vrnController.text = resultText.substring(0, resultText.length - 1);
+          _vrnController.text = resultText.substring(0, resultText.length);
         });
       }
     } catch (e, s) {

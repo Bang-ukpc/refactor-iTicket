@@ -1,14 +1,15 @@
 import 'package:dio/dio.dart';
-import 'package:dropdown_plus/dropdown_plus.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/drop_down_button.dart';
+import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -94,6 +95,9 @@ class _AbortScreenState extends State<AbortScreen> {
           borderRadius: 5,
         ).show(context);
       }
+
+      _formKey.currentState!.save();
+      return;
     }
 
     return WillPopScope(
@@ -164,26 +168,32 @@ class _AbortScreenState extends State<AbortScreen> {
                             height: 20,
                           ),
                           SizedBox(
-                            child: DropDownButtonWidget(
-                              labelText: const LabelRequire(
-                                labelText: 'Reason',
+                            child: DropdownSearch<CancellationReason>(
+                              dropdownDecoratorProps: DropDownDecoratorProps(
+                                dropdownSearchDecoration: dropDownButtonStyle
+                                    .getInputDecorationCustom(
+                                  labelText: const LabelRequire(
+                                    labelText: 'Reason',
+                                  ),
+                                  hintText: 'Select reason',
+                                ),
                               ),
-                              hintText: 'Select reason',
-                              item: cancellationReasonList
-                                  .map(
-                                    (itemValue) => DropdownMenuItem(
-                                      value: itemValue.Id.toString(),
-                                      child: Text(
-                                        itemValue.reason,
-                                        style: CustomTextStyle.h5,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onchanged: (value) {
+                              items: cancellationReasonList,
+                              itemAsString: (item) => item.reason,
+                              popupProps: PopupProps.menu(
+                                fit: FlexFit.loose,
+                                constraints: const BoxConstraints(
+                                  maxHeight: 200,
+                                ),
+                                itemBuilder: (context, item, isSelected) =>
+                                    DropDownItem(
+                                  title: item.reason,
+                                ),
+                              ),
+                              onChanged: (value) {
                                 setState(() {
                                   _cancellationReasonController.text =
-                                      value as String;
+                                      value!.Id.toString();
                                 });
                               },
                               validator: ((value) {
@@ -192,10 +202,6 @@ class _AbortScreenState extends State<AbortScreen> {
                                 }
                                 return null;
                               }),
-                              value:
-                                  _cancellationReasonController.text.isNotEmpty
-                                      ? _cancellationReasonController.text
-                                      : null,
                             ),
                           ),
                           const SizedBox(

@@ -3,17 +3,19 @@ import 'dart:developer' as developer;
 
 import 'package:camera/camera.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:iWarden/common/drop_down_button.dart';
+import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/controllers/statistic_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/date_filter.dart';
 import 'package:iWarden/models/statistic.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/home_overview.dart';
+import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -218,23 +220,28 @@ class _StatisticScreenState extends State<StatisticScreen> {
                           const Expanded(flex: 1, child: Text("My statistic")),
                           Expanded(
                             flex: 1,
-                            child: DropDownButtonWidget(
-                              hintText: 'Date filter',
-                              item: dataList
-                                  .map(
-                                    (itemValue) => DropdownMenuItem(
-                                      value: itemValue.value.isEmpty
-                                          ? ''
-                                          : itemValue.value,
-                                      child: Text(
-                                        itemValue.label,
-                                        style: CustomTextStyle.h5,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onchanged: (value) {
-                                String testa = value as String;
+                            child: DropdownSearch<DateFilter>(
+                              dropdownDecoratorProps: DropDownDecoratorProps(
+                                dropdownSearchDecoration: dropDownButtonStyle
+                                    .getInputDecorationCustom(
+                                  hintText: 'Date filter',
+                                ),
+                              ),
+                              items: dataList,
+                              selectedItem: dataList[0],
+                              itemAsString: (item) => item.label,
+                              popupProps: PopupProps.menu(
+                                fit: FlexFit.loose,
+                                constraints: const BoxConstraints(
+                                  maxHeight: 200,
+                                ),
+                                itemBuilder: (context, item, isSelected) =>
+                                    DropDownItem(
+                                  title: item.label,
+                                ),
+                              ),
+                              onChanged: (value) {
+                                String testa = value!.value;
                                 String from = testa.split(',')[0];
                                 String to = testa.split(',')[1];
                                 getDataStatistic(
@@ -247,10 +254,9 @@ class _StatisticScreenState extends State<StatisticScreen> {
                                     DateTime.parse(
                                         to.substring(5, to.length - 1)));
                                 setState(() {
-                                  selectedValue = value;
+                                  selectedValue = value.value;
                                 });
                               },
-                              value: selectedValue,
                             ),
                           ),
                         ],

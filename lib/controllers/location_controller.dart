@@ -9,10 +9,14 @@ final serviceURL = dotenv.get(
 
 class LocationController {
   static final dio = DioHelper.defaultApiClient;
-  Future<List<LocationWithZones>> getAll({required int wardenId}) async {
+  Future<List<LocationWithZones>> getAll(
+      ListLocationOfTheDayByWardenIdProps
+          listLocationOfTheDayByWardenIdProps) async {
     try {
-      final response =
-          await dio.get('/location/location-of-the-day-by-warden/$wardenId');
+      final response = await dio.post(
+        '/location/location-of-the-day-by-warden',
+        data: listLocationOfTheDayByWardenIdProps.toJson(),
+      );
       List<dynamic> temp = response.data;
       List<LocationWithZones> locations =
           temp.map((model) => LocationWithZones.fromJson(model)).toList();

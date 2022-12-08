@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
-import 'package:iWarden/common/drop_down_button.dart';
 import 'package:iWarden/models/send_form.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -58,26 +57,26 @@ class _SendFormScreenState extends State<SendFormScreen> {
               color: Colors.white,
               child: Column(
                 children: [
-                  DropDownButtonWidget(
-                    hintText: 'Type *',
-                    item: listType
-                        .map(
-                          (itemValue) => DropdownMenuItem(
-                            value: itemValue.id.toString(),
-                            child: Text(
-                              itemValue.title,
-                              style: CustomTextStyle.h5,
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onchanged: (value) {
-                      setState(() {
-                        selectedTypeValue = value as String;
-                      });
-                    },
-                    value: selectedTypeValue,
-                  ),
+                  // DropDownButtonWidget(
+                  //   hintText: 'Type *',
+                  //   item: listType
+                  //       .map(
+                  //         (itemValue) => DropdownMenuItem(
+                  //           value: itemValue.id.toString(),
+                  //           child: Text(
+                  //             itemValue.title,
+                  //             style: CustomTextStyle.h5,
+                  //           ),
+                  //         ),
+                  //       )
+                  //       .toList(),
+                  //   onchanged: (value) {
+                  //     setState(() {
+                  //       selectedTypeValue = value as String;
+                  //     });
+                  //   },
+                  //   value: selectedTypeValue,
+                  // ),
                   const SizedBox(
                     height: 24,
                   ),
@@ -93,27 +92,27 @@ class _SendFormScreenState extends State<SendFormScreen> {
                   const SizedBox(
                     height: 24,
                   ),
-                  if (int.parse(selectedTypeValue) != 1)
-                    DropDownButtonWidget(
-                      hintText: 'Level of damage *',
-                      item: listLevel
-                          .map(
-                            (itemValue) => DropdownMenuItem(
-                              value: itemValue.id.toString(),
-                              child: Text(
-                                itemValue.title,
-                                style: CustomTextStyle.h5,
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onchanged: (value) {
-                        setState(() {
-                          selectedLevelValue = value as String;
-                        });
-                      },
-                      value: selectedLevelValue,
-                    ),
+                  // if (int.parse(selectedTypeValue) != 1)
+                  //   DropDownButtonWidget(
+                  //     hintText: 'Level of damage *',
+                  //     item: listLevel
+                  //         .map(
+                  //           (itemValue) => DropdownMenuItem(
+                  //             value: itemValue.id.toString(),
+                  //             child: Text(
+                  //               itemValue.title,
+                  //               style: CustomTextStyle.h5,
+                  //             ),
+                  //           ),
+                  //         )
+                  //         .toList(),
+                  //     onchanged: (value) {
+                  //       setState(() {
+                  //         selectedLevelValue = value as String;
+                  //       });
+                  //     },
+                  //     value: selectedLevelValue,
+                  //   ),
                   if (int.parse(selectedTypeValue) != 1)
                     const SizedBox(
                       height: 24,
