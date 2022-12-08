@@ -35,14 +35,15 @@ class Auth with ChangeNotifier {
   Future<void> loginWithMicrosoft(
       BuildContext context, VoidCallback onLoading) async {
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
-    await oauth.login().then((value) {
-      onLoading();
-    });
+    await oauth.login();
     final accessToken = await oauth.getIdToken();
-    SharedPreferencesHelper.setStringValue(
-        PreferencesKeys.accessToken, 'Bearer $accessToken');
-    // ignore: use_build_context_synchronously
-    await loginWithJwt(accessToken ?? '', context, onLoading);
+    if (accessToken != null) {
+      onLoading();
+      SharedPreferencesHelper.setStringValue(
+          PreferencesKeys.accessToken, 'Bearer $accessToken');
+      // ignore: use_build_context_synchronously
+      await loginWithJwt(accessToken, context, onLoading);
+    }
   }
 
   Future<void> loginWithJwt(

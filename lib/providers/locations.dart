@@ -6,7 +6,6 @@ import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
 
 class Locations with ChangeNotifier {
-  static final locationController = LocationController();
   List<LocationWithZones> locationList = [];
   static LocationWithZones? locationSelected;
   static Zone? zoneSelected;
@@ -43,19 +42,6 @@ class Locations with ChangeNotifier {
         await locationController.getAll(listLocationOfTheDayByWardenIdProps);
     return locationList;
   }
-
-  // Future<List<LocationWithZones>> onSuggestLocation(String value) async {
-  //   final List<LocationWithZones> locationList =
-  //       await locationController.getAll();
-  //   final locations = locationList
-  //       .where(
-  //         (location) => location.Name.toLowerCase().contains(
-  //           value.toLowerCase(),
-  //         ),
-  //       )
-  //       .toList();
-  //   return locations;
-  // }
 
   void onSelectedLocation(LocationWithZones? location) {
     locationSelected = location;

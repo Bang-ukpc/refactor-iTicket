@@ -26,3 +26,5 @@ class LocationController {
     }
   }
 }
+
+final locationController = LocationController();

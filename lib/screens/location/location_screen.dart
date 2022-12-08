@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ class LocationScreen extends StatefulWidget {
 
 class _LocationScreenState extends State<LocationScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _locationController = TextEditingController();
   List<LocationWithZones> locationList = [];
   final Completer<GoogleMapController> _mapController = Completer();
   Directions? _info;
@@ -93,6 +95,8 @@ class _LocationScreenState extends State<LocationScreen> {
           origin: sourceLocation, destination: destination);
       setState(() => _info = directions);
     }
+
+    log('ao ma canada');
 
     return WillPopScope(
       onWillPop: () async => false,
@@ -189,22 +193,22 @@ class _LocationScreenState extends State<LocationScreen> {
                                           ),
                                           itemBuilder:
                                               (context, item, isSelected) {
-                                            return isSelected == false
-                                                ? DropDownItem(
-                                                    title: item.Name,
-                                                    subTitle:
-                                                        '${item.Distance}km',
-                                                    isSelected: false,
-                                                  )
-                                                : DropDownItem(
-                                                    title: item.Name,
-                                                    subTitle:
-                                                        '${item.Distance}km',
-                                                    isSelected: true,
-                                                  );
+                                            return DropDownItem(
+                                              title: item.Name,
+                                              subTitle: '${item.Distance}km',
+                                              isSelected:
+                                                  _locationController.text ==
+                                                          item.Name
+                                                      ? false
+                                                      : true,
+                                            );
                                           },
                                         ),
                                         onChanged: (value) {
+                                          setState(() {
+                                            _locationController.text ==
+                                                value!.Name;
+                                          });
                                           LocationWithZones locationSelected =
                                               locationList.firstWhere(
                                             (item) => item.Id == value!.Id,
