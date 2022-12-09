@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/locate_car_screen.dart';
 import 'package:iWarden/common/my_dialog.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/first_seen.dart';
@@ -19,11 +19,6 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/detail_issue.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
-
-final azureContainerImageUrl = dotenv.get(
-  'AZURE_CONTAINER_IMAGE_URL',
-  fallback: 'https://iwardendev.blob.core.windows.net/wardentest',
-);
 
 class DetailScreen extends StatefulWidget {
   final TypeFirstSeen type;
@@ -48,8 +43,8 @@ class _DetailScreenState extends State<DetailScreen> {
     final vehicleInfoController = VehicleInfoController();
 
     for (int i = 0; i < args.EvidencePhotos!.length; i++) {
-      imgList
-          .add('$azureContainerImageUrl/${args.EvidencePhotos![i].BlobName}');
+      imgList.add(
+          '${ConfigEnvironmentVariable.azureContainerImageUrl}/${args.EvidencePhotos![i].BlobName}');
     }
 
     void onCarLeft() {

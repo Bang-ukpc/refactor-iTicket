@@ -6,7 +6,6 @@ import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
 
 class Locations with ChangeNotifier {
-  List<LocationWithZones> locationList = [];
   static LocationWithZones? locationSelected;
   static Zone? zoneSelected;
 
@@ -38,7 +37,7 @@ class Locations with ChangeNotifier {
     required ListLocationOfTheDayByWardenIdProps
         listLocationOfTheDayByWardenIdProps,
   }) async {
-    locationList =
+    List<LocationWithZones> locationList =
         await locationController.getAll(listLocationOfTheDayByWardenIdProps);
     return locationList;
   }

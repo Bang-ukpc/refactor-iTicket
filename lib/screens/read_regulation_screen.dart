@@ -131,52 +131,57 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
       ),
       body: SafeArea(
           child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(
-                      "Please read below and confirm that you understand all regulations of this location.",
-                      style: CustomTextStyle.h5
-                          .copyWith(color: ColorTheme.primary),
-                    ),
-                    const SizedBox(
-                      height: 24,
-                    ),
-                    Text(
-                      locations.location?.Notes?.isEmpty ?? true
-                          ? "This location does not currently have any regulations!"
-                          : locations.location?.Notes as String,
-                      style: CustomTextStyle.h5,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              if (locations.location?.Notes?.isEmpty == false ||
-                  locations.location?.Notes != null)
+        child: Container(
+          margin: const EdgeInsets.only(
+            bottom: 60,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
                 Container(
                   color: Colors.white,
-                  padding: const EdgeInsets.all(8),
-                  child: CustomCheckBox(
-                    value: checkbox,
-                    onChanged: (val) {
-                      setState(() {
-                        checkbox = val;
-                      });
-                    },
-                    title:
-                        "I confirm that I already read and \n understood every regulations.",
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Text(
+                        "Please read below and confirm that you understand all regulations of this location.",
+                        style: CustomTextStyle.h5
+                            .copyWith(color: ColorTheme.primary),
+                      ),
+                      const SizedBox(
+                        height: 24,
+                      ),
+                      Text(
+                        locations.location?.Notes?.isEmpty ?? true
+                            ? "This location does not currently have any regulations!"
+                            : locations.location?.Notes as String,
+                        style: CustomTextStyle.h5,
+                      ),
+                    ],
                   ),
-                )
-            ],
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                if (locations.location?.Notes?.isEmpty == false ||
+                    locations.location?.Notes != null)
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(8),
+                    child: CustomCheckBox(
+                      value: checkbox,
+                      onChanged: (val) {
+                        setState(() {
+                          checkbox = val;
+                        });
+                      },
+                      title:
+                          "I confirm that I already read and \n understood every regulations.",
+                    ),
+                  )
+              ],
+            ),
           ),
         ),
       )),

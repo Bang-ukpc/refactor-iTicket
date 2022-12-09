@@ -7,7 +7,6 @@ import 'package:iWarden/models/directions.dart';
 
 final googleAPIKey = dotenv.get(
   'GOOGLE_API_KEY',
-  fallback: 'AIzaSyDWb27PuihbFAdxkKn2RMu7y_GKpQypeCA',
 );
 
 class DirectionsRepository {

@@ -2,16 +2,14 @@ import 'dart:io';
 
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/logging.dart';
 
-final serviceURL = dotenv.get(
-  'SERVICE_URL',
-);
-
 class DioHelper {
-  static Dio get defaultApiClient =>
-      ApiClientBuilder().ofUrl(serviceURL).addInterceptor(Logging()).create();
+  static Dio get defaultApiClient => ApiClientBuilder()
+      .ofUrl(ConfigEnvironmentVariable.serviceURL)
+      .addInterceptor(Logging())
+      .create();
 }
 
 class ApiClientBuilder {

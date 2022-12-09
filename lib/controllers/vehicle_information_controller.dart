@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
@@ -25,7 +26,8 @@ class VehicleInfoController {
           await dio.post('/vehicleInformation/filter', data: bodyRequest);
       Pagination vehicleInfoPagination = Pagination.fromJson(response.data);
       return vehicleInfoPagination;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }
@@ -39,7 +41,8 @@ class VehicleInfoController {
       );
       final vehicleFromJson = VehicleInformation.fromJson(response.data);
       return vehicleFromJson;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }
@@ -51,7 +54,8 @@ class VehicleInfoController {
       );
       final vehicleFromJson = VehicleInformation.fromJson(response.data);
       return vehicleFromJson;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }

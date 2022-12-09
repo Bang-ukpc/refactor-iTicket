@@ -1,11 +1,6 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dio/dio.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/models/location.dart';
-
-final serviceURL = dotenv.get(
-  'SERVICE_URL',
-  fallback: 'http://192.168.1.200:7003',
-);
 
 class LocationController {
   static final dio = DioHelper.defaultApiClient;
@@ -21,7 +16,8 @@ class LocationController {
       List<LocationWithZones> locations =
           temp.map((model) => LocationWithZones.fromJson(model)).toList();
       return locations;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }

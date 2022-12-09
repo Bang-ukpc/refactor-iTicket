@@ -10,7 +10,7 @@ class WardensInfo with ChangeNotifier {
     return _wardens;
   }
 
-  Future<void> getWardersInfoLogging() async {
+  Future<void> getWardensInfoLogging() async {
     await userController.getMe().then((value) {
       _wardens = value;
       notifyListeners();

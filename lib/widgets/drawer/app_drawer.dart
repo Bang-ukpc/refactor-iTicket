@@ -88,18 +88,19 @@ class _MyDrawerState extends State<MyDrawer> {
       try {
         await userController
             .createWardenEvent(wardenEventEndShift)
-            .then((value) {
-          auth.logout();
-          Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'End of shift',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
+            .then((value) async {
+          await auth.logout().then((value) {
+            Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
+            CherryToast.success(
+              displayCloseButton: false,
+              title: Text(
+                'End of shift',
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+          });
         });
       } catch (error) {
         CherryToast.error(

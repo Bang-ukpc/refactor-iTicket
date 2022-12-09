@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/models/wardens.dart';
 
@@ -9,7 +10,8 @@ class UserController {
       final wardenFromJson = Wardens.fromJson(response.data);
       print(response.data);
       return wardenFromJson;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }
@@ -21,7 +23,8 @@ class UserController {
       final wardenEventFromJson = WardenEvent.fromJson(response.data);
       print(response.data);
       return wardenEventFromJson;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }

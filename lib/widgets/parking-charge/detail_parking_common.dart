@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:iWarden/common/add_image.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_detail.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/parking-charge/detail_car.dart';
-
-final azureContainerImageUrl = dotenv.get(
-  'AZURE_CONTAINER_IMAGE_URL',
-  fallback: 'https://iwardendev.blob.core.windows.net/wardentest',
-);
 
 class DetailParkingCommon extends StatefulWidget {
   final Contravention? contravention;
@@ -34,7 +27,8 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
     List<ContraventionPhotos> contraventionImage =
         widget.contravention!.contraventionPhotos!.toList();
     for (int i = 0; i < contraventionImage.length; i++) {
-      imgList.add('$azureContainerImageUrl/${contraventionImage[i].blobName}');
+      imgList.add(
+          '${ConfigEnvironmentVariable.azureContainerImageUrl}/${contraventionImage[i].blobName}');
     }
 
     return SingleChildScrollView(

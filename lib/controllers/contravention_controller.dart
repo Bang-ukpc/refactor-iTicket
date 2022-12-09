@@ -17,7 +17,8 @@ class ContraventionController {
       Contravention contraventionResult = Contravention.fromJson(response.data);
       print('Api create PCN: ${response.data}');
       return contraventionResult;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }
@@ -29,14 +30,14 @@ class ContraventionController {
       );
       Contravention contraventionResult = Contravention.fromJson(response.data);
       return contraventionResult;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }
 
   Future<Pagination> getContraventionServiceList(
       {required int zoneId, int? page, int? pageSize}) async {
-    print('zoneId: $zoneId');
     try {
       final response = await dio.post(
         '/contravention/filter',
@@ -52,7 +53,8 @@ class ContraventionController {
       );
       Pagination contraventionPagination = Pagination.fromJson(response.data);
       return contraventionPagination;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }
@@ -69,7 +71,8 @@ class ContraventionController {
       Pagination contraventionReasonPagination =
           Pagination.fromJson(response.data);
       return contraventionReasonPagination;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }
@@ -87,7 +90,8 @@ class ContraventionController {
       } else {
         return null;
       }
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }

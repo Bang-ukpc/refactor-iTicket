@@ -25,10 +25,10 @@ class _AuthLayoutState extends State<AuthLayout> {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
       final authProvider = Provider.of<Auth>(context, listen: false);
       try {
-        await wardensInfo.getWardersInfoLogging();
+        await wardensInfo.getWardensInfoLogging();
       } catch (error) {
         await authProvider.logout().then((value) {
-          Navigator.of(context).pushNamed(LoginScreen.routeName);
+          Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
         });
       }
     });

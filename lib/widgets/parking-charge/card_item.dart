@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-
-final azureContainerImageUrl = dotenv.get(
-  'AZURE_CONTAINER_IMAGE_URL',
-  fallback: 'https://iwardendev.blob.core.windows.net/wardentest',
-);
 
 class CardItemParkingCharge extends StatelessWidget {
   final String? image;
@@ -38,7 +33,7 @@ class CardItemParkingCharge extends StatelessWidget {
             width: 72,
             height: 72,
             child: Image.network(
-              "$azureContainerImageUrl/$image",
+              "${ConfigEnvironmentVariable.azureContainerImageUrl}/$image",
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
                   Image.asset('assets/images/noPhoto.jpg'),

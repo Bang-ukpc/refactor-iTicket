@@ -47,8 +47,10 @@ Wardens _$WardensFromJson(Map<String, dynamic> json) => Wardens(
       PhoneNumber: json['PhoneNumber'],
       Postcode: json['Postcode'],
       Picture: json['Picture'],
-      Latitude: json['Latitude'].toDouble(),
-      Longitude: json['Longitude'].toDouble(),
+      // Latitude: json['Latitude'] == null ? 0 : json['Latitude'].toDouble(),
+      // Longitude: json['Longitude'] == null ? 0 : json['Longitude'].toDouble(),
+      Latitude: json['Latitude'],
+      Longitude: json['Longitude'],
     );
 
 class WardenEvent extends BaseModel {
@@ -93,8 +95,10 @@ WardenEvent _$WardenEventFromJson(Map<String, dynamic> json) {
     Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
     type: json['Type'],
     detail: json['Detail'],
-    latitude: json['Latitude'].toDouble(),
-    longitude: json['Longitude'].toDouble(),
+    // latitude: json['Latitude'] == null ? 0 : json['Latitude'].toDouble(),
+    // longitude: json['Longitude'] == null ? 0 : json['Longitude'].toDouble(),
+    latitude: json['Latitude'],
+    longitude: json['Longitude'],
     wardenId: json['WardenId'],
   );
 }
