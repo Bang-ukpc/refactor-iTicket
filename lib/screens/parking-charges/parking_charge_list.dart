@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
+import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/providers/contraventions.dart';
-import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
+import 'package:iWarden/models/pagination.dart';
+import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_detail.dart';
+import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
@@ -23,31 +25,60 @@ class ParkingChargeList extends StatefulWidget {
 
 class _ParkingChargeListState extends State<ParkingChargeList> {
   List<Contravention> contraventionList = [];
+  bool contraventionLoading = true;
 
-  void getContraventionList(Contraventions contraventionProvider) {
-    contraventionProvider.getContraventionList().then((value) {
+  Future<List<Contravention>> getContraventionList(
+      {required int page, required int pageSize, required int zoneId}) async {
+    final Pagination list = await contraventionController
+        .getContraventionServiceList(
+      zoneId: zoneId,
+      page: page,
+      pageSize: pageSize,
+    )
+        .then((value) {
       setState(() {
-        contraventionList = value;
+        contraventionLoading = false;
+      });
+      return value;
+    }).catchError((err) {
+      setState(() {
+        contraventionLoading = false;
       });
     });
+    contraventionList =
+        list.rows.map((item) => Contravention.fromJson(item)).toList();
+    return contraventionList;
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final contraventionProvider =
-          Provider.of<Contraventions>(context, listen: false);
-      getContraventionList(contraventionProvider);
+      final locations = Provider.of<Locations>(context, listen: false);
+      getContraventionList(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locations.zone!.Id as int,
+      );
     });
   }
 
   @override
+  void dispose() {
+    contraventionList.clear();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final contraventions = Provider.of<Contraventions>(context, listen: false);
+    final locations = Provider.of<Locations>(context, listen: false);
 
     Future<void> refresh() async {
-      getContraventionList(contraventions);
+      getContraventionList(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locations.zone!.Id as int,
+      );
     }
 
     return WillPopScope(
@@ -79,56 +110,62 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
         ]),
         body: RefreshIndicator(
           onRefresh: refresh,
-          child: FutureBuilder(
-            future: contraventions.getContraventionList(),
-            builder: ((context, snapshot) {
-              if (snapshot.hasData) {
-                return contraventionList.isNotEmpty
-                    ? SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Container(
-                          margin: const EdgeInsets.only(top: 15, bottom: 100),
-                          child: Column(
-                            children: contraventionList
-                                .map(
-                                  (item) => InkWell(
-                                    onTap: () {
-                                      Navigator.of(context).pushNamed(
-                                        ParkingChargeDetail.routeName,
-                                        arguments: item,
-                                      );
-                                    },
-                                    child: CardItemParkingCharge(
-                                      image:
-                                          item.contraventionPhotos!.isNotEmpty
-                                              ? item.contraventionPhotos![0]
-                                                  .blobName
-                                              : "",
-                                      plate: item.plate as String,
-                                      contraventions: item.reason
-                                              ?.contraventionReasonTranslations ??
-                                          [],
-                                      created: item.created as DateTime,
-                                    ),
+          child: contraventionLoading == false
+              ? contraventionList.isNotEmpty
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 15, bottom: 100),
+                        child: Column(
+                          children: contraventionList
+                              .map(
+                                (item) => InkWell(
+                                  onTap: () {
+                                    Navigator.of(context).pushNamed(
+                                      ParkingChargeDetail.routeName,
+                                      arguments: item,
+                                    );
+                                  },
+                                  child: CardItemParkingCharge(
+                                    image: item.contraventionPhotos!.isNotEmpty
+                                        ? item.contraventionPhotos![0].blobName
+                                        : "",
+                                    plate: item.plate as String,
+                                    contraventions: item.reason
+                                            ?.contraventionReasonTranslations ??
+                                        [],
+                                    created: item.created as DateTime,
                                   ),
-                                )
-                                .toList(),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: Image.asset(
+                              'assets/images/empty-list.png',
+                              color: ColorTheme.grey600,
+                            ),
                           ),
-                        ),
-                      )
-                    : const Center(
-                        child: Text(
-                          'No data!',
-                          style: CustomTextStyle.body1,
-                        ),
-                      );
-              } else if (snapshot.hasError) {
-                return const ServerError();
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            }),
-          ),
+                          Text(
+                            'Your parking charges list is empty',
+                            style: CustomTextStyle.body1.copyWith(
+                              color: ColorTheme.grey600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+              : const Center(
+                  child: CircularProgressIndicator(),
+                ),
         ),
       ),
     );

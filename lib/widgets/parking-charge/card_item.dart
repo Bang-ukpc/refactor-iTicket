@@ -35,8 +35,9 @@ class CardItemParkingCharge extends StatelessWidget {
             child: Image.network(
               "${ConfigEnvironmentVariable.azureContainerImageUrl}/$image",
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  Image.asset('assets/images/noPhoto.jpg'),
+              errorBuilder: (context, error, stackTrace) => Image.asset(
+                'assets/images/noPhoto.jpg',
+              ),
             ),
           ),
         ),

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -36,12 +37,10 @@ class AddGracePeriod extends StatefulWidget {
 class _AddGracePeriodState extends State<AddGracePeriod> {
   late AnylineService _anylineService;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _vrnController = TextEditingController();
-  final TextEditingController _bayNumberController = TextEditingController();
+  final _vrnController = TextEditingController();
+  final _bayNumberController = TextEditingController();
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
-  final vehicleInfoController = VehicleInfoController();
-  final evidencePhotoController = EvidencePhotoController();
 
   @override
   void initState() {
@@ -89,29 +88,14 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
   void dispose() {
     _vrnController.dispose();
     _bayNumberController.dispose();
+    arrayImage.clear();
+    evidencePhotoList.clear();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
-
-    VehicleInformation vehicleInfo = VehicleInformation(
-      ExpiredAt: DateTime.now().add(
-        Duration(
-          seconds: locationProvider.expiringTimeGracePeriod,
-        ),
-      ),
-      Plate: _vrnController.text,
-      ZoneId: locationProvider.zone!.Id as int,
-      LocationId: locationProvider.location!.Id as int,
-      BayNumber: _bayNumberController.text,
-      Type: VehicleInformationType.GRACE_PERIOD.index,
-      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      CarLeft: false,
-      EvidencePhotos: evidencePhotoList,
-    );
 
     void showLoading() {
       showDialog(
@@ -136,6 +120,22 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
     }
 
     Future<bool> saveForm() async {
+      final vehicleInfo = VehicleInformation(
+        ExpiredAt: DateTime.now().add(
+          Duration(
+            seconds: locationProvider.expiringTimeGracePeriod,
+          ),
+        ),
+        Plate: _vrnController.text,
+        ZoneId: locationProvider.zone!.Id as int,
+        LocationId: locationProvider.location!.Id as int,
+        BayNumber: _bayNumberController.text,
+        Type: VehicleInformationType.GRACE_PERIOD.index,
+        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        CarLeft: false,
+        EvidencePhotos: evidencePhotoList,
+      );
       final isValid = _formKey.currentState!.validate();
       bool check = false;
       setState(() {
@@ -196,19 +196,37 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
             evidencePhotoList.clear();
           });
         }
-      } catch (error) {
-        Navigator.of(context).pop();
-        // ignore: use_build_context_synchronously
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            'Error creating. Please try again',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-        return false;
+      } on DioError catch (error) {
+        if (error.response!.statusCode == 430) {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            displayCloseButton: false,
+            title: Text(
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
+                  ? 'Something went wrong'
+                  : error.response!.data['message'],
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return false;
+        } else {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            displayCloseButton: false,
+            title: Text(
+              error.response!.data['message'].toString().length > 60
+                  ? 'Something went wrong'
+                  : error.response!.data['message'],
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return false;
+        }
       }
 
       _formKey.currentState!.save();
@@ -354,10 +372,11 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                       final results =
                           await Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => CameraPicker(
-                                    titleCamera: "Add grace period",
+                                    titleCamera: "Take photo of vehicle",
                                     onDelete: (file) {
                                       return true;
                                     },
+                                    editImage: true,
                                   )));
                       if (results != null) {
                         setState(() {

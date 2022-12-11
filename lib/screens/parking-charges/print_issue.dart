@@ -7,6 +7,7 @@ import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
@@ -134,7 +135,8 @@ class _PrintIssueState extends State<PrintIssue> {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            error.response!.data['message'].toString().length > 30
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
                 ? 'Something went wrong'
                 : error.response!.data['message'],
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),

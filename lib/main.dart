@@ -7,7 +7,6 @@ import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/contraventions.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart' as print_issue;
-import 'package:iWarden/providers/vehicle_info.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting_screen.dart';
 import 'package:iWarden/screens/login_screens.dart';
@@ -29,11 +28,6 @@ void main() async {
         ChangeNotifierProxyProvider<WardensInfo, Auth>(
           update: (_, wardensInfo, auth) => auth!..update(wardensInfo),
           create: (_) => Auth(),
-        ),
-        ChangeNotifierProxyProvider<Locations, VehicleInfo>(
-          update: (_, locations, vehicleInfo) =>
-              vehicleInfo!..update(locations),
-          create: (_) => VehicleInfo(),
         ),
         ChangeNotifierProxyProvider<Locations, Contraventions>(
           update: (_, locations, contraventions) =>

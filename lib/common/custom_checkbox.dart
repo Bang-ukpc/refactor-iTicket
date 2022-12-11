@@ -126,9 +126,11 @@ class _CustomCheckBoxState extends State<CustomCheckBox> {
           const SizedBox(
             width: 11,
           ),
-          Text(
-            widget.title,
-            style: CustomTextStyle.h5,
+          Expanded(
+            child: Text(
+              widget.title,
+              style: CustomTextStyle.h5,
+            ),
           )
         ],
       ),

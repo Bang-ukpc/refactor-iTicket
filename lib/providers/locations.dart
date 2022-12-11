@@ -1,7 +1,4 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
-import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
 
@@ -31,15 +28,6 @@ class Locations with ChangeNotifier {
         ((zoneSelected?.Services?[0].ServiceConfig.GracePeriod ?? 0)) * 60;
 
     return secondsOfLocations;
-  }
-
-  Future<List<LocationWithZones>> getLocationList({
-    required ListLocationOfTheDayByWardenIdProps
-        listLocationOfTheDayByWardenIdProps,
-  }) async {
-    List<LocationWithZones> locationList =
-        await locationController.getAll(listLocationOfTheDayByWardenIdProps);
-    return locationList;
   }
 
   void onSelectedLocation(LocationWithZones? location) {

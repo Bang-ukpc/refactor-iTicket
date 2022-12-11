@@ -57,7 +57,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
 
   LocationData? currentLocationOfWarder;
   late StreamSubscription<bool> connectivitySubscriptionGps;
-  final bool connected = true;
   bool? checkGps;
   bool? checkBluetooth;
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
@@ -152,6 +151,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   @override
   void dispose() {
     _connectivitySubscription.cancel();
+    connectivitySubscriptionGps.cancel();
     super.dispose();
   }
 
@@ -161,7 +161,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
 
     print('Warden Id: ${wardersProvider.wardens?.Id}');
 
-    WardenEvent wardenEventStartShift = WardenEvent(
+    final wardenEventStartShift = WardenEvent(
       type: TypeWardenEvent.StartShift.index,
       detail: 'Warden has started shift',
       latitude: currentLocationOfWarder?.latitude ?? 0,
@@ -215,19 +215,19 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (connected == false)
+                    if (wardersProvider.wardens?.Id == null)
                       Text(
                         "Connecting pair devices",
                         style: CustomTextStyle.h3
                             .copyWith(color: ColorTheme.primary),
                       ),
-                    if (connected == true)
+                    if (wardersProvider.wardens?.Id != null)
                       Text(
                         "Connect successfully",
                         style: CustomTextStyle.h3
                             .copyWith(color: ColorTheme.primary),
                       ),
-                    if (connected == false)
+                    if (wardersProvider.wardens?.Id == null)
                       Container(
                         margin: const EdgeInsets.only(top: 10, left: 2),
                         child: SpinKitThreeBounce(
@@ -245,21 +245,30 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Column(
                   children: [
-                    _buildConnect("1. Connect Bluetooth",
-                        checkState(checkBluetooth == true)),
-                    _buildConnect(
-                      "2. Connect Network",
-                      checkState(
-                        _connectionStatus == ConnectivityResult.mobile ||
-                            _connectionStatus == ConnectivityResult.wifi,
-                      ),
-                    ),
-                    _buildConnect("3. GPS has been turned on",
-                        checkState(checkGps == true)),
+                    wardersProvider.wardens?.Id != null
+                        ? _buildConnect("1. Connect Bluetooth",
+                            checkState(checkBluetooth == true))
+                        : _buildConnect(
+                            '1. Connect Bluetooth', StateDevice.pending),
+                    wardersProvider.wardens?.Id != null
+                        ? _buildConnect(
+                            "2. Connect Network",
+                            checkState(
+                              _connectionStatus == ConnectivityResult.mobile ||
+                                  _connectionStatus == ConnectivityResult.wifi,
+                            ),
+                          )
+                        : _buildConnect(
+                            '2. Connect Network', StateDevice.pending),
+                    wardersProvider.wardens?.Id != null
+                        ? _buildConnect("3. GPS has been turned on",
+                            checkState(checkGps == true))
+                        : _buildConnect(
+                            '3. GPS has been turned on', StateDevice.pending),
                   ],
                 ),
               ),
-              if (connected == true)
+              if (wardersProvider.wardens?.Id != null)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   width: double.infinity,

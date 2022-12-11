@@ -6,6 +6,7 @@ import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
@@ -63,15 +64,14 @@ class _AbortScreenState extends State<AbortScreen> {
     final heightScreen = MediaQuery.of(context).size.height;
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
 
-    AbortPCN abortPcnBody = AbortPCN(
-      contraventionId: args.id as int,
-      cancellationReasonId: _cancellationReasonController.text != ''
-          ? int.tryParse(_cancellationReasonController.text) as int
-          : 0,
-      comment: _commentController.text,
-    );
-
     Future<void> abortPCN() async {
+      final abortPcnBody = AbortPCN(
+        contraventionId: args.id as int,
+        cancellationReasonId: _cancellationReasonController.text != ''
+            ? int.tryParse(_cancellationReasonController.text) as int
+            : 0,
+        comment: _commentController.text,
+      );
       final isValid = _formKey.currentState!.validate();
 
       if (!isValid) {
@@ -86,7 +86,8 @@ class _AbortScreenState extends State<AbortScreen> {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            error.response!.data['message'].toString().length > 30
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
                 ? 'Something went wrong'
                 : error.response!.data['message'],
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),

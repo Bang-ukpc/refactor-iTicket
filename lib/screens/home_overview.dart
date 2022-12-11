@@ -3,13 +3,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/contraventions.dart';
 import 'package:iWarden/providers/locations.dart';
-import 'package:iWarden/providers/vehicle_info.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
@@ -26,6 +27,7 @@ import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:iWarden/widgets/home/card_home.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletons/skeletons.dart';
 
 class HomeOverview extends StatefulWidget {
   static const routeName = '/home';
@@ -42,84 +44,146 @@ class _HomeOverviewState extends State<HomeOverview> {
   List<VehicleInformation> gracePeriodExpired = [];
   List<Contravention> contraventionList = [];
   final calculateTime = CalculateTime();
+  bool firstSeenLoading = true;
+  bool gracePeriodLoading = true;
+  bool contraventionLoading = true;
 
-  Future<void> getFirstSeenList(VehicleInfo firstSeenProvider) async {
-    firstSeenProvider.getFirstSeenList().then((value) {
+  void getFirstSeenList(
+      {required int page, required int pageSize, required int zoneId}) async {
+    final Pagination list = await vehicleInfoController
+        .getVehicleInfoList(
+      vehicleInfoType: VehicleInformationType.FIRST_SEEN.index,
+      zoneId: zoneId,
+      page: page,
+      pageSize: pageSize,
+    )
+        .then((value) {
       setState(() {
-        firstSeenActive = value.where((i) {
-          return calculateTime.daysBetween(
-                i.Created!.add(
-                  Duration(
-                    minutes: calculateTime.daysBetween(
-                      i.Created as DateTime,
-                      DateTime.now(),
-                    ),
-                  ),
-                ),
-                i.ExpiredAt,
-              ) >
-              0;
-        }).toList();
-
-        firstSeenExpired = value.where((i) {
-          return calculateTime.daysBetween(
-                i.Created!.add(
-                  Duration(
-                    minutes: calculateTime.daysBetween(
-                      i.Created as DateTime,
-                      DateTime.now(),
-                    ),
-                  ),
-                ),
-                i.ExpiredAt,
-              ) <=
-              0;
-        }).toList();
+        firstSeenLoading = false;
       });
+      return value;
+    }).catchError((err) {
+      setState(() {
+        firstSeenLoading = false;
+      });
+    });
+    final firstSeenList =
+        list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
+    getFirstSeenActiveAndExpired(firstSeenList);
+  }
+
+  void getGracePeriodList(
+      {required int page, required int pageSize, required int zoneId}) async {
+    final Pagination list = await vehicleInfoController
+        .getVehicleInfoList(
+      vehicleInfoType: VehicleInformationType.GRACE_PERIOD.index,
+      zoneId: zoneId,
+      page: page,
+      pageSize: pageSize,
+    )
+        .then((value) {
+      setState(() {
+        gracePeriodLoading = false;
+      });
+      return value;
+    }).catchError((err) {
+      setState(() {
+        gracePeriodLoading = false;
+      });
+    });
+    List<VehicleInformation> gracePeriodList =
+        list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
+    getGracePeriodActiveAndExpired(gracePeriodList);
+  }
+
+  Future<List<Contravention>> getContraventionList(
+      {required int page, required int pageSize, required int zoneId}) async {
+    final Pagination list = await contraventionController
+        .getContraventionServiceList(
+      zoneId: zoneId,
+      page: page,
+      pageSize: pageSize,
+    )
+        .then((value) {
+      setState(() {
+        contraventionLoading = false;
+      });
+      return value;
+    }).catchError((err) {
+      setState(() {
+        contraventionLoading = false;
+      });
+    });
+    contraventionList =
+        list.rows.map((item) => Contravention.fromJson(item)).toList();
+    return contraventionList;
+  }
+
+  void getFirstSeenActiveAndExpired(List<VehicleInformation> vehicleList) {
+    setState(() {
+      firstSeenActive = vehicleList.where((i) {
+        return calculateTime.daysBetween(
+              i.Created!.add(
+                Duration(
+                  minutes: calculateTime.daysBetween(
+                    i.Created as DateTime,
+                    DateTime.now(),
+                  ),
+                ),
+              ),
+              i.ExpiredAt,
+            ) >
+            0;
+      }).toList();
+
+      firstSeenExpired = vehicleList.where((i) {
+        return calculateTime.daysBetween(
+              i.Created!.add(
+                Duration(
+                  minutes: calculateTime.daysBetween(
+                    i.Created as DateTime,
+                    DateTime.now(),
+                  ),
+                ),
+              ),
+              i.ExpiredAt,
+            ) <=
+            0;
+      }).toList();
     });
   }
 
-  Future<void> getGracePeriodList(VehicleInfo firstSeenProvider) async {
-    firstSeenProvider.getGracePeriodList().then((value) {
-      setState(() {
-        gracePeriodActive = value.where((i) {
-          return calculateTime.daysBetween(
-                i.Created!.add(
-                  Duration(
-                    minutes: calculateTime.daysBetween(
-                      i.Created as DateTime,
-                      DateTime.now(),
-                    ),
+  void getGracePeriodActiveAndExpired(List<VehicleInformation> vehicleList) {
+    setState(() {
+      gracePeriodActive = vehicleList.where((i) {
+        return calculateTime.daysBetween(
+              i.Created!.add(
+                Duration(
+                  minutes: calculateTime.daysBetween(
+                    i.Created as DateTime,
+                    DateTime.now(),
                   ),
                 ),
-                i.ExpiredAt,
-              ) >
-              0;
-        }).toList();
+              ),
+              i.ExpiredAt,
+            ) >
+            0;
+      }).toList();
 
-        gracePeriodExpired = value.where((i) {
-          return calculateTime.daysBetween(
-                i.Created!.add(
-                  Duration(
-                    minutes: calculateTime.daysBetween(
-                      i.Created as DateTime,
-                      DateTime.now(),
-                    ),
+      gracePeriodExpired = vehicleList.where((i) {
+        return calculateTime.daysBetween(
+              i.Created!.add(
+                Duration(
+                  minutes: calculateTime.daysBetween(
+                    i.Created as DateTime,
+                    DateTime.now(),
                   ),
                 ),
-                i.ExpiredAt,
-              ) <=
-              0;
-        }).toList();
-      });
-    });
-  }
-
-  void getContraventionList(Contraventions contraventionProvider) {
-    contraventionProvider.getContraventionList().then((value) {
-      setState(() {
-        contraventionList = value;
-      });
+              ),
+              i.ExpiredAt,
+            ) <=
+            0;
+      }).toList();
     });
   }
 
@@ -127,14 +191,33 @@ class _HomeOverviewState extends State<HomeOverview> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final firstSeenProvider =
-          Provider.of<VehicleInfo>(context, listen: false);
-      final contraventionProvider =
-          Provider.of<Contraventions>(context, listen: false);
-      getFirstSeenList(firstSeenProvider);
-      getGracePeriodList(firstSeenProvider);
-      getContraventionList(contraventionProvider);
+      final locations = Provider.of<Locations>(context, listen: false);
+      getFirstSeenList(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locations.zone!.Id as int,
+      );
+      getGracePeriodList(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locations.zone!.Id as int,
+      );
+      getContraventionList(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locations.zone!.Id as int,
+      );
     });
+  }
+
+  @override
+  void dispose() {
+    firstSeenActive.clear();
+    firstSeenExpired.clear();
+    gracePeriodActive.clear();
+    gracePeriodExpired.clear();
+    contraventionList.clear();
+    super.dispose();
   }
 
   @override
@@ -143,7 +226,7 @@ class _HomeOverviewState extends State<HomeOverview> {
     final locations = Provider.of<Locations>(context, listen: false);
     final wardensProvider = Provider.of<WardensInfo>(context);
 
-    WardenEvent wardenEvent = WardenEvent(
+    final wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckOut.index,
       detail: 'Warden checked out',
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
@@ -151,7 +234,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
     );
 
-    WardenEvent wardenEventStartBreak = WardenEvent(
+    final wardenEventStartBreak = WardenEvent(
       type: TypeWardenEvent.StartBreak.index,
       detail: 'Warden has begun to rest',
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
@@ -253,54 +336,78 @@ class _HomeOverviewState extends State<HomeOverview> {
                 assetImage: wardensProvider.wardens?.Picture ??
                     "assets/images/userAvatar.png",
                 name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
-                location: locations.location?.Name ?? 'Empty name!!',
-                zone: locations.zone?.Name ?? 'Empty name!!',
+                location: locations.location?.Name ?? 'Empty name',
+                zone: locations.zone?.Name ?? 'Empty name',
               ),
               const SizedBox(
                 height: 10,
               ),
-              CardHome(
-                width: width,
-                assetIcon: "assets/svg/IconFirstSeen.svg",
-                backgroundIcon: ColorTheme.lighterPrimary,
-                title: "First seen",
-                desc:
-                    "First seen list description \nFirst seen list description description",
-                infoRight: "Active: ${firstSeenActive.length}",
-                infoLeft: "Expired: ${firstSeenExpired.length}",
-                route: AddFirstSeenScreen.routeName,
-                routeView: ActiveFirstSeenScreen.routeName,
-              ),
+              firstSeenLoading == false
+                  ? CardHome(
+                      width: width,
+                      assetIcon: "assets/svg/IconFirstSeen.svg",
+                      backgroundIcon: ColorTheme.lighterPrimary,
+                      title: "First seen",
+                      desc:
+                          "First seen list description \nFirst seen list description description",
+                      infoRight: "Active: ${firstSeenActive.length}",
+                      infoLeft: "Expired: ${firstSeenExpired.length}",
+                      route: AddFirstSeenScreen.routeName,
+                      routeView: ActiveFirstSeenScreen.routeName,
+                    )
+                  : SkeletonAvatar(
+                      style: SkeletonAvatarStyle(
+                        width: width,
+                        height: 130,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                    ),
               const SizedBox(
                 height: 10,
               ),
-              CardHome(
-                width: width,
-                assetIcon: "assets/svg/IconGrace.svg",
-                backgroundIcon: ColorTheme.lightDanger,
-                title: "Consideration Period",
-                desc:
-                    "Grace period list description Grace period list description...",
-                infoRight: "Active: ${gracePeriodActive.length}",
-                infoLeft: "Expired: ${gracePeriodExpired.length}",
-                route: AddGracePeriod.routeName,
-                routeView: GracePeriodList.routeName,
-              ),
+              gracePeriodLoading == false
+                  ? CardHome(
+                      width: width,
+                      assetIcon: "assets/svg/IconGrace.svg",
+                      backgroundIcon: ColorTheme.lightDanger,
+                      title: "Consideration Period",
+                      desc:
+                          "Grace period list description Grace period list description...",
+                      infoRight: "Active: ${gracePeriodActive.length}",
+                      infoLeft: "Expired: ${gracePeriodExpired.length}",
+                      route: AddGracePeriod.routeName,
+                      routeView: GracePeriodList.routeName,
+                    )
+                  : SkeletonAvatar(
+                      style: SkeletonAvatarStyle(
+                        width: width,
+                        height: 130,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                    ),
               const SizedBox(
                 height: 10,
               ),
-              CardHome(
-                width: width,
-                assetIcon: "assets/svg/IconParkingChargesHome.svg",
-                backgroundIcon: ColorTheme.lighterSecondary,
-                title: "Parking Charges",
-                desc:
-                    "Parking charges list description Parking charges list description",
-                infoRight: "Issued: ${contraventionList.length}",
-                infoLeft: null,
-                route: IssuePCNFirstSeenScreen.routeName,
-                routeView: ParkingChargeList.routeName,
-              ),
+              contraventionLoading == false
+                  ? CardHome(
+                      width: width,
+                      assetIcon: "assets/svg/IconParkingChargesHome.svg",
+                      backgroundIcon: ColorTheme.lighterSecondary,
+                      title: "Parking Charges",
+                      desc:
+                          "Parking charges list description Parking charges list description",
+                      infoRight: "Issued: ${contraventionList.length}",
+                      infoLeft: null,
+                      route: IssuePCNFirstSeenScreen.routeName,
+                      routeView: ParkingChargeList.routeName,
+                    )
+                  : SkeletonAvatar(
+                      style: SkeletonAvatarStyle(
+                        width: width,
+                        height: 130,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                    ),
             ],
           ),
         ),

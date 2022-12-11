@@ -177,7 +177,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                         });
                       },
                       title:
-                          "I confirm that I already read and \n understood every regulations.",
+                          "I confirm that I already read and understood every regulations.",
                     ),
                   )
               ],

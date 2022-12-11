@@ -37,7 +37,7 @@ Map<String, dynamic> _$EvidencePhotoToJson(EvidencePhoto instance) {
 
 class VehicleInformation extends BaseModel {
   final DateTime ExpiredAt;
-  final String Plate;
+  String Plate;
   final int ZoneId;
   final int LocationId;
   final String BayNumber;
@@ -47,7 +47,7 @@ class VehicleInformation extends BaseModel {
   final bool CarLeft;
   final List<EvidencePhoto>? EvidencePhotos;
 
-  const VehicleInformation({
+  VehicleInformation({
     Id,
     Created,
     Deleted,

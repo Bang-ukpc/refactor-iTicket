@@ -60,6 +60,7 @@ dependencies:
   flutter_blue: ^0.8.0
   permission_handler: ^9.2.0
   dropdown_search: ^5.0.5
+  skeletons: ^0.0.3
 
 dev_dependencies:
   flutter_test:
@@ -86,6 +87,7 @@ flutter:
     - assets/images/Logo.png
     - assets/images/LogoUKPC.png
     - assets/images/userAvatar.png
+    - assets/images/empty-list.png
     - assets/images/noPhoto.jpg
     - assets/svg/Vector.svg
     - assets/svg/IconNext.svg

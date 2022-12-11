@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/models/pagination.dart';
@@ -60,3 +61,5 @@ class VehicleInfoController {
     }
   }
 }
+
+final vehicleInfoController = VehicleInfoController();

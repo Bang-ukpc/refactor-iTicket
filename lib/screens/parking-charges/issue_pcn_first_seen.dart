@@ -55,13 +55,12 @@ class IssuePCNFirstSeenScreen extends StatefulWidget {
 class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late AnylineService _anylineService;
-  final TextEditingController _vrnController = TextEditingController();
-  final TextEditingController _vehicleMakeController = TextEditingController();
-  final TextEditingController _vehicleColorController = TextEditingController();
-  final TextEditingController _contraventionReasonController =
-      TextEditingController();
-  final TextEditingController _typeOfPcnController = TextEditingController();
-  final TextEditingController _commentController = TextEditingController();
+  final _vrnController = TextEditingController();
+  final _vehicleMakeController = TextEditingController();
+  final _vehicleColorController = TextEditingController();
+  final _contraventionReasonController = TextEditingController();
+  final _typeOfPcnController = TextEditingController();
+  final _commentController = TextEditingController();
   List<ContraventionReasonTranslations> contraventionReasonList = [];
   int selectedButton = 0;
   List<File> arrayImage = [];
@@ -149,6 +148,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     _typeOfPcnController.dispose();
     _commentController.dispose();
     _contraventionReasonController.dispose();
+    contraventionReasonList.clear();
+    arrayImage.clear();
+    evidencePhotoList.clear();
     super.dispose();
   }
 
@@ -157,42 +159,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final locationProvider = Provider.of<Locations>(context);
     final wardersProvider = Provider.of<WardensInfo>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
-
-    ContraventionCreateWardenCommand physicalPCN =
-        ContraventionCreateWardenCommand(
-      ExternalReference: locationProvider.zone!.ExternalReference,
-      ContraventionReference: '',
-      Plate: _vrnController.text,
-      VehicleMake: _vehicleMakeController.text,
-      VehicleColour: _vehicleColorController.text,
-      ContraventionReasonCode: _contraventionReasonController.text,
-      EventDateTime: DateTime.now(),
-      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-      WardenId: wardersProvider.wardens?.Id ?? 0,
-      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      WardenComments: _commentController.text,
-      BadgeNumber: 'test',
-      LocationAccuracy: 0, // missing
-    );
-
-    ContraventionCreateWardenCommand virtualTicket =
-        ContraventionCreateWardenCommand(
-      ExternalReference: locationProvider.zone!.ExternalReference,
-      ContraventionReference: '',
-      Plate: _vrnController.text,
-      VehicleMake: _vehicleMakeController.text,
-      VehicleColour: _vehicleColorController.text,
-      ContraventionReasonCode: _contraventionReasonController.text,
-      EventDateTime: DateTime.now(),
-      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-      WardenId: wardersProvider.wardens?.Id ?? 0,
-      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      WardenComments: _commentController.text,
-      BadgeNumber: 'test',
-      LocationAccuracy: 0, // missing
-    );
 
     void showLoading() {
       showDialog(
@@ -217,6 +183,23 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
 
     Future<void> createPhysicalPCN() async {
+      final physicalPCN = ContraventionCreateWardenCommand(
+        ExternalReference: locationProvider.zone!.ExternalReference,
+        ContraventionReference: '',
+        Plate: _vrnController.text,
+        VehicleMake: _vehicleMakeController.text,
+        VehicleColour: _vehicleColorController.text,
+        ContraventionReasonCode: _contraventionReasonController.text,
+        EventDateTime: DateTime.now(),
+        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+        WardenId: wardersProvider.wardens?.Id ?? 0,
+        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        WardenComments: _commentController.text,
+        BadgeNumber: 'test',
+        LocationAccuracy: 0, // missing
+      );
+
       final isValid = _formKey.currentState!.validate();
       Contravention? contravention;
       bool check = false;
@@ -271,7 +254,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             toastDuration: const Duration(seconds: 2),
             displayCloseButton: true,
             title: Text(
-              error.response!.data['message'].toString().length > 30
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
                   ? 'Something went wrong'
                   : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
@@ -285,7 +269,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           CherryToast.error(
             displayCloseButton: false,
             title: Text(
-              error.response!.data['message'].toString().length > 30
+              error.response!.data['message'].toString().length > 60
                   ? 'Something went wrong'
                   : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
@@ -301,6 +285,23 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
 
     Future<void> createVirtualTicket() async {
+      final virtualTicket = ContraventionCreateWardenCommand(
+        ExternalReference: locationProvider.zone!.ExternalReference,
+        ContraventionReference: '',
+        Plate: _vrnController.text,
+        VehicleMake: _vehicleMakeController.text,
+        VehicleColour: _vehicleColorController.text,
+        ContraventionReasonCode: _contraventionReasonController.text,
+        EventDateTime: DateTime.now(),
+        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+        WardenId: wardersProvider.wardens?.Id ?? 0,
+        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        WardenComments: _commentController.text,
+        BadgeNumber: 'test',
+        LocationAccuracy: 0, // missing
+      );
+
       final isValid = _formKey.currentState!.validate();
       Contravention? contravention;
       bool check = false;
@@ -357,7 +358,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             toastDuration: const Duration(seconds: 2),
             displayCloseButton: true,
             title: Text(
-              error.response!.data['message'].toString().length > 30
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
                   ? 'Something went wrong'
                   : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
@@ -371,7 +373,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           CherryToast.error(
             displayCloseButton: false,
             title: Text(
-              error.response!.data['message'].toString().length > 30
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
                   ? 'Something went wrong'
                   : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
@@ -733,10 +736,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                       final results =
                           await Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => CameraPicker(
-                                    titleCamera: "Issue parking charge",
+                                    titleCamera: "Take photo of vehicle",
                                     onDelete: (file) {
                                       return true;
                                     },
+                                    editImage: true,
                                   )));
                       if (results != null) {
                         setState(() {

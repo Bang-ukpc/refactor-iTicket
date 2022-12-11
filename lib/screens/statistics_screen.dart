@@ -131,8 +131,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
 
   getDataStatistic(int zoneId, DateTime from, DateTime to) {
     statisticController
-        .getDataStatistic(
-            StatisticWardenPropsFilter(zoneId: 1, timeEnd: to, timeStart: from))
+        .getDataStatistic(StatisticWardenPropsFilter(
+            zoneId: zoneId, timeEnd: to, timeStart: from))
         .then((value) {
       setState(() {
         statisticWardenData = value;

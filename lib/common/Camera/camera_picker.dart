@@ -331,13 +331,15 @@ class CameraPicker extends HookWidget {
                                           width: 14,
                                         ),
                                         Text(
-                                            !editImage
-                                                ? printIssue
-                                                    .findIssueNoImage()
-                                                    .title
-                                                : titleCamera,
-                                            style: CustomTextStyle.h4
-                                                .copyWith(color: Colors.white)),
+                                          !editImage
+                                              ? printIssue
+                                                  .findIssueNoImage()
+                                                  .title
+                                              : titleCamera,
+                                          style: CustomTextStyle.h4.copyWith(
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                     HookBuilder(builder: (context) {
