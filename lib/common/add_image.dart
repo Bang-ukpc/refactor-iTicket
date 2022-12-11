@@ -82,12 +82,12 @@ class _AddImageState extends State<AddImage> {
                 ));
               }).toList(),
               options: CarouselOptions(
-                enlargeCenterPage: false,
                 height: MediaQuery.of(context).size.width < 400 ? 200 : 300,
                 viewportFraction: 1,
                 onPageChanged: (index, reason) {
                   setState(() {});
                 },
+                enableInfiniteScroll: false,
               ),
               carouselController: _controller,
             ),
