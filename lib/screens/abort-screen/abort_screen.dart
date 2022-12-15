@@ -17,12 +17,6 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class Abort {
-  final String id;
-  final String reason;
-  Abort({required this.id, required this.reason});
-}
-
 class AbortScreen extends StatefulWidget {
   static const routeName = '/abort';
   const AbortScreen({super.key});
@@ -37,11 +31,17 @@ class _AbortScreenState extends State<AbortScreen> {
   final TextEditingController _cancellationReasonController =
       TextEditingController();
   final TextEditingController _commentController = TextEditingController();
+  bool isLoading = true;
 
   void getCancellationReasonList() async {
     await abortController.getCancellationReasonList().then((value) {
       setState(() {
+        isLoading = false;
         cancellationReasonList = value;
+      });
+    }).catchError((err) {
+      setState(() {
+        isLoading = false;
       });
     });
   }
@@ -154,85 +154,102 @@ class _AbortScreenState extends State<AbortScreen> {
                       horizontal: 20,
                       vertical: 10,
                     ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Please select the reasons and submit to abort this parking charge.',
-                            style: CustomTextStyle.body1.copyWith(
-                              color: ColorTheme.grey600,
-                            ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Please select the reasons and submit to abort this parking charge.',
+                          style: CustomTextStyle.body1.copyWith(
+                            color: ColorTheme.grey600,
                           ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          SizedBox(
-                            child: DropdownSearch<CancellationReason>(
-                              dropdownDecoratorProps: DropDownDecoratorProps(
-                                dropdownSearchDecoration: dropDownButtonStyle
-                                    .getInputDecorationCustom(
-                                  labelText: const LabelRequire(
-                                    labelText: 'Reason',
-                                  ),
-                                  hintText: 'Select reason',
+                        ),
+                        isLoading == false
+                            ? Form(
+                                key: _formKey,
+                                child: Column(
+                                  children: [
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    SizedBox(
+                                      child: DropdownSearch<CancellationReason>(
+                                        dropdownDecoratorProps:
+                                            DropDownDecoratorProps(
+                                          dropdownSearchDecoration:
+                                              dropDownButtonStyle
+                                                  .getInputDecorationCustom(
+                                            labelText: const LabelRequire(
+                                              labelText: 'Reason',
+                                            ),
+                                            hintText: 'Select reason',
+                                          ),
+                                        ),
+                                        items: cancellationReasonList,
+                                        itemAsString: (item) => item.reason,
+                                        popupProps: PopupProps.menu(
+                                          fit: FlexFit.loose,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 200,
+                                          ),
+                                          itemBuilder:
+                                              (context, item, isSelected) =>
+                                                  DropDownItem(
+                                            title: item.reason,
+                                          ),
+                                        ),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _cancellationReasonController.text =
+                                                value!.Id.toString();
+                                          });
+                                        },
+                                        validator: ((value) {
+                                          if (value == null) {
+                                            return 'Please select reason';
+                                          }
+                                          return null;
+                                        }),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 30,
+                                    ),
+                                    TextFormField(
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                          RegExp(r'[^\s]+\b\s?'),
+                                        ),
+                                      ],
+                                      style: CustomTextStyle.h5,
+                                      controller: _commentController,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Enter comment',
+                                        label: Text(
+                                          "Comment",
+                                        ),
+                                        hintMaxLines: 1,
+                                      ),
+                                      maxLines: 3,
+                                      onSaved: (value) {
+                                        _commentController.text =
+                                            value as String;
+                                      },
+                                    ),
+                                    const SizedBox(
+                                      height: 4,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const Padding(
+                                padding: EdgeInsets.only(
+                                  top: 20,
+                                ),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
                                 ),
                               ),
-                              items: cancellationReasonList,
-                              itemAsString: (item) => item.reason,
-                              popupProps: PopupProps.menu(
-                                fit: FlexFit.loose,
-                                constraints: const BoxConstraints(
-                                  maxHeight: 200,
-                                ),
-                                itemBuilder: (context, item, isSelected) =>
-                                    DropDownItem(
-                                  title: item.reason,
-                                ),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _cancellationReasonController.text =
-                                      value!.Id.toString();
-                                });
-                              },
-                              validator: ((value) {
-                                if (value == null) {
-                                  return 'Please select reason';
-                                }
-                                return null;
-                              }),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 30,
-                          ),
-                          TextFormField(
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[^\s]+\b\s?'),
-                              ),
-                            ],
-                            style: CustomTextStyle.h5,
-                            controller: _commentController,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter comment',
-                              label: Text(
-                                "Comment",
-                              ),
-                              hintMaxLines: 1,
-                            ),
-                            maxLines: 3,
-                            onSaved: (value) {
-                              _commentController.text = value as String;
-                            },
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                        ],
-                      ),
+                      ],
                     ),
                   ),
                 ),

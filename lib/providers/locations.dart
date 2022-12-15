@@ -35,18 +35,6 @@ class Locations with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<Zone>> onSuggestZone(String value) async {
-    final List<Zone> zoneList = locationSelected?.Zones ?? [];
-    final zones = zoneList
-        .where(
-          (zone) => zone.Name.toLowerCase().contains(
-            value.toLowerCase(),
-          ),
-        )
-        .toList();
-    return zones;
-  }
-
   void onSelectedZone(Zone? zone) {
     zoneSelected = zone;
     notifyListeners();

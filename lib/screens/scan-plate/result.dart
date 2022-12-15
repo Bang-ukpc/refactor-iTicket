@@ -1,4 +1,4 @@
-import 'package:iWarden/screens/demo-ocr/scan_modes.dart';
+import 'package:iWarden/screens/scan-plate/scan_modes.dart';
 
 class Result {
   DateTime timestamp;

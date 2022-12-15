@@ -10,6 +10,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/directions_repository_controller.dart';
 import 'package:iWarden/controllers/location_controller.dart';
+import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
@@ -210,7 +211,14 @@ class _LocationScreenState extends State<LocationScreen> {
                                               (context, item, isSelected) {
                                             return DropDownItem(
                                               title: item.Name,
-                                              subTitle: '${item.Distance}km',
+                                              subTitle:
+                                                  'Distance: ${item.Distance}km',
+                                              desc:
+                                                  'From: ${FormatDate().getLocalDate(
+                                                item.From as DateTime,
+                                              )}, To: ${FormatDate().getLocalDate(
+                                                item.To as DateTime,
+                                              )}',
                                               isSelected: false,
                                             );
                                           },
@@ -427,10 +435,12 @@ class _LocationScreenState extends State<LocationScreen> {
 class DropDownItem extends StatelessWidget {
   final String title;
   final String? subTitle;
+  final String? desc;
   final bool? isSelected;
   const DropDownItem({
     required this.title,
     this.subTitle,
+    this.desc,
     this.isSelected = false,
     super.key,
   });
@@ -466,6 +476,13 @@ class DropDownItem extends StatelessWidget {
               Text(
                 subTitle ?? '',
                 style: CustomTextStyle.body2,
+              ),
+            if (desc != null)
+              Text(
+                desc ?? '',
+                style: CustomTextStyle.body2.copyWith(
+                  color: ColorTheme.grey600,
+                ),
               ),
           ],
         ),

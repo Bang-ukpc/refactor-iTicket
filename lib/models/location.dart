@@ -22,29 +22,33 @@ class Location extends BaseModel {
   final String? Postcode;
   final String? Notes;
   final double? Distance;
+  final DateTime? From;
+  final DateTime? To;
 
-  Location({
-    int? Id,
-    DateTime? Created,
-    DateTime? Deleted,
-    this.Address,
-    this.Address1,
-    this.Address2,
-    this.Address3,
-    this.Town,
-    this.Country,
-    this.Postcode,
-    required this.Name,
-    this.LocationType,
-    this.Revenue,
-    this.CountryRegionId,
-    required this.CountrySubRegionId,
-    this.ClusterId,
-    this.Longitude,
-    this.Latitude,
-    this.Notes,
-    this.Distance,
-  }) : super(Id: Id, Created: Created, Deleted: Deleted);
+  Location(
+      {int? Id,
+      DateTime? Created,
+      DateTime? Deleted,
+      this.Address,
+      this.Address1,
+      this.Address2,
+      this.Address3,
+      this.Town,
+      this.Country,
+      this.Postcode,
+      required this.Name,
+      this.LocationType,
+      this.Revenue,
+      this.CountryRegionId,
+      required this.CountrySubRegionId,
+      this.ClusterId,
+      this.Longitude,
+      this.Latitude,
+      this.Notes,
+      this.Distance,
+      this.From,
+      this.To})
+      : super(Id: Id, Created: Created, Deleted: Deleted);
 }
 
 class LocationWithZones extends Location {
@@ -72,6 +76,8 @@ class LocationWithZones extends Location {
     double? Latitude,
     String? Notes,
     double? Distance,
+    DateTime? From,
+    DateTime? To,
     this.Zones,
     this.OperationalPeriods,
   }) : super(
@@ -95,6 +101,8 @@ class LocationWithZones extends Location {
           Longitude: Longitude,
           Notes: Notes,
           Distance: Distance,
+          From: From,
+          To: To,
         );
 
   factory LocationWithZones.fromJson(Map<String, dynamic> json) =>
@@ -127,6 +135,8 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Latitude: json['Latitude'],
     Notes: json['Notes'],
     Distance: json['Distance'],
+    From: json['From'] == null ? null : DateTime.parse(json['From']),
+    To: json['To'] == null ? null : DateTime.parse(json['To']),
     Zones: zonesList,
     OperationalPeriods: json['OperationalPeriods'],
   );

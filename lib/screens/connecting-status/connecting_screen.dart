@@ -1,12 +1,17 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gps_connectivity/gps_connectivity.dart';
 import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -16,9 +21,6 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:gps_connectivity/gps_connectivity.dart';
-import 'package:flutter_blue/flutter_blue.dart';
 
 enum StateDevice { connected, pending, disconnect }
 
@@ -31,6 +33,15 @@ class ConnectingScreen extends StatefulWidget {
 }
 
 class _ConnectingScreenState extends State<ConnectingScreen> {
+  bool isPending = true;
+  LocationData? currentLocationOfWarder;
+  late StreamSubscription<bool> connectivitySubscriptionGps;
+  bool? checkGps;
+  bool? checkBluetooth;
+  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+
   _buildConnect(String title, StateDevice state) {
     return Container(
       margin: const EdgeInsets.only(bottom: 19),
@@ -54,14 +65,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       ),
     );
   }
-
-  LocationData? currentLocationOfWarder;
-  late StreamSubscription<bool> connectivitySubscriptionGps;
-  bool? checkGps;
-  bool? checkBluetooth;
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
-  final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   // Check bluetooth connection
   void checkBluetoothConnectionState() async {
@@ -128,7 +131,20 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
 
   @override
   void initState() {
+    super.initState();
     getCurrentLocationOfWarden();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
+      await wardensInfo.getWardensInfoLogging().then((value) {
+        setState(() {
+          isPending = false;
+        });
+      }).catchError((err) {
+        setState(() {
+          isPending = false;
+        });
+      });
+    });
     connectivitySubscriptionGps = GpsConnectivity()
         .onGpsConnectivityChanged
         .listen(_updateConnectionGPSStatus);
@@ -137,7 +153,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     checkBluetoothConnectionState();
-    super.initState();
   }
 
   StateDevice checkState(bool check) {
@@ -185,11 +200,14 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
             borderRadius: 5,
           ).show(context);
         });
-      } catch (error) {
+      } on DioError catch (error) {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Start shift error, please try again',
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Start shift error, please try again'
+                : error.response!.data['message'],
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -215,19 +233,19 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (wardersProvider.wardens?.Id == null)
+                    if (isPending == true)
                       Text(
                         "Connecting pair devices",
                         style: CustomTextStyle.h3
                             .copyWith(color: ColorTheme.primary),
                       ),
-                    if (wardersProvider.wardens?.Id != null)
+                    if (isPending == false)
                       Text(
                         "Connect successfully",
                         style: CustomTextStyle.h3
                             .copyWith(color: ColorTheme.primary),
                       ),
-                    if (wardersProvider.wardens?.Id == null)
+                    if (isPending == true)
                       Container(
                         margin: const EdgeInsets.only(top: 10, left: 2),
                         child: SpinKitThreeBounce(
@@ -245,12 +263,12 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Column(
                   children: [
-                    wardersProvider.wardens?.Id != null
+                    isPending == false
                         ? _buildConnect("1. Connect Bluetooth",
                             checkState(checkBluetooth == true))
                         : _buildConnect(
                             '1. Connect Bluetooth', StateDevice.pending),
-                    wardersProvider.wardens?.Id != null
+                    isPending == false
                         ? _buildConnect(
                             "2. Connect Network",
                             checkState(
@@ -260,7 +278,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                           )
                         : _buildConnect(
                             '2. Connect Network', StateDevice.pending),
-                    wardersProvider.wardens?.Id != null
+                    isPending == false
                         ? _buildConnect("3. GPS has been turned on",
                             checkState(checkGps == true))
                         : _buildConnect(
@@ -268,14 +286,15 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   ],
                 ),
               ),
-              if (wardersProvider.wardens?.Id != null)
+              if (isPending == false)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      elevation: 0.0,
+                      elevation: 0,
                       shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                     onPressed: onStartShift,
                     child: Text(

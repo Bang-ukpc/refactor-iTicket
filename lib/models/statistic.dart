@@ -12,18 +12,13 @@ class StatisticWardenPropsData {
   final int gracePeriod;
   final int issuedPCN;
 
-  StatisticWardenPropsData(
-      {required this.abortedPCN,
-      required this.firstSeen,
-      required this.gracePeriod,
-      required this.issuedPCN});
+  StatisticWardenPropsData({
+    required this.abortedPCN,
+    required this.firstSeen,
+    required this.gracePeriod,
+    required this.issuedPCN,
+  });
 
-  // StatisticWardenPropsData.fromJson(Map<String, dynamic> json) {
-  //   abortedPCN = json['AbortedPCN'];
-  //   firstSeen = json['FirstSeen'];
-  //   gracePeriod = json['GracePeriod'];
-  //   issuedPCN = json['IssuedPCN'];
-  // }
   factory StatisticWardenPropsData.fromJson(Map<String, dynamic> json) =>
       statisticFromJson(json);
 }

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 
@@ -10,10 +11,11 @@ class AbortController {
         '/contravention/list-cancellation-reason',
       );
       List<dynamic> temp = response.data;
-      List<CancellationReason> locations =
+      List<CancellationReason> cancellationReasons =
           temp.map((model) => CancellationReason.fromJson(model)).toList();
-      return locations;
-    } catch (error) {
+      return cancellationReasons;
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }
@@ -25,7 +27,8 @@ class AbortController {
         data: abortPcn.toJson(),
       );
       return response.data;
-    } catch (error) {
+    } on DioError catch (error) {
+      print(error.response);
       rethrow;
     }
   }

@@ -8,7 +8,6 @@ class UserController {
     try {
       final response = await dio.get('/warden/get-me');
       final wardenFromJson = Wardens.fromJson(response.data);
-      print(response.data);
       return wardenFromJson;
     } on DioError catch (error) {
       print(error.response);

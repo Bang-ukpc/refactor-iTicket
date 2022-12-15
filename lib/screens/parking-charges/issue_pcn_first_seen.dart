@@ -20,13 +20,13 @@ import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
-import 'package:iWarden/providers/contraventions.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
-import 'package:iWarden/screens/demo-ocr/anyline_service.dart';
-import 'package:iWarden/screens/demo-ocr/result.dart';
-import 'package:iWarden/screens/demo-ocr/scan_modes.dart';
+import 'package:iWarden/screens/scan-plate/anyline_service.dart';
+import 'package:iWarden/screens/scan-plate/result.dart';
+import 'package:iWarden/screens/scan-plate/scan_modes.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
@@ -67,12 +67,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   List<EvidencePhoto> evidencePhotoList = [];
   final _debouncer = Debouncer(milliseconds: 500);
 
-  void getContraventionReasonListFrProvider(
-      Contraventions contraventionProvider) async {
-    await contraventionProvider.getContraventionReasonList().then((value) {
-      setState(() {
-        contraventionReasonList = value;
-      });
+  void getContraventionReasonList() async {
+    final Pagination list =
+        await contraventionController.getContraventionReasonServiceList();
+    setState(() {
+      contraventionReasonList = list.rows
+          .map((item) => ContraventionReasonTranslations.fromJson(item))
+          .toList();
     });
   }
 
@@ -92,10 +93,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     super.initState();
     _anylineService = AnylineServiceImpl();
     _typeOfPcnController.text = '0';
+    getContraventionReasonList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final contraventionProvider =
-          Provider.of<Contraventions>(context, listen: false);
-      getContraventionReasonListFrProvider(contraventionProvider);
       final args = ModalRoute.of(context)!.settings.arguments as dynamic;
       _vrnController.text = args != null ? args.Plate : '';
       if (args != null) {

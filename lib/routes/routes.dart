@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/locate_car_screen.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
-import 'package:iWarden/screens/connecting_screen.dart';
+import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/active_detail_first_seen.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
@@ -27,8 +27,6 @@ final Map<String, WidgetBuilder> routes = {
   HomeOverview.routeName: (context) => const HomeOverview(),
   LocationScreen.routeName: (context) => const LocationScreen(),
   LoginScreen.routeName: (context) => const LoginScreen(),
-  // GracePeriodScreen.routeName: (context) => const GracePeriodScreen(),
-  // ParkingChargesScreen.routeName: (context) => const GracePeriodScreen(),
   // first seen
   ActiveFirstSeenScreen.routeName: (context) => const ActiveFirstSeenScreen(),
   DetailActiveFirstSeen.routeName: (context) => const DetailActiveFirstSeen(),

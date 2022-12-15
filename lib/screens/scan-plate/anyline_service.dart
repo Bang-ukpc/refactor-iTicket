@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:anyline_plugin/anyline_plugin.dart';
 import 'package:flutter/services.dart';
-import 'package:iWarden/screens/demo-ocr/result.dart';
-import 'package:iWarden/screens/demo-ocr/scan_modes.dart';
+import 'package:iWarden/screens/scan-plate/result.dart';
+import 'package:iWarden/screens/scan-plate/scan_modes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 

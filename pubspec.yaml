@@ -32,7 +32,7 @@ dependencies:
   flutter_svg: ^1.1.4
   carousel_slider: ^4.1.1
   path_provider: ^2.0.11
-  provider: ^6.0.3
+  provider: ^6.0.4
   intl: ^0.17.0
   timeago: ^3.3.0
   fluttertoast: ^8.0.9
@@ -43,11 +43,9 @@ dependencies:
   collection: ">=1.15.0 <2.0.0"
   flutter_hooks: ^0.18.5+1
   url_launcher: ^6.1.6
-  firebase_core: ^2.1.1
   aad_oauth: ^0.4.0
   flutter_dotenv: ^5.0.2
   dio: ^4.0.6
-  cloud_firestore: ^4.0.5
   infinite_scroll_pagination: ^3.2.0
   google_maps_flutter: ^2.2.1
   flutter_polyline_points: ^1.0.0
@@ -84,19 +82,13 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/Logo.png
     - assets/images/LogoUKPC.png
     - assets/images/userAvatar.png
     - assets/images/empty-list.png
     - assets/images/noPhoto.jpg
-    - assets/svg/Vector.svg
     - assets/svg/IconNext.svg
-    - assets/svg/PositionIcon.svg
-    - assets/svg/IconHome.svg
     - assets/svg/IconCar.svg
-    - assets/svg/IconClock.svg
     - assets/svg/IconForm.svg
-    - assets/svg/IconCall.svg
     - assets/svg/IconFirstSeen.svg
     - assets/svg/IconGrace.svg
     - assets/svg/CheckOut.svg
@@ -104,7 +96,6 @@ flutter:
     - assets/svg/IconView.svg
     - assets/svg/IconCharges.svg
     - assets/svg/IconCharges2.svg
-    - assets/svg/IconRefresh.svg
     - assets/svg/IconLocation.svg
     - assets/svg/IconLocation3.svg
     - assets/svg/IconBack.svg
@@ -112,10 +103,8 @@ flutter:
     - assets/svg/IconCannel.svg
     - assets/svg/IconMicrosoft.svg
     - assets/svg/IconSave.svg
-    - assets/svg/IconSuccess.svg
     - assets/svg/IconScan.svg
     - assets/svg/IconCancel2.svg
-    - assets/svg/IconFinish.svg
     - assets/svg/IconComplete.svg
     - assets/svg/IconDelete.svg
     - assets/svg/OnFlash.svg
@@ -128,7 +117,6 @@ flutter:
     - assets/svg/IconStatistic.svg
     - assets/svg/IconCall2.svg
     - assets/svg/IconCall3.svg
-    - assets/svg/IconCancel.svg
     - assets/svg/IconAbort.svg
     - assets/svg/LogoHome.svg
     - assets/svg/IconParkingChargesHome.svg

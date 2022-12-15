@@ -59,26 +59,26 @@ class CameraPicker extends HookWidget {
   final bool? previewImage;
   final bool front;
   final bool editImage;
-  const CameraPicker(
-      {Key? key,
-      this.initialFiles,
-      this.previewHeight = _defaultPreviewHeight,
-      this.previewWidth = _defaultPreviewWidth,
-      this.noCameraBuilder,
-      this.showSwitchCameraButton = true,
-      this.onDelete,
-      this.resolutionPreset = ResolutionPreset.high,
-      this.iconColor = Colors.white,
-      this.showTorchButton = true,
-      this.showCancelButton = true,
-      this.onError,
-      this.maxPicture,
-      this.minPicture = 1,
-      this.front = false,
-      this.previewImage = false,
-      this.editImage = false,
-      required this.titleCamera})
-      : super(key: key);
+  const CameraPicker({
+    Key? key,
+    this.initialFiles,
+    this.previewHeight = _defaultPreviewHeight,
+    this.previewWidth = _defaultPreviewWidth,
+    this.noCameraBuilder,
+    this.showSwitchCameraButton = true,
+    this.onDelete,
+    this.resolutionPreset = ResolutionPreset.high,
+    this.iconColor = Colors.white,
+    this.showTorchButton = true,
+    this.showCancelButton = true,
+    this.onError,
+    this.maxPicture,
+    this.minPicture = 1,
+    this.front = false,
+    this.previewImage = false,
+    this.editImage = false,
+    required this.titleCamera,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
