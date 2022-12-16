@@ -11,6 +11,7 @@
     "firestore",
     "flutterbluetoothadapter",
     "fluttertoast",
+    "geolocator",
     "Goku",
     "Goteta",
     "iwarden",
@@ -29,6 +30,7 @@
     "typeahead",
     "UKPC",
     "upsert",
-    "Vegeto"
+    "Vegeto",
+    "workmanager"
   ]
 }

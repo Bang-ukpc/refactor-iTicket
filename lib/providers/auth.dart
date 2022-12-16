@@ -10,6 +10,7 @@ import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
 
 class Auth with ChangeNotifier {
   Future<bool> isAuth() async {
@@ -56,6 +57,8 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> logout() async {
+    await Workmanager().cancelAll();
+
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     await oauth.logout();
 

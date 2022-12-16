@@ -4,6 +4,7 @@ import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
 
 class Logging extends Interceptor {
   @override
@@ -32,6 +33,7 @@ class Logging extends Interceptor {
       'ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}',
     );
     if (err.response?.statusCode == 401) {
+      await Workmanager().cancelAll();
       await oauth.logout();
       final prefs = await SharedPreferences.getInstance();
       SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);

@@ -1,5 +1,10 @@
 import 'dart:io';
 
+enum TypePCN {
+  Physical,
+  Virtual,
+}
+
 class ContraventionCreateWardenCommand {
   final String ExternalReference;
   String ContraventionReference;
@@ -15,6 +20,7 @@ class ContraventionCreateWardenCommand {
   final num Latitude;
   final int LocationAccuracy;
   final String WardenComments;
+  final int TypePCN;
 
   ContraventionCreateWardenCommand({
     required this.ExternalReference,
@@ -31,6 +37,7 @@ class ContraventionCreateWardenCommand {
     required this.Latitude,
     required this.LocationAccuracy,
     required this.WardenComments,
+    required this.TypePCN,
   });
 
   factory ContraventionCreateWardenCommand.fromJson(
@@ -44,21 +51,21 @@ class ContraventionCreateWardenCommand {
 ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
     Map<String, dynamic> json) {
   return ContraventionCreateWardenCommand(
-    ExternalReference: json['ExternalReference'],
-    ContraventionReference: json['ContraventionReference'],
-    Plate: json['Plate'],
-    VehicleMake: json['VehicleMake'],
-    VehicleColour: json['VehicleColour'],
-    ContraventionReasonCode: json['ContraventionReasonCode'],
-    EventDateTime: DateTime.parse(json['EventDateTime']),
-    FirstObservedDateTime: DateTime.parse(json['FirstObservedDateTime']),
-    WardenId: json['WardenId'],
-    BadgeNumber: json['BadgeNumber'],
-    Longitude: json['Longitude'],
-    Latitude: json['Latitude'],
-    LocationAccuracy: json['LocationAccuracy'],
-    WardenComments: json['WardenComments'],
-  );
+      ExternalReference: json['ExternalReference'],
+      ContraventionReference: json['ContraventionReference'],
+      Plate: json['Plate'],
+      VehicleMake: json['VehicleMake'],
+      VehicleColour: json['VehicleColour'],
+      ContraventionReasonCode: json['ContraventionReasonCode'],
+      EventDateTime: DateTime.parse(json['EventDateTime']),
+      FirstObservedDateTime: DateTime.parse(json['FirstObservedDateTime']),
+      WardenId: json['WardenId'],
+      BadgeNumber: json['BadgeNumber'],
+      Longitude: json['Longitude'],
+      Latitude: json['Latitude'],
+      LocationAccuracy: json['LocationAccuracy'],
+      WardenComments: json['WardenComments'],
+      TypePCN: json['TypePCN']);
 }
 
 Map<String, dynamic> _$ContraventionCreateWardenCommandToJson(
@@ -78,6 +85,7 @@ Map<String, dynamic> _$ContraventionCreateWardenCommandToJson(
     'Latitude': instance.Latitude,
     'LocationAccuracy': instance.LocationAccuracy,
     'WardenComments': instance.WardenComments,
+    'TypePCN': instance.TypePCN,
   };
 }
 

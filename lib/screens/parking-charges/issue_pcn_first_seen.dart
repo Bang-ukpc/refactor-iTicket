@@ -147,6 +147,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     _typeOfPcnController.dispose();
     _commentController.dispose();
     _contraventionReasonController.dispose();
+    _debouncer.timer!.cancel();
     contraventionReasonList.clear();
     arrayImage.clear();
     evidencePhotoList.clear();
@@ -197,6 +198,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         WardenComments: _commentController.text,
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
+        TypePCN: TypePCN.Physical.index,
       );
 
       final isValid = _formKey.currentState!.validate();
@@ -299,6 +301,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         WardenComments: _commentController.text,
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
+        TypePCN: TypePCN.Virtual.index,
       );
 
       final isValid = _formKey.currentState!.validate();
