@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/controllers/user_controller.dart';
@@ -10,7 +11,6 @@ import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:workmanager/workmanager.dart';
 
 class Auth with ChangeNotifier {
   Future<bool> isAuth() async {
@@ -57,7 +57,11 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await Workmanager().cancelAll();
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      service.invoke("stopService");
+    }
 
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     await oauth.logout();

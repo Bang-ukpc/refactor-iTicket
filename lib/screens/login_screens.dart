@@ -118,6 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(width: 1.0, color: ColorTheme.primary),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                     icon: SvgPicture.asset("assets/svg/IconMicrosoft.svg"),
                     label: const Text(

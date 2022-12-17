@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/circle.dart';
@@ -15,17 +16,15 @@ import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/wardens_info.dart';
+import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:geolocator/geolocator.dart';
 
 enum StateDevice { connected, pending, disconnect }
-
-const sendCurrentLocationTask = "sendCurrentLocationTask";
 
 class ConnectingScreen extends StatefulWidget {
   static const routeName = '/connect';
@@ -140,9 +139,18 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     });
   }
 
+  void onStartBackgroundService() async {
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      await initializeService();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    onStartBackgroundService();
     getCurrentLocationOfWarden();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
@@ -185,8 +193,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     final wardersProvider = Provider.of<WardensInfo>(context);
 
     print('Warden Id: ${wardersProvider.wardens?.Id}');
-    print('status pending get current location: $pendingGetCurrentLocation');
-    print('current location: $currentLocationOfWarder');
 
     final wardenEventStartShift = WardenEvent(
       type: TypeWardenEvent.StartShift.index,
@@ -200,24 +206,15 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       try {
         await userController
             .createWardenEvent(wardenEventStartShift)
-            .then((value) {
-          Workmanager().registerPeriodicTask(
-            sendCurrentLocationTask,
-            sendCurrentLocationTask,
-            frequency: const Duration(
-              minutes: 15,
-            ),
-            initialDelay: const Duration(
-              minutes: 0,
-            ),
-            inputData: {
-              'wardenId': wardersProvider.wardens?.Id ?? 0,
-              'latitude': currentLocationOfWarder?.latitude ?? 0,
-              'longitude': currentLocationOfWarder?.longitude ?? 0,
-            },
-            constraints: Constraints(networkType: NetworkType.connected),
-          );
+            .then((value) async {
+          final service = FlutterBackgroundService();
+          var isRunning = await service.isRunning();
+          if (!isRunning) {
+            await initializeService();
+          }
+          // ignore: use_build_context_synchronously
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+          // ignore: use_build_context_synchronously
           toast.CherryToast.success(
             displayCloseButton: false,
             title: Text(

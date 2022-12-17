@@ -59,8 +59,9 @@ dependencies:
   permission_handler: ^9.2.0
   dropdown_search: ^5.0.5
   skeletons: ^0.0.3
-  workmanager: ^0.5.1
   logger: ^1.1.0
+  flutter_background_service: ^2.4.6
+  flutter_local_notifications: ^12.0.4
 
 dev_dependencies:
   flutter_test:
