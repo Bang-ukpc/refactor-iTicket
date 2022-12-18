@@ -81,7 +81,7 @@ class _LocationScreenState extends State<LocationScreen> {
               DateTime.parse(getLocalDate(location.From as DateTime));
           DateTime timeTo =
               DateTime.parse(getLocalDate(location.To as DateTime));
-          return timeFrom.isBefore(date) ||
+          return timeFrom.isAfter(date) ||
               (date.isAfter(timeFrom) && date.isBefore(timeTo));
         },
       ).toList();

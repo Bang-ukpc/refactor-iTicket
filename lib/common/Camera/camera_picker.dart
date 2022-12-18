@@ -11,19 +11,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/picker_store.dart';
-import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/helpers/format_date.dart';
-import 'package:iWarden/theme/text_theme.dart';
-// ignore: depend_on_referenced_packages
 import 'package:iWarden/common/IconButtonCamera/build_icon.dart';
+import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/theme/color.dart';
+import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
-import 'package:iWarden/widgets/drawer/app_drawer.dart';
+import 'package:image/image.dart' as img;
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as syspaths;
-import 'package:image/image.dart' as img;
 import 'package:provider/provider.dart';
 
 const _defaultPreviewHeight = 60.0;
@@ -181,23 +178,11 @@ class CameraPicker extends HookWidget {
             DeviceOrientation.landscapeLeft,
             DeviceOrientation.landscapeRight
           ]);
-          SystemChrome.setSystemUIOverlayStyle(
-            const SystemUiOverlayStyle(
-              statusBarIconBrightness: Brightness.dark,
-              statusBarColor: Colors.transparent,
-            ),
-          );
         } else {
           SystemChrome.setPreferredOrientations([
             DeviceOrientation.portraitUp,
             DeviceOrientation.portraitDown,
           ]);
-          SystemChrome.setSystemUIOverlayStyle(
-            const SystemUiOverlayStyle(
-              statusBarIconBrightness: Brightness.dark,
-              statusBarColor: ColorTheme.backdrop2,
-            ),
-          );
         }
       });
     }
@@ -257,17 +242,10 @@ class CameraPicker extends HookWidget {
                 ));
 
                 useEffect(() {
-                  SystemChrome.setSystemUIOverlayStyle(
-                    const SystemUiOverlayStyle(
-                      statusBarIconBrightness: Brightness.dark,
-                      statusBarColor: ColorTheme.backdrop2,
-                    ),
-                  );
                   SystemChrome.setPreferredOrientations([
                     DeviceOrientation.portraitUp,
                     DeviceOrientation.portraitDown,
                   ]);
-
                   return null;
                 }, []);
 
@@ -284,12 +262,6 @@ class CameraPicker extends HookWidget {
                       DeviceOrientation.landscapeLeft,
                       DeviceOrientation.landscapeRight
                     ]);
-                    SystemChrome.setSystemUIOverlayStyle(
-                      const SystemUiOverlayStyle(
-                        statusBarColor: Colors.transparent,
-                        statusBarIconBrightness: Brightness.dark,
-                      ),
-                    );
                     return true;
                   },
                   child: FutureBuilder(
@@ -401,13 +373,6 @@ class CameraPicker extends HookWidget {
                                           DeviceOrientation.landscapeLeft,
                                           DeviceOrientation.landscapeRight
                                         ]);
-                                        SystemChrome.setSystemUIOverlayStyle(
-                                          const SystemUiOverlayStyle(
-                                            statusBarColor: Colors.transparent,
-                                            statusBarIconBrightness:
-                                                Brightness.dark,
-                                          ),
-                                        );
                                         Navigator.of(context).pop();
                                       },
                                       child: const BuildIcon(
@@ -452,17 +417,6 @@ class CameraPicker extends HookWidget {
                                                 ])
                                               : null;
                                           previewImage == true
-                                              ? SystemChrome
-                                                  .setSystemUIOverlayStyle(
-                                                  const SystemUiOverlayStyle(
-                                                    statusBarColor:
-                                                        Colors.transparent,
-                                                    statusBarIconBrightness:
-                                                        Brightness.dark,
-                                                  ),
-                                                )
-                                              : null;
-                                          previewImage == true
                                               // ignore: use_build_context_synchronously
                                               ? showDiaLog(widthScreen, padding,
                                                   context, finalImage)
@@ -498,15 +452,6 @@ class CameraPicker extends HookWidget {
                                                   DeviceOrientation
                                                       .landscapeRight
                                                 ]);
-                                                SystemChrome
-                                                    .setSystemUIOverlayStyle(
-                                                  const SystemUiOverlayStyle(
-                                                    statusBarColor:
-                                                        Colors.transparent,
-                                                    statusBarIconBrightness:
-                                                        Brightness.dark,
-                                                  ),
-                                                );
                                               }
                                             : null,
                                         enableFeedback: true,

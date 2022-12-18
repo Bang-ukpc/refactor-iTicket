@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -7,6 +9,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool automaticallyImplyLeading;
   final bool? isOpenDrawer;
   final VoidCallback? onRedirect;
+  final SystemUiOverlayStyle? systemUiSettings;
 
   const MyAppBar({
     Key? key,
@@ -14,6 +17,10 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.automaticallyImplyLeading = false,
     this.onRedirect,
     this.isOpenDrawer = true,
+    this.systemUiSettings = const SystemUiOverlayStyle(
+      statusBarColor: ColorTheme.textPrimary,
+      statusBarIconBrightness: Brightness.light,
+    ),
   }) : super(key: key);
 
   @override
@@ -21,6 +28,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      systemOverlayStyle: systemUiSettings,
       automaticallyImplyLeading: automaticallyImplyLeading,
       titleSpacing: !automaticallyImplyLeading ? 15 : 0,
       title: SizedBox(

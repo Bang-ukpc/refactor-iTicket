@@ -174,7 +174,7 @@ class InfoDrawer extends StatelessWidget {
               ),
             if (isDrawer)
               Container(
-                margin: const EdgeInsets.only(left: 70),
+                margin: const EdgeInsets.only(left: 65),
                 height: 26,
                 child: Directionality(
                   textDirection: TextDirection.rtl,
