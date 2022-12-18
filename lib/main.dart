@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appSetting = AppSettings();
     appSetting.settings();
 
     return MaterialApp(

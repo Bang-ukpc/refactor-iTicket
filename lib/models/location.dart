@@ -142,6 +142,13 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
   );
 }
 
+class MyRotaShift {
+  final DateTime? From;
+  final DateTime? To;
+
+  MyRotaShift({this.From, this.To});
+}
+
 class ListLocationOfTheDayByWardenIdProps {
   final double latitude;
   final double longitude;

@@ -246,7 +246,6 @@ class _HomeOverviewState extends State<HomeOverview> {
       try {
         await userController.createWardenEvent(wardenEvent).then((value) {
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-          locations.resetLocationWithZones();
           CherryToast.success(
             displayCloseButton: false,
             title: Text(

@@ -28,7 +28,6 @@ class InfoDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locations = Provider.of<Locations>(context, listen: false);
     final wardersProvider = Provider.of<WardensInfo>(context);
 
     WardenEvent wardenEvent = WardenEvent(
@@ -43,7 +42,6 @@ class InfoDrawer extends StatelessWidget {
       try {
         await userController.createWardenEvent(wardenEvent).then((value) {
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-          locations.resetLocationWithZones();
           CherryToast.success(
             displayCloseButton: false,
             title: Text(

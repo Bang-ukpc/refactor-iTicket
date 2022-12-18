@@ -18,15 +18,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final locations = Provider.of<Locations>(context, listen: false);
-      locations.resetLocationWithZones();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<Auth>(context);
 
@@ -118,7 +109,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(width: 1.0, color: ColorTheme.primary),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 35,
+                      ),
                     ),
                     icon: SvgPicture.asset("assets/svg/IconMicrosoft.svg"),
                     label: const Text(

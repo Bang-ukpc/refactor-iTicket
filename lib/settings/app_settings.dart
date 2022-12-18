@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:iWarden/theme/color.dart';
 
 class AppSettings {
   void settings() {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
+        statusBarColor: ColorTheme.textPrimary,
+        statusBarIconBrightness: Brightness.light,
       ),
     );
     SystemChrome.setPreferredOrientations([
@@ -17,3 +17,5 @@ class AppSettings {
     ]);
   }
 }
+
+final appSetting = AppSettings();

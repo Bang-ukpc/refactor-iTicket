@@ -10,7 +10,6 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/directions_repository_controller.dart';
 import 'package:iWarden/controllers/location_controller.dart';
-import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
@@ -23,6 +22,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class LocationScreen extends StatefulWidget {
   static const routeName = '/location';
@@ -35,12 +35,18 @@ class LocationScreen extends StatefulWidget {
 class _LocationScreenState extends State<LocationScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<LocationWithZones> locationList = [];
+  List<LocationWithZones> listFilter = [];
+  List<LocationWithZones> listFilterByRota = [];
   final Completer<GoogleMapController> _mapController = Completer();
   Directions? _info;
   var check = false;
   bool isLoading = true;
 
-  void getLocationList(Locations locations, int wardenId) async {
+  String formatRotaShift(DateTime date) {
+    return DateFormat('HH:mm').format(date);
+  }
+
+  Future<void> getLocationList(Locations locations, int wardenId) async {
     ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
         ListLocationOfTheDayByWardenIdProps(
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
@@ -62,26 +68,75 @@ class _LocationScreenState extends State<LocationScreen> {
     });
   }
 
+  getLocalDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
+  }
+
+  List<LocationWithZones> rotaList(List<LocationWithZones> list) {
+    DateTime date = DateTime.parse(getLocalDate(DateTime.now()));
+    setState(() {
+      listFilter = list.where(
+        (location) {
+          DateTime timeFrom =
+              DateTime.parse(getLocalDate(location.From as DateTime));
+          DateTime timeTo =
+              DateTime.parse(getLocalDate(location.To as DateTime));
+          return timeFrom.isBefore(date) ||
+              (date.isAfter(timeFrom) && date.isBefore(timeTo));
+        },
+      ).toList();
+    });
+    return listFilter;
+  }
+
+  List<LocationWithZones> locationListFilterByRota(
+      DateTime? from, DateTime? to) {
+    DateTime rotaTimeFrom = DateTime.parse(getLocalDate(from as DateTime));
+    DateTime rotaTimeTo = DateTime.parse(getLocalDate(to as DateTime));
+
+    setState(() {
+      listFilterByRota = locationList.where(
+        (location) {
+          DateTime timeFrom =
+              DateTime.parse(getLocalDate(location.From as DateTime));
+          DateTime timeTo =
+              DateTime.parse(getLocalDate(location.To as DateTime));
+          return rotaTimeFrom.compareTo(timeFrom) >= 0 &&
+              rotaTimeTo.compareTo(timeTo) <= 0;
+        },
+      ).toList();
+    });
+    return listFilterByRota;
+  }
+
   @override
   void initState() {
     super.initState();
     currentLocationPosition.getCurrentLocation();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
-      getLocationList(locations, wardersProvider.wardens?.Id ?? 0);
+      await getLocationList(locations, wardersProvider.wardens?.Id ?? 0);
+      rotaList(locationList);
+      locationListFilterByRota(listFilter[0].From, listFilter[0].To);
+      locations.onSelectedRotaShift(
+          MyRotaShift(From: listFilter[0].From, To: listFilter[0].To));
+      locations.onSelectedLocation(listFilterByRota[0]);
+      locations.onSelectedZone(listFilterByRota[0].Zones![0]);
     });
   }
 
   @override
   void dispose() {
     locationList.clear();
+    listFilter.clear();
+    listFilterByRota.clear();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // var statusBarHeight = MediaQuery.of(context).viewPadding.top;
+    var statusBarHeight = MediaQuery.of(context).viewPadding.top;
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
@@ -96,6 +151,7 @@ class _LocationScreenState extends State<LocationScreen> {
       locations.location?.Longitude ?? 0,
     );
 
+    print('From: ${locations.rotaShift?.From}, To: ${locations.rotaShift?.To}');
     print(locations.location?.Name);
     print(locations.zone?.Name);
 
@@ -158,8 +214,8 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
               child: Column(
                 children: [
-                  const SizedBox(
-                    height: 8,
+                  SizedBox(
+                    height: statusBarHeight,
                   ),
                   InfoDrawer(
                     assetImage: wardensProvider.wardens?.Picture ??
@@ -196,11 +252,79 @@ class _LocationScreenState extends State<LocationScreen> {
                                           dropdownSearchDecoration:
                                               dropDownButtonStyle
                                                   .getInputDecorationCustom(
+                                            labelText:
+                                                const Text('My rota shift'),
+                                            hintText: 'Select rota shift',
+                                          ),
+                                        ),
+                                        items: rotaList(locationList),
+                                        selectedItem: listFilter[0],
+                                        itemAsString: (item) =>
+                                            '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
+                                        popupProps: PopupProps.menu(
+                                          fit: FlexFit.loose,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 200,
+                                          ),
+                                          itemBuilder:
+                                              (context, item, isSelected) {
+                                            return DropDownItem(
+                                              title:
+                                                  '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
+                                              isSelected: false,
+                                            );
+                                          },
+                                        ),
+                                        onChanged: (value) {
+                                          LocationWithZones rotaShiftSelected =
+                                              locationList.firstWhere(
+                                            (item) => item.Id == value!.Id,
+                                          );
+                                          locations.onSelectedRotaShift(
+                                            MyRotaShift(
+                                              From: rotaShiftSelected.From,
+                                              To: rotaShiftSelected.To,
+                                            ),
+                                          );
+                                          locationListFilterByRota(
+                                            rotaShiftSelected.From,
+                                            rotaShiftSelected.To,
+                                          );
+                                          locations.onSelectedLocation(
+                                            listFilterByRota[0],
+                                          );
+                                          setZoneWhenSelectedLocation(
+                                              rotaShiftSelected);
+                                        },
+                                        validator: ((value) {
+                                          if (value == null) {
+                                            return 'Please select rota shift';
+                                          }
+                                          return null;
+                                        }),
+                                        autoValidateMode:
+                                            AutovalidateMode.onUserInteraction,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    SizedBox(
+                                      child: DropdownSearch<LocationWithZones>(
+                                        dropdownDecoratorProps:
+                                            DropDownDecoratorProps(
+                                          dropdownSearchDecoration:
+                                              dropDownButtonStyle
+                                                  .getInputDecorationCustom(
                                             labelText: const Text('Location'),
                                             hintText: 'Select location',
                                           ),
                                         ),
-                                        items: locationList,
+                                        items: listFilterByRota,
+                                        selectedItem:
+                                            listFilterByRota.isNotEmpty
+                                                ? listFilterByRota[0]
+                                                : null,
                                         itemAsString: (item) => item.Name,
                                         popupProps: PopupProps.menu(
                                           fit: FlexFit.loose,
@@ -213,12 +337,6 @@ class _LocationScreenState extends State<LocationScreen> {
                                               title: item.Name,
                                               subTitle:
                                                   'Distance: ${item.Distance}km',
-                                              desc:
-                                                  'From: ${FormatDate().getLocalDate(
-                                                item.From as DateTime,
-                                              )}, To: ${FormatDate().getLocalDate(
-                                                item.To as DateTime,
-                                              )}',
                                               isSelected: false,
                                             );
                                           },
@@ -368,9 +486,6 @@ class _LocationScreenState extends State<LocationScreen> {
                                       height: 10,
                                     ),
                                     Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
                                       child: locations.location != null &&
                                               check == true
                                           ? FutureBuilder(
@@ -435,12 +550,10 @@ class _LocationScreenState extends State<LocationScreen> {
 class DropDownItem extends StatelessWidget {
   final String title;
   final String? subTitle;
-  final String? desc;
   final bool? isSelected;
   const DropDownItem({
     required this.title,
     this.subTitle,
-    this.desc,
     this.isSelected = false,
     super.key,
   });
@@ -476,13 +589,6 @@ class DropDownItem extends StatelessWidget {
               Text(
                 subTitle ?? '',
                 style: CustomTextStyle.body2,
-              ),
-            if (desc != null)
-              Text(
-                desc ?? '',
-                style: CustomTextStyle.body2.copyWith(
-                  color: ColorTheme.grey600,
-                ),
               ),
           ],
         ),
