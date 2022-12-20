@@ -103,6 +103,19 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
       }
     }
 
+    Color buttonBackground() {
+      if (locations.location?.Notes?.isEmpty == true ||
+          locations.location?.Notes == null) {
+        return ColorTheme.primary;
+      } else {
+        if (checkbox) {
+          return ColorTheme.primary;
+        } else {
+          return ColorTheme.grey400;
+        }
+      }
+    }
+
     return Scaffold(
       bottomSheet: SizedBox(
         height: 42,
@@ -110,7 +123,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
         child: ElevatedButton.icon(
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(
-              checkbox ? ColorTheme.primary : ColorTheme.grey400,
+              buttonBackground(),
             ),
             shape: MaterialStateProperty.all(
               RoundedRectangleBorder(
@@ -119,7 +132,11 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
             ),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          onPressed: checkbox ? checkNextPage : null,
+          onPressed: locations.location?.Notes?.isEmpty ?? true
+              ? checkNextPage
+              : checkbox == true
+                  ? checkNextPage
+                  : null,
           icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
           label: Text(
             'Check in',

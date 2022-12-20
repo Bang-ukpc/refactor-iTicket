@@ -209,6 +209,8 @@ class _AbortScreenState extends State<AbortScreen> {
                                           }
                                           return null;
                                         }),
+                                        autoValidateMode:
+                                            AutovalidateMode.onUserInteraction,
                                       ),
                                     ),
                                     const SizedBox(

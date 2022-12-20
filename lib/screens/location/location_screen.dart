@@ -113,8 +113,10 @@ class _LocationScreenState extends State<LocationScreen> {
   void initState() {
     super.initState();
     currentLocationPosition.getCurrentLocation();
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
+      locations.resetLocationWithZones();
       final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
       await getLocationList(locations, wardersProvider.wardens?.Id ?? 0);
       rotaList(locationList);
@@ -258,7 +260,9 @@ class _LocationScreenState extends State<LocationScreen> {
                                           ),
                                         ),
                                         items: rotaList(locationList),
-                                        selectedItem: listFilter[0],
+                                        selectedItem: listFilter.isNotEmpty
+                                            ? listFilter[0]
+                                            : null,
                                         itemAsString: (item) =>
                                             '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
                                         popupProps: PopupProps.menu(

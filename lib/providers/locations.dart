@@ -49,4 +49,10 @@ class Locations with ChangeNotifier {
     zoneSelected = zone;
     notifyListeners();
   }
+
+  void resetLocationWithZones() {
+    locationSelected = null;
+    zoneSelected = null;
+    notifyListeners();
+  }
 }

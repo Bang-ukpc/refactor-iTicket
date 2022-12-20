@@ -270,7 +270,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           CherryToast.error(
             displayCloseButton: false,
             title: Text(
-              error.response!.data['message'].toString().length > 60
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
                   ? 'Something went wrong'
                   : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),

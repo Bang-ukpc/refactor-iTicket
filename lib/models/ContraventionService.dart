@@ -20,7 +20,7 @@ class ContraventionCreateWardenCommand {
   final num Latitude;
   final int LocationAccuracy;
   final String WardenComments;
-  final int TypePCN;
+  final int? TypePCN;
 
   ContraventionCreateWardenCommand({
     required this.ExternalReference,
@@ -37,7 +37,7 @@ class ContraventionCreateWardenCommand {
     required this.Latitude,
     required this.LocationAccuracy,
     required this.WardenComments,
-    required this.TypePCN,
+    this.TypePCN,
   });
 
   factory ContraventionCreateWardenCommand.fromJson(
@@ -51,21 +51,21 @@ class ContraventionCreateWardenCommand {
 ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
     Map<String, dynamic> json) {
   return ContraventionCreateWardenCommand(
-      ExternalReference: json['ExternalReference'],
-      ContraventionReference: json['ContraventionReference'],
-      Plate: json['Plate'],
-      VehicleMake: json['VehicleMake'],
-      VehicleColour: json['VehicleColour'],
-      ContraventionReasonCode: json['ContraventionReasonCode'],
-      EventDateTime: DateTime.parse(json['EventDateTime']),
-      FirstObservedDateTime: DateTime.parse(json['FirstObservedDateTime']),
-      WardenId: json['WardenId'],
-      BadgeNumber: json['BadgeNumber'],
-      Longitude: json['Longitude'],
-      Latitude: json['Latitude'],
-      LocationAccuracy: json['LocationAccuracy'],
-      WardenComments: json['WardenComments'],
-      TypePCN: json['TypePCN']);
+    ExternalReference: json['ExternalReference'],
+    ContraventionReference: json['ContraventionReference'],
+    Plate: json['Plate'],
+    VehicleMake: json['VehicleMake'],
+    VehicleColour: json['VehicleColour'],
+    ContraventionReasonCode: json['ContraventionReasonCode'],
+    EventDateTime: DateTime.parse(json['EventDateTime']),
+    FirstObservedDateTime: DateTime.parse(json['FirstObservedDateTime']),
+    WardenId: json['WardenId'],
+    BadgeNumber: json['BadgeNumber'],
+    Longitude: json['Longitude'],
+    Latitude: json['Latitude'],
+    LocationAccuracy: json['LocationAccuracy'],
+    WardenComments: json['WardenComments'],
+  );
 }
 
 Map<String, dynamic> _$ContraventionCreateWardenCommandToJson(
