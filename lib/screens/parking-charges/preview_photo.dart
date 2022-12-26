@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -14,6 +15,9 @@ class PreviewPhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final printIssue = Provider.of<PrintIssueProviders>(context);
+
+    log('Preview photo');
+
     void editPhotoIssue(int id, String title) {
       printIssue.getIdIssue(id);
       Navigator.of(context).push(

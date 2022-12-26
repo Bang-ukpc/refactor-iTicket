@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -40,6 +41,8 @@ class _PrintIssueState extends State<PrintIssue> {
     final printIssue = Provider.of<PrintIssueProviders>(context);
     final contravention =
         ModalRoute.of(context)!.settings.arguments as Contravention;
+
+    log('Print issue');
 
     void showLoading() {
       showDialog(

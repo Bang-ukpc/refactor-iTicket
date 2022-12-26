@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -111,6 +113,8 @@ class _GracePeriodListState extends State<GracePeriodList> {
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context, listen: false);
+
+    log('Grace period list screen');
 
     void onCarLeft(VehicleInformation vehicleInfo) {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(

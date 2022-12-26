@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -27,6 +28,8 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
+    log('Google map screen');
+
     return SizedBox(
       height: widget.screenHeight,
       width: MediaQuery.of(context).size.width,

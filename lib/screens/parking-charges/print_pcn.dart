@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
@@ -22,6 +24,8 @@ class _PrintPCNState extends State<PrintPCN> {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
+
+    log('Print pcn');
 
     return WillPopScope(
       onWillPop: () async => false,

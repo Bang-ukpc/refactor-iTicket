@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as developer;
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -192,7 +193,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   Widget build(BuildContext context) {
     final wardersProvider = Provider.of<WardensInfo>(context);
 
-    print('Warden Id: ${wardersProvider.wardens?.Id}');
+    log('Connecting screen');
 
     final wardenEventStartShift = WardenEvent(
       type: TypeWardenEvent.StartShift.index,

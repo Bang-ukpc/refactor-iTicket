@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
@@ -27,6 +29,8 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context);
     final wardersProvider = Provider.of<WardensInfo>(context);
+
+    log('Read regulation screen');
 
     WardenEvent wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckIn.index,

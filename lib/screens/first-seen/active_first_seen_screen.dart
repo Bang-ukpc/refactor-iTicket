@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
@@ -112,6 +113,8 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context, listen: false);
+
+    log('Active first seen screen');
 
     void onCarLeft(VehicleInformation vehicleInfo) {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(

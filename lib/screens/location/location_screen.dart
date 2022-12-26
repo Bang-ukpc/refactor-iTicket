@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -153,9 +154,7 @@ class _LocationScreenState extends State<LocationScreen> {
       locations.location?.Longitude ?? 0,
     );
 
-    print('From: ${locations.rotaShift?.From}, To: ${locations.rotaShift?.To}');
-    print(locations.location?.Name);
-    print(locations.zone?.Name);
+    log('Location screen');
 
     void setZoneWhenSelectedLocation(LocationWithZones locationSelected) {
       locations.onSelectedZone(

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/dot.dart';
@@ -20,6 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<Auth>(context);
+
+    log('Login screen');
 
     void showLoading() {
       showDialog(

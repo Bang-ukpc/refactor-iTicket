@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -96,6 +97,8 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
+
+    log('Add grace period screen');
 
     void showLoading() {
       showDialog(

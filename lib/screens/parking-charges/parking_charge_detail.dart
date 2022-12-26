@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
@@ -12,6 +14,8 @@ class ParkingChargeDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
+
+    log('Parking charge detail');
 
     return WillPopScope(
       onWillPop: () async => false,

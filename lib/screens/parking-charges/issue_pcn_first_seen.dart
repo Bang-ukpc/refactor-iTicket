@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -159,6 +160,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final locationProvider = Provider.of<Locations>(context);
     final wardersProvider = Provider.of<WardensInfo>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+
+    log('Issue PCN screen');
 
     void showLoading() {
       showDialog(

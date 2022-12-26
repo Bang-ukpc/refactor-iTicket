@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
@@ -225,6 +227,8 @@ class _HomeOverviewState extends State<HomeOverview> {
     final width = MediaQuery.of(context).size.width;
     final locations = Provider.of<Locations>(context, listen: false);
     final wardensProvider = Provider.of<WardensInfo>(context);
+
+    log('Home screen');
 
     final wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckOut.index,

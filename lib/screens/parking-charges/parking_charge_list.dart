@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
@@ -72,6 +74,8 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context, listen: false);
+
+    log('Parking charge list');
 
     Future<void> refresh() async {
       getContraventionList(
