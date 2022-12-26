@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/theme/color.dart';
@@ -87,7 +89,7 @@ class CardHome extends StatelessWidget {
                   ),
                   InkWell(
                     onTap: () {
-                      Navigator.pushNamed(context, route);
+                      Navigator.pushReplacementNamed(context, route);
                     },
                     child: Container(
                       decoration: BoxDecoration(

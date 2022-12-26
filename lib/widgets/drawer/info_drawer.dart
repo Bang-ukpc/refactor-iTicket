@@ -119,8 +119,16 @@ class InfoDrawer extends StatelessWidget {
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          top: !isDrawer ? 16 : 30,
-          bottom: !isDrawer ? 16 : 10,
+          top: !isDrawer
+              ? (zone == null && location == null)
+                  ? 5
+                  : 16
+              : 30,
+          bottom: !isDrawer
+              ? (zone == null && location == null)
+                  ? 5
+                  : 16
+              : 10,
         ),
         color: isDrawer ? ColorTheme.darkPrimary : Colors.white,
         child: Column(

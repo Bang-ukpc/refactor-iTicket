@@ -192,6 +192,7 @@ class _HomeOverviewState extends State<HomeOverview> {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
       getFirstSeenList(

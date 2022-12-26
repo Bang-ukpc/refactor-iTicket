@@ -338,6 +338,9 @@ class _CherryToastState extends State<CherryToast>
   @override
   void initState() {
     super.initState();
+    if (!mounted) {
+      return;
+    }
     _initAnimation();
     toastDecoration = BoxDecoration(
       color: widget.background,
@@ -360,7 +363,7 @@ class _CherryToastState extends State<CherryToast>
     super.dispose();
   }
 
-  ///Initialize animation parameters [slideController] and [offsetAnimation]
+  ///Initialize animation parameters [slideController] and [offsetAnimation] [hhh]
   void _initAnimation() {
     slideController = AnimationController(
       duration: widget.animationDuration,

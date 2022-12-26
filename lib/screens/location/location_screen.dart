@@ -193,7 +193,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   return;
                 } else {
                   Navigator.of(context)
-                      .pushNamed(ReadRegulationScreen.routeName);
+                      .pushReplacementNamed(ReadRegulationScreen.routeName);
                 }
 
                 _formKey.currentState!.save();
@@ -230,7 +230,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     margin: const EdgeInsets.only(top: 8),
                     color: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 32),
+                        horizontal: 16, vertical: 15),
                     child: isLoading == false
                         ? Column(
                             children: [
@@ -516,7 +516,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                                     .size
                                                                     .width <
                                                                 400
-                                                            ? screenHeight / 2.8
+                                                            ? screenHeight / 3
                                                             : screenHeight /
                                                                 1.5,
                                                     mapController:

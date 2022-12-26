@@ -45,6 +45,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
 
   @override
   void initState() {
+    if (!mounted) return;
     super.initState();
     _anylineService = AnylineServiceImpl();
   }
