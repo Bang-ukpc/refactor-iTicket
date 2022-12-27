@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -30,15 +28,6 @@ class Logging extends Interceptor {
 
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) async {
-    if (err.type == DioErrorType.other) {
-      log("other");
-    }
-    if (err.type == DioErrorType.receiveTimeout) {
-      log("receiveTimeout");
-    }
-    if (err.type == DioErrorType.connectTimeout) {
-      log("connectTimeout");
-    }
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     print(
       'ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}',

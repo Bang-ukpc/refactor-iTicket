@@ -252,6 +252,19 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               .pushNamed(PrintPCN.routeName, arguments: contravention);
         }
       } on DioError catch (error) {
+        if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 2),
+            title: Text(
+              'Something went wrong',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
         if (error.response!.statusCode == 400) {
           Navigator.of(context).pop();
           CherryToast.error(
@@ -358,12 +371,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           );
         }
       } on DioError catch (error) {
-        log(error.type.toString());
+        log("log ${error.type.toString()}");
         Navigator.of(context).pop();
         if (error.type == DioErrorType.other) {
           CherryToast.error(
             toastDuration: const Duration(seconds: 2),
-            displayCloseButton: true,
             title: Text(
               "Something went wrong",
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
