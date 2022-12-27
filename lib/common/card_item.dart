@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/locate_car_screen.dart';
@@ -74,7 +76,8 @@ class CardItem extends StatelessWidget {
                     constraints:
                         const BoxConstraints(minWidth: 40, minHeight: 40),
                     onPressed: () {
-                      Navigator.of(context).pushNamed(
+                      log("push");
+                      Navigator.of(context).pushReplacementNamed(
                         LocateCarScreen.routeName,
                         arguments: vehicleInfo,
                       );

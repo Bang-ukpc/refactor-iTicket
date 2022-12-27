@@ -186,7 +186,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
         labelFuncAdd: "Add Consideration Period",
         titleAppBar: "Consideration Period",
         funcAdd: () {
-          Navigator.of(context).pushNamed(AddGracePeriod.routeName);
+          Navigator.of(context).pushReplacementNamed(AddGracePeriod.routeName);
         },
         tabBarViewTab1: RefreshIndicator(
           onRefresh: refresh,

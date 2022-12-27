@@ -15,10 +15,12 @@ class DioHelper {
 class ApiClientBuilder {
   static const int defaultTimeout = 15000;
 
-  Dio dio = Dio(BaseOptions(
-      connectTimeout: defaultTimeout,
-      receiveTimeout: defaultTimeout,
-      sendTimeout: defaultTimeout));
+  Dio dio = Dio(
+    BaseOptions(
+        connectTimeout: defaultTimeout,
+        receiveTimeout: defaultTimeout,
+        sendTimeout: defaultTimeout),
+  );
 
   ApiClientBuilder addInterceptor(Interceptor interceptor) {
     dio.interceptors.add(interceptor);
