@@ -192,7 +192,6 @@ class _HomeOverviewState extends State<HomeOverview> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
       getFirstSeenList(
@@ -237,6 +236,8 @@ class _HomeOverviewState extends State<HomeOverview> {
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardensProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
     );
 
     final wardenEventStartBreak = WardenEvent(
@@ -245,21 +246,14 @@ class _HomeOverviewState extends State<HomeOverview> {
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardensProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
     );
 
     void onCheckOut() async {
       try {
         await userController.createWardenEvent(wardenEvent).then((value) {
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'Check out successfully',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
         });
       } catch (error) {
         CherryToast.error(
@@ -280,15 +274,6 @@ class _HomeOverviewState extends State<HomeOverview> {
             .createWardenEvent(wardenEventStartBreak)
             .then((value) {
           Navigator.of(context).pushNamed(StartBreakScreen.routeName);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'Take a break',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
         });
       } catch (error) {
         CherryToast.error(

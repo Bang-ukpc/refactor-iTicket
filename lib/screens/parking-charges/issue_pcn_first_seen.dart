@@ -18,6 +18,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
+import 'package:iWarden/helpers/bluetooth_printer.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
@@ -66,7 +67,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   int selectedButton = 0;
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
-  final _debouncer = Debouncer(milliseconds: 500);
+  final _debouncer = Debouncer(milliseconds: 300);
 
   void getContraventionReasonList() async {
     final Pagination list =
@@ -92,6 +93,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   void initState() {
     super.initState();
+    bluetoothPrinterHelper.scan();
+    bluetoothPrinterHelper.initConnect();
     _anylineService = AnylineServiceImpl();
     _typeOfPcnController.text = '0';
     getContraventionReasonList();
@@ -247,9 +250,28 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         if (contravention != null && check == true) {
           // ignore: use_build_context_synchronously
           Navigator.of(context).pop();
-          // ignore: use_build_context_synchronously
-          Navigator.of(context)
-              .pushNamed(PrintPCN.routeName, arguments: contravention);
+          if (bluetoothPrinterHelper.selectedPrinter == null ||
+              bluetoothPrinterHelper.devices[0].deviceName !=
+                  bluetoothPrinterHelper.selectedPrinter?.deviceName) {
+            // ignore: use_build_context_synchronously
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 2),
+              title: Text(
+                'Please connect to the printer and try again',
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+          } else {
+            bluetoothPrinterHelper.printPhysicalPCN(
+              contravention as Contravention,
+              locationProvider.location?.Name ?? '',
+            );
+            // ignore: use_build_context_synchronously
+            Navigator.of(context)
+                .pushNamed(PrintPCN.routeName, arguments: contravention);
+          }
         }
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {

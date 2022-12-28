@@ -55,13 +55,15 @@ dependencies:
   cupertino_icons: ^1.0.2
   geolocator: ^9.0.2
   connectivity_plus: ^3.0.2
-  flutter_blue: ^0.8.0
+  # flutter_blue: ^0.8.0
   permission_handler: ^9.2.0
   dropdown_search: ^5.0.5
   skeletons: ^0.0.3
   logger: ^1.1.0
   flutter_background_service: ^2.4.6
   flutter_local_notifications: ^12.0.4
+  flutter_pos_printer_platform: ^1.0.12
+  esc_pos_utils: ^1.1.0
 
 dev_dependencies:
   flutter_test:

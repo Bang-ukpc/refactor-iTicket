@@ -29,6 +29,7 @@ class InfoDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wardersProvider = Provider.of<WardensInfo>(context);
+    final locations = Provider.of<Locations>(context);
 
     WardenEvent wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckOut.index,
@@ -36,21 +37,14 @@ class InfoDrawer extends StatelessWidget {
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardersProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
     );
 
     void onCheckOut() async {
       try {
         await userController.createWardenEvent(wardenEvent).then((value) {
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'Check out successfully',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
         });
       } catch (error) {
         CherryToast.error(

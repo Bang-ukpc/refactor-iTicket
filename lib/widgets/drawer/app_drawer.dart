@@ -1,8 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/helpers/bluetooth_printer.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -34,10 +37,18 @@ class _MyDrawerState extends State<MyDrawer> {
   bool check = false;
 
   @override
+  void initState() {
+    super.initState();
+    bluetoothPrinterHelper.scan();
+    bluetoothPrinterHelper.initConnect();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final heightScreen = MediaQuery.of(context).size.height;
     final widthScreen = MediaQuery.of(context).size.width;
     final wardensProvider = Provider.of<WardensInfo>(context);
+    final locations = Provider.of<Locations>(context);
 
     WardenEvent wardenEventStartBreak = WardenEvent(
       type: TypeWardenEvent.StartBreak.index,
@@ -45,6 +56,8 @@ class _MyDrawerState extends State<MyDrawer> {
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardensProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
     );
 
     WardenEvent wardenEventEndShift = WardenEvent(
@@ -53,6 +66,8 @@ class _MyDrawerState extends State<MyDrawer> {
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardensProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
     );
 
     void onStartBreak() async {
@@ -61,15 +76,6 @@ class _MyDrawerState extends State<MyDrawer> {
             .createWardenEvent(wardenEventStartBreak)
             .then((value) {
           Navigator.of(context).pushNamed(StartBreakScreen.routeName);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'Take a break',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
         });
       } catch (error) {
         CherryToast.error(
@@ -118,26 +124,48 @@ class _MyDrawerState extends State<MyDrawer> {
     List<Widget> getList() {
       return DataMenuItem()
           .data
-          .map((e) => ItemMenuWidget(
-                itemMenu: e,
-                onTap: e.route != 'comming soon'
-                    ? () => Navigator.of(context).pushReplacementNamed(
-                          e.route!,
-                        )
-                    : () {
-                        Navigator.of(context).pop();
-                        CherryToast.info(
-                          displayCloseButton: false,
-                          title: Text(
-                            'Comming soon',
-                            style: CustomTextStyle.h5
-                                .copyWith(color: ColorTheme.primary),
+          .map(
+            (e) => ItemMenuWidget(
+              itemMenu: e,
+              onTap: e.route == 'comming soon'
+                  ? () {
+                      Navigator.of(context).pop();
+                      CherryToast.info(
+                        displayCloseButton: false,
+                        title: Text(
+                          'Comming soon',
+                          style: CustomTextStyle.h5
+                              .copyWith(color: ColorTheme.primary),
+                        ),
+                        toastPosition: Position.bottom,
+                        borderRadius: 5,
+                      ).show(context);
+                    }
+                  : e.route == 'testPrinter'
+                      ? () {
+                          if (bluetoothPrinterHelper.selectedPrinter == null ||
+                              bluetoothPrinterHelper.devices[0].deviceName !=
+                                  bluetoothPrinterHelper
+                                      .selectedPrinter?.deviceName) {
+                            CherryToast.error(
+                              toastDuration: const Duration(seconds: 2),
+                              title: Text(
+                                'Please connect to the printer and try again',
+                                style: CustomTextStyle.h5
+                                    .copyWith(color: ColorTheme.danger),
+                              ),
+                              toastPosition: Position.bottom,
+                              borderRadius: 5,
+                            ).show(context);
+                          } else {
+                            bluetoothPrinterHelper.printReceiveTest();
+                          }
+                        }
+                      : () => Navigator.of(context).pushReplacementNamed(
+                            e.route!,
                           ),
-                          toastPosition: Position.bottom,
-                          borderRadius: 5,
-                        ).show(context);
-                      },
-              ))
+            ),
+          )
           .toList();
     }
 

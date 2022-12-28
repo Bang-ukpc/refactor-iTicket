@@ -101,8 +101,8 @@ void onStart(ServiceInstance service) async {
       if (await service.isForegroundService()) {
         flutterLocalNotificationsPlugin.show(
           888,
-          'COOL SERVICE',
-          'Awesome ${DateTime.now()}',
+          'iTicket Service',
+          'iTicket Service',
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'my_foreground',

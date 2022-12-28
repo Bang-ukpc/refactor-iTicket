@@ -38,6 +38,8 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardersProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
     );
 
     void checkNextPage() async {
@@ -45,16 +47,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           locations.location?.Notes == null) {
         try {
           await userController.createWardenEvent(wardenEvent).then((value) {
-            Navigator.of(context).pushNamed(HomeOverview.routeName);
-            CherryToast.success(
-              displayCloseButton: false,
-              title: Text(
-                'Check in successfully',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
+            Navigator.of(context).pushReplacementNamed(HomeOverview.routeName);
           });
         } catch (error) {
           CherryToast.error(
@@ -81,16 +74,8 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
         } else {
           try {
             await userController.createWardenEvent(wardenEvent).then((value) {
-              Navigator.of(context).pushNamed(HomeOverview.routeName);
-              CherryToast.success(
-                displayCloseButton: false,
-                title: Text(
-                  'Check in successfully',
-                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-                ),
-                toastPosition: Position.bottom,
-                borderRadius: 5,
-              ).show(context);
+              Navigator.of(context)
+                  .pushReplacementNamed(HomeOverview.routeName);
             });
           } catch (error) {
             CherryToast.error(

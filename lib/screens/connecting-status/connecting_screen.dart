@@ -7,7 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+// import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/common/dot.dart';
@@ -71,12 +71,12 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   // Check bluetooth connection
-  void checkBluetoothConnectionState() async {
-    var check = await FlutterBlue.instance.isOn;
-    setState(() {
-      checkBluetooth = check;
-    });
-  }
+  // void checkBluetoothConnectionState() async {
+  //   var check = await FlutterBlue.instance.isOn;
+  //   setState(() {
+  //     checkBluetooth = check;
+  //   });
+  // }
 
   // Check GPS connection
   Future<void> checkGpsConnectingStatus() async {
@@ -171,7 +171,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    checkBluetoothConnectionState();
+    // checkBluetoothConnectionState();
   }
 
   StateDevice checkState(bool check) {
@@ -215,16 +215,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
           }
           // ignore: use_build_context_synchronously
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-          // ignore: use_build_context_synchronously
-          toast.CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'Working time has started',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: toast.Position.bottom,
-            borderRadius: 5,
-          ).show(context);
         });
       } on DioError catch (error) {
         toast.CherryToast.error(

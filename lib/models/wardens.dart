@@ -57,6 +57,8 @@ class WardenEvent extends BaseModel {
   final double? latitude;
   final double? longitude;
   final int wardenId;
+  final int? zoneId;
+  final int? locationId;
 
   WardenEvent({
     int? Id,
@@ -67,6 +69,8 @@ class WardenEvent extends BaseModel {
     this.latitude,
     this.longitude,
     required this.wardenId,
+    this.zoneId,
+    this.locationId,
   }) : super(Id: Id, Created: Created, Deleted: Deleted);
 
   factory WardenEvent.fromJson(Map<String, dynamic> json) =>
@@ -99,6 +103,8 @@ WardenEvent _$WardenEventFromJson(Map<String, dynamic> json) {
     latitude: json['Latitude'] == null ? 0 : json['Latitude'].toDouble(),
     longitude: json['Longitude'] == null ? 0 : json['Longitude'].toDouble(),
     wardenId: json['WardenId'],
+    zoneId: json['ZoneId'],
+    locationId: json['LocationId'],
   );
 }
 
@@ -109,5 +115,7 @@ Map<String, dynamic> _$WardenEventToJson(WardenEvent instance) {
     'Latitude': instance.latitude,
     'Longitude': instance.longitude,
     'WardenId': instance.wardenId,
+    'ZoneId': instance.zoneId,
+    'LocationId': instance.locationId,
   };
 }

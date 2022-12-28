@@ -97,6 +97,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locationProvider = Provider.of<Locations>(context);
     log('Add first seen screen');
 
     void showLoading() {
@@ -122,7 +123,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     }
 
     Future<bool> saveForm() async {
-      final locationProvider = Provider.of<Locations>(context);
       final vehicleInfo = VehicleInformation(
         ExpiredAt: DateTime.now().add(
           Duration(

@@ -4,6 +4,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/theme/color.dart';
@@ -24,6 +25,7 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final wardersProvider = Provider.of<WardensInfo>(context);
+    final locations = Provider.of<Locations>(context);
 
     WardenEvent wardenEventEndBreak = WardenEvent(
       type: TypeWardenEvent.EndBreak.index,
@@ -31,6 +33,8 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
       latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardersProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
     );
 
     void onEndBreak() async {
@@ -39,15 +43,6 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
             .createWardenEvent(wardenEventEndBreak)
             .then((value) {
           Navigator.of(context).pushReplacementNamed(HomeOverview.routeName);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'Start working hours',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
         });
       } catch (error) {
         CherryToast.error(

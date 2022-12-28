@@ -23,6 +23,7 @@ class Contravention {
   DateTime? eventDateTime;
   List<ContraventionEvents>? contraventionEvents;
   List<ContraventionPhotos>? contraventionPhotos;
+  ContraventionDetailsWarden? contraventionDetailsWarden;
 
   Contravention({
     this.created,
@@ -49,6 +50,7 @@ class Contravention {
     this.eventDateTime,
     this.contraventionEvents,
     this.contraventionPhotos,
+    this.contraventionDetailsWarden,
   });
 
   Contravention.fromJson(Map<String, dynamic> json) {
@@ -88,6 +90,10 @@ class Contravention {
         contraventionPhotos!.add(ContraventionPhotos.fromJson(v));
       });
     }
+    contraventionDetailsWarden = json['ContraventionDetailsWarden'] != null
+        ? ContraventionDetailsWarden.fromJson(
+            json['ContraventionDetailsWarden'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -316,6 +322,44 @@ class ContraventionPhotos {
     data['OriginalFilename'] = this.originalFilename;
     data['SizeInBytes'] = this.sizeInBytes;
     return data;
+  }
+}
+
+class ContraventionDetailsWarden {
+  int? ContraventionId;
+  int? WardenId;
+  String? BadgeNumber;
+  DateTime? FirstObserved;
+  DateTime? IssuedAt;
+  double? Longitude;
+  double? Latitude;
+  double? LocationAccuracy;
+
+  ContraventionDetailsWarden({
+    this.ContraventionId,
+    this.WardenId,
+    this.BadgeNumber,
+    this.FirstObserved,
+    this.IssuedAt,
+    this.Longitude,
+    this.Latitude,
+    this.LocationAccuracy,
+  });
+
+  ContraventionDetailsWarden.fromJson(Map<String, dynamic> json) {
+    ContraventionId = json['ContraventionId'];
+    WardenId = json['WardenId'];
+    BadgeNumber = json['BadgeNumber'];
+    FirstObserved = json['FirstObserved'] == null
+        ? null
+        : DateTime.parse(json['FirstObserved']);
+    IssuedAt =
+        json['IssuedAt'] == null ? null : DateTime.parse(json['IssuedAt']);
+    Latitude = json['Latitude'] == null ? 0 : json['Latitude'].toDouble();
+    Longitude = json['Longitude'] == null ? 0 : json['Longitude'].toDouble();
+    LocationAccuracy = json['LocationAccuracy'] == null
+        ? 0
+        : json['LocationAccuracy'].toDouble();
   }
 }
 
