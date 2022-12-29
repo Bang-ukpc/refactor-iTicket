@@ -276,7 +276,11 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
           ),
           BottomNavyBarItem(
             onPressed: saveForm,
-            icon: SvgPicture.asset('assets/svg/IconSave.svg'),
+            icon: SvgPicture.asset(
+              'assets/svg/IconSave2.svg',
+              width: 20,
+              height: 20,
+            ),
             label: const Text(
               'Save & add',
               style: CustomTextStyle.h6,
