@@ -701,7 +701,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 showSearchBox: true,
                                 fit: FlexFit.loose,
                                 constraints: const BoxConstraints(
-                                  maxHeight: 300,
+                                  maxHeight: 325,
                                 ),
                                 itemBuilder: (context, item, isSelected) =>
                                     DropDownItem(
