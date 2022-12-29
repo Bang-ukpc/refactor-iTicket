@@ -46,7 +46,7 @@ class _PrintPCNState extends State<PrintPCN> {
           if (snapshot.hasData) {
             return Scaffold(
               drawer: const MyDrawer(),
-              bottomSheet: Consumer<Locations>(
+              bottomNavigationBar: Consumer<Locations>(
                 builder: (context, locations, child) => BottomSheet2(
                   buttonList: [
                     BottomNavyBarItem(

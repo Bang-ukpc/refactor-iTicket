@@ -96,7 +96,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
           },
         ),
         drawer: const MyDrawer(),
-        bottomSheet: BottomSheet2(buttonList: [
+        bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () {
               Navigator.of(context)

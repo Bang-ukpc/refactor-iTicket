@@ -119,7 +119,7 @@ class _DetailScreenState extends State<DetailScreen> {
           },
         ),
         drawer: const MyDrawer(),
-        bottomSheet: Container(
+        bottomNavigationBar: Container(
           decoration: const BoxDecoration(
             border: Border(
               top: BorderSide(width: 1, color: ColorTheme.grey300),

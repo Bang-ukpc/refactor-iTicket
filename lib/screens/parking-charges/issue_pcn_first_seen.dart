@@ -521,7 +521,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             },
           ),
           drawer: const MyDrawer(),
-          bottomSheet: BottomSheet2(
+          bottomNavigationBar: BottomSheet2(
             buttonList: [
               if (_typeOfPcnController.text == '0')
                 BottomNavyBarItem(

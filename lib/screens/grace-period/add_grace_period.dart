@@ -248,7 +248,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
           },
         ),
         drawer: const MyDrawer(),
-        bottomSheet: BottomSheet2(buttonList: [
+        bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () async {
               await saveForm().then((value) {

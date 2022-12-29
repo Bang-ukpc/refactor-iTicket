@@ -106,7 +106,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
     }
 
     return Scaffold(
-      bottomSheet: SizedBox(
+      bottomNavigationBar: SizedBox(
         height: 42,
         width: double.infinity,
         child: ElevatedButton.icon(

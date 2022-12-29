@@ -108,7 +108,7 @@ class CameraPicker extends HookWidget {
                   isOpenDrawer: false,
                 ),
                 // drawer: const MyDrawer(),
-                bottomSheet: BottomSheet2(buttonList: [
+                bottomNavigationBar: BottomSheet2(buttonList: [
                   BottomNavyBarItem(
                     onPressed: () {
                       Navigator.of(context).pop();

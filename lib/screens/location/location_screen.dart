@@ -185,7 +185,7 @@ class _LocationScreenState extends State<LocationScreen> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Scaffold(
-          bottomSheet: BottomSheet2(buttonList: [
+          bottomNavigationBar: BottomSheet2(buttonList: [
             BottomNavyBarItem(
               onPressed: () {
                 final isValid = _formKey.currentState!.validate();
