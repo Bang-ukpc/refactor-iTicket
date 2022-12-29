@@ -151,7 +151,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     _typeOfPcnController.dispose();
     _commentController.dispose();
     _contraventionReasonController.dispose();
-    _debouncer.timer!.cancel();
+    if (_debouncer.timer != null) {
+      _debouncer.timer!.cancel();
+    }
+
     contraventionReasonList.clear();
     arrayImage.clear();
     evidencePhotoList.clear();
