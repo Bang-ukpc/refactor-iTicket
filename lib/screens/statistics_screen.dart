@@ -6,7 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/controllers/statistic_controller.dart';
@@ -91,12 +91,13 @@ class _StatisticScreenState extends State<StatisticScreen> {
   }
 
   // Check bluetooth
-  // void checkBluetoothConnectionState() async {
-  //   var check = await FlutterBlue.instance.isOn;
-  //   setState(() {
-  //     checkBluetooth = check;
-  //   });
-  // }
+  void _checkDeviceBluetoothIsOn() async {
+    var check = await FlutterBluePlus.instance.isOn;
+    print('Status: $check');
+    setState(() {
+      checkBluetooth = check;
+    });
+  }
 
   // Check camera
   void checkCameraPermission() async {
@@ -119,7 +120,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
     initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    // checkBluetoothConnectionState();
+    _checkDeviceBluetoothIsOn();
     checkCameraPermission();
 
     super.initState();

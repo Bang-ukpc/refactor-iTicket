@@ -516,8 +516,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             title: "Issue PCN",
             automaticallyImplyLeading: true,
             onRedirect: () {
-              Navigator.of(context)
-                  .popAndPushNamed(ParkingChargeList.routeName);
+              Navigator.of(context).pop();
             },
           ),
           drawer: const MyDrawer(),

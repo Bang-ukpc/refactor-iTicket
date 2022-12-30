@@ -35,8 +35,8 @@ Future<void> initializeService() async {
       autoStart: false,
       isForegroundMode: true,
       notificationChannelId: 'my_foreground',
-      initialNotificationTitle: 'AWESOME SERVICE',
-      initialNotificationContent: 'Initializing',
+      initialNotificationTitle: 'iTicket Service',
+      initialNotificationContent: 'iTicket Service',
       foregroundServiceNotificationId: 888,
     ),
     iosConfiguration: IosConfiguration(

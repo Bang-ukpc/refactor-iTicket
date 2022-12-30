@@ -105,92 +105,95 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
       }
     }
 
-    return Scaffold(
-      bottomSheet: SizedBox(
-        height: 42,
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(
-              buttonBackground(),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        bottomSheet: SizedBox(
+          height: 42,
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(
+                buttonBackground(),
+              ),
+              shape: MaterialStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0),
+                ),
+              ),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            shape: MaterialStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(0),
+            onPressed: locations.location?.Notes?.isEmpty ?? true
+                ? checkNextPage
+                : checkbox == true
+                    ? checkNextPage
+                    : null,
+            icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
+            label: Text(
+              'Check in',
+              style: CustomTextStyle.h6.copyWith(
+                color: Colors.white,
               ),
             ),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          onPressed: locations.location?.Notes?.isEmpty ?? true
-              ? checkNextPage
-              : checkbox == true
-                  ? checkNextPage
-                  : null,
-          icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
-          label: Text(
-            'Check in',
-            style: CustomTextStyle.h6.copyWith(
-              color: Colors.white,
-            ),
           ),
         ),
-      ),
-      body: SafeArea(
-          child: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.only(
-            bottom: 60,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(
-                        "Please read below and confirm that you understand all regulations of this location.",
-                        style: CustomTextStyle.h5
-                            .copyWith(color: ColorTheme.primary),
-                      ),
-                      const SizedBox(
-                        height: 24,
-                      ),
-                      Text(
-                        locations.location?.Notes?.isEmpty ?? true
-                            ? "This location does not currently have any regulations!"
-                            : locations.location?.Notes as String,
-                        style: CustomTextStyle.h5,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                if (locations.location?.Notes?.isEmpty == false ||
-                    locations.location?.Notes != null)
+        body: SafeArea(
+            child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.only(
+              bottom: 60,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
                   Container(
                     color: Colors.white,
-                    padding: const EdgeInsets.all(8),
-                    child: CustomCheckBox(
-                      value: checkbox,
-                      onChanged: (val) {
-                        setState(() {
-                          checkbox = val;
-                        });
-                      },
-                      title:
-                          "I confirm that I already read and understood every regulations.",
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Please read below and confirm that you understand all regulations of this location.",
+                          style: CustomTextStyle.h5
+                              .copyWith(color: ColorTheme.primary),
+                        ),
+                        const SizedBox(
+                          height: 24,
+                        ),
+                        Text(
+                          locations.location?.Notes?.isEmpty ?? true
+                              ? "This location does not currently have any regulations!"
+                              : locations.location?.Notes as String,
+                          style: CustomTextStyle.h5,
+                        ),
+                      ],
                     ),
-                  )
-              ],
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  if (locations.location?.Notes?.isEmpty == false ||
+                      locations.location?.Notes != null)
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(8),
+                      child: CustomCheckBox(
+                        value: checkbox,
+                        onChanged: (val) {
+                          setState(() {
+                            checkbox = val;
+                          });
+                        },
+                        title:
+                            "I confirm that I already read and understood every regulations.",
+                      ),
+                    )
+                ],
+              ),
             ),
           ),
-        ),
-      )),
+        )),
+      ),
     );
   }
 }

@@ -76,8 +76,7 @@ class CardItem extends StatelessWidget {
                     constraints:
                         const BoxConstraints(minWidth: 40, minHeight: 40),
                     onPressed: () {
-                      log("push");
-                      Navigator.of(context).pushReplacementNamed(
+                      Navigator.of(context).pushNamed(
                         LocateCarScreen.routeName,
                         arguments: vehicleInfo,
                       );
