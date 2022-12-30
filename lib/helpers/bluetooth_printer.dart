@@ -32,7 +32,9 @@ class BluetoothPrinterHelper {
         typePrinter: PrinterType.bluetooth,
       ));
       if (devices.isNotEmpty) {
-        selectDevice(devices[0]);
+        BluetoothPrinter deviceSelected = devices.firstWhere((device) =>
+            device.deviceName!.toUpperCase().contains('Ezpcnb'.toUpperCase()));
+        selectDevice(deviceSelected);
       }
     });
   }
@@ -102,7 +104,7 @@ class BluetoothPrinterHelper {
 
     final generator = Generator(PaperSize.mm80, profile);
     bytes += generator.text(
-        "^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD1234567890123^FS^FO$xAxis,$date^A,^FD26-12-2022^FS^FO$xAxis,$plate^FDXX99XXX^FS^FO$xAxis,$make^FDMAKE^FS^FO$xAxis,$color^FDCOLOUR^FS^FO$xAxis,$location^FDVOID A2^FS^FO$xAxis,${location + 40}^FDVOID A3^FS^FO$xAxis,${location + 80}^FDVOID A4^FS^FO$xAxis,${location + 120}^FDVOID A5^FS^FO$xAxis,$issueTime^FD09:41 26-12-2022^FS^FO$xAxis,$timeFirstSeen^FD09:41 26-12-2022^FS^FO$xAxis2,$desc^FDVOID 02^FS^FO$xAxis2,${desc + 20}^FDVOID 03^FS^FO$xAxis2,${desc + 40}^FDVOID 04^FS^FO$xAxis3,$referenceNo2^FD1234567890123^FS^FO$xAxis3,$date2^FD26-12-2022^FS^FO$xAxis3,$plate2^FDXX99XXX^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS^XZ");
+        "^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD1234567890123^FS^FO$xAxis,$date^A,^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis,$plate^FDXX99XXX^FS^FO$xAxis,$make^FDMAKE^FS^FO$xAxis,$color^FDCOLOUR^FS^FO$xAxis,$location^FDVOID A2^FS^FO$xAxis,${location + 40}^FDVOID A3^FS^FO$xAxis,${location + 80}^FDVOID A4^FS^FO$xAxis,${location + 120}^FDVOID A5^FS^FO$xAxis,$issueTime^FD${DateFormat('HH:mm dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis,$timeFirstSeen^FD${DateFormat('HH:mm dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis2,$desc^FDVOID 02^FS^FO$xAxis2,${desc + 20}^FDVOID 03^FS^FO$xAxis2,${desc + 40}^FDVOID 04^FS^FO$xAxis3,$referenceNo2^FD1234567890123^FS^FO$xAxis3,$date2^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis3,$plate2^FDXX99XXX^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS^XZ");
 
     printEscPos(bytes, generator);
   }
@@ -158,9 +160,6 @@ class BluetoothPrinterHelper {
     if (bluetoothPrinter.typePrinter == PrinterType.bluetooth &&
         Platform.isAndroid) {
       if (currentStatus == BTStatus.connected) {
-        var result = await printerManager.send(
-            type: bluetoothPrinter.typePrinter, bytes: bytes);
-        log(result.toString());
         pendingTask = [];
       }
     } else {
