@@ -237,6 +237,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                                 ),
                                 itemBuilder: (context, item, isSelected) =>
                                     DropDownItem(
+                                  isSelected: item.value == selectedValue,
                                   title: item.label,
                                 ),
                               ),
