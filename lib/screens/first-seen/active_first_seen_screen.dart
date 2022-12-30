@@ -180,6 +180,24 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
       );
     }
 
+    int heightTab2 = firstSeenExpired
+        .map(
+          (item) => CardItem(
+            vehicleInfo: item,
+            type: TypeFirstSeen.Expired,
+            expiring: calculateTime.daysBetween(
+              item.ExpiredAt,
+              DateTime.now(),
+            ),
+            onCarLeft: () {
+              onCarLeft(item);
+            },
+            route: DetailExpiredFirstSeen.routeName,
+          ),
+        )
+        .length;
+    int heightTab1 = firstSeenExpired.length - heightTab2;
+
     return WillPopScope(
       onWillPop: () async => false,
       child: MyTabBar(
@@ -196,6 +214,9 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
+                        height: firstSeenExpired.length > 3
+                            ? (heightTab1.toDouble()) * 92
+                            : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
                         child: Column(
@@ -257,6 +278,9 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
+                        height: firstSeenExpired.length > 3
+                            ? (heightTab2.toDouble() * 92)
+                            : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
                         child: Column(

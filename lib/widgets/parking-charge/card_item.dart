@@ -1,23 +1,51 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
-class CardItemParkingCharge extends StatelessWidget {
+class CardItemParkingCharge extends StatefulWidget {
   final String? image;
   final String plate;
   final List<ContraventionReasonTranslations> contraventions;
   final DateTime created;
+  final bool loadingImage;
 
-  const CardItemParkingCharge({
-    Key? key,
-    required this.image,
-    required this.plate,
-    required this.contraventions,
-    required this.created,
-  }) : super(key: key);
+  const CardItemParkingCharge(
+      {Key? key,
+      required this.image,
+      required this.plate,
+      required this.contraventions,
+      required this.created,
+      required this.loadingImage})
+      : super(key: key);
+
+  @override
+  State<CardItemParkingCharge> createState() => _CardItemParkingChargeState();
+}
+
+class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
+  bool loadingImage = true;
+  @override
+  void initState() {
+    var image = NetworkImage(
+        "${ConfigEnvironmentVariable.azureContainerImageUrl}/${widget.image}");
+    image
+        .resolve(const ImageConfiguration())
+        .addListener(ImageStreamListener((ImageInfo info, bool syncCall) {
+      print("plate ${widget.plate}");
+      if (mounted) {
+        setState(() {
+          loadingImage = false;
+        });
+      }
+    }));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,17 +60,22 @@ class CardItemParkingCharge extends StatelessWidget {
           child: SizedBox(
             width: 72,
             height: 72,
-            child: Image.network(
-              "${ConfigEnvironmentVariable.azureContainerImageUrl}/$image",
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Image.asset(
-                'assets/images/noPhoto.jpg',
-              ),
-            ),
+            child: loadingImage
+                ? SpinKitCircle(
+                    color: ColorTheme.primary,
+                    size: 25,
+                  )
+                : Image.network(
+                    "${ConfigEnvironmentVariable.azureContainerImageUrl}/${widget.image}",
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                      'assets/images/noPhoto.jpg',
+                    ),
+                  ),
           ),
         ),
         title: Text(
-          plate.toUpperCase(),
+          widget.plate.toUpperCase(),
           style: CustomTextStyle.h4.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -51,12 +84,12 @@ class CardItemParkingCharge extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Contravention: ${contraventions.map((item) => item.detail).toString().replaceAll('(', '').replaceAll(')', '')}",
+              "Contravention: ${widget.contraventions.map((item) => item.detail).toString().replaceAll('(', '').replaceAll(')', '')}",
               style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
             ),
             const SizedBox(height: 5),
             Text(
-              "Created: ${FormatDate().getLocalDate(created)}",
+              "Created: ${FormatDate().getLocalDate(widget.created)}",
               style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
             ),
           ],
