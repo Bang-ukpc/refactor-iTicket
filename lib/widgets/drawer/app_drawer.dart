@@ -1,8 +1,10 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
@@ -77,11 +79,26 @@ class _MyDrawerState extends State<MyDrawer> {
             .then((value) {
           Navigator.of(context).pushNamed(StartBreakScreen.routeName);
         });
-      } catch (error) {
+      } on DioError catch (error) {
+        if (error.type == DioErrorType.other) {
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 2),
+            title: Text(
+              'Network error',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Start break error, please try again',
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Internal server error'
+                : error.response!.data['message'],
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -108,11 +125,26 @@ class _MyDrawerState extends State<MyDrawer> {
             ).show(context);
           });
         });
-      } catch (error) {
+      } on DioError catch (error) {
+        if (error.type == DioErrorType.other) {
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 2),
+            title: Text(
+              'Network error',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'End shift error, please try again',
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Internal server error'
+                : error.response!.data['message'],
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,

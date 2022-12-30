@@ -200,30 +200,12 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
           });
         }
       } on DioError catch (error) {
-        if (error.response!.statusCode == 430) {
+        if (error.type == DioErrorType.other) {
           Navigator.of(context).pop();
           CherryToast.error(
-            displayCloseButton: false,
+            toastDuration: const Duration(seconds: 2),
             title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Something went wrong'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return false;
-        } else {
-          Navigator.of(context).pop();
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Something went wrong'
-                  : error.response!.data['message'],
+              'Network error',
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
@@ -231,6 +213,20 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
           ).show(context);
           return false;
         }
+        Navigator.of(context).pop();
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Internal server error'
+                : error.response!.data['message'],
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+        return false;
       }
 
       _formKey.currentState!.save();

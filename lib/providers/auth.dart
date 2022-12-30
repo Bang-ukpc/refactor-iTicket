@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:aad_oauth/aad_oauth.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:iWarden/common/toast.dart';
@@ -40,7 +41,20 @@ class Auth with ChangeNotifier {
         Navigator.of(context).pop();
         Navigator.of(context).pushReplacementNamed(ConnectingScreen.routeName);
       });
-    } catch (error) {
+    } on DioError catch (error) {
+      if (error.type == DioErrorType.other) {
+        Navigator.of(context).pop();
+        CherryToast.error(
+          toastDuration: const Duration(seconds: 2),
+          title: Text(
+            'Network error',
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+        return;
+      }
       Navigator.of(context).pop();
       await logout().then((value) {
         CherryToast.error(

@@ -121,7 +121,7 @@ void onStart(ServiceInstance service) async {
         data: wardenEventSendCurrentLocation.toJson(),
       );
     } on DioError catch (err) {
-      if (err.response!.statusCode == 401) {
+      if (err.type != DioErrorType.other) {
         service.stopSelf();
       }
     }

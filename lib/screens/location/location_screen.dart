@@ -525,9 +525,8 @@ class DropDownItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: isSelected == true ? ColorTheme.grey100 : ColorTheme.white,
-        border: const Border(
+      decoration: const BoxDecoration(
+        border: Border(
           bottom: BorderSide(
             width: 1,
             color: ColorTheme.grey300,

@@ -23,6 +23,7 @@ import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
 
 enum StateDevice { connected, pending, disconnect }
@@ -38,6 +39,7 @@ class ConnectingScreen extends StatefulWidget {
 class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
+  bool checkGps = false;
   LocationData? currentLocationOfWarder;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;
   bool? checkBluetooth;
@@ -133,10 +135,18 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
         pendingGetCurrentLocation = false;
         currentLocationOfWarder = value;
       });
+      checkPermissionGPS();
     }).catchError((err) {
       setState(() {
         pendingGetCurrentLocation = false;
       });
+    });
+  }
+
+  void checkPermissionGPS() async {
+    var check = await permission.Permission.locationWhenInUse.isGranted;
+    setState(() {
+      checkGps = check;
     });
   }
 
@@ -217,6 +227,18 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
         });
       } on DioError catch (error) {
+        if (error.type == DioErrorType.other) {
+          toast.CherryToast.error(
+            toastDuration: const Duration(seconds: 2),
+            title: Text(
+              'Network error',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: toast.Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
         toast.CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -326,7 +348,22 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                       shadowColor: Colors.transparent,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
-                    onPressed: onStartShift,
+                    onPressed: () {
+                      if (checkGps == true) {
+                        onStartShift();
+                      } else {
+                        toast.CherryToast.error(
+                          toastDuration: const Duration(seconds: 5),
+                          title: Text(
+                            'Please allow the app to access your location to continue',
+                            style: CustomTextStyle.h5
+                                .copyWith(color: ColorTheme.danger),
+                          ),
+                          toastPosition: toast.Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                      }
+                    },
                     child: Text(
                       "Start shift",
                       style: CustomTextStyle.h5.copyWith(color: Colors.white),
