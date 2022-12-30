@@ -213,8 +213,9 @@ class _GracePeriodListState extends State<GracePeriodList> {
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
-                        height:
-                            heightTab1 > 3 ? (heightTab1.toDouble()) * 92 : 350,
+                        height: gracePeriodActive.length > 3
+                            ? (gracePeriodActive.length.toDouble()) * 92
+                            : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
                         child: Column(
@@ -277,7 +278,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
                         height: gracePeriodExpired.length > 3
-                            ? (heightTab2.toDouble() * 92)
+                            ? (gracePeriodExpired.length.toDouble() * 92)
                             : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
