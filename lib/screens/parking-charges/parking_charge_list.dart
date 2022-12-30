@@ -132,7 +132,6 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
                                     );
                                   },
                                   child: CardItemParkingCharge(
-                                    loadingImage: !contraventionLoading,
                                     image: item.contraventionPhotos!.isNotEmpty
                                         ? item.contraventionPhotos![0].blobName
                                         : "",

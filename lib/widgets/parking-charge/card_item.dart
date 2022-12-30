@@ -13,40 +13,20 @@ class CardItemParkingCharge extends StatefulWidget {
   final String plate;
   final List<ContraventionReasonTranslations> contraventions;
   final DateTime created;
-  final bool loadingImage;
 
-  const CardItemParkingCharge(
-      {Key? key,
-      required this.image,
-      required this.plate,
-      required this.contraventions,
-      required this.created,
-      required this.loadingImage})
-      : super(key: key);
+  const CardItemParkingCharge({
+    Key? key,
+    required this.image,
+    required this.plate,
+    required this.contraventions,
+    required this.created,
+  }) : super(key: key);
 
   @override
   State<CardItemParkingCharge> createState() => _CardItemParkingChargeState();
 }
 
 class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
-  bool loadingImage = true;
-  @override
-  void initState() {
-    var image = NetworkImage(
-        "${ConfigEnvironmentVariable.azureContainerImageUrl}/${widget.image}");
-    image
-        .resolve(const ImageConfiguration())
-        .addListener(ImageStreamListener((ImageInfo info, bool syncCall) {
-      print("plate ${widget.plate}");
-      if (mounted) {
-        setState(() {
-          loadingImage = false;
-        });
-      }
-    }));
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -58,21 +38,25 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(5.0),
           child: SizedBox(
-            width: 72,
-            height: 72,
-            child: loadingImage
-                ? SpinKitCircle(
-                    color: ColorTheme.primary,
-                    size: 25,
-                  )
-                : Image.network(
-                    "${ConfigEnvironmentVariable.azureContainerImageUrl}/${widget.image}",
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Image.asset(
-                      'assets/images/noPhoto.jpg',
+              width: 72,
+              height: 72,
+              child: Image.network(
+                "${ConfigEnvironmentVariable.azureContainerImageUrl}/${widget.image}",
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Image.asset(
+                  'assets/images/noPhoto.jpg',
+                ),
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: SpinKitCircle(
+                      color: ColorTheme.primary,
+                      size: 25,
                     ),
-                  ),
-          ),
+                  );
+                },
+              )),
         ),
         title: Text(
           widget.plate.toUpperCase(),
