@@ -45,7 +45,7 @@ class _MyTabBarState extends State<MyTabBar> {
             Navigator.of(context).pushNamed(HomeOverview.routeName);
           },
         ),
-        bottomSheet: BottomSheet2(buttonList: [
+        bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () {
               widget.funcAdd();

@@ -109,7 +109,7 @@ class _AbortScreenState extends State<AbortScreen> {
         },
         child: Scaffold(
           drawer: const MyDrawer(),
-          bottomSheet: BottomSheet2(buttonList: [
+          bottomNavigationBar: BottomSheet2(buttonList: [
             BottomNavyBarItem(
               onPressed: () {
                 Navigator.of(context).pop();

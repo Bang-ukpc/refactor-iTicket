@@ -158,7 +158,7 @@ class _PrintIssueState extends State<PrintIssue> {
         },
         child: Scaffold(
           drawer: const MyDrawer(),
-          bottomSheet: BottomSheet2(padding: 5, buttonList: [
+          bottomNavigationBar: BottomSheet2(padding: 5, buttonList: [
             BottomNavyBarItem(
               onPressed: () {
                 Navigator.of(context).pushNamed(

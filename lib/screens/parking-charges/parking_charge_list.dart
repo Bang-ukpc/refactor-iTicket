@@ -28,7 +28,7 @@ class ParkingChargeList extends StatefulWidget {
 class _ParkingChargeListState extends State<ParkingChargeList> {
   List<Contravention> contraventionList = [];
   bool contraventionLoading = true;
-
+  bool loadingImage = true;
   Future<List<Contravention>> getContraventionList(
       {required int page, required int pageSize, required int zoneId}) async {
     final Pagination list = await contraventionController
@@ -38,6 +38,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
       pageSize: pageSize,
     )
         .then((value) {
+      print(value);
       setState(() {
         contraventionLoading = false;
       });
@@ -74,7 +75,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context, listen: false);
-
+    print("loadingImage $contraventionLoading");
     log('Parking charge list');
 
     Future<void> refresh() async {
@@ -96,7 +97,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
           },
         ),
         drawer: const MyDrawer(),
-        bottomSheet: BottomSheet2(buttonList: [
+        bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () {
               Navigator.of(context)

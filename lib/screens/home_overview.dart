@@ -293,7 +293,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       child: Scaffold(
         appBar: const MyAppBar(title: "Home"),
         drawer: const MyDrawer(),
-        bottomSheet: BottomSheet2(buttonList: [
+        bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: onStartBreak,
             icon: SvgPicture.asset(

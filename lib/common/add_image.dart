@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/theme/color.dart';
@@ -71,15 +72,19 @@ class _AddImageState extends State<AddImage> {
           if (widget.isSlideImage)
             CarouselSlider(
               items: widget.listImage.map((item) {
-                return Container(
-                    decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: (item.runtimeType == String) == false
-                        ? NetworkImage(item)
-                        : NetworkImage(item),
-                    fit: BoxFit.contain,
-                  ),
-                ));
+                return Image.network(
+                  item,
+                  loadingBuilder: (BuildContext context, Widget child,
+                      ImageChunkEvent? loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: SpinKitCircle(
+                        color: ColorTheme.primary,
+                        size: 25,
+                      ),
+                    );
+                  },
+                );
               }).toList(),
               options: CarouselOptions(
                 height: MediaQuery.of(context).size.width < 400 ? 200 : 300,
@@ -163,6 +168,24 @@ class _AddImageState extends State<AddImage> {
                                               ? Image.network(
                                                   widget.listImage[index],
                                                   fit: BoxFit.cover,
+                                                  loadingBuilder:
+                                                      (BuildContext context,
+                                                          Widget child,
+                                                          ImageChunkEvent?
+                                                              loadingProgress) {
+                                                    if (loadingProgress ==
+                                                        null) {
+                                                      return child;
+                                                    }
+
+                                                    return Center(
+                                                      child: SpinKitCircle(
+                                                        color:
+                                                            ColorTheme.primary,
+                                                        size: 25,
+                                                      ),
+                                                    );
+                                                  },
                                                 )
                                               : Image.file(
                                                   widget.listImage[index],

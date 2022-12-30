@@ -29,7 +29,7 @@ class _SendFormScreenState extends State<SendFormScreen> {
         title: "Send form",
         automaticallyImplyLeading: true,
       ),
-      bottomSheet: BottomSheet2(buttonList: [
+      bottomNavigationBar: BottomSheet2(buttonList: [
         BottomNavyBarItem(
             onPressed: () {
               Navigator.of(context).pop();

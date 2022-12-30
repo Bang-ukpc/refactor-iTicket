@@ -108,7 +108,7 @@ class _DetailScreenState extends State<DetailScreen> {
         appBar: MyAppBar(
           title: args.Type == VehicleInformationType.FIRST_SEEN.index
               ? 'First seen details'
-              : 'Consideration Period details',
+              : 'Consideration period details',
           automaticallyImplyLeading: true,
           onRedirect: () {
             args.Type == 0
@@ -119,7 +119,7 @@ class _DetailScreenState extends State<DetailScreen> {
           },
         ),
         drawer: const MyDrawer(),
-        bottomSheet: Container(
+        bottomNavigationBar: Container(
           decoration: const BoxDecoration(
             border: Border(
               top: BorderSide(width: 1, color: ColorTheme.grey300),

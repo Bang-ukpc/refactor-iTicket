@@ -180,6 +180,24 @@ class _GracePeriodListState extends State<GracePeriodList> {
       );
     }
 
+    int heightTab2 = gracePeriodExpired
+        .map(
+          (item) => CardItem(
+            vehicleInfo: item,
+            type: TypeFirstSeen.Expired,
+            expiring: calculateTime.daysBetween(
+              item.ExpiredAt,
+              DateTime.now(),
+            ),
+            onCarLeft: () {
+              onCarLeft(item);
+            },
+            route: DetailExpiredFirstSeen.routeName,
+          ),
+        )
+        .length;
+
+    int heightTab1 = gracePeriodExpired.length - heightTab2;
     return WillPopScope(
       onWillPop: () async => false,
       child: MyTabBar(
@@ -195,6 +213,8 @@ class _GracePeriodListState extends State<GracePeriodList> {
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
+                        height:
+                            heightTab1 > 3 ? (heightTab1.toDouble()) * 92 : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
                         child: Column(
@@ -256,6 +276,9 @@ class _GracePeriodListState extends State<GracePeriodList> {
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
+                        height: gracePeriodExpired.length > 3
+                            ? (heightTab2.toDouble() * 92)
+                            : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
                         child: Column(

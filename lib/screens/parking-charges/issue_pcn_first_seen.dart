@@ -151,7 +151,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     _typeOfPcnController.dispose();
     _commentController.dispose();
     _contraventionReasonController.dispose();
-    _debouncer.timer!.cancel();
+    if (_debouncer.timer != null) {
+      _debouncer.timer!.cancel();
+    }
+
     contraventionReasonList.clear();
     arrayImage.clear();
     evidencePhotoList.clear();
@@ -520,7 +523,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             },
           ),
           drawer: const MyDrawer(),
-          bottomSheet: BottomSheet2(
+          bottomNavigationBar: BottomSheet2(
             buttonList: [
               if (_typeOfPcnController.text == '0')
                 BottomNavyBarItem(
@@ -697,16 +700,19 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                               items: contraventionReasonList,
                               itemAsString: (item) => item.summary as String,
                               popupProps: PopupProps.menu(
-                                showSearchBox: true,
-                                fit: FlexFit.loose,
-                                constraints: const BoxConstraints(
-                                  maxHeight: 300,
-                                ),
-                                itemBuilder: (context, item, isSelected) =>
-                                    DropDownItem(
-                                  title: item.summary as String,
-                                ),
-                              ),
+                                  showSearchBox: true,
+                                  fit: FlexFit.loose,
+                                  constraints: const BoxConstraints(
+                                    maxHeight: 325,
+                                  ),
+                                  itemBuilder: (context, item, isSelected) {
+                                    return DropDownItem(
+                                      isSelected: item
+                                              .contraventionReason!.code ==
+                                          _contraventionReasonController.text,
+                                      title: item.summary as String,
+                                    );
+                                  }),
                               onChanged: (value) {
                                 setState(() {
                                   _contraventionReasonController.text = value!
@@ -748,6 +754,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 ),
                                 itemBuilder: (context, item, isSelected) =>
                                     DropDownItem(
+                                  isSelected: item.value.toString() ==
+                                      _typeOfPcnController.text,
                                   title: item.label,
                                 ),
                               ),

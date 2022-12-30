@@ -117,12 +117,12 @@ class InfoDrawer extends StatelessWidget {
               ? (zone == null && location == null)
                   ? 5
                   : 16
-              : 30,
+              : 37,
           bottom: !isDrawer
               ? (zone == null && location == null)
                   ? 5
                   : 16
-              : 10,
+              : 15,
         ),
         color: isDrawer ? ColorTheme.darkPrimary : Colors.white,
         child: Column(
