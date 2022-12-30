@@ -9,21 +9,19 @@ import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/directions_repository_controller.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
-import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
 import 'package:iWarden/screens/read_regulation_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class LocationScreen extends StatefulWidget {
   static const routeName = '/location';
@@ -38,9 +36,8 @@ class _LocationScreenState extends State<LocationScreen> {
   List<LocationWithZones> locationList = [];
   List<LocationWithZones> listFilter = [];
   List<LocationWithZones> listFilterByRota = [];
-  final Completer<GoogleMapController> _mapController = Completer();
   Directions? _info;
-  var check = false;
+  bool check = false;
   bool isLoading = true;
 
   String formatRotaShift(DateTime date) {
@@ -113,7 +110,7 @@ class _LocationScreenState extends State<LocationScreen> {
   @override
   void initState() {
     super.initState();
-    currentLocationPosition.getCurrentLocation();
+    // currentLocationPosition.getCurrentLocation();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
@@ -139,15 +136,15 @@ class _LocationScreenState extends State<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var statusBarHeight = MediaQuery.of(context).viewPadding.top;
+    final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
 
-    final sourceLocation = LatLng(
-      currentLocationPosition.currentLocation?.latitude ?? 0,
-      currentLocationPosition.currentLocation?.longitude ?? 0,
-    );
+    // final sourceLocation = LatLng(
+    //   currentLocationPosition.currentLocation?.latitude ?? 0,
+    //   currentLocationPosition.currentLocation?.longitude ?? 0,
+    // );
 
     final destination = LatLng(
       locations.location?.Latitude ?? 0,
@@ -162,21 +159,21 @@ class _LocationScreenState extends State<LocationScreen> {
       );
     }
 
-    Future<void> goToDestination() async {
-      final GoogleMapController controller = await _mapController.future;
-      controller.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: sourceLocation,
-            northeast: destination,
-          ),
-          48,
-        ),
-      );
-      final directions = await directionsRepository.getDirections(
-          origin: sourceLocation, destination: destination);
-      setState(() => _info = directions);
-    }
+    // Future<void> goToDestination() async {
+    //   final GoogleMapController controller = await _mapController.future;
+    //   controller.animateCamera(
+    //     CameraUpdate.newLatLngBounds(
+    //       LatLngBounds(
+    //         southwest: sourceLocation,
+    //         northeast: destination,
+    //       ),
+    //       48,
+    //     ),
+    //   );
+    //   final directions = await directionsRepository.getDirections(
+    //       origin: sourceLocation, destination: destination);
+    //   setState(() => _info = directions);
+    // }
 
     return WillPopScope(
       onWillPop: () async => false,
@@ -451,12 +448,12 @@ class _LocationScreenState extends State<LocationScreen> {
                                           GestureDetector(
                                             onTap: locations.location != null
                                                 ? () {
-                                                    setState(() {
-                                                      check == true
-                                                          ? check = false
-                                                          : check = true;
-                                                    });
-                                                    goToDestination();
+                                                    if (check == false) {
+                                                      setState(() {
+                                                        check = true;
+                                                      });
+                                                    }
+                                                    // goToDestination();
                                                   }
                                                 : () {
                                                     CherryToast.error(
@@ -489,46 +486,20 @@ class _LocationScreenState extends State<LocationScreen> {
                                       height: 10,
                                     ),
                                     Container(
-                                      child: locations.location != null &&
-                                              check == true
-                                          ? FutureBuilder(
-                                              future: currentLocationPosition
-                                                  .getCurrentLocation(),
-                                              builder: (context, snap) {
-                                                if (snap.data == null) {
-                                                  return SizedBox(
-                                                    height: screenHeight / 2.5,
-                                                    child: const Center(
-                                                      child: Text(
-                                                        'Please allow the app to access your location!',
-                                                      ),
-                                                    ),
-                                                  );
-                                                } else if (snap.hasError) {
-                                                  return SizedBox(
-                                                    height: screenHeight / 2.5,
-                                                    child: const ServerError(),
-                                                  );
-                                                } else {
-                                                  return MapScreen(
-                                                    screenHeight:
-                                                        MediaQuery.of(context)
-                                                                    .size
-                                                                    .width <
-                                                                400
-                                                            ? screenHeight / 3
-                                                            : screenHeight /
-                                                                1.5,
-                                                    mapController:
-                                                        _mapController,
-                                                    sourceLocation:
-                                                        sourceLocation,
-                                                    destination: destination,
-                                                    info: _info,
-                                                  );
-                                                }
-                                              },
-                                            )
+                                      child: locations.location != null
+                                          ? check == true
+                                              ? MapScreen(
+                                                  screenHeight:
+                                                      MediaQuery.of(context)
+                                                                  .size
+                                                                  .width <
+                                                              400
+                                                          ? screenHeight / 3
+                                                          : screenHeight / 1.5,
+                                                  destination: destination,
+                                                  info: _info,
+                                                )
+                                              : const SizedBox()
                                           : const SizedBox(),
                                     ),
                                   ],

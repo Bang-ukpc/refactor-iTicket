@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/directions_repository_controller.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
@@ -22,53 +20,49 @@ class LocateCarScreen extends StatefulWidget {
 }
 
 class _LocateCarScreenState extends State<LocateCarScreen> {
-  final Completer<GoogleMapController> _mapController = Completer();
   Directions? _info;
 
-  Future<void> goToDestination(
-      {required LatLng sourceLocation, required LatLng destination}) async {
-    final GoogleMapController controller = await _mapController.future;
-    controller.animateCamera(
-      CameraUpdate.newLatLngBounds(
-        LatLngBounds(
-          southwest: sourceLocation,
-          northeast: destination,
-        ),
-        48,
-      ),
-    );
-    final directions = await directionsRepository.getDirections(
-        origin: sourceLocation, destination: destination);
-    setState(() => _info = directions);
-  }
+  // Future<void> goToDestination(
+  //     {required LatLng sourceLocation, required LatLng destination}) async {
+  //   final GoogleMapController controller = await _mapController.future;
+  //   controller.animateCamera(
+  //     CameraUpdate.newLatLngBounds(
+  //       LatLngBounds(
+  //         southwest: sourceLocation,
+  //         northeast: destination,
+  //       ),
+  //       48,
+  //     ),
+  //   );
+  //   final directions = await directionsRepository.getDirections(
+  //       origin: sourceLocation, destination: destination);
+  //   setState(() => _info = directions);
+  // }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final vehicleInfo =
-          ModalRoute.of(context)!.settings.arguments as VehicleInformation;
-      final sourceLocation = LatLng(
-        currentLocationPosition.currentLocation?.latitude ?? 0,
-        currentLocationPosition.currentLocation?.longitude ?? 0,
-      );
-      final destination = LatLng(
-        vehicleInfo.Latitude,
-        vehicleInfo.Longitude,
-      );
-      goToDestination(sourceLocation: sourceLocation, destination: destination);
-    });
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+  //     final vehicleInfo =
+  //         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
+  //     final sourceLocation = LatLng(
+  //       currentLocationPosition.currentLocation?.latitude ?? 0,
+  //       currentLocationPosition.currentLocation?.longitude ?? 0,
+  //     );
+  //     final destination = LatLng(
+  //       vehicleInfo.Latitude,
+  //       vehicleInfo.Longitude,
+  //     );
+  //     goToDestination(sourceLocation: sourceLocation, destination: destination);
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+
     final vehicleInfo =
         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
-    final sourceLocation = LatLng(
-      currentLocationPosition.currentLocation?.latitude ?? 0,
-      currentLocationPosition.currentLocation?.longitude ?? 0,
-    );
     final destination = LatLng(
       vehicleInfo.Latitude,
       vehicleInfo.Longitude,
@@ -123,8 +117,6 @@ class _LocateCarScreenState extends State<LocateCarScreen> {
                 screenHeight: MediaQuery.of(context).size.width < 400
                     ? screenHeight / 1.3
                     : screenHeight / 1.8,
-                mapController: _mapController,
-                sourceLocation: sourceLocation,
                 destination: destination,
                 info: _info,
               ),

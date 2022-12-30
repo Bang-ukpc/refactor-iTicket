@@ -7,8 +7,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-// import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/toast.dart' as toast;
@@ -23,7 +24,6 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
 
 enum StateDevice { connected, pending, disconnect }
 
@@ -71,12 +71,13 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   // Check bluetooth connection
-  // void checkBluetoothConnectionState() async {
-  //   var check = await FlutterBlue.instance.isOn;
-  //   setState(() {
-  //     checkBluetooth = check;
-  //   });
-  // }
+  void _checkDeviceBluetoothIsOn() async {
+    var check = await FlutterBluePlus.instance.isOn;
+    print('Status: $check');
+    setState(() {
+      checkBluetooth = check;
+    });
+  }
 
   // Check GPS connection
   Future<void> checkGpsConnectingStatus() async {
@@ -171,7 +172,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    // checkBluetoothConnectionState();
+    _checkDeviceBluetoothIsOn();
   }
 
   StateDevice checkState(bool check) {
