@@ -73,7 +73,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   // Check bluetooth connection
   void _checkDeviceBluetoothIsOn() async {
     var check = await FlutterBluePlus.instance.isOn;
-    print('Status: $check');
     setState(() {
       checkBluetooth = check;
     });

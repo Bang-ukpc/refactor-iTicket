@@ -206,313 +206,303 @@ class _LocationScreenState extends State<LocationScreen> {
             ),
           ]),
           body: SingleChildScrollView(
-            child: Container(
-              margin: const EdgeInsets.only(
-                bottom: 30,
-              ),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: statusBarHeight,
-                  ),
-                  InfoDrawer(
-                    assetImage: wardensProvider.wardens?.Picture ??
-                        "assets/images/userAvatar.png",
-                    name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
-                    location: null,
-                    zone: null,
-                    isDrawer: false,
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    color: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 15),
-                    child: isLoading == false
-                        ? Column(
-                            children: [
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    const Text(
-                                        'Please select your location for this shift',
-                                        style: CustomTextStyle.body1),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    SizedBox(
-                                      child: DropdownSearch<LocationWithZones>(
-                                        dropdownDecoratorProps:
-                                            DropDownDecoratorProps(
-                                          dropdownSearchDecoration:
-                                              dropDownButtonStyle
-                                                  .getInputDecorationCustom(
-                                            labelText:
-                                                const Text('My rota shift'),
-                                            hintText: 'Select rota shift',
-                                          ),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: statusBarHeight,
+                ),
+                InfoDrawer(
+                  assetImage: wardensProvider.wardens?.Picture ??
+                      "assets/images/userAvatar.png",
+                  name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
+                  location: null,
+                  zone: null,
+                  isDrawer: false,
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  color: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                  child: isLoading == false
+                      ? Column(
+                          children: [
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                      'Please select your location for this shift',
+                                      style: CustomTextStyle.body1),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<LocationWithZones>(
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText:
+                                              const Text('My rota shift'),
+                                          hintText: 'Select rota shift',
                                         ),
-                                        items: rotaList(locationList),
-                                        selectedItem: listFilter.isNotEmpty
-                                            ? listFilter[0]
-                                            : null,
-                                        itemAsString: (item) =>
-                                            '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
-                                        popupProps: PopupProps.menu(
-                                          fit: FlexFit.loose,
-                                          constraints: const BoxConstraints(
-                                            maxHeight: 200,
-                                          ),
-                                          itemBuilder:
-                                              (context, item, isSelected) {
-                                            return DropDownItem(
-                                              title:
-                                                  '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
-                                              isSelected: false,
-                                            );
-                                          },
-                                        ),
-                                        onChanged: (value) {
-                                          LocationWithZones rotaShiftSelected =
-                                              locationList.firstWhere(
-                                            (item) => item.Id == value!.Id,
-                                          );
-                                          locations.onSelectedRotaShift(
-                                            MyRotaShift(
-                                              From: rotaShiftSelected.From,
-                                              To: rotaShiftSelected.To,
-                                            ),
-                                          );
-                                          locationListFilterByRota(
-                                            rotaShiftSelected.From,
-                                            rotaShiftSelected.To,
-                                          );
-                                          locations.onSelectedLocation(
-                                            listFilterByRota[0],
-                                          );
-                                          setZoneWhenSelectedLocation(
-                                              rotaShiftSelected);
-                                        },
-                                        validator: ((value) {
-                                          if (value == null) {
-                                            return 'Please select rota shift';
-                                          }
-                                          return null;
-                                        }),
-                                        autoValidateMode:
-                                            AutovalidateMode.onUserInteraction,
                                       ),
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    SizedBox(
-                                      child: DropdownSearch<LocationWithZones>(
-                                        dropdownDecoratorProps:
-                                            DropDownDecoratorProps(
-                                          dropdownSearchDecoration:
-                                              dropDownButtonStyle
-                                                  .getInputDecorationCustom(
-                                            labelText: const Text('Location'),
-                                            hintText: 'Select location',
-                                          ),
+                                      items: rotaList(locationList),
+                                      selectedItem: listFilter.isNotEmpty
+                                          ? listFilter[0]
+                                          : null,
+                                      itemAsString: (item) =>
+                                          '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
+                                      popupProps: PopupProps.menu(
+                                        fit: FlexFit.loose,
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 200,
                                         ),
-                                        items: listFilterByRota,
-                                        selectedItem:
-                                            listFilterByRota.isNotEmpty
-                                                ? listFilterByRota[0]
-                                                : null,
-                                        itemAsString: (item) => item.Name,
-                                        popupProps: PopupProps.menu(
-                                          fit: FlexFit.loose,
-                                          constraints: const BoxConstraints(
-                                            maxHeight: 200,
-                                          ),
-                                          itemBuilder:
-                                              (context, item, isSelected) {
-                                            return DropDownItem(
-                                              title: item.Name,
-                                              subTitle:
-                                                  'Distance: ${item.Distance}km',
-                                              isSelected: false,
-                                            );
-                                          },
-                                        ),
-                                        onChanged: (value) {
-                                          LocationWithZones locationSelected =
-                                              locationList.firstWhere(
-                                            (item) => item.Id == value!.Id,
-                                          );
-                                          locations.onSelectedLocation(
-                                            locationSelected,
-                                          );
-                                          setZoneWhenSelectedLocation(
-                                            locationSelected,
+                                        itemBuilder:
+                                            (context, item, isSelected) {
+                                          return DropDownItem(
+                                            title:
+                                                '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
+                                            isSelected: false,
                                           );
                                         },
-                                        validator: ((value) {
-                                          if (value == null) {
-                                            return 'Please select location';
-                                          }
-                                          return null;
-                                        }),
-                                        autoValidateMode:
-                                            AutovalidateMode.onUserInteraction,
                                       ),
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    SizedBox(
-                                      child: DropdownSearch<Zone>(
-                                        dropdownDecoratorProps:
-                                            DropDownDecoratorProps(
-                                          dropdownSearchDecoration:
-                                              dropDownButtonStyle
-                                                  .getInputDecorationCustom(
-                                            labelText: const Text('Zone'),
-                                            hintText: 'Select zone',
+                                      onChanged: (value) {
+                                        LocationWithZones rotaShiftSelected =
+                                            locationList.firstWhere(
+                                          (item) => item.Id == value!.Id,
+                                        );
+                                        locations.onSelectedRotaShift(
+                                          MyRotaShift(
+                                            From: rotaShiftSelected.From,
+                                            To: rotaShiftSelected.To,
                                           ),
+                                        );
+                                        locationListFilterByRota(
+                                          rotaShiftSelected.From,
+                                          rotaShiftSelected.To,
+                                        );
+                                        locations.onSelectedLocation(
+                                          listFilterByRota[0],
+                                        );
+                                        setZoneWhenSelectedLocation(
+                                            rotaShiftSelected);
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select rota shift';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<LocationWithZones>(
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const Text('Location'),
+                                          hintText: 'Select location',
                                         ),
-                                        items: locations.location?.Zones ?? [],
-                                        selectedItem: locations.zone,
-                                        itemAsString: (item) => item.Name,
-                                        popupProps: PopupProps.menu(
-                                          fit: FlexFit.loose,
-                                          constraints: const BoxConstraints(
-                                            maxHeight: 200,
-                                          ),
-                                          itemBuilder:
-                                              (context, item, isSelected) =>
-                                                  DropDownItem(
+                                      ),
+                                      items: listFilterByRota,
+                                      selectedItem: listFilterByRota.isNotEmpty
+                                          ? listFilterByRota[0]
+                                          : null,
+                                      itemAsString: (item) => item.Name,
+                                      popupProps: PopupProps.menu(
+                                        fit: FlexFit.loose,
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 200,
+                                        ),
+                                        itemBuilder:
+                                            (context, item, isSelected) {
+                                          return DropDownItem(
                                             title: item.Name,
+                                            subTitle:
+                                                'Distance: ${item.Distance}km',
+                                            isSelected: false,
+                                          );
+                                        },
+                                      ),
+                                      onChanged: (value) {
+                                        LocationWithZones locationSelected =
+                                            locationList.firstWhere(
+                                          (item) => item.Id == value!.Id,
+                                        );
+                                        locations.onSelectedLocation(
+                                          locationSelected,
+                                        );
+                                        setZoneWhenSelectedLocation(
+                                          locationSelected,
+                                        );
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select location';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<Zone>(
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const Text('Zone'),
+                                          hintText: 'Select zone',
+                                        ),
+                                      ),
+                                      items: locations.location?.Zones ?? [],
+                                      selectedItem: locations.zone,
+                                      itemAsString: (item) => item.Name,
+                                      popupProps: PopupProps.menu(
+                                        fit: FlexFit.loose,
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 200,
+                                        ),
+                                        itemBuilder:
+                                            (context, item, isSelected) =>
+                                                DropDownItem(
+                                          title: item.Name,
+                                        ),
+                                      ),
+                                      onChanged: (value) {
+                                        Zone zoneSelected = locations
+                                            .location!.Zones!
+                                            .firstWhere(
+                                          (item) => item.Id == value!.Id,
+                                        );
+                                        locations.onSelectedZone(zoneSelected);
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select zone';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 24,
+                                  ),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(3),
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                          flex: 9,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(14),
+                                            color: ColorTheme.lighterPrimary,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                SvgPicture.asset(
+                                                  "assets/svg/IconLocation2.svg",
+                                                ),
+                                                const SizedBox(
+                                                  width: 14,
+                                                ),
+                                                Text(
+                                                  "${_info?.totalDuration ?? '0 mins'} (${_info?.totalDistance ?? '0 km'})",
+                                                  style: CustomTextStyle.h4
+                                                      .copyWith(
+                                                    color: ColorTheme.primary,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                        onChanged: (value) {
-                                          Zone zoneSelected = locations
-                                              .location!.Zones!
-                                              .firstWhere(
-                                            (item) => item.Id == value!.Id,
-                                          );
-                                          locations
-                                              .onSelectedZone(zoneSelected);
-                                        },
-                                        validator: ((value) {
-                                          if (value == null) {
-                                            return 'Please select zone';
-                                          }
-                                          return null;
-                                        }),
-                                        autoValidateMode:
-                                            AutovalidateMode.onUserInteraction,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 24,
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(3),
-                                      child: Row(
-                                        children: [
-                                          Flexible(
-                                            flex: 9,
-                                            child: Container(
-                                              padding: const EdgeInsets.all(14),
-                                              color: ColorTheme.lighterPrimary,
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  SvgPicture.asset(
-                                                    "assets/svg/IconLocation2.svg",
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 14,
-                                                  ),
-                                                  Text(
-                                                    "${_info?.totalDuration ?? '0 mins'} (${_info?.totalDistance ?? '0 km'})",
-                                                    style: CustomTextStyle.h4
-                                                        .copyWith(
-                                                      color: ColorTheme.primary,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: locations.location != null
-                                                ? () {
-                                                    if (check == false) {
-                                                      setState(() {
-                                                        check = true;
-                                                      });
-                                                    }
-                                                    // goToDestination();
+                                        GestureDetector(
+                                          onTap: locations.location != null
+                                              ? () {
+                                                  if (check == false) {
+                                                    setState(() {
+                                                      check = true;
+                                                    });
                                                   }
-                                                : () {
-                                                    CherryToast.error(
-                                                      displayCloseButton: false,
-                                                      title: Text(
-                                                        'Please select location first',
-                                                        style: CustomTextStyle
-                                                            .h5
-                                                            .copyWith(
-                                                                color: ColorTheme
-                                                                    .danger),
-                                                      ),
-                                                      toastPosition:
-                                                          Position.bottom,
-                                                      borderRadius: 5,
-                                                    ).show(context);
-                                                  },
-                                            child: Container(
-                                              padding: const EdgeInsets.all(14),
-                                              color: ColorTheme.darkPrimary,
-                                              child: SvgPicture.asset(
-                                                "assets/svg/IconMaps.svg",
-                                              ),
+                                                  // goToDestination();
+                                                }
+                                              : () {
+                                                  CherryToast.error(
+                                                    displayCloseButton: false,
+                                                    title: Text(
+                                                      'Please select location first',
+                                                      style: CustomTextStyle.h5
+                                                          .copyWith(
+                                                              color: ColorTheme
+                                                                  .danger),
+                                                    ),
+                                                    toastPosition:
+                                                        Position.bottom,
+                                                    borderRadius: 5,
+                                                  ).show(context);
+                                                },
+                                          child: Container(
+                                            padding: const EdgeInsets.all(14),
+                                            color: ColorTheme.darkPrimary,
+                                            child: SvgPicture.asset(
+                                              "assets/svg/IconMaps.svg",
                                             ),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Container(
-                                      child: locations.location != null
-                                          ? check == true
-                                              ? MapScreen(
-                                                  screenHeight:
-                                                      MediaQuery.of(context)
-                                                                  .size
-                                                                  .width <
-                                                              400
-                                                          ? screenHeight / 3
-                                                          : screenHeight / 1.5,
-                                                  destination: destination,
-                                                  info: _info,
-                                                )
-                                              : const SizedBox()
-                                          : const SizedBox(),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Container(
+                                    child: locations.location != null
+                                        ? check == true
+                                            ? MapScreen(
+                                                screenHeight:
+                                                    MediaQuery.of(context)
+                                                                .size
+                                                                .width <
+                                                            400
+                                                        ? screenHeight / 3
+                                                        : screenHeight / 1.5,
+                                                destination: destination,
+                                                info: _info,
+                                              )
+                                            : const SizedBox()
+                                        : const SizedBox(),
+                                  ),
+                                ],
                               ),
-                            ],
-                          )
-                        : const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                  ),
-                ],
-              ),
+                            ),
+                          ],
+                        )
+                      : const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                ),
+              ],
             ),
           ),
         ),
