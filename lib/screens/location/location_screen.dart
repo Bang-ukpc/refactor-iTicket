@@ -426,7 +426,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                   width: 14,
                                                 ),
                                                 Text(
-                                                  "${_info?.totalDuration ?? '0 mins'} (${_info?.totalDistance ?? '0 km'})",
+                                                  "${((locations.location?.Distance ?? 0) / 15 * 60).ceil()}min (${locations.location?.Distance ?? 0}km)",
                                                   style: CustomTextStyle.h4
                                                       .copyWith(
                                                     color: ColorTheme.primary,

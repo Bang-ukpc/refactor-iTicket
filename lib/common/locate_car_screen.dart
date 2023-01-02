@@ -1,8 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
@@ -67,6 +67,13 @@ class _LocateCarScreenState extends State<LocateCarScreen> {
       vehicleInfo.Latitude,
       vehicleInfo.Longitude,
     );
+    double distance = Geolocator.distanceBetween(
+      currentLocationPosition.currentLocation?.latitude ?? 0,
+      currentLocationPosition.currentLocation?.longitude ?? 0,
+      vehicleInfo.Latitude,
+      vehicleInfo.Longitude,
+    );
+    print(distance / 1000 >= 0);
 
     return Scaffold(
       appBar: const MyAppBar(
@@ -101,7 +108,7 @@ class _LocateCarScreenState extends State<LocateCarScreen> {
                       width: 10,
                     ),
                     Text(
-                      "${_info?.totalDuration ?? '0 mins'} (${_info?.totalDistance ?? '0 km'})",
+                      "${(((distance / 1000) / 15) * 60).ceil()}min (${(distance / 1000).toStringAsFixed(2)}km)",
                       style: CustomTextStyle.h4.copyWith(
                         color: ColorTheme.textPrimary,
                         fontWeight: FontWeight.w500,

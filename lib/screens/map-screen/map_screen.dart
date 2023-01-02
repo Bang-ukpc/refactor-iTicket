@@ -42,9 +42,6 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    log('ao ma source location: ${currentLocationPosition.currentLocation.toString()}');
-    log('ao ma destination: ${widget.destination}');
-
     return SizedBox(
       height: widget.screenHeight,
       width: MediaQuery.of(context).size.width,
