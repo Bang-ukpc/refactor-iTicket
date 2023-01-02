@@ -180,29 +180,11 @@ class _GracePeriodListState extends State<GracePeriodList> {
       );
     }
 
-    int heightTab2 = gracePeriodExpired
-        .map(
-          (item) => CardItem(
-            vehicleInfo: item,
-            type: TypeFirstSeen.Expired,
-            expiring: calculateTime.daysBetween(
-              item.ExpiredAt,
-              DateTime.now(),
-            ),
-            onCarLeft: () {
-              onCarLeft(item);
-            },
-            route: DetailExpiredFirstSeen.routeName,
-          ),
-        )
-        .length;
-
-    int heightTab1 = gracePeriodExpired.length - heightTab2;
     return WillPopScope(
       onWillPop: () async => false,
       child: MyTabBar(
-        labelFuncAdd: "Add Consideration Period",
-        titleAppBar: "Consideration Period",
+        labelFuncAdd: "Add consideration period",
+        titleAppBar: "Consideration period",
         funcAdd: () {
           Navigator.of(context).pushReplacementNamed(AddGracePeriod.routeName);
         },

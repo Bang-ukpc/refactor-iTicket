@@ -391,7 +391,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                       width: width,
                       assetIcon: "assets/svg/IconGrace.svg",
                       backgroundIcon: ColorTheme.lightDanger,
-                      title: "Consideration Period",
+                      title: "Consideration period",
                       desc:
                           "Grace period list description Grace period list description...",
                       infoRight: "Active: ${gracePeriodActive.length}",

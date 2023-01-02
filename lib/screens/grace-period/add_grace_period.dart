@@ -237,7 +237,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
       onWillPop: () async => false,
       child: Scaffold(
         appBar: MyAppBar(
-          title: "Add Consideration Period ",
+          title: "Add consideration period ",
           automaticallyImplyLeading: true,
           onRedirect: () {
             Navigator.of(context).popAndPushNamed(GracePeriodList.routeName);
