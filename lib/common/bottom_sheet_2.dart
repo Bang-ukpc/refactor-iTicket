@@ -55,8 +55,8 @@ class _BottomSheet2State extends State<BottomSheet2> {
           BoxShadow(
             color: ColorTheme.grey300,
             offset: Offset(0, 0.75),
-            blurRadius: 8,
-            spreadRadius: 5,
+            blurRadius: 10,
+            spreadRadius: 4,
           ),
         ],
       ),
