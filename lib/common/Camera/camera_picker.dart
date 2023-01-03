@@ -273,200 +273,237 @@ class CameraPicker extends HookWidget {
                               child: CircularProgressIndicator());
                         }
 
-                        return CameraPreview(
-                          cameraController,
-                          key: Key(cameraController.description.name),
-                          child: SafeArea(
-                              child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                color: ColorTheme.backdrop2,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 30, vertical: 10),
-                                child: Row(
+                        var camera = cameraController.value;
+                        final size = MediaQuery.of(context).size;
+                        var scale = size.aspectRatio * camera.aspectRatio;
+                        if (scale < 1) scale = 1 / scale;
+
+                        return Transform.scale(
+                          scale: scale + 0.01,
+                          child: Center(
+                            child: CameraPreview(
+                              cameraController,
+                              key: Key(cameraController.description.name),
+                              child: SafeArea(
+                                top: true,
+                                child: Column(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        InkWell(
-                                          onTap: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: SvgPicture.asset(
-                                            "assets/svg/IconBack.svg",
-                                            color: Colors.white,
+                                    Container(
+                                      color: ColorTheme.backdrop2,
+                                      padding: const EdgeInsets.only(
+                                        left: 50,
+                                        right: 40,
+                                        top: 10,
+                                        bottom: 10,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: SvgPicture.asset(
+                                                  "assets/svg/IconBack.svg",
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                width: 14,
+                                              ),
+                                              Text(
+                                                !editImage
+                                                    ? printIssue
+                                                        .findIssueNoImage()
+                                                        .title
+                                                    : titleCamera,
+                                                style:
+                                                    CustomTextStyle.h5.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                        const SizedBox(
-                                          width: 14,
-                                        ),
-                                        Text(
-                                          !editImage
-                                              ? printIssue
-                                                  .findIssueNoImage()
-                                                  .title
-                                              : titleCamera,
-                                          style: CustomTextStyle.h4.copyWith(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
+                                          HookBuilder(builder: (context) {
+                                            final mode =
+                                                useState(FlashMode.auto);
+                                            return InkWell(
+                                              onTap: () {
+                                                if (mode.value ==
+                                                    FlashMode.auto) {
+                                                  mode.value = FlashMode.torch;
+                                                  cameraController.setFlashMode(
+                                                      FlashMode.torch);
+                                                } else {
+                                                  mode.value = FlashMode.auto;
+                                                  cameraController.setFlashMode(
+                                                      FlashMode.auto);
+                                                }
+                                              },
+                                              child: SvgPicture.asset(
+                                                mode.value == FlashMode.auto
+                                                    ? "assets/svg/OffFlash.svg"
+                                                    : "assets/svg/OnFlash.svg",
+                                              ),
+                                            );
+                                          })
+                                        ],
+                                      ),
                                     ),
-                                    HookBuilder(builder: (context) {
-                                      final mode = useState(FlashMode.auto);
-                                      return InkWell(
-                                        onTap: () {
-                                          if (mode.value == FlashMode.auto) {
-                                            mode.value = FlashMode.torch;
-                                            cameraController
-                                                .setFlashMode(FlashMode.torch);
-                                          } else {
-                                            mode.value = FlashMode.auto;
-                                            cameraController
-                                                .setFlashMode(FlashMode.auto);
-                                          }
-                                        },
-                                        child: SvgPicture.asset(
-                                            mode.value == FlashMode.auto
-                                                ? "assets/svg/OffFlash.svg"
-                                                : "assets/svg/OnFlash.svg"),
-                                      );
-                                    })
+                                    if (previewImage == false)
+                                      HookBuilder(builder: (context) {
+                                        useListenable(store);
+                                        return ImagesPreview(
+                                          files: store.filesData,
+                                          iconColor: iconColor,
+                                          borderColor: iconColor,
+                                          previewWidth: previewWidth,
+                                          previewHeight: previewHeight,
+                                          onDelete: (index) async {
+                                            if (onDelete == null ||
+                                                await onDelete!(
+                                                    store.filesData[index])) {
+                                              store.removeFile(
+                                                  store.filesData[index]);
+                                            }
+                                          },
+                                        );
+                                      }),
+                                    Container(
+                                      color: ColorTheme.backdrop2,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 50, vertical: 50),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          InkWell(
+                                            onTap: () {
+                                              cameraController.dispose();
+                                              SystemChrome
+                                                  .setPreferredOrientations([
+                                                DeviceOrientation.portraitUp,
+                                                DeviceOrientation.portraitDown,
+                                                DeviceOrientation.landscapeLeft,
+                                                DeviceOrientation.landscapeRight
+                                              ]);
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const BuildIcon(
+                                              width: 34,
+                                              height: 34,
+                                              assetIcon:
+                                                  "assets/svg/IconCloseCamera.svg",
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: () async {
+                                              try {
+                                                final file =
+                                                    await cameraController
+                                                        .takePicture();
+                                                log(file.path.toString());
+                                                final tempDir = await syspaths
+                                                    .getTemporaryDirectory();
+                                                final fileName =
+                                                    path.basename(file.path);
+                                                File files = await File(
+                                                        '${tempDir.path}/$fileName')
+                                                    .create();
+                                                var decodeImg = img.decodeImage(
+                                                    await file.readAsBytes());
+                                                img.Image fixed =
+                                                    img.copyRotate(
+                                                        decodeImg!, -90);
+                                                var encodeImage = img.encodeJpg(
+                                                    fixed,
+                                                    quality: 100);
+                                                var finalImage = files
+                                                  ..writeAsBytesSync(
+                                                      encodeImage);
+                                                store.addFile(finalImage);
+                                                previewImage == true
+                                                    ? SystemChrome
+                                                        .setPreferredOrientations([
+                                                        DeviceOrientation
+                                                            .portraitUp,
+                                                        DeviceOrientation
+                                                            .portraitDown,
+                                                        DeviceOrientation
+                                                            .landscapeLeft,
+                                                        DeviceOrientation
+                                                            .landscapeRight
+                                                      ])
+                                                    : null;
+                                                previewImage == true
+                                                    // ignore: use_build_context_synchronously
+                                                    ? showDiaLog(
+                                                        widthScreen,
+                                                        padding,
+                                                        context,
+                                                        finalImage)
+                                                    : null;
+                                              } catch (ex, stack) {
+                                                onError?.call(ex, stack);
+                                              }
+                                            },
+                                            child: const BuildIcon(
+                                              width: 68,
+                                              height: 68,
+                                              color: Color.fromRGBO(
+                                                  255, 255, 255, 0.2),
+                                              assetIcon:
+                                                  "assets/svg/IconCamera2.svg",
+                                            ),
+                                          ),
+                                          HookBuilder(builder: (context) {
+                                            useListenable(store);
+
+                                            return InkWell(
+                                              onTap: store.canContinue
+                                                  ? () {
+                                                      cameraController
+                                                          .dispose();
+                                                      Navigator.of(context)
+                                                          .pop(store.filesData);
+                                                      SystemChrome
+                                                          .setPreferredOrientations([
+                                                        DeviceOrientation
+                                                            .portraitUp,
+                                                        DeviceOrientation
+                                                            .portraitDown,
+                                                        DeviceOrientation
+                                                            .landscapeLeft,
+                                                        DeviceOrientation
+                                                            .landscapeRight
+                                                      ]);
+                                                    }
+                                                  : null,
+                                              enableFeedback: true,
+                                              child: const BuildIcon(
+                                                width: 34,
+                                                height: 34,
+                                                assetIcon:
+                                                    "assets/svg/IconCom.svg",
+                                              ),
+                                            );
+                                          }),
+                                        ],
+                                      ),
+                                    )
                                   ],
                                 ),
                               ),
-                              if (previewImage == false)
-                                HookBuilder(builder: (context) {
-                                  useListenable(store);
-                                  return ImagesPreview(
-                                    files: store.filesData,
-                                    iconColor: iconColor,
-                                    borderColor: iconColor,
-                                    previewWidth: previewWidth,
-                                    previewHeight: previewHeight,
-                                    onDelete: (index) async {
-                                      if (onDelete == null ||
-                                          await onDelete!(
-                                              store.filesData[index])) {
-                                        store
-                                            .removeFile(store.filesData[index]);
-                                      }
-                                    },
-                                  );
-                                }),
-                              Container(
-                                color: ColorTheme.backdrop2,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 50, vertical: 70),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        cameraController.dispose();
-                                        SystemChrome.setPreferredOrientations([
-                                          DeviceOrientation.portraitUp,
-                                          DeviceOrientation.portraitDown,
-                                          DeviceOrientation.landscapeLeft,
-                                          DeviceOrientation.landscapeRight
-                                        ]);
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const BuildIcon(
-                                        width: 32,
-                                        height: 32,
-                                        assetIcon:
-                                            "assets/svg/IconCloseCamera.svg",
-                                      ),
-                                    ),
-                                    InkWell(
-                                      onTap: () async {
-                                        try {
-                                          final file = await cameraController
-                                              .takePicture();
-                                          log(file.path.toString());
-                                          final tempDir = await syspaths
-                                              .getTemporaryDirectory();
-                                          final fileName =
-                                              path.basename(file.path);
-                                          File files = await File(
-                                                  '${tempDir.path}/$fileName')
-                                              .create();
-                                          var decodeImg = img.decodeImage(
-                                              await file.readAsBytes());
-                                          img.Image fixed =
-                                              img.copyRotate(decodeImg!, -90);
-                                          var encodeImage = img.encodeJpg(fixed,
-                                              quality: 100);
-                                          var finalImage = files
-                                            ..writeAsBytesSync(encodeImage);
-                                          store.addFile(finalImage);
-                                          previewImage == true
-                                              ? SystemChrome
-                                                  .setPreferredOrientations([
-                                                  DeviceOrientation.portraitUp,
-                                                  DeviceOrientation
-                                                      .portraitDown,
-                                                  DeviceOrientation
-                                                      .landscapeLeft,
-                                                  DeviceOrientation
-                                                      .landscapeRight
-                                                ])
-                                              : null;
-                                          previewImage == true
-                                              // ignore: use_build_context_synchronously
-                                              ? showDiaLog(widthScreen, padding,
-                                                  context, finalImage)
-                                              : null;
-                                        } catch (ex, stack) {
-                                          onError?.call(ex, stack);
-                                        }
-                                      },
-                                      child: const BuildIcon(
-                                        width: 64,
-                                        height: 64,
-                                        color:
-                                            Color.fromRGBO(255, 255, 255, 0.2),
-                                        assetIcon: "assets/svg/IconCamera2.svg",
-                                      ),
-                                    ),
-                                    HookBuilder(builder: (context) {
-                                      useListenable(store);
-
-                                      return InkWell(
-                                        onTap: store.canContinue
-                                            ? () {
-                                                cameraController.dispose();
-                                                Navigator.of(context)
-                                                    .pop(store.filesData);
-                                                SystemChrome
-                                                    .setPreferredOrientations([
-                                                  DeviceOrientation.portraitUp,
-                                                  DeviceOrientation
-                                                      .portraitDown,
-                                                  DeviceOrientation
-                                                      .landscapeLeft,
-                                                  DeviceOrientation
-                                                      .landscapeRight
-                                                ]);
-                                              }
-                                            : null,
-                                        enableFeedback: true,
-                                        child: const BuildIcon(
-                                          width: 32,
-                                          height: 32,
-                                          assetIcon: "assets/svg/IconCom.svg",
-                                        ),
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              )
-                            ],
-                          )),
+                            ),
+                          ),
                         );
                       }),
                 );
@@ -517,22 +554,25 @@ class ImagesPreview extends HookWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (var i = 0; i < ioFiles.length; i++)
-            ImagePreview(
-              file: ioFiles[i],
-              previewHeight: previewHeight,
-              previewWidth: previewWidth,
-              borderColor: borderColor,
-              iconColor: iconColor,
-              onDelete: onDelete == null
-                  ? null
-                  : () {
-                      onDelete?.call(i);
-                    },
-            ),
-        ],
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 21),
+        child: Row(
+          children: [
+            for (var i = 0; i < ioFiles.length; i++)
+              ImagePreview(
+                file: ioFiles[i],
+                previewHeight: previewHeight,
+                previewWidth: previewWidth,
+                borderColor: borderColor,
+                iconColor: iconColor,
+                onDelete: onDelete == null
+                    ? null
+                    : () {
+                        onDelete?.call(i);
+                      },
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -573,7 +613,7 @@ class ImagePreview extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
-      height: screenHeight / 1.6,
+      height: screenHeight / 1.7,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.max,

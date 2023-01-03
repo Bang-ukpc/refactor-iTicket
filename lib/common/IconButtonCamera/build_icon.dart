@@ -19,7 +19,7 @@ class BuildIcon extends StatelessWidget {
       height: height,
       padding: const EdgeInsets.all(10),
       decoration:
-          BoxDecoration(color: color, borderRadius: BorderRadius.circular(30)),
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(100)),
       child: SvgPicture.asset(assetIcon),
     );
   }
