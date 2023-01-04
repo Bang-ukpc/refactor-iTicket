@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -42,7 +41,13 @@ class _MyDrawerState extends State<MyDrawer> {
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect();
+    bluetoothPrinterHelper.initConnect(true);
+  }
+
+  @override
+  void dispose() {
+    bluetoothPrinterHelper.disposePrinter();
+    super.dispose();
   }
 
   @override
@@ -51,6 +56,46 @@ class _MyDrawerState extends State<MyDrawer> {
     final widthScreen = MediaQuery.of(context).size.width;
     final wardensProvider = Provider.of<WardensInfo>(context);
     final locations = Provider.of<Locations>(context);
+
+    void showLoading() {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: ColorTheme.mask,
+        builder: (_) {
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Connecting to printer',
+                        style: CustomTextStyle.h4.copyWith(
+                          decoration: TextDecoration.none,
+                          color: ColorTheme.white,
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 10, left: 2),
+                        child: const SpinKitThreeBounce(
+                          color: ColorTheme.white,
+                          size: 7,
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
 
     WardenEvent wardenEventStartBreak = WardenEvent(
       type: TypeWardenEvent.StartBreak.index,
@@ -174,15 +219,12 @@ class _MyDrawerState extends State<MyDrawer> {
                       ).show(context);
                     }
                   : e.route == 'testPrinter'
-                      ? () {
-                          if (bluetoothPrinterHelper.selectedPrinter == null ||
-                              bluetoothPrinterHelper.devices[0].deviceName !=
-                                  bluetoothPrinterHelper
-                                      .selectedPrinter?.deviceName) {
+                      ? () async {
+                          if (bluetoothPrinterHelper.selectedPrinter == null) {
                             CherryToast.error(
                               toastDuration: const Duration(seconds: 2),
                               title: Text(
-                                'Please connect to the printer and try again',
+                                'Please connect to the printer via bluetooth and try again',
                                 style: CustomTextStyle.h5
                                     .copyWith(color: ColorTheme.danger),
                               ),
@@ -190,6 +232,7 @@ class _MyDrawerState extends State<MyDrawer> {
                               borderRadius: 5,
                             ).show(context);
                           } else {
+                            showLoading();
                             bluetoothPrinterHelper.printReceiveTest();
                           }
                         }
@@ -262,18 +305,13 @@ class _MyDrawerState extends State<MyDrawer> {
               children: <Widget>[
                 Column(
                   children: <Widget>[
-                    Consumer<Locations>(
-                      builder: (context, value, _) {
-                        return InfoDrawer(
-                          isDrawer: true,
-                          assetImage: wardensProvider.wardens?.Picture ??
-                              "assets/images/userAvatar.png",
-                          name:
-                              "Hello ${wardensProvider.wardens?.FullName ?? ""}",
-                          location: value.location?.Name ?? 'Empty name!!',
-                          zone: value.zone?.Name ?? 'Empty name!!',
-                        );
-                      },
+                    InfoDrawer(
+                      isDrawer: true,
+                      assetImage: wardensProvider.wardens?.Picture ??
+                          "assets/images/userAvatar.png",
+                      name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
+                      location: locations.location?.Name ?? 'Empty name!!',
+                      zone: locations.zone?.Name ?? 'Empty name!!',
                     ),
                     const SizedBox(
                       height: 24,
@@ -319,7 +357,7 @@ class _MyDrawerState extends State<MyDrawer> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: getListNav(),
                       ),
-                    )
+                    ),
                   ],
                 )
               ],

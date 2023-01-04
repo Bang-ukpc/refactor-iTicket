@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
+import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
@@ -29,7 +30,13 @@ class _PrintPCNState extends State<PrintPCN> {
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect();
+    bluetoothPrinterHelper.initConnect(true);
+  }
+
+  @override
+  void dispose() {
+    bluetoothPrinterHelper.disposePrinter();
+    super.dispose();
   }
 
   @override
@@ -37,6 +44,45 @@ class _PrintPCNState extends State<PrintPCN> {
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
 
     log('Print pcn');
+    void showLoading() {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: ColorTheme.mask,
+        builder: (_) {
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Connecting to printer',
+                        style: CustomTextStyle.h4.copyWith(
+                          decoration: TextDecoration.none,
+                          color: ColorTheme.white,
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 10, left: 2),
+                        child: const SpinKitThreeBounce(
+                          color: ColorTheme.white,
+                          size: 7,
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
 
     return WillPopScope(
       onWillPop: () async => false,
@@ -64,14 +110,11 @@ class _PrintPCNState extends State<PrintPCN> {
                     ),
                     BottomNavyBarItem(
                       onPressed: () {
-                        if (bluetoothPrinterHelper.selectedPrinter == null ||
-                            bluetoothPrinterHelper.devices[0].deviceName !=
-                                bluetoothPrinterHelper
-                                    .selectedPrinter?.deviceName) {
+                        if (bluetoothPrinterHelper.selectedPrinter == null) {
                           CherryToast.error(
                             toastDuration: const Duration(seconds: 2),
                             title: Text(
-                              'Please connect to the printer and try again',
+                              'Please connect to the printer via bluetooth and try again',
                               style: CustomTextStyle.h5
                                   .copyWith(color: ColorTheme.danger),
                             ),
@@ -79,6 +122,7 @@ class _PrintPCNState extends State<PrintPCN> {
                             borderRadius: 5,
                           ).show(context);
                         } else {
+                          showLoading();
                           bluetoothPrinterHelper.printPhysicalPCN(
                               args, locations.location?.Name ?? '');
                         }

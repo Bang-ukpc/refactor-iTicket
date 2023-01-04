@@ -206,6 +206,9 @@ class _AbortScreenState extends State<AbortScreen> {
                                           itemBuilder:
                                               (context, item, isSelected) =>
                                                   DropDownItem(
+                                            isSelected: item.Id.toString() ==
+                                                _cancellationReasonController
+                                                    .text,
                                             title: item.reason,
                                           ),
                                         ),

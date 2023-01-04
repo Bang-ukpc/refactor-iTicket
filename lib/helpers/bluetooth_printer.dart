@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter_pos_printer_platform/flutter_pos_printer_platform.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:intl/intl.dart';
 
@@ -17,6 +18,7 @@ class BluetoothPrinterHelper {
   BTStatus currentStatus = BTStatus.none;
   List<int> pendingTask = [];
   BluetoothPrinter? selectedPrinter;
+  int count = 0;
 
   void scan() {
     devices.clear();
@@ -39,7 +41,7 @@ class BluetoothPrinterHelper {
     });
   }
 
-  void initConnect() {
+  void initConnect(bool isLoading) {
     subscriptionBtStatus =
         PrinterManager.instance.stateBluetooth.listen((status) {
       log(' ----------------- status bt $status ------------------ ');
@@ -49,8 +51,12 @@ class BluetoothPrinterHelper {
       }
       if (status == BTStatus.none) {
         isConnected = false;
+        if (count == 1 && isLoading == true) {
+          NavigationService.navigatorKey.currentState!.pop();
+        }
       }
       if (status == BTStatus.connected && pendingTask.isNotEmpty) {
+        print('connected');
         if (Platform.isAndroid) {
           Future.delayed(const Duration(milliseconds: 1000), () async {
             var result = await PrinterManager.instance
@@ -63,7 +69,11 @@ class BluetoothPrinterHelper {
               .send(type: PrinterType.bluetooth, bytes: pendingTask);
           pendingTask = [];
         }
+        if (isLoading == true) {
+          NavigationService.navigatorKey.currentState!.pop();
+        }
       }
+      count++;
     });
   }
 
@@ -140,6 +150,7 @@ class BluetoothPrinterHelper {
 
   /// print ticket
   void printEscPos(List<int> bytes, Generator generator) async {
+    count = 0;
     if (selectedPrinter == null) return;
     var bluetoothPrinter = selectedPrinter!;
     log("_printEscPos: ${bluetoothPrinter.typePrinter.toString()}");
@@ -165,6 +176,12 @@ class BluetoothPrinterHelper {
     } else {
       printerManager.send(type: bluetoothPrinter.typePrinter, bytes: bytes);
     }
+  }
+
+  void disposePrinter() {
+    count = 0;
+    subscription?.cancel();
+    subscriptionBtStatus?.cancel();
   }
 }
 

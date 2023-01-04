@@ -141,7 +141,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
       onWillPop: () async => false,
       child: Scaffold(
         bottomSheet: SizedBox(
-          height: 42,
+          height: 46,
           width: double.infinity,
           child: ElevatedButton.icon(
             style: ButtonStyle(

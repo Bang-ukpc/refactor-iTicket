@@ -11,6 +11,7 @@ import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/button_scan.dart';
+import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -26,13 +27,12 @@ import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
+import 'package:iWarden/screens/location/location_screen.dart';
+import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
+import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/screens/scan-plate/anyline_service.dart';
 import 'package:iWarden/screens/scan-plate/result.dart';
 import 'package:iWarden/screens/scan-plate/scan_modes.dart';
-import 'package:iWarden/screens/location/location_screen.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
-import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -94,7 +94,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect();
+    bluetoothPrinterHelper.initConnect(false);
     _anylineService = AnylineServiceImpl();
     _typeOfPcnController.text = '0';
     getContraventionReasonList();
@@ -154,10 +154,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     if (_debouncer.timer != null) {
       _debouncer.timer!.cancel();
     }
-
     contraventionReasonList.clear();
     arrayImage.clear();
     evidencePhotoList.clear();
+    bluetoothPrinterHelper.disposePrinter();
     super.dispose();
   }
 
@@ -253,14 +253,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         if (contravention != null && check == true) {
           // ignore: use_build_context_synchronously
           Navigator.of(context).pop();
-          if (bluetoothPrinterHelper.selectedPrinter == null ||
-              bluetoothPrinterHelper.devices[0].deviceName !=
-                  bluetoothPrinterHelper.selectedPrinter?.deviceName) {
+          if (bluetoothPrinterHelper.selectedPrinter == null) {
             // ignore: use_build_context_synchronously
             CherryToast.error(
               toastDuration: const Duration(seconds: 2),
               title: Text(
-                'Please connect to the printer and try again',
+                'Please connect to the printer via bluetooth and try again',
                 style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,

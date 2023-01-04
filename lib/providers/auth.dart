@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/configs.dart';

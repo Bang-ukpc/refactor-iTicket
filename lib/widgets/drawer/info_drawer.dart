@@ -86,7 +86,7 @@ class InfoDrawer extends StatelessWidget {
                     width: 8, color: const Color.fromRGBO(255, 255, 255, 0.1)),
                 borderRadius: BorderRadius.circular(30)),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: BorderRadius.circular(100),
               child: Image.asset(
                 assetImage,
                 errorBuilder: (context, error, stackTrace) =>
