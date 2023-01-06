@@ -30,7 +30,7 @@ class _PrintPCNState extends State<PrintPCN> {
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect(true);
+    bluetoothPrinterHelper.initConnect(isLoading: false);
   }
 
   @override
@@ -44,45 +44,6 @@ class _PrintPCNState extends State<PrintPCN> {
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
 
     log('Print pcn');
-    void showLoading() {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: ColorTheme.mask,
-        builder: (_) {
-          return WillPopScope(
-            onWillPop: () async => false,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Connecting to printer',
-                        style: CustomTextStyle.h4.copyWith(
-                          decoration: TextDecoration.none,
-                          color: ColorTheme.white,
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10, left: 2),
-                        child: const SpinKitThreeBounce(
-                          color: ColorTheme.white,
-                          size: 7,
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
 
     return WillPopScope(
       onWillPop: () async => false,
@@ -122,7 +83,6 @@ class _PrintPCNState extends State<PrintPCN> {
                             borderRadius: 5,
                           ).show(context);
                         } else {
-                          showLoading();
                           bluetoothPrinterHelper.printPhysicalPCN(
                               args, locations.location?.Name ?? '');
                         }

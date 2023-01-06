@@ -661,6 +661,9 @@ class _CherryToastIconState extends State<CherryToastIcon>
   @override
   void initState() {
     super.initState();
+    if (!mounted) {
+      return;
+    }
     if (widget.enableAnimation) {
       _heartAnimationController = AnimationController(
         vsync: this,

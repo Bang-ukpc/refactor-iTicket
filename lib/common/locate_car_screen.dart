@@ -73,7 +73,6 @@ class _LocateCarScreenState extends State<LocateCarScreen> {
       vehicleInfo.Latitude,
       vehicleInfo.Longitude,
     );
-    print(distance / 1000 >= 0);
 
     return Scaffold(
       appBar: const MyAppBar(

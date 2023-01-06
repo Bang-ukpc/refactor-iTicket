@@ -107,6 +107,50 @@ class LocationWithZones extends Location {
 
   factory LocationWithZones.fromJson(Map<String, dynamic> json) =>
       _$LocationWithZonesFromJson(json);
+
+  static Map<String, dynamic> toJson(LocationWithZones locationWithZones) => {
+        'Address': locationWithZones.Address,
+        'Latitude': locationWithZones.Latitude,
+        'Longitude': locationWithZones.Longitude,
+        'Created': locationWithZones.Created != null
+            ? locationWithZones.Created!.toIso8601String()
+            : null,
+        'Deleted': locationWithZones.Deleted != null
+            ? locationWithZones.Deleted!.toIso8601String()
+            : null,
+        'Id': locationWithZones.Id,
+        'CountryRegionId': locationWithZones.CountryRegionId,
+        'CountrySubRegionId': locationWithZones.CountrySubRegionId,
+        'Name': locationWithZones.Name,
+        'Address1': locationWithZones.Address1,
+        'Address2': locationWithZones.Address2,
+        'Address3': locationWithZones.Address3,
+        'Town': locationWithZones.Town,
+        'Country': locationWithZones.Country,
+        'Postcode': locationWithZones.Postcode,
+        'LocationType': locationWithZones.LocationType,
+        'Notes': locationWithZones.Notes,
+        'Zones': locationWithZones.Zones != null
+            ? locationWithZones.Zones!.map((v) => Zone.toJson(v)).toList()
+            : [],
+        'From': locationWithZones.From != null
+            ? locationWithZones.From!.toIso8601String()
+            : null,
+        'To': locationWithZones.To != null
+            ? locationWithZones.To!.toIso8601String()
+            : null,
+        'Distance': locationWithZones.Distance,
+      };
+
+  static String encode(List<LocationWithZones> locationWithZones) =>
+      json.encode(
+        locationWithZones.map((i) => LocationWithZones.toJson(i)).toList(),
+      );
+
+  static List<LocationWithZones> decode(String locations) =>
+      (json.decode(locations) as List<dynamic>)
+          .map<LocationWithZones>((item) => LocationWithZones.fromJson(item))
+          .toList();
 }
 
 LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {

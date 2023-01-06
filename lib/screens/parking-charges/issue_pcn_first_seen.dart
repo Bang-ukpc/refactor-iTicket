@@ -94,7 +94,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect(false);
+    bluetoothPrinterHelper.initConnect(isLoading: false);
     _anylineService = AnylineServiceImpl();
     _typeOfPcnController.text = '0';
     getContraventionReasonList();

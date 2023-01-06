@@ -93,7 +93,6 @@ class _StatisticScreenState extends State<StatisticScreen> {
   // Check bluetooth
   void _checkDeviceBluetoothIsOn() async {
     var check = await FlutterBluePlus.instance.isOn;
-    print('Status: $check');
     setState(() {
       checkBluetooth = check;
     });

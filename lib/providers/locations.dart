@@ -51,6 +51,7 @@ class Locations with ChangeNotifier {
   }
 
   void resetLocationWithZones() {
+    rotaShiftSelected = null;
     locationSelected = null;
     zoneSelected = null;
     notifyListeners();

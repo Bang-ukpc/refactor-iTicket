@@ -24,57 +24,75 @@ class BluetoothPrinterHelper {
     devices.clear();
     subscription = printerManager
         .discovery(type: PrinterType.bluetooth, isBle: isBle)
-        .listen((device) {
-      devices.add(BluetoothPrinter(
-        deviceName: device.name,
-        address: device.address,
-        isBle: isBle,
-        vendorId: device.vendorId,
-        productId: device.productId,
-        typePrinter: PrinterType.bluetooth,
-      ));
-      if (devices.isNotEmpty) {
-        BluetoothPrinter deviceSelected = devices.firstWhere((device) =>
-            device.deviceName!.toUpperCase().contains('Ezpcnb'.toUpperCase()));
-        selectDevice(deviceSelected);
-      }
-    });
+        .listen(
+      (device) {
+        devices.add(BluetoothPrinter(
+          deviceName: device.name,
+          address: device.address,
+          isBle: isBle,
+          vendorId: device.vendorId,
+          productId: device.productId,
+          typePrinter: PrinterType.bluetooth,
+        ));
+        if (devices.isNotEmpty) {
+          BluetoothPrinter deviceSelected = devices.firstWhere((device) =>
+              device.deviceName!
+                  .toUpperCase()
+                  .contains('Ezpcnb'.toUpperCase()));
+          selectDevice(deviceSelected);
+        }
+      },
+      onDone: () {
+        log('ao ma canada 1');
+      },
+      onError: (err) {
+        log('ao ma');
+      },
+      cancelOnError: true,
+    );
   }
 
-  void initConnect(bool isLoading) {
-    subscriptionBtStatus =
-        PrinterManager.instance.stateBluetooth.listen((status) {
-      log(' ----------------- status bt $status ------------------ ');
-      currentStatus = status;
-      if (status == BTStatus.connected) {
-        isConnected = true;
-      }
-      if (status == BTStatus.none) {
-        isConnected = false;
-        if (count == 1 && isLoading == true) {
-          NavigationService.navigatorKey.currentState!.pop();
+  void initConnect({required bool isLoading}) {
+    subscriptionBtStatus = PrinterManager.instance.stateBluetooth.listen(
+      (status) {
+        log(' ----------------- status bt $status ------------------ ');
+        currentStatus = status;
+        if (status == BTStatus.connected) {
+          isConnected = true;
         }
-      }
-      if (status == BTStatus.connected && pendingTask.isNotEmpty) {
-        print('connected');
-        if (Platform.isAndroid) {
-          Future.delayed(const Duration(milliseconds: 1000), () async {
-            var result = await PrinterManager.instance
+        if (status == BTStatus.none) {
+          isConnected = false;
+          if (count == 1 && isLoading == true) {
+            NavigationService.navigatorKey.currentState!.pop();
+          }
+        }
+        if (status == BTStatus.connected && pendingTask.isNotEmpty) {
+          if (Platform.isAndroid) {
+            Future.delayed(const Duration(milliseconds: 1000), () async {
+              var result = await PrinterManager.instance
+                  .send(type: PrinterType.bluetooth, bytes: pendingTask);
+              log(result.toString());
+              pendingTask = [];
+            });
+          } else if (Platform.isIOS) {
+            PrinterManager.instance
                 .send(type: PrinterType.bluetooth, bytes: pendingTask);
-            log(result.toString());
             pendingTask = [];
-          });
-        } else if (Platform.isIOS) {
-          PrinterManager.instance
-              .send(type: PrinterType.bluetooth, bytes: pendingTask);
-          pendingTask = [];
+          }
+          if (isLoading == true) {
+            NavigationService.navigatorKey.currentState!.pop();
+          }
         }
-        if (isLoading == true) {
-          NavigationService.navigatorKey.currentState!.pop();
-        }
-      }
-      count++;
-    });
+        count++;
+      },
+      onDone: () {
+        log('ao ma canada 2');
+      },
+      onError: (err) {
+        log('ao ma');
+      },
+      cancelOnError: true,
+    );
   }
 
   Future<void> selectDevice(BluetoothPrinter device) async {
@@ -95,7 +113,7 @@ class BluetoothPrinterHelper {
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 135;
-    int referenceNo = 95;
+    int referenceNo = 85;
     int date = referenceNo + 55;
     int plate = date + 70;
     int make = plate + 65;
@@ -107,7 +125,7 @@ class BluetoothPrinterHelper {
     int referenceNo2 = desc + 540;
     int date2 = referenceNo2 + 60;
     int plate2 = date2 + 60;
-    int barcode = plate2 + 80;
+    int barcode = plate2 + 70;
     List<int> bytes = [];
 
     final profile = await CapabilityProfile.load();
@@ -124,7 +142,7 @@ class BluetoothPrinterHelper {
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 135;
-    int referenceNo = 95;
+    int referenceNo = 85;
     int date = referenceNo + 55;
     int plate = date + 70;
     int make = plate + 65;
@@ -136,7 +154,7 @@ class BluetoothPrinterHelper {
     int referenceNo2 = desc + 540;
     int date2 = referenceNo2 + 60;
     int plate2 = date2 + 60;
-    int barcode = plate2 + 80;
+    int barcode = plate2 + 70;
     List<int> bytes = [];
 
     final profile = await CapabilityProfile.load();
@@ -163,6 +181,7 @@ class BluetoothPrinterHelper {
         autoConnect: false,
       ),
     );
+
     pendingTask = [];
     if (Platform.isAndroid) {
       pendingTask = bytes;
@@ -171,6 +190,9 @@ class BluetoothPrinterHelper {
     if (bluetoothPrinter.typePrinter == PrinterType.bluetooth &&
         Platform.isAndroid) {
       if (currentStatus == BTStatus.connected) {
+        var result = await printerManager.send(
+            type: bluetoothPrinter.typePrinter, bytes: bytes);
+        log(result.toString());
         pendingTask = [];
       }
     } else {

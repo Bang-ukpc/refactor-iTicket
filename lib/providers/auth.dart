@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
@@ -60,7 +61,10 @@ class Auth with ChangeNotifier {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Login failed. Please try again',
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Internal server error'
+                : error.response!.data['message'],
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,

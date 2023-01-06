@@ -41,7 +41,7 @@ class _MyDrawerState extends State<MyDrawer> {
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect(true);
+    bluetoothPrinterHelper.initConnect(isLoading: true);
   }
 
   @override
@@ -158,7 +158,8 @@ class _MyDrawerState extends State<MyDrawer> {
             .createWardenEvent(wardenEventEndShift)
             .then((value) async {
           await auth.logout().then((value) {
-            Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                LoginScreen.routeName, (Route<dynamic> route) => false);
             CherryToast.success(
               displayCloseButton: false,
               title: Text(

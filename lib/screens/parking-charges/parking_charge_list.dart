@@ -38,7 +38,6 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
       pageSize: pageSize,
     )
         .then((value) {
-      print(value);
       setState(() {
         contraventionLoading = false;
       });
@@ -75,7 +74,6 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context, listen: false);
-    print("loadingImage $contraventionLoading");
     log('Parking charge list');
 
     Future<void> refresh() async {

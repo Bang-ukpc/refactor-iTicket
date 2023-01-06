@@ -223,28 +223,26 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
           if (!isRunning) {
             await initializeService();
           }
-          // ignore: use_build_context_synchronously
+          if (!mounted) return;
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
-          toast.CherryToast.error(
-            toastDuration: const Duration(seconds: 2),
-            title: Text(
-              'Network error',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: toast.Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
+          final service = FlutterBackgroundService();
+          var isRunning = await service.isRunning();
+          if (!isRunning) {
+            await initializeService();
+          }
+          if (!mounted) return;
+          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
         }
+        if (!mounted) return;
         toast.CherryToast.error(
           displayCloseButton: false,
           title: Text(
             error.response!.data['message'].toString().length >
                     Constant.errorMaxLength
-                ? 'Start shift error, please try again'
+                ? 'Internal server error'
                 : error.response!.data['message'],
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),

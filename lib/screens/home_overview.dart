@@ -70,6 +70,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       setState(() {
         firstSeenLoading = false;
       });
+      throw Error();
     });
     final firstSeenList =
         list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
@@ -94,6 +95,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       setState(() {
         gracePeriodLoading = false;
       });
+      throw Error();
     });
     List<VehicleInformation> gracePeriodList =
         list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
@@ -117,6 +119,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       setState(() {
         contraventionLoading = false;
       });
+      throw Error();
     });
     contraventionList =
         list.rows.map((item) => Contravention.fromJson(item)).toList();

@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
@@ -110,19 +111,20 @@ class _LocationScreenState extends State<LocationScreen> {
   @override
   void initState() {
     super.initState();
-    // currentLocationPosition.getCurrentLocation();
-
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       locations.resetLocationWithZones();
       final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
+
       await getLocationList(locations, wardersProvider.wardens?.Id ?? 0);
       rotaList(locationList);
-      locationListFilterByRota(listFilter[0].From, listFilter[0].To);
-      locations.onSelectedRotaShift(
-          MyRotaShift(From: listFilter[0].From, To: listFilter[0].To));
-      locations.onSelectedLocation(listFilterByRota[0]);
-      locations.onSelectedZone(listFilterByRota[0].Zones![0]);
+      if (listFilter.isNotEmpty) {
+        locationListFilterByRota(listFilter[0].From, listFilter[0].To);
+        locations.onSelectedRotaShift(
+            MyRotaShift(From: listFilter[0].From, To: listFilter[0].To));
+        locations.onSelectedLocation(listFilterByRota[0]);
+        locations.onSelectedZone(listFilterByRota[0].Zones![0]);
+      }
     });
   }
 
@@ -190,7 +192,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   return;
                 } else {
                   Navigator.of(context)
-                      .pushReplacementNamed(ReadRegulationScreen.routeName);
+                      .pushNamed(ReadRegulationScreen.routeName);
                 }
 
                 _formKey.currentState!.save();

@@ -5,6 +5,7 @@ import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
 
 class Logging extends Interceptor {
   @override
@@ -43,8 +44,9 @@ class Logging extends Interceptor {
       final prefs = await SharedPreferences.getInstance();
       SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
       prefs.clear();
-      NavigationService.navigatorKey.currentState!
-          .pushReplacementNamed(LoginScreen.routeName);
+
+      NavigationService.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+          LoginScreen.routeName, (Route<dynamic> route) => false);
     }
 
     return super.onError(err, handler);

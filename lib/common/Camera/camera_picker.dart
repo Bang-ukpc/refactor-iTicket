@@ -293,10 +293,8 @@ class CameraPicker extends HookWidget {
                                     Container(
                                       color: ColorTheme.backdrop2,
                                       padding: const EdgeInsets.only(
-                                        left: 50,
+                                        left: 30,
                                         right: 40,
-                                        top: 10,
-                                        bottom: 10,
                                       ),
                                       child: Row(
                                         mainAxisAlignment:
@@ -306,17 +304,14 @@ class CameraPicker extends HookWidget {
                                         children: [
                                           Row(
                                             children: [
-                                              InkWell(
-                                                onTap: () {
+                                              IconButton(
+                                                onPressed: () {
                                                   Navigator.of(context).pop();
                                                 },
-                                                child: SvgPicture.asset(
+                                                icon: SvgPicture.asset(
                                                   "assets/svg/IconBack.svg",
                                                   color: Colors.white,
                                                 ),
-                                              ),
-                                              const SizedBox(
-                                                width: 14,
                                               ),
                                               Text(
                                                 !editImage
@@ -380,7 +375,7 @@ class CameraPicker extends HookWidget {
                                     Container(
                                       color: ColorTheme.backdrop2,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 50, vertical: 50),
+                                          horizontal: 60, vertical: 50),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,

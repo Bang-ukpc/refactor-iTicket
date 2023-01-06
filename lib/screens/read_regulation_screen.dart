@@ -12,6 +12,7 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
+import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
@@ -49,20 +50,13 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           locations.location?.Notes == null) {
         try {
           await userController.createWardenEvent(wardenEvent).then((value) {
-            Navigator.of(context).pushReplacementNamed(HomeOverview.routeName);
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                HomeOverview.routeName, (Route<dynamic> route) => false);
           });
         } on DioError catch (error) {
           if (error.type == DioErrorType.other) {
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 2),
-              title: Text(
-                'Network error',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                HomeOverview.routeName, (Route<dynamic> route) => false);
           }
           CherryToast.error(
             displayCloseButton: false,
@@ -91,21 +85,13 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
         } else {
           try {
             await userController.createWardenEvent(wardenEvent).then((value) {
-              Navigator.of(context)
-                  .pushReplacementNamed(HomeOverview.routeName);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  HomeOverview.routeName, (Route<dynamic> route) => false);
             });
           } on DioError catch (error) {
             if (error.type == DioErrorType.other) {
-              CherryToast.error(
-                toastDuration: const Duration(seconds: 2),
-                title: Text(
-                  'Network error',
-                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-                ),
-                toastPosition: Position.bottom,
-                borderRadius: 5,
-              ).show(context);
-              return;
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  HomeOverview.routeName, (Route<dynamic> route) => false);
             }
             CherryToast.error(
               displayCloseButton: false,
@@ -137,40 +123,38 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
       }
     }
 
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        bottomSheet: SizedBox(
-          height: 46,
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(
-                buttonBackground(),
-              ),
-              shape: MaterialStateProperty.all(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(0),
-                ),
-              ),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    return Scaffold(
+      bottomSheet: SizedBox(
+        height: 46,
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(
+              buttonBackground(),
             ),
-            onPressed: locations.location?.Notes?.isEmpty ?? true
-                ? checkNextPage
-                : checkbox == true
-                    ? checkNextPage
-                    : null,
-            icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
-            label: Text(
-              'Check in',
-              style: CustomTextStyle.h6.copyWith(
-                color: Colors.white,
+            shape: MaterialStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0),
               ),
+            ),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          onPressed: locations.location?.Notes?.isEmpty ?? true
+              ? checkNextPage
+              : checkbox == true
+                  ? checkNextPage
+                  : null,
+          icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
+          label: Text(
+            'Check in',
+            style: CustomTextStyle.h6.copyWith(
+              color: Colors.white,
             ),
           ),
         ),
-        body: SafeArea(
-            child: SingleChildScrollView(
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
           child: Container(
             margin: const EdgeInsets.only(
               bottom: 60,
@@ -224,7 +208,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
               ),
             ),
           ),
-        )),
+        ),
       ),
     );
   }
