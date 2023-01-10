@@ -41,6 +41,8 @@ class InfoDrawer extends StatelessWidget {
       wardenId: wardersProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.From,
+      rotaTimeTo: locations.rotaShift?.To,
     );
 
     void onCheckOut() async {

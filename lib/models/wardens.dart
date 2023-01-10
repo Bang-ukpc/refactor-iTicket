@@ -78,6 +78,8 @@ class WardenEvent extends BaseModel {
   final int wardenId;
   final int? zoneId;
   final int? locationId;
+  final DateTime? rotaTimeFrom;
+  final DateTime? rotaTimeTo;
 
   WardenEvent({
     int? Id,
@@ -90,6 +92,8 @@ class WardenEvent extends BaseModel {
     required this.wardenId,
     this.zoneId,
     this.locationId,
+    this.rotaTimeFrom,
+    this.rotaTimeTo,
   }) : super(Id: Id, Created: Created, Deleted: Deleted);
 
   factory WardenEvent.fromJson(Map<String, dynamic> json) =>
@@ -124,6 +128,11 @@ WardenEvent _$WardenEventFromJson(Map<String, dynamic> json) {
     wardenId: json['WardenId'],
     zoneId: json['ZoneId'],
     locationId: json['LocationId'],
+    rotaTimeFrom: json['RotaTimeFrom'] == null
+        ? null
+        : DateTime.parse(json['RotaTimeFrom']),
+    rotaTimeTo:
+        json['RotaTimeTo'] == null ? null : DateTime.parse(json['RotaTimeTo']),
   );
 }
 
@@ -136,5 +145,11 @@ Map<String, dynamic> _$WardenEventToJson(WardenEvent instance) {
     'WardenId': instance.wardenId,
     'ZoneId': instance.zoneId,
     'LocationId': instance.locationId,
+    'RotaTimeFrom': instance.rotaTimeFrom != null
+        ? instance.rotaTimeFrom!.toIso8601String()
+        : null,
+    'RotaTimeTo': instance.rotaTimeTo != null
+        ? instance.rotaTimeTo!.toIso8601String()
+        : null,
   };
 }
