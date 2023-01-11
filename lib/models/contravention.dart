@@ -12,7 +12,7 @@ class Contravention {
   int? lowerAmount;
   int? upperAmount;
   String? make;
-  Null? model;
+  String? model;
   String? plate;
   int? reasonId;
   String? reference;

@@ -52,6 +52,7 @@ class ContraventionController {
         },
       );
       Pagination contraventionPagination = Pagination.fromJson(response.data);
+      print(contraventionPagination.rows);
       return contraventionPagination;
     } on DioError catch (error) {
       print(error.response);
