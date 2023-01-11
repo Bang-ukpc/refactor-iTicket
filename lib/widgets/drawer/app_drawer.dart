@@ -109,6 +109,18 @@ class _MyDrawerState extends State<MyDrawer> {
       rotaTimeTo: locations.rotaShift?.To,
     );
 
+    WardenEvent wardenEventCheckOut = WardenEvent(
+      type: TypeWardenEvent.CheckOut.index,
+      detail: 'Warden checked out',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.From,
+      rotaTimeTo: locations.rotaShift?.To,
+    );
+
     WardenEvent wardenEventEndShift = WardenEvent(
       type: TypeWardenEvent.EndShift.index,
       detail: 'Warden has ended shift',
@@ -159,20 +171,24 @@ class _MyDrawerState extends State<MyDrawer> {
     void onEndShift(Auth auth) async {
       try {
         await userController
-            .createWardenEvent(wardenEventEndShift)
+            .createWardenEvent(wardenEventCheckOut)
             .then((value) async {
-          await auth.logout().then((value) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                LoginScreen.routeName, (Route<dynamic> route) => false);
-            CherryToast.success(
-              displayCloseButton: false,
-              title: Text(
-                'End of shift',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
+          await userController
+              .createWardenEvent(wardenEventEndShift)
+              .then((value) async {
+            await auth.logout().then((value) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  LoginScreen.routeName, (Route<dynamic> route) => false);
+              CherryToast.success(
+                displayCloseButton: false,
+                title: Text(
+                  'End of shift',
+                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
+            });
           });
         });
       } on DioError catch (error) {
