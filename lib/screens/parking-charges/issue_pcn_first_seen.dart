@@ -11,7 +11,6 @@ import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/button_scan.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -19,12 +18,14 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
+import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
@@ -93,8 +94,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   void initState() {
     super.initState();
-    bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect(isLoading: false);
     _anylineService = AnylineServiceImpl();
     _typeOfPcnController.text = '0';
     getContraventionReasonList();
@@ -157,14 +156,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     contraventionReasonList.clear();
     arrayImage.clear();
     evidencePhotoList.clear();
-    bluetoothPrinterHelper.disposePrinter();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
-    final wardersProvider = Provider.of<WardensInfo>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
 
     log('Issue PCN screen');
@@ -192,22 +190,36 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
 
     Future<void> createPhysicalPCN() async {
+      int randomReference =
+          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
       final physicalPCN = ContraventionCreateWardenCommand(
         ExternalReference: locationProvider.zone!.ExternalReference,
-        ContraventionReference: '',
+        ContraventionReference: '$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
         ContraventionReasonCode: _contraventionReasonController.text,
         EventDateTime: DateTime.now(),
         FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-        WardenId: wardersProvider.wardens?.Id ?? 0,
+        WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         WardenComments: _commentController.text,
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
         TypePCN: TypePCN.Physical.index,
+      );
+
+      final wardenEventIssuePCN = WardenEvent(
+        type: TypeWardenEvent.IssuePCN.index,
+        detail: 'TicketNumber: ${physicalPCN.ContraventionReference}',
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: wardensProvider.wardens?.Id ?? 0,
+        zoneId: locationProvider.zone?.Id ?? 0,
+        locationId: locationProvider.location?.Id ?? 0,
+        rotaTimeFrom: locationProvider.rotaShift?.From,
+        rotaTimeTo: locationProvider.rotaShift?.To,
       );
 
       final isValid = _formKey.currentState!.validate();
@@ -251,28 +263,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           }
         }
         if (contravention != null && check == true) {
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pop();
-          if (bluetoothPrinterHelper.selectedPrinter == null) {
-            // ignore: use_build_context_synchronously
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 2),
-              title: Text(
-                'Please connect to the printer via bluetooth and try again',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-          } else {
-            bluetoothPrinterHelper.printPhysicalPCN(
-              contravention as Contravention,
-              locationProvider.location?.Name ?? '',
-            );
-            // ignore: use_build_context_synchronously
+          await userController
+              .createWardenEvent(wardenEventIssuePCN)
+              .then((value) {
+            Navigator.of(context).pop();
             Navigator.of(context)
                 .pushNamed(PrintPCN.routeName, arguments: contravention);
-          }
+          });
         }
       } on DioError catch (error) {
         log("log ${error.type.toString()}");
@@ -310,22 +307,36 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
 
     Future<void> createVirtualTicket() async {
+      int randomReference =
+          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
       final virtualTicket = ContraventionCreateWardenCommand(
         ExternalReference: locationProvider.zone!.ExternalReference,
-        ContraventionReference: '',
+        ContraventionReference: '$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
         ContraventionReasonCode: _contraventionReasonController.text,
         EventDateTime: DateTime.now(),
         FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-        WardenId: wardersProvider.wardens?.Id ?? 0,
+        WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         WardenComments: _commentController.text,
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
         TypePCN: TypePCN.Virtual.index,
+      );
+
+      final wardenEventIssuePCN = WardenEvent(
+        type: TypeWardenEvent.IssuePCN.index,
+        detail: 'TicketNumber: ${virtualTicket.ContraventionReference}',
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: wardensProvider.wardens?.Id ?? 0,
+        zoneId: locationProvider.zone?.Id ?? 0,
+        locationId: locationProvider.location?.Id ?? 0,
+        rotaTimeFrom: locationProvider.rotaShift?.From,
+        rotaTimeTo: locationProvider.rotaShift?.To,
       );
 
       final isValid = _formKey.currentState!.validate();
@@ -369,13 +380,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           }
         }
         if (contravention != null && check == true) {
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pop();
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pushNamed(
-            ParkingChargeInfo.routeName,
-            arguments: contravention,
-          );
+          await userController
+              .createWardenEvent(wardenEventIssuePCN)
+              .then((value) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(
+              ParkingChargeInfo.routeName,
+              arguments: contravention,
+            );
+          });
         }
       } on DioError catch (error) {
         log("log ${error.type.toString()}");
