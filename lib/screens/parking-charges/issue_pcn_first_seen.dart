@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -212,7 +213,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       final wardenEventIssuePCN = WardenEvent(
         type: TypeWardenEvent.IssuePCN.index,
-        detail: 'TicketNumber: ${physicalPCN.ContraventionReference}',
+        detail: '{"TicketNumber": "${physicalPCN.ContraventionReference}"}',
         latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         wardenId: wardensProvider.wardens?.Id ?? 0,
@@ -329,7 +330,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       final wardenEventIssuePCN = WardenEvent(
         type: TypeWardenEvent.IssuePCN.index,
-        detail: 'TicketNumber: ${virtualTicket.ContraventionReference}',
+        detail: '{"TicketNumber": "${virtualTicket.ContraventionReference}"}',
         latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         wardenId: wardensProvider.wardens?.Id ?? 0,
