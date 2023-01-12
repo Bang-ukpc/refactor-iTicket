@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
@@ -220,6 +219,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   location: null,
                   zone: null,
                   isDrawer: false,
+                  isLogout: true,
                 ),
                 Container(
                   margin: const EdgeInsets.only(top: 8),

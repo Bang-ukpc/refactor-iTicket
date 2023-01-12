@@ -7,7 +7,6 @@ import 'package:iWarden/providers/print_issue_providers.dart' as print_issue;
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/routes/routes.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
-import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/settings/app_settings.dart';
 import 'package:iWarden/theme/theme.dart';
