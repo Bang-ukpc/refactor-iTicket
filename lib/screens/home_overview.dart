@@ -376,8 +376,6 @@ class _HomeOverviewState extends State<HomeOverview> {
                       assetIcon: "assets/svg/IconFirstSeen.svg",
                       backgroundIcon: ColorTheme.lighterPrimary,
                       title: "First seen",
-                      desc:
-                          "First seen list description \nFirst seen list description description",
                       infoRight: "Active: ${firstSeenActive.length}",
                       infoLeft: "Expired: ${firstSeenExpired.length}",
                       route: AddFirstSeenScreen.routeName,
@@ -386,8 +384,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                   : SkeletonAvatar(
                       style: SkeletonAvatarStyle(
                         width: width,
-                        height: 130,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: 100,
                       ),
                     ),
               const SizedBox(
@@ -399,8 +396,6 @@ class _HomeOverviewState extends State<HomeOverview> {
                       assetIcon: "assets/svg/IconGrace.svg",
                       backgroundIcon: ColorTheme.lightDanger,
                       title: "Consideration period",
-                      desc:
-                          "Grace period list description Grace period list description...",
                       infoRight: "Active: ${gracePeriodActive.length}",
                       infoLeft: "Expired: ${gracePeriodExpired.length}",
                       route: AddGracePeriod.routeName,
@@ -409,8 +404,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                   : SkeletonAvatar(
                       style: SkeletonAvatarStyle(
                         width: width,
-                        height: 130,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: 100,
                       ),
                     ),
               const SizedBox(
@@ -422,8 +416,6 @@ class _HomeOverviewState extends State<HomeOverview> {
                       assetIcon: "assets/svg/IconParkingChargesHome.svg",
                       backgroundIcon: ColorTheme.lighterSecondary,
                       title: "Parking Charges",
-                      desc:
-                          "Parking charges list description Parking charges list description",
                       infoRight: "Issued: ${contraventionList.length}",
                       infoLeft: null,
                       route: IssuePCNFirstSeenScreen.routeName,
@@ -432,8 +424,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                   : SkeletonAvatar(
                       style: SkeletonAvatarStyle(
                         width: width,
-                        height: 130,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: 100,
                       ),
                     ),
             ],

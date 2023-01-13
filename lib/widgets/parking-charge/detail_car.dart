@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 class DetailCar extends StatelessWidget {
   final String plate;
-  final String make;
+  final String? make;
   final String? color;
   final String? model;
 
@@ -35,7 +34,7 @@ class DetailCar extends StatelessWidget {
                 plate.toUpperCase(),
                 style: CustomTextStyle.h3,
               ),
-              Text("Color: $color",
+              Text("Color: ${color ?? "No data"}",
                   style:
                       CustomTextStyle.h6.copyWith(color: ColorTheme.grey600)),
             ],
@@ -45,7 +44,7 @@ class DetailCar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Text(
-                "Make: $make",
+                "Make: ${make ?? "No data"}",
                 style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
               ),
               Text("Model: ${model ?? "No data"}",
