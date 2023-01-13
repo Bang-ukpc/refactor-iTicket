@@ -175,7 +175,7 @@ class _LocationScreenState extends State<LocationScreen> {
     //       origin: sourceLocation, destination: destination);
     //   setState(() => _info = directions);
     // }
-
+    print(locationList.map((e) => e.Id));
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(

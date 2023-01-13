@@ -37,76 +37,22 @@ class CardItem extends StatelessWidget {
             .pushReplacementNamed(route, arguments: vehicleInfo);
       },
       child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: ColorTheme.white),
         margin: const EdgeInsets.only(bottom: 8),
-        child: Card(
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0.0),
-          ),
-          elevation: 0,
-          semanticContainer: true,
-          child: ListTile(
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   vehicleInfo.Plate.toUpperCase(),
                   style: CustomTextStyle.h4,
                 ),
-                Row(
-                  children: [
-                    if (type == TypeFirstSeen.Expired)
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints:
-                            const BoxConstraints(minWidth: 40, minHeight: 40),
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(
-                            IssuePCNFirstSeenScreen.routeName,
-                            arguments: vehicleInfo,
-                          );
-                        },
-                        icon: SvgPicture.asset(
-                          "assets/svg/IconCharges2.svg",
-                        ),
-                      ),
-                    if (type == TypeFirstSeen.Expired)
-                      const SizedBox(
-                        width: 10,
-                      ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 40, minHeight: 40),
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(
-                          LocateCarScreen.routeName,
-                          arguments: vehicleInfo,
-                        );
-                      },
-                      icon: SvgPicture.asset(
-                        "assets/svg/IconLocation.svg",
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 40, minHeight: 40),
-                      onPressed: () {
-                        onCarLeft();
-                      },
-                      icon: SvgPicture.asset("assets/svg/IconCar.svg"),
-                    ),
-                  ],
+                const SizedBox(
+                  height: 4,
                 ),
-              ],
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
                 if (type == TypeFirstSeen.Expired)
                   Text(
                     "Expired in: ${calculateTime.getDurationExpiredIn(Duration(minutes: expiring))} ago",
@@ -119,16 +65,149 @@ class CardItem extends StatelessWidget {
                     style:
                         CustomTextStyle.h6.copyWith(color: ColorTheme.danger),
                   ),
+                const SizedBox(
+                  height: 4,
+                ),
                 Text(
                   "Visited at: ${FormatDate().getLocalDate(vehicleInfo.Created as DateTime)}",
                   style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
                 )
               ],
             ),
-            isThreeLine: true,
-          ),
+            Row(
+              children: [
+                if (type == TypeFirstSeen.Expired)
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 40, minHeight: 40),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(
+                        IssuePCNFirstSeenScreen.routeName,
+                        arguments: vehicleInfo,
+                      );
+                    },
+                    icon: SvgPicture.asset(
+                      "assets/svg/IconCharges2.svg",
+                    ),
+                  ),
+                if (type == TypeFirstSeen.Expired)
+                  const SizedBox(
+                    width: 10,
+                  ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 40, minHeight: 40),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      LocateCarScreen.routeName,
+                      arguments: vehicleInfo,
+                    );
+                  },
+                  icon: SvgPicture.asset(
+                    "assets/svg/IconLocation.svg",
+                  ),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 40, minHeight: 40),
+                  onPressed: () {
+                    onCarLeft();
+                  },
+                  icon: SvgPicture.asset("assets/svg/IconCar.svg"),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 }
+//  ListTile(
+//             title: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Text(
+//                   vehicleInfo.Plate.toUpperCase(),
+//                   style: CustomTextStyle.h4,
+//                 ),
+            //     Row(
+            //       children: [
+            //         if (type == TypeFirstSeen.Expired)
+            //           IconButton(
+            //             padding: EdgeInsets.zero,
+            //             constraints:
+            //                 const BoxConstraints(minWidth: 40, minHeight: 40),
+            //             onPressed: () {
+            //               Navigator.of(context).pushNamed(
+            //                 IssuePCNFirstSeenScreen.routeName,
+            //                 arguments: vehicleInfo,
+            //               );
+            //             },
+            //             icon: SvgPicture.asset(
+            //               "assets/svg/IconCharges2.svg",
+            //             ),
+            //           ),
+            //         if (type == TypeFirstSeen.Expired)
+            //           const SizedBox(
+            //             width: 10,
+            //           ),
+            //         IconButton(
+            //           padding: EdgeInsets.zero,
+            //           constraints:
+            //               const BoxConstraints(minWidth: 40, minHeight: 40),
+            //           onPressed: () {
+            //             Navigator.of(context).pushNamed(
+            //               LocateCarScreen.routeName,
+            //               arguments: vehicleInfo,
+            //             );
+            //           },
+            //           icon: SvgPicture.asset(
+            //             "assets/svg/IconLocation.svg",
+            //           ),
+            //         ),
+            //         const SizedBox(
+            //           width: 10,
+            //         ),
+            //         IconButton(
+            //           padding: EdgeInsets.zero,
+            //           constraints:
+            //               const BoxConstraints(minWidth: 40, minHeight: 40),
+            //           onPressed: () {
+            //             onCarLeft();
+            //           },
+            //           icon: SvgPicture.asset("assets/svg/IconCar.svg"),
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ),
+//             subtitle: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+                // if (type == TypeFirstSeen.Expired)
+                //   Text(
+                //     "Expired in: ${calculateTime.getDurationExpiredIn(Duration(minutes: expiring))} ago",
+                //     style:
+                //         CustomTextStyle.h6.copyWith(color: ColorTheme.danger),
+                //   ),
+                // if (type == TypeFirstSeen.Active)
+                //   Text(
+                //     "Expiring in: ${calculateTime.getDuration(Duration(minutes: expiring))}",
+                //     style:
+                //         CustomTextStyle.h6.copyWith(color: ColorTheme.danger),
+                //   ),
+                // Text(
+                //   "Visited at: ${FormatDate().getLocalDate(vehicleInfo.Created as DateTime)}",
+                //   style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
+                // )
+//               ],
+//             ),
+//             isThreeLine: true,
+//           ),

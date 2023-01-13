@@ -197,7 +197,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
                         height: firstSeenActive.length > 3
-                            ? (firstSeenActive.length.toDouble()) * 92
+                            ? (firstSeenActive.length.toDouble()) * 110
                             : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
@@ -261,7 +261,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
                         height: firstSeenExpired.length > 3
-                            ? (firstSeenExpired.length.toDouble() * 92)
+                            ? (firstSeenExpired.length.toDouble() * 110)
                             : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
