@@ -301,18 +301,28 @@ class _MyDrawerState extends State<MyDrawer> {
           .toList();
     }
 
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    Widget containerDrawer(Widget children) {
+      if (isLandscape) {
+        return SingleChildScrollView(child: children);
+      } else {
+        return children;
+      }
+    }
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: SizedBox(
-        width: widthScreen > 450 ? widthScreen * 0.45 : widthScreen * 0.85,
-        child: Drawer(
-          child: SingleChildScrollView(
-            child: Column(
+          width: isLandscape ? widthScreen * 0.66 : widthScreen * 0.85,
+          child: Drawer(
+            child: containerDrawer(Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Column(
-                  children: <Widget>[
+                  children: [
                     InfoDrawer(
                       isDrawer: true,
                       assetImage: wardensProvider.wardens?.Picture ??
@@ -355,24 +365,22 @@ class _MyDrawerState extends State<MyDrawer> {
                         );
                       },
                     ),
-                    SizedBox(height: heightScreen / 3.5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 30,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: getListNav(),
-                      ),
-                    ),
                   ],
-                )
+                ),
+                // SizedBox(height: heightScreen / 3.5),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 30,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: getListNav(),
+                  ),
+                ),
               ],
-            ),
-          ),
-        ),
-      ),
+            )),
+          )),
     );
   }
 }

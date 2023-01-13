@@ -5,13 +5,13 @@ import 'package:iWarden/theme/text_theme.dart';
 
 class DetailCar extends StatelessWidget {
   final String plate;
-  final DateTime created;
+  final String make;
   final String? color;
   final String? model;
 
   const DetailCar({
     required this.plate,
-    required this.created,
+    required this.make,
     this.color,
     this.model,
     Key? key,
@@ -45,7 +45,7 @@ class DetailCar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Text(
-                "Created at: ${FormatDate().getLocalDate(created)}",
+                "Make: $make",
                 style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
               ),
               Text("Model: ${model ?? "No data"}",
