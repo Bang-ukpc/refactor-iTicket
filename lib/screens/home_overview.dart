@@ -357,7 +357,7 @@ class _HomeOverviewState extends State<HomeOverview> {
           child: Column(
             children: <Widget>[
               const SizedBox(
-                height: 10,
+                height: 16,
               ),
               InfoDrawer(
                 isDrawer: false,
