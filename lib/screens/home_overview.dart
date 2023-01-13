@@ -243,8 +243,8 @@ class _HomeOverviewState extends State<HomeOverview> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
-      rotaTimeFrom: locations.rotaShift?.From,
-      rotaTimeTo: locations.rotaShift?.To,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     final wardenEventStartBreak = WardenEvent(
@@ -255,8 +255,8 @@ class _HomeOverviewState extends State<HomeOverview> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
-      rotaTimeFrom: locations.rotaShift?.From,
-      rotaTimeTo: locations.rotaShift?.To,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     void onCheckOut() async {

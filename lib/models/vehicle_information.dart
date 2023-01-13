@@ -6,7 +6,7 @@ class EvidencePhoto extends BaseModel {
   final int? VehicleInformationId;
   final String BlobName;
 
-  const EvidencePhoto({
+  EvidencePhoto({
     int? Id,
     DateTime? Created,
     DateTime? Deleted,

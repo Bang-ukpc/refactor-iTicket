@@ -9,37 +9,35 @@ import 'package:iWarden/models/location.dart';
 
 class LocationController {
   static final dio = DioHelper.defaultApiClient;
-  Future<List<LocationWithZones>> getAll(
+  Future<List<RotaWithLocation>> getAll(
     ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps,
   ) async {
     ConnectivityResult connectionStatus =
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
-      log('connected network');
       try {
         final response = await dio.post(
           '/location/location-of-the-day-by-warden',
           data: listLocationOfTheDayByWardenIdProps.toJson(),
         );
         List<dynamic> temp = response.data;
-        List<LocationWithZones> locations =
-            temp.map((model) => LocationWithZones.fromJson(model)).toList();
-        final String encodedData = LocationWithZones.encode(locations);
+        List<RotaWithLocation> rotaWithLocations =
+            temp.map((model) => RotaWithLocation.fromJson(model)).toList();
+        final String encodedData = RotaWithLocation.encode(rotaWithLocations);
         SharedPreferencesHelper.setStringValue(
-            'locationDataLocal', encodedData);
-        return locations;
+            'rotaWithLocationDataLocal', encodedData);
+        return rotaWithLocations;
       } on DioError catch (error) {
         print(error.response);
         rethrow;
       }
     } else {
-      log('not connect network');
-      final String? data =
-          await SharedPreferencesHelper.getStringValue('locationDataLocal');
+      final String? data = await SharedPreferencesHelper.getStringValue(
+          'rotaWithLocationDataLocal');
       if (data != null) {
-        final List<LocationWithZones> locations =
-            LocationWithZones.decode(data);
+        print('ao that dei');
+        final List<RotaWithLocation> locations = RotaWithLocation.decode(data);
         return locations;
       }
       return [];

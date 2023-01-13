@@ -13,7 +13,7 @@ class Wardens extends BaseModel {
   final double? Latitude;
   final double? Longitude;
 
-  const Wardens({
+  Wardens({
     int? Id,
     DateTime? Created,
     DateTime? Deleted,

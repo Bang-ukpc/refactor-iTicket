@@ -81,8 +81,8 @@ class _AbortScreenState extends State<AbortScreen> {
         wardenId: wardensProvider.wardens?.Id ?? 0,
         zoneId: locationProvider.zone?.Id ?? 0,
         locationId: locationProvider.location?.Id ?? 0,
-        rotaTimeFrom: locationProvider.rotaShift?.From,
-        rotaTimeTo: locationProvider.rotaShift?.To,
+        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
+        rotaTimeTo: locationProvider.rotaShift?.timeTo,
       );
 
       final abortPcnBody = AbortPCN(

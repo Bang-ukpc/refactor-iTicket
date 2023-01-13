@@ -8,7 +8,7 @@ class Zone extends BaseModel {
   final List<Service>? Services;
   final String ExternalReference;
 
-  const Zone({
+  Zone({
     Id,
     Created,
     Deleted,
@@ -35,20 +35,6 @@ class Zone extends BaseModel {
             ? zone.Services!.map((v) => Service.toJson(v)).toList()
             : [],
       };
-  // Map<String, dynamic> toJson() {
-  //   final Map<String, dynamic> data = <String, dynamic>{};
-  //   data['Created'] = Created;
-  //   data['Deleted'] = Deleted;
-  //   data['Id'] = Id;
-  //   data['LocationId'] = LocationId;
-  //   data['Name'] = Name;
-  //   data['PublicName'] = PublicName;
-  //   data['ExternalReference'] = ExternalReference;
-  //   if (Services != null) {
-  //     data['Services'] = Services!.map((v) => v.toJson()).toList();
-  //   }
-  //   return data;
-  // }
 }
 
 Zone _$ZoneFromJson(Map<String, dynamic> json) {

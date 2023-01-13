@@ -3,11 +3,11 @@ import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
 
 class Locations with ChangeNotifier {
-  static MyRotaShift? rotaShiftSelected;
+  static RotaWithLocation? rotaShiftSelected;
   static LocationWithZones? locationSelected;
   static Zone? zoneSelected;
 
-  MyRotaShift? get rotaShift {
+  RotaWithLocation? get rotaShift {
     return rotaShiftSelected;
   }
 
@@ -35,7 +35,7 @@ class Locations with ChangeNotifier {
     return secondsOfLocations;
   }
 
-  void onSelectedRotaShift(MyRotaShift? rotaShift) {
+  void onSelectedRotaShift(RotaWithLocation? rotaShift) {
     rotaShiftSelected = rotaShift;
     notifyListeners();
   }

@@ -219,8 +219,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         wardenId: wardensProvider.wardens?.Id ?? 0,
         zoneId: locationProvider.zone?.Id ?? 0,
         locationId: locationProvider.location?.Id ?? 0,
-        rotaTimeFrom: locationProvider.rotaShift?.From,
-        rotaTimeTo: locationProvider.rotaShift?.To,
+        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
+        rotaTimeTo: locationProvider.rotaShift?.timeTo,
       );
 
       final isValid = _formKey.currentState!.validate();
@@ -336,8 +336,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         wardenId: wardensProvider.wardens?.Id ?? 0,
         zoneId: locationProvider.zone?.Id ?? 0,
         locationId: locationProvider.location?.Id ?? 0,
-        rotaTimeFrom: locationProvider.rotaShift?.From,
-        rotaTimeTo: locationProvider.rotaShift?.To,
+        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
+        rotaTimeTo: locationProvider.rotaShift?.timeTo,
       );
 
       final isValid = _formKey.currentState!.validate();

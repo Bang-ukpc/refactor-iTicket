@@ -106,8 +106,8 @@ class _MyDrawerState extends State<MyDrawer> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
-      rotaTimeFrom: locations.rotaShift?.From,
-      rotaTimeTo: locations.rotaShift?.To,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     WardenEvent wardenEventEndShift = WardenEvent(
@@ -118,8 +118,8 @@ class _MyDrawerState extends State<MyDrawer> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
-      rotaTimeFrom: locations.rotaShift?.From,
-      rotaTimeTo: locations.rotaShift?.To,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     void onStartBreak() async {

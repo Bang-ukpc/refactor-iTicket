@@ -45,8 +45,8 @@ class InfoDrawer extends StatelessWidget {
       wardenId: wardersProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
-      rotaTimeFrom: locations.rotaShift?.From,
-      rotaTimeTo: locations.rotaShift?.To,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     void onCheckOut() async {
@@ -219,7 +219,7 @@ class InfoDrawer extends StatelessWidget {
                                 ? ColorTheme.textPrimary
                                 : Colors.white,
                             fontWeight: FontWeight.w500,
-                            overflow: TextOverflow.visible,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ),
