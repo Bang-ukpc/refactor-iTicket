@@ -20,12 +20,14 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
+import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
@@ -162,7 +164,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
-    final wardersProvider = Provider.of<WardensInfo>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
 
     log('Issue PCN screen');
@@ -203,13 +205,25 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         ContraventionReasonCode: _contraventionReasonController.text,
         EventDateTime: DateTime.now(),
         FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-        WardenId: wardersProvider.wardens?.Id ?? 0,
+        WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         WardenComments: _commentController.text,
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
         TypePCN: TypePCN.Physical.index,
+      );
+
+      final wardenEventIssuePCN = WardenEvent(
+        type: TypeWardenEvent.IssuePCN.index,
+        detail: '{"TicketNumber": "${physicalPCN.ContraventionReference}"}',
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: wardensProvider.wardens?.Id ?? 0,
+        zoneId: locationProvider.zone?.Id ?? 0,
+        locationId: locationProvider.location?.Id ?? 0,
+        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
+        rotaTimeTo: locationProvider.rotaShift?.timeTo,
       );
 
       final isValid = _formKey.currentState!.validate();
@@ -256,10 +270,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             }
           }
           if (contravention != null && check == true) {
-            if (!mounted) return;
-            Navigator.of(context).pop();
-            Navigator.of(context)
-                .pushNamed(PrintPCN.routeName, arguments: contravention);
+            await userController
+                .createWardenEvent(wardenEventIssuePCN)
+                .then((value) {
+              Navigator.of(context).pop();
+              Navigator.of(context)
+                  .pushNamed(PrintPCN.routeName, arguments: contravention);
+            });
           }
         } on DioError catch (error) {
           log("log ${error.type.toString()}");
@@ -462,13 +479,25 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         ContraventionReasonCode: _contraventionReasonController.text,
         EventDateTime: DateTime.now(),
         FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-        WardenId: wardersProvider.wardens?.Id ?? 0,
+        WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         WardenComments: _commentController.text,
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
         TypePCN: TypePCN.Virtual.index,
+      );
+
+      final wardenEventIssuePCN = WardenEvent(
+        type: TypeWardenEvent.IssuePCN.index,
+        detail: '{"TicketNumber": "${virtualTicket.ContraventionReference}"}',
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: wardensProvider.wardens?.Id ?? 0,
+        zoneId: locationProvider.zone?.Id ?? 0,
+        locationId: locationProvider.location?.Id ?? 0,
+        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
+        rotaTimeTo: locationProvider.rotaShift?.timeTo,
       );
 
       final isValid = _formKey.currentState!.validate();
@@ -515,12 +544,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             }
           }
           if (contravention != null && check == true) {
-            if (!mounted) return;
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamed(
-              ParkingChargeInfo.routeName,
-              arguments: contravention,
-            );
+            await userController
+                .createWardenEvent(wardenEventIssuePCN)
+                .then((value) {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(
+                ParkingChargeInfo.routeName,
+                arguments: contravention,
+              );
+            });
           }
         } on DioError catch (error) {
           if (!mounted) return;

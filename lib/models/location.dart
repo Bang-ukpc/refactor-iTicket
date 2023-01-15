@@ -22,33 +22,29 @@ class Location extends BaseModel {
   final String? Postcode;
   final String? Notes;
   final double? Distance;
-  final DateTime? From;
-  final DateTime? To;
 
-  Location(
-      {int? Id,
-      DateTime? Created,
-      DateTime? Deleted,
-      this.Address,
-      this.Address1,
-      this.Address2,
-      this.Address3,
-      this.Town,
-      this.Country,
-      this.Postcode,
-      required this.Name,
-      this.LocationType,
-      this.Revenue,
-      this.CountryRegionId,
-      required this.CountrySubRegionId,
-      this.ClusterId,
-      this.Longitude,
-      this.Latitude,
-      this.Notes,
-      this.Distance,
-      this.From,
-      this.To})
-      : super(Id: Id, Created: Created, Deleted: Deleted);
+  Location({
+    int? Id,
+    DateTime? Created,
+    DateTime? Deleted,
+    this.Address,
+    this.Address1,
+    this.Address2,
+    this.Address3,
+    this.Town,
+    this.Country,
+    this.Postcode,
+    required this.Name,
+    this.LocationType,
+    this.Revenue,
+    this.CountryRegionId,
+    required this.CountrySubRegionId,
+    this.ClusterId,
+    this.Longitude,
+    this.Latitude,
+    this.Notes,
+    this.Distance,
+  }) : super(Id: Id, Created: Created, Deleted: Deleted);
 }
 
 class LocationWithZones extends Location {
@@ -101,8 +97,6 @@ class LocationWithZones extends Location {
           Longitude: Longitude,
           Notes: Notes,
           Distance: Distance,
-          From: From,
-          To: To,
         );
 
   factory LocationWithZones.fromJson(Map<String, dynamic> json) =>
@@ -133,13 +127,12 @@ class LocationWithZones extends Location {
         'Zones': locationWithZones.Zones != null
             ? locationWithZones.Zones!.map((v) => Zone.toJson(v)).toList()
             : [],
-        'From': locationWithZones.From != null
-            ? locationWithZones.From!.toIso8601String()
-            : null,
-        'To': locationWithZones.To != null
-            ? locationWithZones.To!.toIso8601String()
-            : null,
         'Distance': locationWithZones.Distance,
+        'OperationalPeriods': locationWithZones.OperationalPeriods != null
+            ? locationWithZones.OperationalPeriods!
+                .map((e) => OperationalPeriod.toJson(e))
+                .toList()
+            : []
       };
 
   static String encode(List<LocationWithZones> locationWithZones) =>
@@ -157,6 +150,11 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
   var zonesFromJson = json['Zones'] as List<dynamic>;
   List<Zone> zonesList =
       zonesFromJson.map((model) => Zone.fromJson(model)).toList();
+
+  var operationalPeriodsFromJson = json['OperationalPeriods'] as List<dynamic>;
+  List<OperationalPeriod> operationalPeriodsList = operationalPeriodsFromJson
+      .map((model) => OperationalPeriod.fromJson(model))
+      .toList();
 
   return LocationWithZones(
     Id: json['Id'],
@@ -179,18 +177,125 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Latitude: json['Latitude'],
     Notes: json['Notes'],
     Distance: json['Distance'],
-    From: json['From'] == null ? null : DateTime.parse(json['From']),
-    To: json['To'] == null ? null : DateTime.parse(json['To']),
     Zones: zonesList,
-    OperationalPeriods: json['OperationalPeriods'],
+    OperationalPeriods: operationalPeriodsList,
   );
 }
 
-class MyRotaShift {
-  final DateTime? From;
-  final DateTime? To;
+class RotaStatus {
+  static String get ASSIGNED => "assigned";
+  static String get NOT_ASSIGNED => 'not_assigned';
+  static String get LIEU_LEAVE => 'lieu_leave';
+  static String get OUTSIDE => 'outside';
+}
 
-  MyRotaShift({this.From, this.To});
+class RotaType {
+  static LeaveDayType? leaveDayType;
+  static String get work => "work";
+}
+
+class LeaveDayType {
+  static String get holiday => "holiday";
+  static String get other => 'other';
+  static String get absent => 'absent';
+  static String get unAbsent => 'un-absent';
+  static String get lieu => 'lieu';
+  static String get sick => 'sick';
+}
+
+class Rota extends BaseModel {
+  int? wardenId;
+  DateTime? timeFrom;
+  DateTime? timeTo;
+  String? status;
+  String? rotaType;
+
+  Rota({
+    int? Id,
+    DateTime? Created,
+    DateTime? Deleted,
+    required this.wardenId,
+    required this.timeFrom,
+    required this.timeTo,
+    this.status,
+    this.rotaType,
+  }) : super(Id: Id, Created: Created, Deleted: Deleted);
+
+  Rota.fromJson(Map<String, dynamic> json) {
+    Created = json['Created'] == null ? null : DateTime.parse(json['Created']);
+    Deleted = json['Deleted'] == null ? null : DateTime.parse(json['Deleted']);
+    Id = json['Id'];
+    wardenId = json['WardenId'];
+    timeFrom = DateTime.parse(json['TimeFrom']);
+    timeTo = DateTime.parse(json['TimeTo']);
+    status = json['Status'];
+    rotaType = json['RotaType'];
+  }
+}
+
+class RotaWithLocation extends Rota {
+  List<LocationWithZones>? locations;
+
+  RotaWithLocation({
+    this.locations,
+    required super.wardenId,
+    required super.timeFrom,
+    required super.timeTo,
+    super.Created,
+    super.Deleted,
+    super.Id,
+    super.rotaType,
+    super.status,
+  });
+
+  factory RotaWithLocation.fromJson(Map<String, dynamic> json) =>
+      _$RotaWithLocationFromJson(json);
+
+  static Map<String, dynamic> toJson(RotaWithLocation rotaWithLocation) => {
+        'WardenId': rotaWithLocation.wardenId,
+        'Created': rotaWithLocation.Created != null
+            ? rotaWithLocation.Created!.toIso8601String()
+            : null,
+        'Deleted': rotaWithLocation.Deleted != null
+            ? rotaWithLocation.Deleted!.toIso8601String()
+            : null,
+        'Id': rotaWithLocation.Id,
+        'TimeFrom': rotaWithLocation.timeFrom!.toIso8601String(),
+        'TimeTo': rotaWithLocation.timeTo!.toIso8601String(),
+        'Status': rotaWithLocation.status,
+        'RotaType': rotaWithLocation.rotaType,
+        'Locations': rotaWithLocation.locations!
+            .map((i) => LocationWithZones.toJson(i))
+            .toList(),
+      };
+
+  static String encode(List<RotaWithLocation> rotaWithLocation) => json.encode(
+        rotaWithLocation.map((i) => RotaWithLocation.toJson(i)).toList(),
+      );
+
+  static List<RotaWithLocation> decode(String rotaWithLocation) =>
+      (json.decode(rotaWithLocation) as List<dynamic>)
+          .map<RotaWithLocation>((item) => RotaWithLocation.fromJson(item))
+          .toList();
+}
+
+RotaWithLocation _$RotaWithLocationFromJson(Map<String, dynamic> json) {
+  var locationWithZonesFromJson = json['Locations'] as List<dynamic>;
+  List<LocationWithZones> locationWithZones = locationWithZonesFromJson
+      .map((model) => LocationWithZones.fromJson(model))
+      .toList();
+
+  return RotaWithLocation(
+    wardenId: json['WardenId'],
+    timeFrom: DateTime.parse(json['TimeFrom']),
+    timeTo: DateTime.parse(json['TimeTo']),
+    Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
+    Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
+    Id: json['Id'],
+    rotaType: json['RotaType'],
+    status: json['Status'],
+    locations: locationWithZones,
+  );
 }
 
 class ListLocationOfTheDayByWardenIdProps {

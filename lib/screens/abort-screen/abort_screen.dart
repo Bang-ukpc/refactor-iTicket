@@ -7,15 +7,21 @@ import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/abort_controller.dart';
+import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class AbortScreen extends StatefulWidget {
   static const routeName = '/abort';
@@ -63,8 +69,22 @@ class _AbortScreenState extends State<AbortScreen> {
   Widget build(BuildContext context) {
     final heightScreen = MediaQuery.of(context).size.height;
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
+    final locationProvider = Provider.of<Locations>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
 
     Future<void> abortPCN() async {
+      final wardenEventAbortPCN = WardenEvent(
+        type: TypeWardenEvent.AbortPCN.index,
+        detail: 'Abort PCN: ${args.reference}',
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: wardensProvider.wardens?.Id ?? 0,
+        zoneId: locationProvider.zone?.Id ?? 0,
+        locationId: locationProvider.location?.Id ?? 0,
+        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
+        rotaTimeTo: locationProvider.rotaShift?.timeTo,
+      );
+
       final abortPcnBody = AbortPCN(
         contraventionId: args.id as int,
         cancellationReasonId: _cancellationReasonController.text != ''
@@ -79,8 +99,12 @@ class _AbortScreenState extends State<AbortScreen> {
       }
 
       try {
-        await abortController.abortPCN(abortPcnBody).then((value) {
-          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+        await abortController.abortPCN(abortPcnBody).then((value) async {
+          await userController
+              .createWardenEvent(wardenEventAbortPCN)
+              .then((value) {
+            Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+          });
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {

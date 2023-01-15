@@ -49,7 +49,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
             ),
           DetailCar(
             plate: widget.contravention!.plate as String,
-            created: widget.contravention!.created as DateTime,
+            make: widget.contravention?.make,
             color: widget.contravention?.colour,
             make: widget.contravention?.make,
           ),

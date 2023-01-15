@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
@@ -11,8 +10,10 @@ import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/location_controller.dart';
+import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
+import 'package:iWarden/models/operational_period.dart';
 import 'package:iWarden/models/zone.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -34,9 +35,9 @@ class LocationScreen extends StatefulWidget {
 
 class _LocationScreenState extends State<LocationScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  List<LocationWithZones> locationList = [];
-  List<LocationWithZones> listFilter = [];
-  List<LocationWithZones> listFilterByRota = [];
+  List<RotaWithLocation> locationWithRotaList = [];
+  List<RotaWithLocation> listFilter = [];
+  List<RotaWithLocation> listFilterByRota = [];
   Directions? _info;
   bool check = false;
   bool isLoading = true;
@@ -57,7 +58,7 @@ class _LocationScreenState extends State<LocationScreen> {
         .getAll(listLocationOfTheDayByWardenIdProps)
         .then((value) {
       setState(() {
-        locationList = value;
+        locationWithRotaList = value;
         isLoading = false;
       });
     }).catchError((err) {
@@ -71,39 +72,46 @@ class _LocationScreenState extends State<LocationScreen> {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
   }
 
-  List<LocationWithZones> rotaList(List<LocationWithZones> list) {
+  List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
     DateTime date = DateTime.parse(getLocalDate(DateTime.now()));
+    final filterRotaShiftByNow = list.where(
+      (location) {
+        DateTime timeFrom =
+            DateTime.parse(getLocalDate(location.timeFrom as DateTime));
+        DateTime timeTo =
+            DateTime.parse(getLocalDate(location.timeTo as DateTime));
+        return timeFrom.isAfter(date) ||
+            (date.isAfter(timeFrom) && date.isBefore(timeTo));
+      },
+    ).toList();
+    filterRotaShiftByNow.sort(
+      (i1, i2) => DateTime.parse(getLocalDate(i1.timeFrom as DateTime))
+          .compareTo(DateTime.parse(getLocalDate(i2.timeFrom as DateTime))),
+    );
     setState(() {
-      listFilter = list.where(
-        (location) {
-          DateTime timeFrom =
-              DateTime.parse(getLocalDate(location.From as DateTime));
-          DateTime timeTo =
-              DateTime.parse(getLocalDate(location.To as DateTime));
-          return timeFrom.isAfter(date) ||
-              (date.isAfter(timeFrom) && date.isBefore(timeTo));
-        },
-      ).toList();
+      listFilter = filterRotaShiftByNow;
     });
     return listFilter;
   }
 
-  List<LocationWithZones> locationListFilterByRota(
+  List<RotaWithLocation> locationListFilterByRota(
       DateTime? from, DateTime? to) {
     DateTime rotaTimeFrom = DateTime.parse(getLocalDate(from as DateTime));
     DateTime rotaTimeTo = DateTime.parse(getLocalDate(to as DateTime));
 
+    final rotaListFilter = locationWithRotaList.where(
+      (location) {
+        DateTime timeFrom =
+            DateTime.parse(getLocalDate(location.timeFrom as DateTime));
+        DateTime timeTo =
+            DateTime.parse(getLocalDate(location.timeTo as DateTime));
+        return rotaTimeFrom.compareTo(timeFrom) >= 0 &&
+            rotaTimeTo.compareTo(timeTo) <= 0;
+      },
+    ).toList();
+
     setState(() {
-      listFilterByRota = locationList.where(
-        (location) {
-          DateTime timeFrom =
-              DateTime.parse(getLocalDate(location.From as DateTime));
-          DateTime timeTo =
-              DateTime.parse(getLocalDate(location.To as DateTime));
-          return rotaTimeFrom.compareTo(timeFrom) >= 0 &&
-              rotaTimeTo.compareTo(timeTo) <= 0;
-        },
-      ).toList();
+      listFilterByRota = rotaListFilter;
     });
     return listFilterByRota;
   }
@@ -117,20 +125,19 @@ class _LocationScreenState extends State<LocationScreen> {
       final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
 
       await getLocationList(locations, wardersProvider.wardens?.Id ?? 0);
-      rotaList(locationList);
+      rotaList(locationWithRotaList);
       if (listFilter.isNotEmpty) {
-        locationListFilterByRota(listFilter[0].From, listFilter[0].To);
-        locations.onSelectedRotaShift(
-            MyRotaShift(From: listFilter[0].From, To: listFilter[0].To));
-        locations.onSelectedLocation(listFilterByRota[0]);
-        locations.onSelectedZone(listFilterByRota[0].Zones![0]);
+        locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
+        locations.onSelectedRotaShift(listFilter[0]);
+        locations.onSelectedLocation(listFilterByRota[0].locations![0]);
+        locations.onSelectedZone(listFilterByRota[0].locations![0].Zones![0]);
       }
     });
   }
 
   @override
   void dispose() {
-    locationList.clear();
+    locationWithRotaList.clear();
     listFilter.clear();
     listFilterByRota.clear();
     super.dispose();
@@ -153,8 +160,6 @@ class _LocationScreenState extends State<LocationScreen> {
       locations.location?.Longitude ?? 0,
     );
 
-    log('Location screen');
-
     void setZoneWhenSelectedLocation(LocationWithZones locationSelected) {
       locations.onSelectedZone(
         locationSelected.Zones!.isNotEmpty ? locationSelected.Zones![0] : null,
@@ -176,6 +181,30 @@ class _LocationScreenState extends State<LocationScreen> {
     //       origin: sourceLocation, destination: destination);
     //   setState(() => _info = directions);
     // }
+
+    OperationalPeriod? getOperationalPeriodNearest(
+        List<OperationalPeriod> operationalPeriodList) {
+      var date = DateTime.now();
+      int currentMinutes = date.hour * 60 + date.minute;
+      if (operationalPeriodList.isNotEmpty) {
+        for (int i = 0; i < operationalPeriodList.length; i++) {
+          var item = operationalPeriodList[i];
+          print('time from: ${item.TimeFrom}, time to: ${item.TimeTo}');
+          print('current time: $currentMinutes');
+          if (currentMinutes <= item.TimeFrom ||
+              currentMinutes > item.TimeFrom && currentMinutes <= item.TimeTo) {
+            return item;
+          }
+        }
+        return operationalPeriodList[operationalPeriodList.length - 1];
+      }
+      return null;
+    }
+
+    print(
+        'from: ${locations.rotaShift?.timeFrom}, to: ${locations.rotaShift?.timeTo}');
+    print('location: ${locations.location?.Name}');
+    print('zone: ${locations.zone?.Name}');
 
     return WillPopScope(
       onWillPop: () async => false,
@@ -220,6 +249,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   location: null,
                   zone: null,
                   isDrawer: false,
+                  isLogout: true,
                 ),
                 Container(
                   margin: const EdgeInsets.only(top: 8),
@@ -241,7 +271,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                     height: 20,
                                   ),
                                   SizedBox(
-                                    child: DropdownSearch<LocationWithZones>(
+                                    child: DropdownSearch<RotaWithLocation>(
                                       dropdownDecoratorProps:
                                           DropDownDecoratorProps(
                                         dropdownSearchDecoration:
@@ -252,12 +282,12 @@ class _LocationScreenState extends State<LocationScreen> {
                                           hintText: 'Select rota shift',
                                         ),
                                       ),
-                                      items: rotaList(locationList),
+                                      items: rotaList(locationWithRotaList),
                                       selectedItem: listFilter.isNotEmpty
                                           ? listFilter[0]
                                           : null,
                                       itemAsString: (item) =>
-                                          '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
+                                          '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                       popupProps: PopupProps.menu(
                                         fit: FlexFit.loose,
                                         constraints: const BoxConstraints(
@@ -267,31 +297,28 @@ class _LocationScreenState extends State<LocationScreen> {
                                             (context, item, isSelected) {
                                           return DropDownItem(
                                             title:
-                                                '${formatRotaShift(item.From as DateTime)} - ${formatRotaShift(item.To as DateTime)}',
-                                            isSelected: false,
+                                                '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
+                                            isSelected: item.Id ==
+                                                locations.rotaShift!.Id,
                                           );
                                         },
                                       ),
                                       onChanged: (value) {
-                                        LocationWithZones rotaShiftSelected =
-                                            locationList.firstWhere(
+                                        RotaWithLocation rotaShiftSelected =
+                                            locationWithRotaList.firstWhere(
                                           (item) => item.Id == value!.Id,
                                         );
                                         locations.onSelectedRotaShift(
-                                          MyRotaShift(
-                                            From: rotaShiftSelected.From,
-                                            To: rotaShiftSelected.To,
-                                          ),
-                                        );
+                                            rotaShiftSelected);
                                         locationListFilterByRota(
-                                          rotaShiftSelected.From,
-                                          rotaShiftSelected.To,
+                                          rotaShiftSelected.timeFrom,
+                                          rotaShiftSelected.timeTo,
                                         );
                                         locations.onSelectedLocation(
-                                          listFilterByRota[0],
+                                          listFilterByRota[0].locations![0],
                                         );
                                         setZoneWhenSelectedLocation(
-                                            rotaShiftSelected);
+                                            rotaShiftSelected.locations![0]);
                                       },
                                       validator: ((value) {
                                         if (value == null) {
@@ -317,9 +344,15 @@ class _LocationScreenState extends State<LocationScreen> {
                                           hintText: 'Select location',
                                         ),
                                       ),
-                                      items: listFilterByRota,
+                                      items: locations.rotaShift != null
+                                          ? locations.rotaShift!.locations!
+                                                  .isNotEmpty
+                                              ? locations.rotaShift!.locations
+                                                  as List<LocationWithZones>
+                                              : []
+                                          : [],
                                       selectedItem: listFilterByRota.isNotEmpty
-                                          ? listFilterByRota[0]
+                                          ? listFilterByRota[0].locations![0]
                                           : null,
                                       itemAsString: (item) => item.Name,
                                       popupProps: PopupProps.menu(
@@ -329,19 +362,28 @@ class _LocationScreenState extends State<LocationScreen> {
                                         ),
                                         itemBuilder:
                                             (context, item, isSelected) {
-                                          return DropDownItem(
+                                          return DropDownItem2(
                                             title: item.Name,
-                                            subTitle:
-                                                'Distance: ${item.Distance}km',
-                                            isSelected: false,
+                                            subTitle: '${item.Distance}km',
+                                            isSelected: item.Id ==
+                                                locations.location!.Id,
+                                            operationalPeriods: item
+                                                    .OperationalPeriods!
+                                                    .isNotEmpty
+                                                ? getOperationalPeriodNearest(
+                                                    locations.location!
+                                                            .OperationalPeriods ??
+                                                        [],
+                                                  )
+                                                : null,
                                           );
                                         },
                                       ),
                                       onChanged: (value) {
                                         LocationWithZones locationSelected =
-                                            locationList.firstWhere(
-                                          (item) => item.Id == value!.Id,
-                                        );
+                                            locations.rotaShift!.locations!
+                                                .firstWhere(
+                                                    (f) => f.Id == value!.Id);
                                         locations.onSelectedLocation(
                                           locationSelected,
                                         );
@@ -385,6 +427,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                             (context, item, isSelected) =>
                                                 DropDownItem(
                                           title: item.Name,
+                                          isSelected:
+                                              item.Id == locations.zone!.Id,
                                         ),
                                       ),
                                       onChanged: (value) {
@@ -550,6 +594,92 @@ class DropDownItem extends StatelessWidget {
                     ? ColorTheme.textPrimary
                     : ColorTheme.primary,
               ),
+            ),
+            if (subTitle != null)
+              Text(
+                subTitle ?? '',
+                style: CustomTextStyle.body2,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DropDownItem2 extends StatelessWidget {
+  final String title;
+  final String? subTitle;
+  final bool? isSelected;
+  final OperationalPeriod? operationalPeriods;
+  const DropDownItem2({
+    required this.title,
+    this.subTitle,
+    this.isSelected = false,
+    required this.operationalPeriods,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    DateTime startDay = formatDate.startOfDay(DateTime.now());
+    var date = DateTime.now();
+    int currentMinutes = date.hour * 60 + date.minute;
+
+    String formatOperationalPeriods(DateTime date) {
+      return DateFormat('HH:mm').format(date);
+    }
+
+    Color getStatusColor() {
+      if (currentMinutes <= operationalPeriods!.TimeFrom ||
+          currentMinutes > operationalPeriods!.TimeFrom &&
+              currentMinutes <= operationalPeriods!.TimeTo) {
+        return ColorTheme.success;
+      }
+      return ColorTheme.danger;
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 1,
+            color: ColorTheme.grey300,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: subTitle != null ? 10 : 15,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: Text(
+                    title,
+                    style: CustomTextStyle.body1.copyWith(
+                      color: isSelected == false
+                          ? ColorTheme.textPrimary
+                          : ColorTheme.primary,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                if (operationalPeriods != null)
+                  Text(
+                    'Op ${formatOperationalPeriods(startDay.add(Duration(minutes: operationalPeriods!.TimeFrom)))} - ${formatOperationalPeriods(startDay.add(Duration(minutes: operationalPeriods!.TimeTo)))}',
+                    style: CustomTextStyle.body2.copyWith(
+                      color: getStatusColor(),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
             ),
             if (subTitle != null)
               Text(

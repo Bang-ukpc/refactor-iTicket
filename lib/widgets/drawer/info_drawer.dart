@@ -9,9 +9,11 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
+import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
@@ -22,14 +24,16 @@ class InfoDrawer extends StatelessWidget {
   final String? location;
   final String? zone;
   final bool isDrawer;
-  const InfoDrawer(
-      {Key? key,
-      required this.assetImage,
-      required this.name,
-      required this.isDrawer,
-      this.location,
-      this.zone})
-      : super(key: key);
+  final bool isLogout;
+  const InfoDrawer({
+    Key? key,
+    required this.assetImage,
+    required this.name,
+    required this.isDrawer,
+    this.location,
+    this.zone,
+    this.isLogout = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +48,8 @@ class InfoDrawer extends StatelessWidget {
       wardenId: wardersProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     void onCheckOut() async {
@@ -89,6 +95,51 @@ class InfoDrawer extends StatelessWidget {
       } else {
         // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+      }
+    }
+
+    void onLogout(Auth auth) async {
+      try {
+        await auth.logout().then((value) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              LoginScreen.routeName, (Route<dynamic> route) => false);
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'Log out successfully',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        });
+      } on DioError catch (error) {
+        if (error.type == DioErrorType.other) {
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 3),
+            title: Text(
+              error.message.length > Constant.errorTypeOther
+                  ? 'Something went wrong, please try again'
+                  : error.message,
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Internal server error'
+                : error.response!.data['message'],
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
       }
     }
 
@@ -152,92 +203,139 @@ class InfoDrawer extends StatelessWidget {
     }
 
     return Container(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: !isDrawer
-              ? (zone == null && location == null)
-                  ? 5
-                  : 16
-              : 37,
-          bottom: !isDrawer
-              ? (zone == null && location == null)
-                  ? 5
-                  : 16
-              : 15,
-        ),
-        color: isDrawer ? ColorTheme.darkPrimary : Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                buildAvatar(),
-                const SizedBox(
-                  width: 8,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: CustomTextStyle.h5.copyWith(
-                        color:
-                            !isDrawer ? ColorTheme.textPrimary : Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (location != null)
-                      Text(
-                        "Location: ${location!}",
-                        overflow: TextOverflow.ellipsis,
-                        style: CustomTextStyle.body2.copyWith(
-                            color: !isDrawer
-                                ? ColorTheme.textPrimary
-                                : Colors.white),
-                      ),
-                    if (zone != null)
-                      Text(
-                        "Zone: ${zone!}",
-                        overflow: TextOverflow.ellipsis,
-                        style: CustomTextStyle.body2.copyWith(
-                            color: !isDrawer
-                                ? ColorTheme.textPrimary
-                                : Colors.white),
-                      ),
-                  ],
-                )
-              ],
-            ),
-            if (isDrawer)
-              const SizedBox(
-                height: 5,
-              ),
-            if (isDrawer)
-              Container(
-                margin: const EdgeInsets.only(left: 65),
-                height: 26,
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: ElevatedButton.icon(
-                    icon: SvgPicture.asset(
-                      "assets/svg/IconEndShift.svg",
-                      width: 12,
-                      color: ColorTheme.textPrimary,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: ColorTheme.secondary,
-                    ),
-                    label: const Text(
-                      "Check out",
-                      style: CustomTextStyle.h6,
-                    ),
-                    onPressed: onCheckOut,
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: !isDrawer
+            ? (zone == null && location == null)
+                ? 5
+                : 16
+            : 37,
+        bottom: !isDrawer
+            ? (zone == null && location == null)
+                ? 5
+                : 16
+            : 15,
+      ),
+      color: isDrawer ? ColorTheme.darkPrimary : Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  buildAvatar(),
+                  const SizedBox(
+                    width: 8,
                   ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: isLogout == true
+                            ? MediaQuery.of(context).size.width * 0.4
+                            : MediaQuery.of(context).size.width * 0.5,
+                        child: Text(
+                          name,
+                          style: CustomTextStyle.h6.copyWith(
+                            color: !isDrawer
+                                ? ColorTheme.textPrimary
+                                : Colors.white,
+                            fontWeight: FontWeight.w500,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      if (location != null)
+                        Text(
+                          "Location: ${location!}",
+                          overflow: TextOverflow.ellipsis,
+                          style: CustomTextStyle.caption.copyWith(
+                              color: !isDrawer
+                                  ? ColorTheme.textPrimary
+                                  : Colors.white),
+                        ),
+                      if (zone != null)
+                        Text(
+                          "Zone: ${zone!}",
+                          overflow: TextOverflow.ellipsis,
+                          style: CustomTextStyle.caption.copyWith(
+                              color: !isDrawer
+                                  ? ColorTheme.textPrimary
+                                  : Colors.white),
+                        ),
+                    ],
+                  )
+                ],
+              ),
+              if (isDrawer)
+                const SizedBox(
+                  height: 5,
                 ),
-              )
-          ],
-        ));
+              if (isDrawer)
+                Container(
+                  margin: const EdgeInsets.only(left: 65),
+                  height: 26,
+                  child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: ElevatedButton.icon(
+                      icon: SvgPicture.asset(
+                        "assets/svg/IconEndShift.svg",
+                        width: 12,
+                        color: ColorTheme.textPrimary,
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: ColorTheme.secondary,
+                      ),
+                      label: const Text(
+                        "Check out",
+                        style: CustomTextStyle.h6,
+                      ),
+                      onPressed: onCheckOut,
+                    ),
+                  ),
+                )
+            ],
+          ),
+          if (isLogout == true)
+            Consumer<Auth>(
+              builder: (context, auth, _) {
+                return ElevatedButton(
+                  onPressed: () {
+                    onLogout(auth);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: ColorTheme.lightDanger,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Log out",
+                        style: CustomTextStyle.h6.copyWith(
+                            color: ColorTheme.danger,
+                            fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      SvgPicture.asset(
+                        "assets/svg/IconEndShift.svg",
+                        width: 18,
+                        color: ColorTheme.danger,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
   }
 }

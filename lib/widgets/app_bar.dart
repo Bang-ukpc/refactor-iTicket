@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
@@ -28,6 +29,13 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      elevation: HomeOverview.routeName == ModalRoute.of(context)!.settings.name
+          ? 10
+          : 0,
+      shadowColor:
+          HomeOverview.routeName == ModalRoute.of(context)!.settings.name
+              ? ColorTheme.boxShadow3
+              : null,
       systemOverlayStyle: systemUiSettings,
       automaticallyImplyLeading: automaticallyImplyLeading,
       titleSpacing: !automaticallyImplyLeading ? 15 : 0,

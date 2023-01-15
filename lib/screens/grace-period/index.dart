@@ -198,7 +198,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
                         height: gracePeriodActive.length > 3
-                            ? (gracePeriodActive.length.toDouble()) * 92
+                            ? (gracePeriodActive.length.toDouble()) * 110
                             : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),
@@ -262,7 +262,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
                         height: gracePeriodExpired.length > 3
-                            ? (gracePeriodExpired.length.toDouble() * 92)
+                            ? (gracePeriodExpired.length.toDouble() * 110)
                             : 350,
                         margin:
                             const EdgeInsets.only(bottom: ConstSpacing.bottom),

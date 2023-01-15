@@ -247,6 +247,8 @@ class _HomeOverviewState extends State<HomeOverview> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     final wardenEventStartBreak = WardenEvent(
@@ -257,6 +259,8 @@ class _HomeOverviewState extends State<HomeOverview> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     void onCheckOut() async {
@@ -371,7 +375,7 @@ class _HomeOverviewState extends State<HomeOverview> {
           child: Column(
             children: <Widget>[
               const SizedBox(
-                height: 10,
+                height: 16,
               ),
               InfoDrawer(
                 isDrawer: false,

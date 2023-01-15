@@ -11,6 +11,7 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
+import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
@@ -105,6 +106,20 @@ class _MyDrawerState extends State<MyDrawer> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
+    );
+
+    WardenEvent wardenEventCheckOut = WardenEvent(
+      type: TypeWardenEvent.CheckOut.index,
+      detail: 'Warden checked out',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     WardenEvent wardenEventEndShift = WardenEvent(
@@ -115,6 +130,8 @@ class _MyDrawerState extends State<MyDrawer> {
       wardenId: wardensProvider.wardens?.Id ?? 0,
       zoneId: locations.zone?.Id ?? 0,
       locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
     void onStartBreak() async {
@@ -157,20 +174,13 @@ class _MyDrawerState extends State<MyDrawer> {
     void onEndShift(Auth auth) async {
       try {
         await userController
-            .createWardenEvent(wardenEventEndShift)
+            .createWardenEvent(wardenEventCheckOut)
             .then((value) async {
-          await auth.logout().then((value) {
+          await userController
+              .createWardenEvent(wardenEventEndShift)
+              .then((value) async {
             Navigator.of(context).pushNamedAndRemoveUntil(
-                LoginScreen.routeName, (Route<dynamic> route) => false);
-            CherryToast.success(
-              displayCloseButton: false,
-              title: Text(
-                'End of shift',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
+                ConnectingScreen.routeName, (Route<dynamic> route) => false);
           });
         });
       } on DioError catch (error) {
@@ -298,18 +308,28 @@ class _MyDrawerState extends State<MyDrawer> {
           .toList();
     }
 
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    Widget containerDrawer(Widget children) {
+      if (isLandscape) {
+        return SingleChildScrollView(child: children);
+      } else {
+        return children;
+      }
+    }
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: SizedBox(
-        width: widthScreen > 450 ? widthScreen * 0.45 : widthScreen * 0.85,
-        child: Drawer(
-          child: SingleChildScrollView(
-            child: Column(
+          width: isLandscape ? widthScreen * 0.66 : widthScreen * 0.85,
+          child: Drawer(
+            child: containerDrawer(Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Column(
-                  children: <Widget>[
+                  children: [
                     InfoDrawer(
                       isDrawer: true,
                       assetImage: wardensProvider.wardens?.Picture ??
@@ -352,24 +372,22 @@ class _MyDrawerState extends State<MyDrawer> {
                         );
                       },
                     ),
-                    SizedBox(height: heightScreen / 3.5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 30,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: getListNav(),
-                      ),
-                    ),
                   ],
-                )
+                ),
+                // SizedBox(height: heightScreen / 3.5),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 30,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: getListNav(),
+                  ),
+                ),
               ],
-            ),
-          ),
-        ),
-      ),
+            )),
+          )),
     );
   }
 }

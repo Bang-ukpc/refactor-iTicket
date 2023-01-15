@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 class DetailCar extends StatelessWidget {
   final String plate;
-  final DateTime created;
+  final String? make;
   final String? color;
   final String? make;
 
   const DetailCar({
     required this.plate,
-    required this.created,
+    required this.make,
     this.color,
     this.make,
     Key? key,
@@ -35,7 +34,7 @@ class DetailCar extends StatelessWidget {
                 plate.toUpperCase(),
                 style: CustomTextStyle.h3,
               ),
-              Text("Color: $color",
+              Text("Color: ${color ?? "No data"}",
                   style:
                       CustomTextStyle.h6.copyWith(color: ColorTheme.grey600)),
             ],
@@ -45,7 +44,7 @@ class DetailCar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Text(
-                "Created at: ${FormatDate().getLocalDate(created)}",
+                "Make: ${make ?? "No data"}",
                 style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
               ),
               Text("Make: ${make ?? "No data"}",
