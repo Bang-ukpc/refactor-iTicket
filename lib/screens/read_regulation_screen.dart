@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -46,52 +47,32 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
     );
 
     void checkNextPage() async {
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
       if (locations.location?.Notes?.isEmpty == true ||
           locations.location?.Notes == null) {
-        try {
-          await userController.createWardenEvent(wardenEvent).then((value) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                HomeOverview.routeName, (Route<dynamic> route) => false);
-          });
-        } on DioError catch (error) {
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                HomeOverview.routeName, (Route<dynamic> route) => false);
-          }
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-        }
-      } else {
-        if (!checkbox) {
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              'Please tick to confirm and go next',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-        } else {
+        if (connectionStatus == ConnectivityResult.wifi ||
+            connectionStatus == ConnectivityResult.mobile) {
           try {
             await userController.createWardenEvent(wardenEvent).then((value) {
               Navigator.of(context).pushNamedAndRemoveUntil(
                   HomeOverview.routeName, (Route<dynamic> route) => false);
             });
           } on DioError catch (error) {
+            if (!mounted) return;
             if (error.type == DioErrorType.other) {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  HomeOverview.routeName, (Route<dynamic> route) => false);
+              CherryToast.error(
+                toastDuration: const Duration(seconds: 3),
+                title: Text(
+                  error.message.length > Constant.errorTypeOther
+                      ? 'Something went wrong, please try again'
+                      : error.message,
+                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
+              return;
             }
             CherryToast.error(
               displayCloseButton: false,
@@ -105,6 +86,64 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
               toastPosition: Position.bottom,
               borderRadius: 5,
             ).show(context);
+          }
+        } else {
+          if (!mounted) return;
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              HomeOverview.routeName, (Route<dynamic> route) => false);
+        }
+      } else {
+        if (!mounted) return;
+        if (!checkbox) {
+          CherryToast.error(
+            displayCloseButton: false,
+            title: Text(
+              'Please tick to confirm and go next',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        } else {
+          if (connectionStatus == ConnectivityResult.wifi ||
+              connectionStatus == ConnectivityResult.mobile) {
+            try {
+              await userController.createWardenEvent(wardenEvent).then((value) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    HomeOverview.routeName, (Route<dynamic> route) => false);
+              });
+            } on DioError catch (error) {
+              if (error.type == DioErrorType.other) {
+                CherryToast.error(
+                  toastDuration: const Duration(seconds: 3),
+                  title: Text(
+                    error.message.length > Constant.errorTypeOther
+                        ? 'Something went wrong, please try again'
+                        : error.message,
+                    style:
+                        CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                  ),
+                  toastPosition: Position.bottom,
+                  borderRadius: 5,
+                ).show(context);
+                return;
+              }
+              CherryToast.error(
+                displayCloseButton: false,
+                title: Text(
+                  error.response!.data['message'].toString().length >
+                          Constant.errorMaxLength
+                      ? 'Internal server error'
+                      : error.response!.data['message'],
+                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
+            }
+          } else {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                HomeOverview.routeName, (Route<dynamic> route) => false);
           }
         }
       }

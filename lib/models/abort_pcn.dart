@@ -49,6 +49,16 @@ class CancellationReason extends BaseModel {
 
   factory CancellationReason.fromJson(Map<String, dynamic> json) =>
       _$CancellationReasonFromJson(json);
+
+  static Map<String, dynamic> toJson(CancellationReason cancellationReason) => {
+        'Id': cancellationReason.Id ?? 0,
+        'Created': cancellationReason.Created != null
+            ? cancellationReason.Created!.toIso8601String()
+            : null,
+        'Group': cancellationReason.group,
+        'Reason': cancellationReason.reason,
+        'RequiresMandatoryNotes': cancellationReason.requiresMandatoryNotes,
+      };
 }
 
 CancellationReason _$CancellationReasonFromJson(Map<String, dynamic> json) {

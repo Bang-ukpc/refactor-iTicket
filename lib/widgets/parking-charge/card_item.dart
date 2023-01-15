@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/configs/configs.dart';
@@ -25,6 +29,22 @@ class CardItemParkingCharge extends StatefulWidget {
 }
 
 class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
+  ConnectivityResult checkConnection = ConnectivityResult.none;
+
+  void checkConnectionStatus() async {
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+    setState(() {
+      checkConnection = connectionStatus;
+    });
+  }
+
+  @override
+  void initState() {
+    checkConnectionStatus();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -35,26 +55,38 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(5.0),
-          child: SizedBox(
-              width: 72,
-              height: 72,
-              child: Image.network(
-                "${ConfigEnvironmentVariable.azureContainerImageUrl}/${widget.image}",
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Image.asset(
-                  'assets/images/noPhoto.jpg',
-                ),
-                loadingBuilder: (BuildContext context, Widget child,
-                    ImageChunkEvent? loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: SpinKitCircle(
-                      color: ColorTheme.primary,
-                      size: 25,
+          child: checkConnection == ConnectivityResult.wifi ||
+                  checkConnection == ConnectivityResult.mobile
+              ? CachedNetworkImage(
+                  memCacheHeight: 80,
+                  memCacheWidth: 80,
+                  width: 72,
+                  height: 72,
+                  imageUrl:
+                      "${ConfigEnvironmentVariable.azureContainerImageUrl}/${widget.image}",
+                  fit: BoxFit.cover,
+                  progressIndicatorBuilder: (context, url, downloadProgress) =>
+                      Center(
+                    child: Center(
+                      child: SpinKitCircle(
+                        color: ColorTheme.primary,
+                        size: 25,
+                      ),
                     ),
-                  );
-                },
-              )),
+                  ),
+                  errorWidget: (context, url, error) =>
+                      Image.asset('assets/images/noPhoto.jpg'),
+                )
+              : Image.file(
+                  File(widget.image as String),
+                  fit: BoxFit.cover,
+                  cacheWidth: 80,
+                  cacheHeight: 80,
+                  width: 72,
+                  height: 72,
+                  errorBuilder: (context, error, stackTrace) =>
+                      Image.asset('assets/images/noPhoto.jpg'),
+                ),
         ),
         title: Text(
           widget.plate.toUpperCase(),

@@ -21,6 +21,7 @@ class ContraventionCreateWardenCommand {
   final int LocationAccuracy;
   final String WardenComments;
   final int? TypePCN;
+  int? Id;
 
   ContraventionCreateWardenCommand({
     required this.ExternalReference,
@@ -38,6 +39,7 @@ class ContraventionCreateWardenCommand {
     required this.LocationAccuracy,
     required this.WardenComments,
     this.TypePCN,
+    this.Id,
   });
 
   factory ContraventionCreateWardenCommand.fromJson(
@@ -86,6 +88,7 @@ Map<String, dynamic> _$ContraventionCreateWardenCommandToJson(
     'LocationAccuracy': instance.LocationAccuracy,
     'WardenComments': instance.WardenComments,
     'TypePCN': instance.TypePCN,
+    'Id': instance.Id ?? 0,
   };
 }
 
@@ -162,14 +165,14 @@ class ContraventionCreatePhoto {
   final int photoType;
   final String originalFileName;
   final DateTime capturedDateTime;
-  final File? file;
+  final String filePath;
 
   ContraventionCreatePhoto({
     required this.contraventionReference,
     this.photoType = 5,
     required this.originalFileName,
     required this.capturedDateTime,
-    this.file,
+    required this.filePath,
   });
 
   Map<String, dynamic> toJson() => _$ContraventionCreatePhotoToJson(this);
@@ -182,6 +185,6 @@ Map<String, dynamic> _$ContraventionCreatePhotoToJson(
     'photoType': instance.photoType,
     'originalFileName': instance.originalFileName,
     'capturedDateTime': instance.capturedDateTime.toIso8601String(),
-    'file': instance.file,
+    'file': instance.filePath,
   };
 }

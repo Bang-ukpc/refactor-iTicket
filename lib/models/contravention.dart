@@ -12,7 +12,7 @@ class Contravention {
   int? lowerAmount;
   int? upperAmount;
   String? make;
-  Null? model;
+  String? model;
   String? plate;
   int? reasonId;
   String? reference;
@@ -96,41 +96,48 @@ class Contravention {
         : null;
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
-    data['Created'] = created;
-    data['Deleted'] = this.deleted;
-    data['Id'] = this.id;
-    data['LocationId'] = this.locationId;
-    data['ActiveAccountId'] = this.activeAccountId;
-    data['AnalysisKey'] = this.analysisKey;
-    data['CancellationReasonId'] = this.cancellationReasonId;
-    data['Colour'] = this.colour;
-    data['IsForeignPlate'] = this.isForeignPlate;
-    data['LocationRateId'] = this.locationRateId;
-    data['LowerAmount'] = this.lowerAmount;
-    data['UpperAmount'] = this.upperAmount;
-    data['Make'] = this.make;
-    data['Model'] = this.model;
-    data['Plate'] = this.plate;
-    data['ReasonId'] = this.reasonId;
-    data['Reference'] = this.reference;
-    data['Status'] = this.status;
-    data['Type'] = this.type;
-    data['ZoneId'] = this.zoneId;
-    if (this.reason != null) {
-      data['Reason'] = this.reason!.toJson();
-    }
-    if (this.contraventionEvents != null) {
-      data['ContraventionEvents'] =
-          this.contraventionEvents!.map((v) => v.toJson()).toList();
-    }
-    if (this.contraventionPhotos != null) {
-      data['ContraventionPhotos'] =
-          this.contraventionPhotos!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
+  static Map<String, dynamic> toJson(Contravention contravention) => {
+        'Created': contravention.created != null
+            ? contravention.created!.toIso8601String()
+            : null,
+        'Deleted': contravention.deleted != null
+            ? contravention.deleted!.toIso8601String()
+            : null,
+        'EventDateTime': contravention.eventDateTime != null
+            ? contravention.eventDateTime!.toIso8601String()
+            : null,
+        'Id': contravention.id,
+        'LocationId': contravention.locationId,
+        'ActiveAccountId': contravention.activeAccountId,
+        'AnalysisKey': contravention.analysisKey,
+        'CancellationReasonId': contravention.cancellationReasonId,
+        'Colour': contravention.colour,
+        'IsForeignPlate': contravention.isForeignPlate,
+        'LocationRateId': contravention.locationRateId,
+        'LowerAmount': contravention.lowerAmount,
+        'UpperAmount': contravention.upperAmount,
+        'Make': contravention.make,
+        'Model': contravention.model,
+        'Plate': contravention.plate,
+        'ReasonId': contravention.reasonId,
+        'Reference': contravention.reference,
+        'Status': contravention.status,
+        'Type': contravention.type,
+        'ZoneId': contravention.zoneId,
+        'Reason': contravention.reason != null
+            ? contravention.reason!.toJson()
+            : null,
+        'ContraventionEvents': contravention.contraventionEvents != null
+            ? contravention.contraventionEvents!.map((v) => v.toJson()).toList()
+            : [],
+        'ContraventionPhotos': contravention.contraventionPhotos != null
+            ? contravention.contraventionPhotos!.isNotEmpty
+                ? contravention.contraventionPhotos!
+                    .map((v) => v.toJson())
+                    .toList()
+                : []
+            : [],
+      };
 }
 
 class Reason {
@@ -166,15 +173,15 @@ class Reason {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Created'] = this.created;
-    data['Deleted'] = this.deleted;
-    data['Id'] = this.id;
-    data['Code'] = this.code;
-    data['RateTypeId'] = this.rateTypeId;
-    if (this.contraventionReasonTranslations != null) {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Created'] = created != null ? created!.toIso8601String() : null;
+    data['Deleted'] = deleted != null ? deleted!.toIso8601String() : null;
+    data['Id'] = id;
+    data['Code'] = code;
+    data['RateTypeId'] = rateTypeId;
+    if (contraventionReasonTranslations != null) {
       data['ContraventionReasonTranslations'] =
-          this.contraventionReasonTranslations!.map((v) => v.toJson()).toList();
+          contraventionReasonTranslations!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -212,20 +219,20 @@ class ContraventionReasonTranslations {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Created'] = this.created;
-    data['Deleted'] = this.deleted;
-    data['Id'] = this.id;
-    data['ContraventionReasonId'] = this.contraventionReasonId;
-    data['Summary'] = this.summary;
-    data['Detail'] = this.detail;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Created'] = created != null ? created!.toIso8601String() : null;
+    data['Deleted'] = deleted != null ? deleted!.toIso8601String() : null;
+    data['Id'] = id;
+    data['ContraventionReasonId'] = contraventionReasonId;
+    data['Summary'] = summary;
+    data['Detail'] = detail;
     return data;
   }
 }
 
 class ContraventionEvents {
-  String? created;
-  Null? deleted;
+  DateTime? created;
+  DateTime? deleted;
   int? id;
   Null? accountId;
   int? contraventionId;
@@ -244,8 +251,8 @@ class ContraventionEvents {
       this.type});
 
   ContraventionEvents.fromJson(Map<String, dynamic> json) {
-    created = json['Created'];
-    deleted = json['Deleted'];
+    created = json['Created'] == null ? null : DateTime.parse(json['Created']);
+    deleted = json['Deleted'] == null ? null : DateTime.parse(json['Deleted']);
     id = json['Id'];
     accountId = json['AccountId'];
     contraventionId = json['ContraventionId'];
@@ -255,21 +262,21 @@ class ContraventionEvents {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Created'] = this.created;
-    data['Deleted'] = this.deleted;
-    data['Id'] = this.id;
-    data['AccountId'] = this.accountId;
-    data['ContraventionId'] = this.contraventionId;
-    data['CreatedByUserId'] = this.createdByUserId;
-    data['Detail'] = this.detail;
-    data['Type'] = this.type;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Created'] = created != null ? created!.toIso8601String() : null;
+    data['Deleted'] = deleted != null ? deleted!.toIso8601String() : null;
+    data['Id'] = id;
+    data['AccountId'] = accountId;
+    data['ContraventionId'] = contraventionId;
+    data['CreatedByUserId'] = createdByUserId;
+    data['Detail'] = detail;
+    data['Type'] = type;
     return data;
   }
 }
 
 class ContraventionPhotos {
-  String? created;
+  DateTime? created;
   Null? deleted;
   int? id;
   String? capturedDateTime;
@@ -295,7 +302,7 @@ class ContraventionPhotos {
       this.sizeInBytes});
 
   ContraventionPhotos.fromJson(Map<String, dynamic> json) {
-    created = json['Created'];
+    created = json['Created'] == null ? null : DateTime.parse(json['Created']);
     deleted = json['Deleted'];
     id = json['Id'];
     capturedDateTime = json['CapturedDateTime'];
@@ -309,18 +316,18 @@ class ContraventionPhotos {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Created'] = this.created;
-    data['Deleted'] = this.deleted;
-    data['Id'] = this.id;
-    data['CapturedDateTime'] = this.capturedDateTime;
-    data['ContraventionId'] = this.contraventionId;
-    data['PhotoType'] = this.photoType;
-    data['BlobName'] = this.blobName;
-    data['MimeType'] = this.mimeType;
-    data['Modified'] = this.modified;
-    data['OriginalFilename'] = this.originalFilename;
-    data['SizeInBytes'] = this.sizeInBytes;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Created'] = created != null ? created!.toIso8601String() : null;
+    data['Deleted'] = deleted;
+    data['Id'] = id;
+    data['CapturedDateTime'] = capturedDateTime;
+    data['ContraventionId'] = contraventionId;
+    data['PhotoType'] = photoType;
+    data['BlobName'] = blobName;
+    data['MimeType'] = mimeType;
+    data['Modified'] = modified;
+    data['OriginalFilename'] = originalFilename;
+    data['SizeInBytes'] = sizeInBytes;
     return data;
   }
 }

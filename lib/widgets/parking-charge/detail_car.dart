@@ -7,13 +7,13 @@ class DetailCar extends StatelessWidget {
   final String plate;
   final DateTime created;
   final String? color;
-  final String? model;
+  final String? make;
 
   const DetailCar({
     required this.plate,
     required this.created,
     this.color,
-    this.model,
+    this.make,
     Key? key,
   }) : super(key: key);
 
@@ -48,7 +48,7 @@ class DetailCar extends StatelessWidget {
                 "Created at: ${FormatDate().getLocalDate(created)}",
                 style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
               ),
-              Text("Model: ${model ?? "No data"}",
+              Text("Make: ${make ?? "No data"}",
                   style:
                       CustomTextStyle.h6.copyWith(color: ColorTheme.grey600)),
             ],

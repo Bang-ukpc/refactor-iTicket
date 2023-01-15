@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -70,6 +71,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       setState(() {
         firstSeenLoading = false;
       });
+      print(err);
       throw Error();
     });
     final firstSeenList =
@@ -95,6 +97,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       setState(() {
         gracePeriodLoading = false;
       });
+      print(err);
       throw Error();
     });
     List<VehicleInformation> gracePeriodList =
@@ -119,6 +122,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       setState(() {
         contraventionLoading = false;
       });
+      print(err);
       throw Error();
     });
     contraventionList =
@@ -256,35 +260,47 @@ class _HomeOverviewState extends State<HomeOverview> {
     );
 
     void onCheckOut() async {
-      try {
-        await userController.createWardenEvent(wardenEvent).then((value) {
-          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-        });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        try {
+          await userController.createWardenEvent(wardenEvent).then((value) {
+            Navigator.of(context)
+                .pushReplacementNamed(LocationScreen.routeName);
+          });
+        } on DioError catch (error) {
+          if (!mounted) return;
+          if (error.type == DioErrorType.other) {
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 3),
+              title: Text(
+                error.message.length > Constant.errorTypeOther
+                    ? 'Something went wrong, please try again'
+                    : error.message,
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            return;
+          }
           CherryToast.error(
-            toastDuration: const Duration(seconds: 2),
+            displayCloseButton: false,
             title: Text(
-              'Network error',
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
+                  ? 'Internal server error'
+                  : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
           ).show(context);
-          return;
         }
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
+      } else {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
       }
     }
 
@@ -298,9 +314,11 @@ class _HomeOverviewState extends State<HomeOverview> {
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
           CherryToast.error(
-            toastDuration: const Duration(seconds: 2),
+            toastDuration: const Duration(seconds: 3),
             title: Text(
-              'Network error',
+              error.message.length > Constant.errorTypeOther
+                  ? 'Something went wrong, please try again'
+                  : error.message,
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
@@ -372,8 +390,6 @@ class _HomeOverviewState extends State<HomeOverview> {
                       assetIcon: "assets/svg/IconFirstSeen.svg",
                       backgroundIcon: ColorTheme.lighterPrimary,
                       title: "First seen",
-                      desc:
-                          "First seen list description \nFirst seen list description description",
                       infoRight: "Active: ${firstSeenActive.length}",
                       infoLeft: "Expired: ${firstSeenExpired.length}",
                       route: AddFirstSeenScreen.routeName,
@@ -382,8 +398,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                   : SkeletonAvatar(
                       style: SkeletonAvatarStyle(
                         width: width,
-                        height: 130,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: 100,
                       ),
                     ),
               const SizedBox(
@@ -395,8 +410,6 @@ class _HomeOverviewState extends State<HomeOverview> {
                       assetIcon: "assets/svg/IconGrace.svg",
                       backgroundIcon: ColorTheme.lightDanger,
                       title: "Consideration period",
-                      desc:
-                          "Grace period list description Grace period list description...",
                       infoRight: "Active: ${gracePeriodActive.length}",
                       infoLeft: "Expired: ${gracePeriodExpired.length}",
                       route: AddGracePeriod.routeName,
@@ -405,8 +418,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                   : SkeletonAvatar(
                       style: SkeletonAvatarStyle(
                         width: width,
-                        height: 130,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: 100,
                       ),
                     ),
               const SizedBox(
@@ -418,8 +430,6 @@ class _HomeOverviewState extends State<HomeOverview> {
                       assetIcon: "assets/svg/IconParkingChargesHome.svg",
                       backgroundIcon: ColorTheme.lighterSecondary,
                       title: "Parking Charges",
-                      desc:
-                          "Parking charges list description Parking charges list description",
                       infoRight: "Issued: ${contraventionList.length}",
                       infoLeft: null,
                       route: IssuePCNFirstSeenScreen.routeName,
@@ -428,8 +438,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                   : SkeletonAvatar(
                       style: SkeletonAvatarStyle(
                         width: width,
-                        height: 130,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: 100,
                       ),
                     ),
             ],

@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +13,6 @@ import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/button_scan.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -19,8 +20,8 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/helpers/bluetooth_printer.dart';
 import 'package:iWarden/helpers/debouncer.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
@@ -93,8 +94,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   void initState() {
     super.initState();
-    bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect(isLoading: false);
     _anylineService = AnylineServiceImpl();
     _typeOfPcnController.text = '0';
     getContraventionReasonList();
@@ -157,7 +156,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     contraventionReasonList.clear();
     arrayImage.clear();
     evidencePhotoList.clear();
-    bluetoothPrinterHelper.disposePrinter();
     super.dispose();
   }
 
@@ -192,9 +190,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
 
     Future<void> createPhysicalPCN() async {
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
+      int randomReference =
+          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
       final physicalPCN = ContraventionCreateWardenCommand(
         ExternalReference: locationProvider.zone!.ExternalReference,
-        ContraventionReference: '',
+        ContraventionReference: '$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
@@ -215,6 +217,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       bool check = false;
 
       if (arrayImage.isEmpty) {
+        if (!mounted) return;
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -231,57 +234,60 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       } else {
         showLoading();
       }
-      try {
-        await contraventionController.createPCN(physicalPCN).then((value) {
-          contravention = value;
-        });
-        if (arrayImage.isNotEmpty && contravention != null) {
-          for (int i = 0; i < arrayImage.length; i++) {
-            await contraventionController.uploadContraventionImage(
-              ContraventionCreatePhoto(
-                contraventionReference: contravention?.reference ?? '',
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                file: arrayImage[i],
-              ),
-            );
-            if (i == arrayImage.length - 1) {
-              check = true;
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        try {
+          await contraventionController.createPCN(physicalPCN).then((value) {
+            contravention = value;
+          });
+          if (arrayImage.isNotEmpty && contravention != null) {
+            for (int i = 0; i < arrayImage.length; i++) {
+              await contraventionController.uploadContraventionImage(
+                ContraventionCreatePhoto(
+                  contraventionReference: contravention?.reference ?? '',
+                  originalFileName: arrayImage[i].path.split('/').last,
+                  capturedDateTime: DateTime.now(),
+                  filePath: arrayImage[i].path,
+                ),
+              );
+              if (i == arrayImage.length - 1) {
+                check = true;
+              }
             }
           }
-        }
-        if (contravention != null && check == true) {
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pop();
-          if (bluetoothPrinterHelper.selectedPrinter == null) {
-            // ignore: use_build_context_synchronously
+          if (contravention != null && check == true) {
+            if (!mounted) return;
+            Navigator.of(context).pop();
+            Navigator.of(context)
+                .pushNamed(PrintPCN.routeName, arguments: contravention);
+          }
+        } on DioError catch (error) {
+          log("log ${error.type.toString()}");
+          if (!mounted) return;
+          if (error.type == DioErrorType.other) {
+            Navigator.of(context).pop();
             CherryToast.error(
-              toastDuration: const Duration(seconds: 2),
+              toastDuration: const Duration(seconds: 3),
               title: Text(
-                'Please connect to the printer via bluetooth and try again',
+                error.message.length > Constant.errorTypeOther
+                    ? 'Something went wrong, please try again'
+                    : error.message,
                 style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
             ).show(context);
-          } else {
-            bluetoothPrinterHelper.printPhysicalPCN(
-              contravention as Contravention,
-              locationProvider.location?.Name ?? '',
-            );
-            // ignore: use_build_context_synchronously
-            Navigator.of(context)
-                .pushNamed(PrintPCN.routeName, arguments: contravention);
+            return;
           }
-        }
-      } on DioError catch (error) {
-        log("log ${error.type.toString()}");
-        if (error.type == DioErrorType.other) {
           Navigator.of(context).pop();
           CherryToast.error(
-            toastDuration: const Duration(seconds: 2),
+            toastDuration: const Duration(seconds: 3),
+            displayCloseButton: true,
             title: Text(
-              'Network error',
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
+                  ? 'Internal server error'
+                  : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
@@ -289,30 +295,167 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           ).show(context);
           return;
         }
-        Navigator.of(context).pop();
-        CherryToast.error(
-          toastDuration: const Duration(seconds: 3),
-          displayCloseButton: true,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+      } else {
+        int randomNumber =
+            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+        physicalPCN.Id = randomNumber;
+        final String encodedPhysicalPCNData = json.encode(physicalPCN.toJson());
+        final String? issuePCNData =
+            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
+        if (issuePCNData == null) {
+          List<String> newData = [];
+          newData.add(encodedPhysicalPCNData);
+          final encodedNewData = json.encode(newData);
+          SharedPreferencesHelper.setStringValue(
+              'issuePCNDataLocal', encodedNewData);
+        } else {
+          final createdData = json.decode(issuePCNData) as List<dynamic>;
+          createdData.add(encodedPhysicalPCNData);
+          final encodedCreatedData = json.encode(createdData);
+          SharedPreferencesHelper.setStringValue(
+              'issuePCNDataLocal', encodedCreatedData);
+        }
+
+        final String? contraventionPhotoData =
+            await SharedPreferencesHelper.getStringValue(
+                'contraventionPhotoDataLocal');
+        if (contraventionPhotoData == null) {
+          List<String> newPhotoData = [];
+          if (arrayImage.isNotEmpty) {
+            for (int i = 0; i < arrayImage.length; i++) {
+              final String encodedData = json.encode(ContraventionCreatePhoto(
+                contraventionReference: randomNumber.toString(),
+                originalFileName: arrayImage[i].path.split('/').last,
+                capturedDateTime: DateTime.now(),
+                filePath: arrayImage[i].path,
+              ).toJson());
+              newPhotoData.add(encodedData);
+            }
+          }
+          final encodedNewData = json.encode(newPhotoData);
+          SharedPreferencesHelper.setStringValue(
+              'contraventionPhotoDataLocal', encodedNewData);
+        } else {
+          final createdData =
+              json.decode(contraventionPhotoData) as List<dynamic>;
+          if (arrayImage.isNotEmpty) {
+            for (int i = 0; i < arrayImage.length; i++) {
+              final String encodedData = json.encode(ContraventionCreatePhoto(
+                contraventionReference: randomNumber.toString(),
+                originalFileName: arrayImage[i].path.split('/').last,
+                capturedDateTime: DateTime.now(),
+                filePath: arrayImage[i].path,
+              ).toJson());
+              createdData.add(encodedData);
+            }
+          }
+          final encodedNewData = json.encode(createdData);
+          SharedPreferencesHelper.setStringValue(
+              'contraventionPhotoDataLocal', encodedNewData);
+        }
+
+        final String? reasonDataLocal =
+            await SharedPreferencesHelper.getStringValue(
+                'contraventionReasonDataLocal');
+        final contraventionReason =
+            json.decode(reasonDataLocal as String) as Map<String, dynamic>;
+        Pagination fromJsonContraventionReason =
+            Pagination.fromJson(contraventionReason);
+        List<ContraventionReasonTranslations> fromJsonContraventionList =
+            fromJsonContraventionReason.rows
+                .map((item) => ContraventionReasonTranslations.fromJson(item))
+                .toList();
+
+        List<ContraventionPhotos> contraventionImageList = [];
+        if (arrayImage.isNotEmpty) {
+          for (int i = 0; i < arrayImage.length; i++) {
+            contraventionImageList.add(ContraventionPhotos(
+              blobName: arrayImage[i].path,
+              contraventionId: physicalPCN.Id,
+            ));
+          }
+        }
+
+        Contravention contraventionDataFake = Contravention(
+          reference: physicalPCN.ContraventionReference,
+          created: DateTime.now(),
+          id: physicalPCN.Id,
+          plate: physicalPCN.Plate,
+          colour: physicalPCN.VehicleColour,
+          make: physicalPCN.VehicleMake,
+          eventDateTime: physicalPCN.EventDateTime,
+          zoneId: locationProvider.zone?.Id ?? 0,
+          reason: Reason(
+            code: physicalPCN.ContraventionReasonCode,
+            contraventionReasonTranslations: fromJsonContraventionList
+                .where((e) =>
+                    e.contraventionReason!.code ==
+                    physicalPCN.ContraventionReasonCode)
+                .toList(),
           ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-        return;
+          contraventionEvents: [
+            ContraventionEvents(
+              contraventionId: physicalPCN.Id,
+              detail: physicalPCN.WardenComments,
+            )
+          ],
+          contraventionDetailsWarden: ContraventionDetailsWarden(
+            FirstObserved: physicalPCN.FirstObservedDateTime,
+            ContraventionId: physicalPCN.Id,
+            WardenId: physicalPCN.WardenId,
+            IssuedAt: physicalPCN.EventDateTime,
+          ),
+          status: ContraventionStatus.Open.index,
+          contraventionPhotos: contraventionImageList,
+        );
+
+        final String? contraventionList =
+            await SharedPreferencesHelper.getStringValue(
+                'contraventionDataLocal');
+
+        if (contraventionList == null) {
+          List<dynamic> newData = [];
+          newData.add(Contravention.toJson(contraventionDataFake));
+          var dataFormat = Pagination(
+            page: 1,
+            pageSize: 1000,
+            total: newData.length,
+            totalPages: 1,
+            rows: newData,
+          );
+          final String encodedNewData =
+              json.encode(Pagination.toJson(dataFormat));
+          SharedPreferencesHelper.setStringValue(
+              'contraventionDataLocal', encodedNewData);
+        } else {
+          final createdData =
+              json.decode(contraventionList) as Map<String, dynamic>;
+          Pagination fromJsonContravention = Pagination.fromJson(createdData);
+          fromJsonContravention.rows
+              .add(Contravention.toJson(contraventionDataFake));
+          final String encodedCreatedData =
+              json.encode(Pagination.toJson(fromJsonContravention));
+          SharedPreferencesHelper.setStringValue(
+              'contraventionDataLocal', encodedCreatedData);
+        }
+
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        Navigator.of(context)
+            .pushNamed(PrintPCN.routeName, arguments: contraventionDataFake);
       }
 
       _formKey.currentState!.save();
     }
 
     Future<void> createVirtualTicket() async {
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
+      int randomReference =
+          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
       final virtualTicket = ContraventionCreateWardenCommand(
         ExternalReference: locationProvider.zone!.ExternalReference,
-        ContraventionReference: '',
+        ContraventionReference: '$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
@@ -333,6 +476,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       bool check = false;
 
       if (arrayImage.isEmpty) {
+        if (!mounted) return;
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -349,42 +493,62 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       } else {
         showLoading();
       }
-      try {
-        await contraventionController.createPCN(virtualTicket).then((value) {
-          contravention = value;
-        });
-        if (arrayImage.isNotEmpty && contravention != null) {
-          for (int i = 0; i < arrayImage.length; i++) {
-            await contraventionController.uploadContraventionImage(
-              ContraventionCreatePhoto(
-                contraventionReference: contravention?.reference ?? '',
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                file: arrayImage[i],
-              ),
-            );
-            if (i == arrayImage.length - 1) {
-              check = true;
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        try {
+          await contraventionController.createPCN(virtualTicket).then((value) {
+            contravention = value;
+          });
+          if (arrayImage.isNotEmpty && contravention != null) {
+            for (int i = 0; i < arrayImage.length; i++) {
+              await contraventionController.uploadContraventionImage(
+                ContraventionCreatePhoto(
+                  contraventionReference: contravention?.reference ?? '',
+                  originalFileName: arrayImage[i].path.split('/').last,
+                  capturedDateTime: DateTime.now(),
+                  filePath: arrayImage[i].path,
+                ),
+              );
+              if (i == arrayImage.length - 1) {
+                check = true;
+              }
             }
           }
-        }
-        if (contravention != null && check == true) {
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pop();
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pushNamed(
-            ParkingChargeInfo.routeName,
-            arguments: contravention,
-          );
-        }
-      } on DioError catch (error) {
-        log("log ${error.type.toString()}");
-        if (error.type == DioErrorType.other) {
+          if (contravention != null && check == true) {
+            if (!mounted) return;
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(
+              ParkingChargeInfo.routeName,
+              arguments: contravention,
+            );
+          }
+        } on DioError catch (error) {
+          if (!mounted) return;
+          log("log ${error.type.toString()}");
+          if (error.type == DioErrorType.other) {
+            Navigator.of(context).pop();
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 3),
+              title: Text(
+                error.message.length > Constant.errorTypeOther
+                    ? 'Something went wrong, please try again'
+                    : error.message,
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            return;
+          }
           Navigator.of(context).pop();
           CherryToast.error(
-            toastDuration: const Duration(seconds: 2),
+            toastDuration: const Duration(seconds: 3),
+            displayCloseButton: true,
             title: Text(
-              'Network error',
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
+                  ? 'Internal server error'
+                  : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
@@ -392,21 +556,157 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           ).show(context);
           return;
         }
-        Navigator.of(context).pop();
-        CherryToast.error(
-          toastDuration: const Duration(seconds: 3),
-          displayCloseButton: true,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+      } else {
+        int randomNumber =
+            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+        virtualTicket.Id = randomNumber;
+        final String encodedPhysicalPCNData =
+            json.encode(virtualTicket.toJson());
+        final String? issuePCNData =
+            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
+        if (issuePCNData == null) {
+          List<String> newData = [];
+          newData.add(encodedPhysicalPCNData);
+          final encodedNewData = json.encode(newData);
+          SharedPreferencesHelper.setStringValue(
+              'issuePCNDataLocal', encodedNewData);
+        } else {
+          final createdData = json.decode(issuePCNData) as List<dynamic>;
+          createdData.add(encodedPhysicalPCNData);
+          final encodedCreatedData = json.encode(createdData);
+          SharedPreferencesHelper.setStringValue(
+              'issuePCNDataLocal', encodedCreatedData);
+        }
+
+        final String? contraventionPhotoData =
+            await SharedPreferencesHelper.getStringValue(
+                'contraventionPhotoDataLocal');
+        if (contraventionPhotoData == null) {
+          List<String> newPhotoData = [];
+          if (arrayImage.isNotEmpty) {
+            for (int i = 0; i < arrayImage.length; i++) {
+              final String encodedData = json.encode(ContraventionCreatePhoto(
+                contraventionReference: randomNumber.toString(),
+                originalFileName: arrayImage[i].path.split('/').last,
+                capturedDateTime: DateTime.now(),
+                filePath: arrayImage[i].path,
+              ).toJson());
+              newPhotoData.add(encodedData);
+            }
+          }
+          final encodedNewData = json.encode(newPhotoData);
+          SharedPreferencesHelper.setStringValue(
+              'contraventionPhotoDataLocal', encodedNewData);
+        } else {
+          final createdData =
+              json.decode(contraventionPhotoData) as List<dynamic>;
+          if (arrayImage.isNotEmpty) {
+            for (int i = 0; i < arrayImage.length; i++) {
+              final String encodedData = json.encode(ContraventionCreatePhoto(
+                contraventionReference: randomNumber.toString(),
+                originalFileName: arrayImage[i].path.split('/').last,
+                capturedDateTime: DateTime.now(),
+                filePath: arrayImage[i].path,
+              ).toJson());
+              createdData.add(encodedData);
+            }
+          }
+          final encodedNewData = json.encode(createdData);
+          SharedPreferencesHelper.setStringValue(
+              'contraventionPhotoDataLocal', encodedNewData);
+        }
+
+        final String? reasonDataLocal =
+            await SharedPreferencesHelper.getStringValue(
+                'contraventionReasonDataLocal');
+        final contraventionReason =
+            json.decode(reasonDataLocal as String) as Map<String, dynamic>;
+        Pagination fromJsonContraventionReason =
+            Pagination.fromJson(contraventionReason);
+        List<ContraventionReasonTranslations> fromJsonContraventionList =
+            fromJsonContraventionReason.rows
+                .map((item) => ContraventionReasonTranslations.fromJson(item))
+                .toList();
+
+        List<ContraventionPhotos> contraventionImageList = [];
+        if (arrayImage.isNotEmpty) {
+          for (int i = 0; i < arrayImage.length; i++) {
+            contraventionImageList.add(ContraventionPhotos(
+              blobName: arrayImage[i].path,
+              contraventionId: virtualTicket.Id,
+            ));
+          }
+        }
+
+        Contravention contraventionDataFake = Contravention(
+          reference: virtualTicket.ContraventionReference,
+          created: DateTime.now(),
+          id: virtualTicket.Id,
+          plate: virtualTicket.Plate,
+          colour: virtualTicket.VehicleColour,
+          make: virtualTicket.VehicleMake,
+          eventDateTime: virtualTicket.EventDateTime,
+          zoneId: locationProvider.zone?.Id ?? 0,
+          reason: Reason(
+            code: virtualTicket.ContraventionReasonCode,
+            contraventionReasonTranslations: fromJsonContraventionList
+                .where((e) =>
+                    e.contraventionReason!.code ==
+                    virtualTicket.ContraventionReasonCode)
+                .toList(),
           ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-        return;
+          contraventionEvents: [
+            ContraventionEvents(
+              contraventionId: virtualTicket.Id,
+              detail: virtualTicket.WardenComments,
+            )
+          ],
+          contraventionDetailsWarden: ContraventionDetailsWarden(
+            FirstObserved: virtualTicket.FirstObservedDateTime,
+            ContraventionId: virtualTicket.Id,
+            WardenId: virtualTicket.WardenId,
+            IssuedAt: virtualTicket.EventDateTime,
+          ),
+          status: ContraventionStatus.Open.index,
+          contraventionPhotos: contraventionImageList,
+        );
+
+        final String? contraventionList =
+            await SharedPreferencesHelper.getStringValue(
+                'contraventionDataLocal');
+
+        if (contraventionList == null) {
+          List<dynamic> newData = [];
+          newData.add(Contravention.toJson(contraventionDataFake));
+          var dataFormat = Pagination(
+            page: 1,
+            pageSize: 1000,
+            total: newData.length,
+            totalPages: 1,
+            rows: newData,
+          );
+          final String encodedNewData =
+              json.encode(Pagination.toJson(dataFormat));
+          SharedPreferencesHelper.setStringValue(
+              'contraventionDataLocal', encodedNewData);
+        } else {
+          final createdData =
+              json.decode(contraventionList) as Map<String, dynamic>;
+          Pagination fromJsonContravention = Pagination.fromJson(createdData);
+          fromJsonContravention.rows
+              .add(Contravention.toJson(contraventionDataFake));
+          final String encodedCreatedData =
+              json.encode(Pagination.toJson(fromJsonContravention));
+          SharedPreferencesHelper.setStringValue(
+              'contraventionDataLocal', encodedCreatedData);
+        }
+
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed(
+          ParkingChargeInfo.routeName,
+          arguments: contraventionDataFake,
+        );
       }
 
       _formKey.currentState!.save();

@@ -608,7 +608,7 @@ class ImagePreview extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
-      height: screenHeight / 1.7,
+      height: screenHeight / 1.75,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.max,

@@ -7,7 +7,7 @@ class OperationalPeriod extends BaseModel {
   final int TimeTo;
   final int LocationId;
 
-  const OperationalPeriod({
+  OperationalPeriod({
     Id,
     Created,
     Deleted,

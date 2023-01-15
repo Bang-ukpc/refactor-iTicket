@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,8 +12,10 @@ import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
@@ -109,37 +113,58 @@ class _PrintIssueState extends State<PrintIssue> {
     void onCompleteTakePhotos() async {
       bool check = false;
       showLoading();
-      try {
-        if (printIssue.data.isNotEmpty) {
-          for (int i = 0; i < printIssue.data.length; i++) {
-            await contraventionController.uploadContraventionImage(
-              ContraventionCreatePhoto(
-                contraventionReference: contravention.reference ?? '',
-                originalFileName:
-                    printIssue.data[i].image!.path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                file: printIssue.data[i].image,
-              ),
-            );
-            if (i == printIssue.data.length - 1) {
-              check = true;
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        try {
+          if (printIssue.data.isNotEmpty) {
+            for (int i = 0; i < printIssue.data.length; i++) {
+              await contraventionController.uploadContraventionImage(
+                ContraventionCreatePhoto(
+                  contraventionReference: contravention.reference ?? '',
+                  originalFileName:
+                      printIssue.data[i].image!.path.split('/').last,
+                  capturedDateTime: DateTime.now(),
+                  filePath: printIssue.data[i].image!.path,
+                ),
+              );
+              if (i == printIssue.data.length - 1) {
+                check = true;
+              }
             }
           }
-        }
-        if (check == true) {
-          printIssue.resetData();
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pop();
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
-        }
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
+          if (check == true) {
+            printIssue.resetData();
+            if (!mounted) return;
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+          }
+        } on DioError catch (error) {
+          if (!mounted) return;
+          if (error.type == DioErrorType.other) {
+            Navigator.of(context).pop();
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 3),
+              title: Text(
+                error.message.length > Constant.errorTypeOther
+                    ? 'Something went wrong, please try again'
+                    : error.message,
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            return;
+          }
           Navigator.of(context).pop();
           CherryToast.error(
-            toastDuration: const Duration(seconds: 2),
+            displayCloseButton: false,
             title: Text(
-              'Network error',
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
+                  ? 'Internal server error'
+                  : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
@@ -147,20 +172,108 @@ class _PrintIssueState extends State<PrintIssue> {
           ).show(context);
           return;
         }
+      } else {
+        final String? contraventionPhotoData =
+            await SharedPreferencesHelper.getStringValue(
+                'contraventionPhotoDataLocal');
+        final String? contraventionList =
+            await SharedPreferencesHelper.getStringValue(
+                'contraventionDataLocal');
+
+        if (contraventionPhotoData == null) {
+          List<String> newPhotoData = [];
+          List<ContraventionPhotos> contraventionImageList = [];
+          if (printIssue.data.isNotEmpty) {
+            for (int i = 0; i < printIssue.data.length; i++) {
+              final String encodedData = json.encode(ContraventionCreatePhoto(
+                contraventionReference: contravention.reference ?? '',
+                originalFileName:
+                    printIssue.data[i].image!.path.split('/').last,
+                capturedDateTime: DateTime.now(),
+                filePath: printIssue.data[i].image!.path,
+              ).toJson());
+              newPhotoData.add(encodedData);
+
+              contraventionImageList.add(ContraventionPhotos(
+                blobName: printIssue.data[i].image!.path,
+                contraventionId: contravention.id,
+              ));
+            }
+
+            if (contraventionList != null) {
+              final contraventions =
+                  json.decode(contraventionList) as Map<String, dynamic>;
+              Pagination fromJsonContravention =
+                  Pagination.fromJson(contraventions);
+              var position = fromJsonContravention.rows
+                  .indexWhere((i) => i['Id'] == contravention.id);
+              if (position != -1) {
+                var encodedListImage =
+                    contraventionImageList.map((e) => e.toJson());
+                fromJsonContravention.rows[position]['ContraventionPhotos'] =
+                    List.from(fromJsonContravention.rows[position]
+                        ['ContraventionPhotos'])
+                      ..addAll(encodedListImage);
+              }
+              final String encodedDataList =
+                  json.encode(Pagination.toJson(fromJsonContravention));
+              SharedPreferencesHelper.setStringValue(
+                  'contraventionDataLocal', encodedDataList);
+            }
+          }
+          final encodedNewData = json.encode(newPhotoData);
+          SharedPreferencesHelper.setStringValue(
+              'contraventionPhotoDataLocal', encodedNewData);
+        } else {
+          final createdData =
+              json.decode(contraventionPhotoData) as List<dynamic>;
+          List<ContraventionPhotos> contraventionImageList = [];
+          if (printIssue.data.isNotEmpty) {
+            for (int i = 0; i < printIssue.data.length; i++) {
+              final String encodedData = json.encode(ContraventionCreatePhoto(
+                contraventionReference: contravention.reference ?? '',
+                originalFileName:
+                    printIssue.data[i].image!.path.split('/').last,
+                capturedDateTime: DateTime.now(),
+                filePath: printIssue.data[i].image!.path,
+              ).toJson());
+              createdData.add(encodedData);
+
+              contraventionImageList.add(ContraventionPhotos(
+                blobName: printIssue.data[i].image!.path,
+                contraventionId: contravention.id,
+              ));
+            }
+
+            if (contraventionList != null) {
+              final contraventions =
+                  json.decode(contraventionList) as Map<String, dynamic>;
+              Pagination fromJsonContravention =
+                  Pagination.fromJson(contraventions);
+              var position = fromJsonContravention.rows
+                  .indexWhere((i) => i['Id'] == contravention.id);
+              if (position != -1) {
+                var encodedListImage =
+                    contraventionImageList.map((e) => e.toJson());
+                fromJsonContravention.rows[position]['ContraventionPhotos'] =
+                    List.from(fromJsonContravention.rows[position]
+                        ['ContraventionPhotos'])
+                      ..addAll(encodedListImage);
+              }
+              final String encodedDataList =
+                  json.encode(Pagination.toJson(fromJsonContravention));
+              SharedPreferencesHelper.setStringValue(
+                  'contraventionDataLocal', encodedDataList);
+            }
+          }
+          final encodedNewData = json.encode(createdData);
+          SharedPreferencesHelper.setStringValue(
+              'contraventionPhotoDataLocal', encodedNewData);
+        }
+        printIssue.resetData();
+        if (!mounted) return;
         Navigator.of(context).pop();
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-        return;
+        Navigator.of(context).pushNamed(ParkingChargeList.routeName);
       }
     }
 

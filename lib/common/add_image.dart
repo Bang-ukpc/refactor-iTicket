@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/circle.dart';
@@ -12,6 +16,7 @@ class AddImage extends StatefulWidget {
   final bool isSlideImage;
   final bool isCamera;
   List<dynamic> listImage;
+  List<dynamic>? listImageFile;
   final bool? displayTitle;
   final VoidCallback onAddImage;
   AddImage({
@@ -21,6 +26,7 @@ class AddImage extends StatefulWidget {
     this.displayTitle = true,
     required this.onAddImage,
     required this.listImage,
+    this.listImageFile,
   }) : super(key: key);
   @override
   State<AddImage> createState() => _AddImageState();
@@ -28,6 +34,8 @@ class AddImage extends StatefulWidget {
 
 class _AddImageState extends State<AddImage> {
   final CarouselController _controller = CarouselController();
+  ConnectivityResult checkConnection = ConnectivityResult.none;
+
   void remove(int index) {
     showDialog<void>(
       context: context,
@@ -64,28 +72,53 @@ class _AddImageState extends State<AddImage> {
     );
   }
 
+  void checkConnectionStatus() async {
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+    setState(() {
+      checkConnection = connectionStatus;
+    });
+  }
+
+  @override
+  void initState() {
+    checkConnectionStatus();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    print(checkConnection);
     return SingleChildScrollView(
       child: Column(
         children: [
           if (widget.isSlideImage)
             CarouselSlider(
-              items: widget.listImage.map((item) {
-                return Image.network(
-                  item,
-                  loadingBuilder: (BuildContext context, Widget child,
-                      ImageChunkEvent? loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: SpinKitCircle(
-                        color: ColorTheme.primary,
-                        size: 25,
-                      ),
-                    );
-                  },
-                );
-              }).toList(),
+              items: checkConnection == ConnectivityResult.wifi ||
+                      checkConnection == ConnectivityResult.mobile
+                  ? widget.listImage.map((item) {
+                      return CachedNetworkImage(
+                        imageUrl: item.toString(),
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) => Center(
+                          child: Center(
+                            child: SpinKitCircle(
+                              color: ColorTheme.primary,
+                              size: 25,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      );
+                    }).toList()
+                  : widget.listImageFile!.map((item) {
+                      return Image.file(
+                        File(item),
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.error),
+                      );
+                    }).toList(),
               options: CarouselOptions(
                 height: MediaQuery.of(context).size.width < 400 ? 200 : 300,
                 viewportFraction: 1,
@@ -165,28 +198,45 @@ class _AddImageState extends State<AddImage> {
                                           child: widget.listImage[index]
                                                       .runtimeType ==
                                                   String
-                                              ? Image.network(
-                                                  widget.listImage[index],
-                                                  fit: BoxFit.cover,
-                                                  loadingBuilder:
-                                                      (BuildContext context,
-                                                          Widget child,
-                                                          ImageChunkEvent?
-                                                              loadingProgress) {
-                                                    if (loadingProgress ==
-                                                        null) {
-                                                      return child;
-                                                    }
-
-                                                    return Center(
-                                                      child: SpinKitCircle(
-                                                        color:
-                                                            ColorTheme.primary,
-                                                        size: 25,
+                                              ? checkConnection ==
+                                                          ConnectivityResult
+                                                              .wifi ||
+                                                      checkConnection ==
+                                                          ConnectivityResult
+                                                              .mobile
+                                                  ? CachedNetworkImage(
+                                                      imageUrl: widget
+                                                          .listImage[index],
+                                                      fit: BoxFit.cover,
+                                                      progressIndicatorBuilder:
+                                                          (context, url,
+                                                                  downloadProgress) =>
+                                                              Center(
+                                                                child: Center(
+                                                                  child:
+                                                                      SpinKitCircle(
+                                                                    color: ColorTheme
+                                                                        .primary,
+                                                                    size: 25,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                      errorWidget: (context,
+                                                              url, error) =>
+                                                          const Icon(
+                                                              Icons.error))
+                                                  : Image.file(
+                                                      fit: BoxFit.cover,
+                                                      File(
+                                                        widget.listImageFile![
+                                                            index],
                                                       ),
-                                                    );
-                                                  },
-                                                )
+                                                      errorBuilder: (context,
+                                                              error,
+                                                              stackTrace) =>
+                                                          const Icon(
+                                                              Icons.error),
+                                                    )
                                               : Image.file(
                                                   widget.listImage[index],
                                                   fit: BoxFit.cover,

@@ -23,6 +23,7 @@ class LocationController {
           data: listLocationOfTheDayByWardenIdProps.toJson(),
         );
         List<dynamic> temp = response.data;
+        print(temp);
         List<LocationWithZones> locations =
             temp.map((model) => LocationWithZones.fromJson(model)).toList();
         final String encodedData = LocationWithZones.encode(locations);

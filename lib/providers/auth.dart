@@ -46,9 +46,11 @@ class Auth with ChangeNotifier {
       if (error.type == DioErrorType.other) {
         Navigator.of(context).pop();
         CherryToast.error(
-          toastDuration: const Duration(seconds: 2),
+          toastDuration: const Duration(seconds: 3),
           title: Text(
-            'Network error',
+            error.message.length > Constant.errorTypeOther
+                ? 'Something went wrong, please try again'
+                : error.message,
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,

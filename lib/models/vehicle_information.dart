@@ -6,7 +6,7 @@ class EvidencePhoto extends BaseModel {
   final int? VehicleInformationId;
   final String BlobName;
 
-  const EvidencePhoto({
+  EvidencePhoto({
     int? Id,
     DateTime? Created,
     DateTime? Deleted,
@@ -24,7 +24,7 @@ EvidencePhoto _$EvidencePhotoFromJson(Map<String, dynamic> json) =>
     EvidencePhoto(
       VehicleInformationId: json['VehicleInformationId'],
       BlobName: json['BlobName'],
-      Id: json['Id'],
+      Id: json['Id'] ?? 0,
       Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
       Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
     );
@@ -32,6 +32,10 @@ EvidencePhoto _$EvidencePhotoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$EvidencePhotoToJson(EvidencePhoto instance) {
   return <String, dynamic>{
     'BlobName': instance.BlobName,
+    'VehicleInformationId': instance.VehicleInformationId,
+    'Id': instance.Id,
+    'Created':
+        instance.Created != null ? instance.Created!.toIso8601String() : null,
   };
 }
 
@@ -45,7 +49,7 @@ class VehicleInformation extends BaseModel {
   final double Latitude;
   final double Longitude;
   final bool CarLeft;
-  final List<EvidencePhoto>? EvidencePhotos;
+  List<EvidencePhoto>? EvidencePhotos;
 
   VehicleInformation({
     Id,
@@ -98,6 +102,8 @@ Map<String, dynamic> _$VehicleInformationToJson(VehicleInformation instance) {
 
   return <String, dynamic>{
     'Id': instance.Id ?? 0,
+    'Created':
+        instance.Created != null ? instance.Created!.toIso8601String() : null,
     'ExpiredAt': instance.ExpiredAt.toIso8601String(),
     'Plate': instance.Plate,
     'ZoneId': instance.ZoneId,

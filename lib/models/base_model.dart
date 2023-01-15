@@ -1,9 +1,9 @@
 class BaseModel {
-  final int? Id;
-  final DateTime? Created;
-  final DateTime? Deleted;
+  int? Id;
+  DateTime? Created;
+  DateTime? Deleted;
 
-  const BaseModel({
+  BaseModel({
     this.Id,
     this.Created,
     this.Deleted,

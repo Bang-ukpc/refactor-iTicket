@@ -40,11 +40,13 @@ class _DetailScreenState extends State<DetailScreen> {
         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
     final calculateTime = CalculateTime();
     final List<String> imgList = [];
+    final List<String> imgListFile = [];
     final vehicleInfoController = VehicleInfoController();
 
     for (int i = 0; i < args.EvidencePhotos!.length; i++) {
       imgList.add(
           '${ConfigEnvironmentVariable.azureContainerImageUrl}/${args.EvidencePhotos![i].BlobName}');
+      imgListFile.add(args.EvidencePhotos![i].BlobName);
     }
 
     void onCarLeft() {
@@ -89,11 +91,13 @@ class _DetailScreenState extends State<DetailScreen> {
                 await vehicleInfoController
                     .upsertVehicleInfo(vehicleInfoToUpdate)
                     .then((value) {
-                  Navigator.of(context).pushReplacementNamed(
-                    args.Type == 0
-                        ? ActiveFirstSeenScreen.routeName
-                        : GracePeriodList.routeName,
-                  );
+                  if (value != null) {
+                    Navigator.of(context).pushReplacementNamed(
+                      args.Type == 0
+                          ? ActiveFirstSeenScreen.routeName
+                          : GracePeriodList.routeName,
+                    );
+                  }
                 });
               },
             ),
@@ -256,6 +260,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 AddImage(
                   isSlideImage: true,
                   listImage: imgList,
+                  listImageFile: imgListFile,
                   isCamera: false,
                   onAddImage: () async {
                     final results =

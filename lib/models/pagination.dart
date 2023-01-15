@@ -1,9 +1,9 @@
 class Pagination {
-  final int page;
-  final int pageSize;
-  final int total;
-  final int totalPages;
-  final List<dynamic> rows;
+  int page;
+  int pageSize;
+  int total;
+  int totalPages;
+  List<dynamic> rows;
 
   Pagination({
     required this.page,

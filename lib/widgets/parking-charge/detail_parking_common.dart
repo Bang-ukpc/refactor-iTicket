@@ -24,11 +24,13 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
   @override
   Widget build(BuildContext context) {
     final List<String> imgList = [];
+    final List<String> imgListFile = [];
     List<ContraventionPhotos> contraventionImage =
         widget.contravention!.contraventionPhotos!.toList();
     for (int i = 0; i < contraventionImage.length; i++) {
       imgList.add(
           '${ConfigEnvironmentVariable.azureContainerImageUrl}/${contraventionImage[i].blobName}');
+      imgListFile.add(contraventionImage[i].blobName ?? '');
     }
 
     return SingleChildScrollView(
@@ -49,7 +51,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
             plate: widget.contravention!.plate as String,
             created: widget.contravention!.created as DateTime,
             color: widget.contravention?.colour,
-            model: widget.contravention?.model,
+            make: widget.contravention?.make,
           ),
           const SizedBox(
             height: 8,
@@ -98,6 +100,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
           ),
           AddImage(
             listImage: imgList,
+            listImageFile: imgListFile,
             isCamera: false,
             onAddImage: () {},
             isSlideImage: true,

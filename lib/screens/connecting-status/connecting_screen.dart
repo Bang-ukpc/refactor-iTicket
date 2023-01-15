@@ -15,7 +15,12 @@ import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/controllers/abort_controller.dart';
+import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/models/abort_pcn.dart';
+import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
@@ -47,6 +52,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   ServiceStatus gpsConnectionStatus = ServiceStatus.disabled;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  List<ContraventionReasonTranslations> contraventionReasonList = [];
+  List<CancellationReason> cancellationReasonList = [];
 
   _buildConnect(String title, StateDevice state) {
     return Container(
@@ -158,11 +165,34 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     }
   }
 
+  void getContraventionReasonList() async {
+    final Pagination list =
+        await contraventionController.getContraventionReasonServiceList();
+    setState(() {
+      contraventionReasonList = list.rows
+          .map((item) => ContraventionReasonTranslations.fromJson(item))
+          .toList();
+    });
+  }
+
+  void getCancellationReasonList() async {
+    await abortController.getCancellationReasonList().then((value) {
+      setState(() {
+        cancellationReasonList = value;
+      });
+    }).catchError((err) {
+      print(err);
+      throw Error();
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     onStartBackgroundService();
     getCurrentLocationOfWarden();
+    getContraventionReasonList();
+    getCancellationReasonList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
       await wardensInfo.getWardensInfoLogging().then((value) {
@@ -214,41 +244,60 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     );
 
     void onStartShift() async {
-      try {
-        await userController
-            .createWardenEvent(wardenEventStartShift)
-            .then((value) async {
-          final service = FlutterBackgroundService();
-          var isRunning = await service.isRunning();
-          if (!isRunning) {
-            await initializeService();
-          }
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        try {
+          await userController
+              .createWardenEvent(wardenEventStartShift)
+              .then((value) async {
+            final service = FlutterBackgroundService();
+            var isRunning = await service.isRunning();
+            if (!isRunning) {
+              await initializeService();
+            }
+            if (!mounted) return;
+            Navigator.of(context)
+                .pushReplacementNamed(LocationScreen.routeName);
+          });
+        } on DioError catch (error) {
           if (!mounted) return;
-          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-        });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
-          final service = FlutterBackgroundService();
-          var isRunning = await service.isRunning();
-          if (!isRunning) {
-            await initializeService();
+          if (error.type == DioErrorType.other) {
+            toast.CherryToast.error(
+              toastDuration: const Duration(seconds: 3),
+              title: Text(
+                error.message.length > Constant.errorTypeOther
+                    ? 'Something went wrong, please try again'
+                    : error.message,
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: toast.Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            return;
           }
-          if (!mounted) return;
-          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+          toast.CherryToast.error(
+            displayCloseButton: false,
+            title: Text(
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
+                  ? 'Internal server error'
+                  : error.response!.data['message'],
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: toast.Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        }
+      } else {
+        final service = FlutterBackgroundService();
+        var isRunning = await service.isRunning();
+        if (!isRunning) {
+          await initializeService();
         }
         if (!mounted) return;
-        toast.CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: toast.Position.bottom,
-          borderRadius: 5,
-        ).show(context);
+        Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
       }
     }
 

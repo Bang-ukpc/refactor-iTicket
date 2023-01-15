@@ -21,12 +21,22 @@ class StatisticWardenPropsData {
 
   factory StatisticWardenPropsData.fromJson(Map<String, dynamic> json) =>
       statisticFromJson(json);
+
+  static Map<String, dynamic> toJson(
+          StatisticWardenPropsData statisticWardenPropsData) =>
+      {
+        'AbortedPCN': statisticWardenPropsData.abortedPCN,
+        'FirstSeen': statisticWardenPropsData.firstSeen,
+        'GracePeriod': statisticWardenPropsData.gracePeriod,
+        'IssuedPCN': statisticWardenPropsData.issuedPCN,
+      };
 }
 
 StatisticWardenPropsData statisticFromJson(Map<String, dynamic> json) {
   return StatisticWardenPropsData(
-      abortedPCN: json['AbortedPCN'],
-      firstSeen: json['FirstSeen'],
-      gracePeriod: json['GracePeriod'],
-      issuedPCN: json['IssuedPCN']);
+    abortedPCN: json['AbortedPCN'] ?? 0,
+    firstSeen: json['FirstSeen'] ?? 0,
+    gracePeriod: json['GracePeriod'] ?? 0,
+    issuedPCN: json['IssuedPCN'] ?? 0,
+  );
 }

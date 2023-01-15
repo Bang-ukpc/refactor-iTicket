@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -46,6 +47,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
       setState(() {
         contraventionLoading = false;
       });
+      throw Error();
     });
     contraventionList =
         list.rows.map((item) => Contravention.fromJson(item)).toList();

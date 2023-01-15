@@ -158,12 +158,14 @@ class _GracePeriodListState extends State<GracePeriodList> {
                 await VehicleInfoController()
                     .upsertVehicleInfo(vehicleInfoToUpdate)
                     .then((value) {
-                  Navigator.of(context).pop();
-                  getGracePeriodList(
-                    page: 1,
-                    pageSize: 1000,
-                    zoneId: locations.zone!.Id as int,
-                  );
+                  if (value != null) {
+                    Navigator.of(context).pop();
+                    getGracePeriodList(
+                      page: 1,
+                      pageSize: 1000,
+                      zoneId: locations.zone!.Id as int,
+                    );
+                  }
                 });
               },
             ),

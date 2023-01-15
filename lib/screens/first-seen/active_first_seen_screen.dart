@@ -7,6 +7,7 @@ import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
@@ -50,6 +51,8 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
       setState(() {
         firstSeenLoading = false;
       });
+      print(err);
+      throw Error();
     });
     final firstSeenList =
         list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
@@ -158,12 +161,14 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                 await VehicleInfoController()
                     .upsertVehicleInfo(vehicleInfoToUpdate)
                     .then((value) {
-                  Navigator.of(context).pop();
-                  getFirstSeenList(
-                    page: 1,
-                    pageSize: 1000,
-                    zoneId: locations.zone!.Id as int,
-                  );
+                  if (value != null) {
+                    Navigator.of(context).pop();
+                    getFirstSeenList(
+                      page: 1,
+                      pageSize: 1000,
+                      zoneId: locations.zone!.Id as int,
+                    );
+                  }
                 });
               },
             ),
@@ -185,7 +190,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
       child: MyTabBar(
         labelFuncAdd: "Add first seen",
         titleAppBar: "First seen",
-        funcAdd: () {
+        funcAdd: () async {
           Navigator.of(context)
               .pushReplacementNamed(AddFirstSeenScreen.routeName);
         },

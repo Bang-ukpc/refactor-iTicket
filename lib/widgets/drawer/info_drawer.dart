@@ -1,6 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -44,35 +47,48 @@ class InfoDrawer extends StatelessWidget {
     );
 
     void onCheckOut() async {
-      try {
-        await userController.createWardenEvent(wardenEvent).then((value) {
-          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-        });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        try {
+          await userController.createWardenEvent(wardenEvent).then((value) {
+            Navigator.of(context)
+                .pushReplacementNamed(LocationScreen.routeName);
+          });
+        } on DioError catch (error) {
+          if (error.type == DioErrorType.other) {
+            // ignore: use_build_context_synchronously
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 3),
+              title: Text(
+                error.message.length > Constant.errorTypeOther
+                    ? 'Something went wrong, please try again'
+                    : error.message,
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            return;
+          }
+          // ignore: use_build_context_synchronously
           CherryToast.error(
-            toastDuration: const Duration(seconds: 2),
+            displayCloseButton: false,
             title: Text(
-              'Network error',
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
+                  ? 'Internal server error'
+                  : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
           ).show(context);
-          return;
         }
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
+      } else {
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
       }
     }
 
@@ -84,14 +100,23 @@ class InfoDrawer extends StatelessWidget {
             decoration: BoxDecoration(
                 border: Border.all(
                     width: 8, color: const Color.fromRGBO(255, 255, 255, 0.1)),
-                borderRadius: BorderRadius.circular(30)),
+                borderRadius: BorderRadius.circular(100)),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),
-              child: Image.asset(
-                assetImage,
-                errorBuilder: (context, error, stackTrace) =>
-                    Image.asset('assets/images/userAvatar.png'),
+              child: CachedNetworkImage(
+                imageUrl: assetImage,
                 fit: BoxFit.cover,
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    Center(
+                  child: Center(
+                    child: SpinKitCircle(
+                      color: ColorTheme.primary,
+                      size: 25,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) =>
+                    Image.asset('assets/images/userAvatar.png'),
               ),
             ));
       } else {
@@ -113,7 +138,7 @@ class InfoDrawer extends StatelessWidget {
             width: 48,
             height: 48,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: BorderRadius.circular(100),
               child: Image.asset(
                 assetImage,
                 errorBuilder: (context, error, stackTrace) =>
@@ -156,20 +181,17 @@ class InfoDrawer extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: CustomTextStyle.h6.copyWith(
+                      style: CustomTextStyle.h5.copyWith(
                         color:
                             !isDrawer ? ColorTheme.textPrimary : Colors.white,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ),
-                    const SizedBox(
-                      height: 8,
                     ),
                     if (location != null)
                       Text(
                         "Location: ${location!}",
                         overflow: TextOverflow.ellipsis,
-                        style: CustomTextStyle.caption.copyWith(
+                        style: CustomTextStyle.body2.copyWith(
                             color: !isDrawer
                                 ? ColorTheme.textPrimary
                                 : Colors.white),
@@ -178,7 +200,7 @@ class InfoDrawer extends StatelessWidget {
                       Text(
                         "Zone: ${zone!}",
                         overflow: TextOverflow.ellipsis,
-                        style: CustomTextStyle.caption.copyWith(
+                        style: CustomTextStyle.body2.copyWith(
                             color: !isDrawer
                                 ? ColorTheme.textPrimary
                                 : Colors.white),

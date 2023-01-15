@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
@@ -31,6 +30,24 @@ class _PrintPCNState extends State<PrintPCN> {
     super.initState();
     bluetoothPrinterHelper.scan();
     bluetoothPrinterHelper.initConnect(isLoading: false);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final args = ModalRoute.of(context)!.settings.arguments as Contravention;
+      final locations = Provider.of<Locations>(context, listen: false);
+      if (bluetoothPrinterHelper.selectedPrinter == null) {
+        CherryToast.error(
+          toastDuration: const Duration(seconds: 2),
+          title: Text(
+            'Please connect to the printer via bluetooth and try again',
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      } else {
+        bluetoothPrinterHelper.printPhysicalPCN(
+            args, locations.location?.Name ?? '');
+      }
+    });
   }
 
   @override
