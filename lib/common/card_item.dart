@@ -36,7 +36,7 @@ class CardItem extends StatelessWidget {
       },
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: ColorTheme.white),
+        decoration: const BoxDecoration(color: ColorTheme.white),
         margin: const EdgeInsets.only(bottom: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -46,7 +46,9 @@ class CardItem extends StatelessWidget {
               children: [
                 Text(
                   vehicleInfo.Plate.toUpperCase(),
-                  style: CustomTextStyle.h4,
+                  style: CustomTextStyle.h4.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(
                   height: 4,

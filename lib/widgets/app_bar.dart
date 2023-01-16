@@ -50,7 +50,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             Text(
               title,
-              style: CustomTextStyle.h4.copyWith(fontWeight: FontWeight.w500),
+              style: CustomTextStyle.h4.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),

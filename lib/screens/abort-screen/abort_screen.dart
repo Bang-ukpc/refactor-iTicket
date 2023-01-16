@@ -188,7 +188,7 @@ class _AbortScreenState extends State<AbortScreen> {
                 Container(
                   width: double.infinity,
                   color: ColorTheme.danger,
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   child: Center(
                       child: Text(
                     "Abort PCN",
@@ -199,11 +199,11 @@ class _AbortScreenState extends State<AbortScreen> {
                   color: ColorTheme.white,
                   width: double.infinity,
                   margin: const EdgeInsets.only(top: 16),
-                  height: heightScreen / 2.3,
+                  height: 300,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
-                      vertical: 10,
+                      vertical: 20,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +220,7 @@ class _AbortScreenState extends State<AbortScreen> {
                                 child: Column(
                                   children: [
                                     const SizedBox(
-                                      height: 20,
+                                      height: 30,
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<CancellationReason>(
