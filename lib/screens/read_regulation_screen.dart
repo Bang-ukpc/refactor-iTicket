@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
+import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -13,7 +14,6 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
-import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +35,45 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
     final wardersProvider = Provider.of<WardensInfo>(context);
 
     log('Read regulation screen');
+    void showLoading() {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: ColorTheme.mask,
+        builder: (_) {
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Checking in',
+                        style: CustomTextStyle.h3.copyWith(
+                          decoration: TextDecoration.none,
+                          color: ColorTheme.white,
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 10, left: 2),
+                        child: const SpinKitThreeBounce(
+                          color: ColorTheme.white,
+                          size: 7,
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
 
     WardenEvent wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckIn.index,
@@ -56,7 +95,9 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
         if (connectionStatus == ConnectivityResult.wifi ||
             connectionStatus == ConnectivityResult.mobile) {
           try {
+            showLoading();
             await userController.createWardenEvent(wardenEvent).then((value) {
+              Navigator.of(context).pop();
               Navigator.of(context).pushNamedAndRemoveUntil(
                   HomeOverview.routeName, (Route<dynamic> route) => false);
             });
@@ -110,7 +151,9 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           if (connectionStatus == ConnectivityResult.wifi ||
               connectionStatus == ConnectivityResult.mobile) {
             try {
+              showLoading();
               await userController.createWardenEvent(wardenEvent).then((value) {
+                Navigator.of(context).pop();
                 Navigator.of(context).pushNamedAndRemoveUntil(
                     HomeOverview.routeName, (Route<dynamic> route) => false);
               });
