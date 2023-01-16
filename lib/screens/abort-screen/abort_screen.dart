@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
@@ -71,8 +73,11 @@ class _AbortScreenState extends State<AbortScreen> {
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
+    final printIssue = Provider.of<PrintIssueProviders>(context);
 
     Future<void> abortPCN() async {
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
       final wardenEventAbortPCN = WardenEvent(
         type: TypeWardenEvent.AbortPCN.index,
         detail: 'Abort PCN: ${args.reference}',
@@ -98,43 +103,51 @@ class _AbortScreenState extends State<AbortScreen> {
         return;
       }
 
-      try {
-        await abortController.abortPCN(abortPcnBody).then((value) async {
-          await userController
-              .createWardenEvent(wardenEventAbortPCN)
-              .then((value) {
-            Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        try {
+          await abortController.abortPCN(abortPcnBody).then((value) async {
+            await userController
+                .createWardenEvent(wardenEventAbortPCN)
+                .then((value) {
+              Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+            });
           });
-        });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
+        } on DioError catch (error) {
+          if (!mounted) return;
+          if (error.type == DioErrorType.other) {
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 3),
+              title: Text(
+                error.message.length > Constant.errorTypeOther
+                    ? 'Something went wrong, please try again'
+                    : error.message,
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            return;
+          }
           CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
+            displayCloseButton: false,
             title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
+              error.response!.data['message'].toString().length >
+                      Constant.errorMaxLength
+                  ? 'Internal server error'
+                  : error.response!.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
           ).show(context);
-          return;
         }
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
+      } else {
+        await abortController.abortPCN(abortPcnBody).then((value) async {
+          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+        });
       }
-
+      printIssue.resetData();
       _formKey.currentState!.save();
       return;
     }

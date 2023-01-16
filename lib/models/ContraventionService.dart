@@ -46,8 +46,27 @@ class ContraventionCreateWardenCommand {
           Map<String, dynamic> json) =>
       _$ContraventionCreateWardenCommandFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$ContraventionCreateWardenCommandToJson(this);
+  static Map<String, dynamic> toJson(
+          ContraventionCreateWardenCommand instance) =>
+      {
+        'ExternalReference': instance.ExternalReference,
+        'ContraventionReference': instance.ContraventionReference,
+        'Plate': instance.Plate,
+        'VehicleMake': instance.VehicleMake,
+        'VehicleColour': instance.VehicleColour,
+        'ContraventionReasonCode': instance.ContraventionReasonCode,
+        'EventDateTime': instance.EventDateTime.toIso8601String(),
+        'FirstObservedDateTime':
+            instance.FirstObservedDateTime.toIso8601String(),
+        'WardenId': instance.WardenId,
+        'BadgeNumber': instance.BadgeNumber,
+        'Longitude': instance.Longitude,
+        'Latitude': instance.Latitude,
+        'LocationAccuracy': instance.LocationAccuracy,
+        'WardenComments': instance.WardenComments,
+        'TypePCN': instance.TypePCN,
+        'Id': instance.Id ?? 0,
+      };
 }
 
 ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
@@ -68,28 +87,6 @@ ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
     LocationAccuracy: json['LocationAccuracy'],
     WardenComments: json['WardenComments'],
   );
-}
-
-Map<String, dynamic> _$ContraventionCreateWardenCommandToJson(
-    ContraventionCreateWardenCommand instance) {
-  return <String, dynamic>{
-    'ExternalReference': instance.ExternalReference,
-    'ContraventionReference': instance.ContraventionReference,
-    'Plate': instance.Plate,
-    'VehicleMake': instance.VehicleMake,
-    'VehicleColour': instance.VehicleColour,
-    'ContraventionReasonCode': instance.ContraventionReasonCode,
-    'EventDateTime': instance.EventDateTime.toIso8601String(),
-    'FirstObservedDateTime': instance.FirstObservedDateTime.toIso8601String(),
-    'WardenId': instance.WardenId,
-    'BadgeNumber': instance.BadgeNumber,
-    'Longitude': instance.Longitude,
-    'Latitude': instance.Latitude,
-    'LocationAccuracy': instance.LocationAccuracy,
-    'WardenComments': instance.WardenComments,
-    'TypePCN': instance.TypePCN,
-    'Id': instance.Id ?? 0,
-  };
 }
 
 class VehicleDetails {
@@ -175,7 +172,21 @@ class ContraventionCreatePhoto {
     required this.filePath,
   });
 
+  factory ContraventionCreatePhoto.fromJson(Map<String, dynamic> json) =>
+      _$ContraventionCreatePhotoFromJson(json);
+
   Map<String, dynamic> toJson() => _$ContraventionCreatePhotoToJson(this);
+}
+
+ContraventionCreatePhoto _$ContraventionCreatePhotoFromJson(
+    Map<String, dynamic> json) {
+  return ContraventionCreatePhoto(
+    contraventionReference: json['contraventionReference'],
+    photoType: json['photoType'],
+    originalFileName: json['originalFileName'],
+    capturedDateTime: DateTime.parse(json['capturedDateTime']),
+    filePath: json['file'],
+  );
 }
 
 Map<String, dynamic> _$ContraventionCreatePhotoToJson(

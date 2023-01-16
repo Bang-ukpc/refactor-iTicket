@@ -120,15 +120,17 @@ class _PrintIssueState extends State<PrintIssue> {
         try {
           if (printIssue.data.isNotEmpty) {
             for (int i = 0; i < printIssue.data.length; i++) {
-              await contraventionController.uploadContraventionImage(
-                ContraventionCreatePhoto(
-                  contraventionReference: contravention.reference ?? '',
-                  originalFileName:
-                      printIssue.data[i].image!.path.split('/').last,
-                  capturedDateTime: DateTime.now(),
-                  filePath: printIssue.data[i].image!.path,
-                ),
-              );
+              if (printIssue.data[i].image != null) {
+                await contraventionController.uploadContraventionImage(
+                  ContraventionCreatePhoto(
+                    contraventionReference: contravention.reference ?? '',
+                    originalFileName:
+                        printIssue.data[i].image!.path.split('/').last,
+                    capturedDateTime: DateTime.now(),
+                    filePath: printIssue.data[i].image!.path,
+                  ),
+                );
+              }
               if (i == printIssue.data.length - 1) {
                 check = true;
               }
@@ -326,7 +328,8 @@ class _PrintIssueState extends State<PrintIssue> {
               ),
             BottomNavyBarItem(
               onPressed: () {
-                if (printIssue.findIssueNoImage().title != 'null') {
+                if (printIssue.findIssueNoImage().title != 'null' &&
+                    printIssue.checkIssueHasPhotoRequire() == false) {
                   showMyDialog();
                 } else {
                   onCompleteTakePhotos();

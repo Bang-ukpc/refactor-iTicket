@@ -16,7 +16,7 @@ class ContraventionController {
     try {
       final response = await dio.post(
         '/contravention/create-pcn',
-        data: pcn.toJson(),
+        data: ContraventionCreateWardenCommand.toJson(pcn),
       );
       Contravention contraventionResult = Contravention.fromJson(response.data);
       print('Api create PCN: ${response.data}');

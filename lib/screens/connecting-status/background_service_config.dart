@@ -63,11 +63,12 @@ void onStart(ServiceInstance service) async {
   final accessToken = await SharedPreferencesHelper.getStringValue(
     PreferencesKeys.accessToken,
   );
-  const serviceURL = "http://192.168.1.200:7003";
+  const serviceUrlLocal = 'http://192.168.1.200:7003';
+  const serviceUrlDev = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
   final dio = Dio();
   dio.options.headers['content-Type'] = 'application/json';
   dio.options.headers["authorization"] = accessToken;
-  final response = await dio.get('$serviceURL/warden/get-me');
+  final response = await dio.get('$serviceUrlLocal/warden/get-me');
   final wardenFromJson = Wardens.fromJson(response.data);
   Position position = await Geolocator.getCurrentPosition();
 
@@ -117,7 +118,7 @@ void onStart(ServiceInstance service) async {
 
     try {
       await dio.post(
-        '$serviceURL/wardenEvent',
+        '$serviceUrlLocal/wardenEvent',
         data: wardenEventSendCurrentLocation.toJson(),
       );
     } on DioError catch (err) {

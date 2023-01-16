@@ -1,9 +1,9 @@
 import 'package:iWarden/models/base_model.dart';
 
 class AbortPCN {
-  final int contraventionId;
-  final int cancellationReasonId;
-  final String? comment;
+  int contraventionId;
+  int cancellationReasonId;
+  String? comment;
 
   AbortPCN({
     required this.contraventionId,

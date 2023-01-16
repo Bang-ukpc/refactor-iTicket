@@ -4,15 +4,16 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/controllers/abort_controller.dart';
+import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/models/ContraventionService.dart';
+import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/vehicle_information.dart';
-import 'package:iWarden/providers/auth.dart';
-import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:provider/provider.dart';
 
 Future<void> showLoading() async {
   await showDialog(
@@ -81,7 +82,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         'vehicleInfoUpsertDataLocal');
     if (dataUpsert != null) {
       final vehicleInfoUpsertData = json.decode(dataUpsert) as List<dynamic>;
-      print(vehicleInfoUpsertData);
       List<VehicleInformation> vehicleInfoList = vehicleInfoUpsertData
           .map((i) => VehicleInformation.fromJson(json.decode(i)))
           .toList();
@@ -105,7 +105,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           }
           await vehicleInfoController.upsertVehicleInfo(vehicleInfoList[i]);
         } catch (e) {
-          print('vehicleInfoController: $e');
+          print('upsertVehicleInfo: $e');
           return true;
         }
       }
@@ -116,12 +116,94 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     }
   }
 
+  Future<bool> parkingChargeDataSynch() async {
+    final String? issuePCNData =
+        await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
+    final String? contraventionPhotoData =
+        await SharedPreferencesHelper.getStringValue(
+            'contraventionPhotoDataLocal');
+    final String? dataAbortPCN =
+        await SharedPreferencesHelper.getStringValue('abortPCNDataLocal');
+
+    if (issuePCNData != null) {
+      var decodedData = json.decode(issuePCNData) as List<dynamic>;
+      List<ContraventionCreateWardenCommand> physicalPCNList = decodedData
+          .map((e) => ContraventionCreateWardenCommand.fromJson(json.decode(e)))
+          .toList();
+      List<ContraventionCreatePhoto> contraventionCreatePhoto = [];
+      List<AbortPCN> abortPCN = [];
+
+      if (contraventionPhotoData != null) {
+        var contraventionPhotoDecoded =
+            json.decode(contraventionPhotoData) as List<dynamic>;
+        contraventionCreatePhoto = contraventionPhotoDecoded
+            .map((e) => ContraventionCreatePhoto.fromJson(json.decode(e)))
+            .toList();
+      }
+
+      if (dataAbortPCN != null) {
+        var abortDataDecoded = json.decode(dataAbortPCN) as List<dynamic>;
+        abortPCN = abortDataDecoded
+            .map((e) => AbortPCN.fromJson(json.decode(e)))
+            .toList();
+      }
+
+      print('decodedData issuePCNData: $decodedData');
+      print(
+          'contraventionCreatePhoto: ${json.decode(contraventionPhotoData as String)}');
+      print('abortPCN: $abortPCN');
+
+      for (int i = 0; i < physicalPCNList.length; i++) {
+        try {
+          await contraventionController
+              .createPCN(physicalPCNList[i])
+              .then((contravention) async {
+            for (int j = 0; j < abortPCN.length; j++) {
+              if (abortPCN[j].contraventionId == physicalPCNList[i].Id) {
+                abortPCN[j].contraventionId = contravention.id ?? 0;
+                try {
+                  await abortController.abortPCN(abortPCN[j]);
+                } catch (e) {
+                  print('abortPCN: $e');
+                  break;
+                }
+              }
+            }
+          });
+        } catch (e) {
+          print('createPCN: $e');
+          return true;
+        }
+      }
+      for (int i = 0; i < contraventionCreatePhoto.length; i++) {
+        try {
+          await contraventionController
+              .uploadContraventionImage(contraventionCreatePhoto[i]);
+        } catch (e) {
+          print('uploadContraventionImage: $e');
+          return true;
+        }
+      }
+
+      SharedPreferencesHelper.removeStringValue('issuePCNDataLocal');
+      SharedPreferencesHelper.removeStringValue('contraventionPhotoDataLocal');
+      SharedPreferencesHelper.removeStringValue('abortPCNDataLocal');
+      return true;
+    } else {
+      return true;
+    }
+  }
+
   void dataSynch() async {
     bool vehicleInfoSynchStatus = false;
+    bool issuePCNSynchStatus = false;
     await vehicleInfoDataSynch().then((value) {
       vehicleInfoSynchStatus = value;
     });
-    if (vehicleInfoSynchStatus == true) {
+    await parkingChargeDataSynch().then((value) {
+      issuePCNSynchStatus = value;
+    });
+    if (vehicleInfoSynchStatus == true && issuePCNSynchStatus == true) {
       await Future.delayed(const Duration(seconds: 1), () {
         NavigationService.navigatorKey.currentState!.pop();
       });

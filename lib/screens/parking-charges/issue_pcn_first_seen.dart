@@ -316,7 +316,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         int randomNumber =
             (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
         physicalPCN.Id = randomNumber;
-        final String encodedPhysicalPCNData = json.encode(physicalPCN.toJson());
+        final String encodedPhysicalPCNData =
+            json.encode(ContraventionCreateWardenCommand.toJson(physicalPCN));
         final String? issuePCNData =
             await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
         if (issuePCNData == null) {
@@ -341,7 +342,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: randomNumber.toString(),
+                contraventionReference: physicalPCN.ContraventionReference,
                 originalFileName: arrayImage[i].path.split('/').last,
                 capturedDateTime: DateTime.now(),
                 filePath: arrayImage[i].path,
@@ -593,7 +594,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
         virtualTicket.Id = randomNumber;
         final String encodedPhysicalPCNData =
-            json.encode(virtualTicket.toJson());
+            json.encode(ContraventionCreateWardenCommand.toJson(virtualTicket));
         final String? issuePCNData =
             await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
         if (issuePCNData == null) {
@@ -618,7 +619,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: randomNumber.toString(),
+                contraventionReference: virtualTicket.ContraventionReference,
                 originalFileName: arrayImage[i].path.split('/').last,
                 capturedDateTime: DateTime.now(),
                 filePath: arrayImage[i].path,

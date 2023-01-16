@@ -50,6 +50,47 @@ class PrintIssueProviders with ChangeNotifier {
     );
   }
 
+  bool checkIssueHasPhotoRequire() {
+    bool check1 = false;
+    bool check2 = false;
+    bool check3 = false;
+    bool check4 = false;
+    bool check5 = false;
+
+    for (int i = 0; i < _data.length; i++) {
+      if (_data[i].id == 1) {
+        if (_data[i].image != null) {
+          check1 = true;
+        }
+      } else if (_data[i].id == 2) {
+        if (_data[i].image != null) {
+          check2 = true;
+        }
+      } else if (_data[i].id == 3) {
+        if (_data[i].image != null) {
+          check3 = true;
+        }
+      } else if (_data[i].id == 4) {
+        if (_data[i].image != null) {
+          check4 = true;
+        }
+      } else if (_data[i].id == 5) {
+        if (_data[i].image != null) {
+          check5 = true;
+        }
+      }
+    }
+
+    if (check1 == true &&
+        check2 == true &&
+        check3 == true &&
+        check4 == true &&
+        check5 == true) {
+      return true;
+    }
+    return false;
+  }
+
   void addImageToIssue(int id, File image) {
     print({
       id,
