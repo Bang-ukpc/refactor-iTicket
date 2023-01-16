@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
     appSetting.settings();
 
     return MaterialApp(
-      title: 'iWarden',
+      title: 'iTicket',
       theme: themeMain(),
       debugShowCheckedModeBanner: false,
       navigatorKey: NavigationService.navigatorKey,

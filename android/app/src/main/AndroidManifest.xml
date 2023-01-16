@@ -19,8 +19,8 @@
     </intent>
     </queries>
    <application
-        android:label="iWarden"
-        android:name="${applicationName}"        
+        android:label="iTicket"
+        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="AIzaSyDWb27PuihbFAdxkKn2RMu7y_GKpQypeCA"/>

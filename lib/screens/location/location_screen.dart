@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +38,6 @@ class _LocationScreenState extends State<LocationScreen> {
   List<RotaWithLocation> listFilter = [];
   List<RotaWithLocation> listFilterByRota = [];
   Directions? _info;
-  bool check = false;
   bool isLoading = true;
 
   String formatRotaShift(DateTime date) {
@@ -484,30 +482,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           ),
                                         ),
                                         GestureDetector(
-                                          onTap: locations.location != null
-                                              ? () {
-                                                  if (check == false) {
-                                                    setState(() {
-                                                      check = true;
-                                                    });
-                                                  }
-                                                  // goToDestination();
-                                                }
-                                              : () {
-                                                  CherryToast.error(
-                                                    displayCloseButton: false,
-                                                    title: Text(
-                                                      'Please select location first',
-                                                      style: CustomTextStyle.h5
-                                                          .copyWith(
-                                                              color: ColorTheme
-                                                                  .danger),
-                                                    ),
-                                                    toastPosition:
-                                                        Position.bottom,
-                                                    borderRadius: 5,
-                                                  ).show(context);
-                                                },
+                                          onTap: () {},
                                           child: Container(
                                             padding: const EdgeInsets.all(14),
                                             color: ColorTheme.darkPrimary,
@@ -524,19 +499,16 @@ class _LocationScreenState extends State<LocationScreen> {
                                   ),
                                   Container(
                                     child: locations.location != null
-                                        ? check == true
-                                            ? MapScreen(
-                                                screenHeight:
-                                                    MediaQuery.of(context)
-                                                                .size
-                                                                .width <
-                                                            400
-                                                        ? screenHeight / 3
-                                                        : screenHeight / 1.5,
-                                                destination: destination,
-                                                info: _info,
-                                              )
-                                            : const SizedBox()
+                                        ? MapScreen(
+                                            screenHeight: MediaQuery.of(context)
+                                                        .size
+                                                        .width <
+                                                    400
+                                                ? screenHeight / 3
+                                                : screenHeight / 1.5,
+                                            destination: destination,
+                                            info: _info,
+                                          )
                                         : const SizedBox(),
                                   ),
                                 ],

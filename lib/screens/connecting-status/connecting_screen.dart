@@ -351,16 +351,16 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   children: [
                     isPending == false
                         ? pendingGetCurrentLocation == false
-                            ? _buildConnect("1. Connect Bluetooth",
+                            ? _buildConnect("1. Connect bluetooth",
                                 checkState(checkBluetooth == true))
                             : _buildConnect(
-                                '1. Connect Bluetooth', StateDevice.pending)
+                                '1. Connect bluetooth', StateDevice.pending)
                         : _buildConnect(
-                            '1. Connect Bluetooth', StateDevice.pending),
+                            '1. Connect bluetooth', StateDevice.pending),
                     isPending == false
                         ? pendingGetCurrentLocation == false
                             ? _buildConnect(
-                                "2. Connect Network",
+                                "2. Connect network",
                                 checkState(
                                   _connectionStatus ==
                                           ConnectivityResult.mobile ||
@@ -369,9 +369,9 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 ),
                               )
                             : _buildConnect(
-                                '2. Connect Network', StateDevice.pending)
+                                '2. Connect network', StateDevice.pending)
                         : _buildConnect(
-                            '2. Connect Network', StateDevice.pending),
+                            '2. Connect network', StateDevice.pending),
                     isPending == false
                         ? pendingGetCurrentLocation == false
                             ? _buildConnect(
