@@ -13,7 +13,6 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/home_overview.dart';
-import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/model/data.dart';
@@ -330,13 +329,18 @@ class _MyDrawerState extends State<MyDrawer> {
               children: <Widget>[
                 Column(
                   children: [
-                    InfoDrawer(
-                      isDrawer: true,
-                      assetImage: wardensProvider.wardens?.Picture ??
-                          "assets/images/userAvatar.png",
-                      name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
-                      location: locations.location?.Name ?? 'Empty name!!',
-                      zone: locations.zone?.Name ?? 'Empty name!!',
+                    Container(
+                      height: 150,
+                      margin: const EdgeInsets.only(top: 5),
+                      child: InfoDrawer(
+                        isDrawer: true,
+                        assetImage: wardensProvider.wardens?.Picture ??
+                            "assets/images/userAvatar.png",
+                        name:
+                            "Hello ${wardensProvider.wardens?.FullName ?? ""}",
+                        location: locations.location?.Name ?? 'Empty name!!',
+                        zone: locations.zone?.Name ?? 'Empty name!!',
+                      ),
                     ),
                     const SizedBox(
                       height: 24,

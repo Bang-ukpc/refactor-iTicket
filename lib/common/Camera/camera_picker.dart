@@ -279,7 +279,7 @@ class CameraPicker extends HookWidget {
                         if (scale < 1) scale = 1 / scale;
 
                         return Transform.scale(
-                          scale: scale + 0.01,
+                          scale: scale + 0.02,
                           child: Center(
                             child: CameraPreview(
                               cameraController,
