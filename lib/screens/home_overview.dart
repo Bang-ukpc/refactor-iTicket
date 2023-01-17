@@ -349,6 +349,8 @@ class _HomeOverviewState extends State<HomeOverview> {
       }
     }
 
+    print(currentLocationPosition.currentLocation);
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(

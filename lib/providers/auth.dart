@@ -86,9 +86,10 @@ class Auth with ChangeNotifier {
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     await oauth.logout();
 
-    final prefs = await SharedPreferences.getInstance();
     SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
-    prefs.clear();
+    SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
+    SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
+    SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');
 
     log('Logout successfully');
   }

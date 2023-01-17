@@ -99,6 +99,8 @@ class ContraventionController {
                 i['ZoneId'] == zoneId &&
                 i['Status'] == ContraventionStatus.Open.index)
             .toList();
+        fromJsonContravention.rows
+            .sort((i1, i2) => i2['Created'].compareTo(i1['Created']));
         return fromJsonContravention;
       } else {
         return Pagination(

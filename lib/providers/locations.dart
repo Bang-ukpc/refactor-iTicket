@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
 
@@ -37,16 +40,33 @@ class Locations with ChangeNotifier {
 
   void onSelectedRotaShift(RotaWithLocation? rotaShift) {
     rotaShiftSelected = rotaShift;
+    if (rotaShift != null) {
+      final String encodedRotaShiftData =
+          json.encode(RotaWithLocation.toJson(rotaShift));
+      SharedPreferencesHelper.setStringValue(
+          'rotaShiftSelectedByWarden', encodedRotaShiftData);
+    }
     notifyListeners();
   }
 
   void onSelectedLocation(LocationWithZones? location) {
     locationSelected = location;
+    if (location != null) {
+      final String encodedLocationData =
+          json.encode(LocationWithZones.toJson(location));
+      SharedPreferencesHelper.setStringValue(
+          'locationSelectedByWarden', encodedLocationData);
+    }
     notifyListeners();
   }
 
   void onSelectedZone(Zone? zone) {
     zoneSelected = zone;
+    if (zone != null) {
+      final String encodedZoneData = json.encode(Zone.toJson(zone));
+      SharedPreferencesHelper.setStringValue(
+          'zoneSelectedByWarden', encodedZoneData);
+    }
     notifyListeners();
   }
 

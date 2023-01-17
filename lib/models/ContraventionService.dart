@@ -72,6 +72,7 @@ class ContraventionCreateWardenCommand {
 ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
     Map<String, dynamic> json) {
   return ContraventionCreateWardenCommand(
+    Id: json['Id'] ?? 0,
     ExternalReference: json['ExternalReference'],
     ContraventionReference: json['ContraventionReference'],
     Plate: json['Plate'],

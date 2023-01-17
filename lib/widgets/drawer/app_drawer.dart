@@ -1,13 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -142,6 +143,17 @@ class _MyDrawerState extends State<MyDrawer> {
           await userController
               .createWardenEvent(wardenEventEndShift)
               .then((value) async {
+            final service = FlutterBackgroundService();
+            var isRunning = await service.isRunning();
+            if (isRunning) {
+              service.invoke("stopService");
+            }
+            SharedPreferencesHelper.removeStringValue(
+                'rotaShiftSelectedByWarden');
+            SharedPreferencesHelper.removeStringValue(
+                'locationSelectedByWarden');
+            SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');
+            if (!mounted) return;
             Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
                 ConnectingScreen.routeName, (Route<dynamic> route) => false);

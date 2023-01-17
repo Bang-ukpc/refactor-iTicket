@@ -148,18 +148,14 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             .toList();
       }
 
-      print('decodedData issuePCNData: $decodedData');
-      print(
-          'contraventionCreatePhoto: ${json.decode(contraventionPhotoData as String)}');
-      print('abortPCN: $abortPCN');
-
       for (int i = 0; i < physicalPCNList.length; i++) {
         try {
           await contraventionController
               .createPCN(physicalPCNList[i])
               .then((contravention) async {
+            print(contravention.id);
             for (int j = 0; j < abortPCN.length; j++) {
-              if (abortPCN[j].contraventionId == physicalPCNList[i].Id) {
+              if (physicalPCNList[i].Id == abortPCN[j].contraventionId) {
                 abortPCN[j].contraventionId = contravention.id ?? 0;
                 try {
                   await abortController.abortPCN(abortPCN[j]);

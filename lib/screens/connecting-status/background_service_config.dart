@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:dio/dio.dart';
@@ -9,7 +10,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/models/zone.dart';
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
@@ -72,12 +75,38 @@ void onStart(ServiceInstance service) async {
   final wardenFromJson = Wardens.fromJson(response.data);
   Position position = await Geolocator.getCurrentPosition();
 
+  final String? rotaShift =
+      await SharedPreferencesHelper.getStringValue('rotaShiftSelectedByWarden');
+  final String? locations =
+      await SharedPreferencesHelper.getStringValue('locationSelectedByWarden');
+  final String? zone =
+      await SharedPreferencesHelper.getStringValue('zoneSelectedByWarden');
+  RotaWithLocation? rotaShiftSelected;
+  LocationWithZones? locationSelected;
+  Zone? zoneSelected;
+
+  if (rotaShift != null) {
+    rotaShiftSelected = RotaWithLocation.fromJson(json.decode(rotaShift));
+  }
+
+  if (locations != null) {
+    locationSelected = LocationWithZones.fromJson(json.decode(locations));
+  }
+
+  if (zone != null) {
+    zoneSelected = Zone.fromJson(json.decode(zone));
+  }
+
   final wardenEventSendCurrentLocation = WardenEvent(
     type: TypeWardenEvent.TrackGPS.index,
     detail: "Warden's current location",
     latitude: position.latitude,
     longitude: position.longitude,
     wardenId: wardenFromJson.Id ?? 0,
+    rotaTimeFrom: rotaShiftSelected?.timeFrom,
+    rotaTimeTo: rotaShiftSelected?.timeTo,
+    locationId: locationSelected?.Id,
+    zoneId: zoneSelected?.Id,
   );
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -97,7 +126,7 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  Timer.periodic(const Duration(minutes: 5), (timer) async {
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
         flutterLocalNotificationsPlugin.show(

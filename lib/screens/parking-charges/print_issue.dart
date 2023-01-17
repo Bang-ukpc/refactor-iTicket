@@ -211,19 +211,21 @@ class _PrintIssueState extends State<PrintIssue> {
           List<ContraventionPhotos> contraventionImageList = [];
           if (printIssue.data.isNotEmpty) {
             for (int i = 0; i < printIssue.data.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: contravention.reference ?? '',
-                originalFileName:
-                    printIssue.data[i].image!.path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: printIssue.data[i].image!.path,
-              ).toJson());
-              createdData.add(encodedData);
+              if (printIssue.data[i].image != null) {
+                final String encodedData = json.encode(ContraventionCreatePhoto(
+                  contraventionReference: contravention.reference ?? '',
+                  originalFileName:
+                      printIssue.data[i].image!.path.split('/').last,
+                  capturedDateTime: DateTime.now(),
+                  filePath: printIssue.data[i].image!.path,
+                ).toJson());
+                createdData.add(encodedData);
 
-              contraventionImageList.add(ContraventionPhotos(
-                blobName: printIssue.data[i].image!.path,
-                contraventionId: contravention.id,
-              ));
+                contraventionImageList.add(ContraventionPhotos(
+                  blobName: printIssue.data[i].image!.path,
+                  contraventionId: contravention.id,
+                ));
+              }
             }
 
             if (contraventionList != null) {
