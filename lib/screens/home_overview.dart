@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
+import 'package:iWarden/common/dot.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -310,9 +312,11 @@ class _HomeOverviewState extends State<HomeOverview> {
 
     void onStartBreak() async {
       try {
+        displayLoading(context: context, text: 'Processing');
         await userController
             .createWardenEvent(wardenEventStartBreak)
             .then((value) {
+          Navigator.of(context).pop();
           Navigator.of(context).pushNamed(StartBreakScreen.routeName);
         });
       } on DioError catch (error) {

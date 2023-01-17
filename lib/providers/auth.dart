@@ -4,6 +4,7 @@ import 'package:aad_oauth/aad_oauth.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/const.dart';
@@ -21,13 +22,12 @@ class Auth with ChangeNotifier {
     return token != null ? true : false;
   }
 
-  Future<void> loginWithMicrosoft(
-      BuildContext context, VoidCallback onLoading) async {
+  Future<void> loginWithMicrosoft(BuildContext context) async {
     final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     await oauth.login();
     final accessToken = await oauth.getIdToken();
     if (accessToken != null) {
-      onLoading();
+      displayLoading(context: context, text: 'Signing in');
       SharedPreferencesHelper.setStringValue(
           PreferencesKeys.accessToken, 'Bearer $accessToken');
       // ignore: use_build_context_synchronously

@@ -16,6 +16,7 @@ import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -169,28 +170,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
     log('Issue PCN screen');
 
-    void showLoading() {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) {
-          return WillPopScope(
-            onWillPop: () async => false,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  CircularProgressIndicator(
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     Future<void> createPhysicalPCN() async {
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
@@ -246,7 +225,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       if (!isValid) {
         return;
       } else {
-        showLoading();
+        showCircularProgressIndicator(context: context);
       }
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
@@ -521,7 +500,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       if (!isValid) {
         return;
       } else {
-        showLoading();
+        showCircularProgressIndicator(context: context);
       }
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {

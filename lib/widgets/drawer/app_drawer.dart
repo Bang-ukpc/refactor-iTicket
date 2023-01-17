@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/dot.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -57,46 +58,6 @@ class _MyDrawerState extends State<MyDrawer> {
     final wardensProvider = Provider.of<WardensInfo>(context);
     final locations = Provider.of<Locations>(context);
 
-    void showLoading() {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: ColorTheme.mask,
-        builder: (_) {
-          return WillPopScope(
-            onWillPop: () async => false,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Connecting to printer',
-                        style: CustomTextStyle.h4.copyWith(
-                          decoration: TextDecoration.none,
-                          color: ColorTheme.white,
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10, left: 2),
-                        child: const SpinKitThreeBounce(
-                          color: ColorTheme.white,
-                          size: 7,
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     WardenEvent wardenEventStartBreak = WardenEvent(
       type: TypeWardenEvent.StartBreak.index,
       detail: 'Warden has begun to rest',
@@ -135,9 +96,11 @@ class _MyDrawerState extends State<MyDrawer> {
 
     void onStartBreak() async {
       try {
+        displayLoading(context: context, text: 'Processing');
         await userController
             .createWardenEvent(wardenEventStartBreak)
             .then((value) {
+          Navigator.of(context).pop();
           Navigator.of(context).pushNamed(StartBreakScreen.routeName);
         });
       } on DioError catch (error) {
@@ -172,12 +135,14 @@ class _MyDrawerState extends State<MyDrawer> {
 
     void onEndShift(Auth auth) async {
       try {
+        displayLoading(context: context, text: 'Processing');
         await userController
             .createWardenEvent(wardenEventCheckOut)
             .then((value) async {
           await userController
               .createWardenEvent(wardenEventEndShift)
               .then((value) async {
+            Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
                 ConnectingScreen.routeName, (Route<dynamic> route) => false);
           });
@@ -246,7 +211,9 @@ class _MyDrawerState extends State<MyDrawer> {
                               borderRadius: 5,
                             ).show(context);
                           } else {
-                            showLoading();
+                            displayLoading(
+                                context: context,
+                                text: 'Connecting to printer');
                             bluetoothPrinterHelper.printReceiveTest();
                           }
                         }

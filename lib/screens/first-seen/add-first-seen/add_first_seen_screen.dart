@@ -11,6 +11,7 @@ import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/label_require.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -101,28 +102,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
 
-    void showLoading() {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) {
-          return WillPopScope(
-            onWillPop: () async => false,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  CircularProgressIndicator(
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     Future<bool> saveForm() async {
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
@@ -164,7 +143,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       if (!isValid) {
         return false;
       } else {
-        showLoading();
+        showCircularProgressIndicator(context: context);
       }
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {

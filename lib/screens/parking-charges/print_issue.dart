@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/my_dialog.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
@@ -47,28 +48,6 @@ class _PrintIssueState extends State<PrintIssue> {
         ModalRoute.of(context)!.settings.arguments as Contravention;
 
     log('Print issue');
-
-    void showLoading() {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) {
-          return WillPopScope(
-            onWillPop: () async => false,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  CircularProgressIndicator(
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
 
     void takeAPhoto() async {
       await printIssue.getIdIssue(printIssue.findIssueNoImage().id);
@@ -112,7 +91,7 @@ class _PrintIssueState extends State<PrintIssue> {
 
     void onCompleteTakePhotos() async {
       bool check = false;
-      showLoading();
+      showCircularProgressIndicator(context: context);
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
       if (connectionStatus == ConnectivityResult.wifi ||

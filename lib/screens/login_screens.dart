@@ -25,46 +25,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     log('Login screen');
 
-    void showLoading() {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: ColorTheme.mask,
-        builder: (_) {
-          return WillPopScope(
-            onWillPop: () async => false,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Signing in',
-                        style: CustomTextStyle.h3.copyWith(
-                          decoration: TextDecoration.none,
-                          color: ColorTheme.white,
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10, left: 2),
-                        child: const SpinKitThreeBounce(
-                          color: ColorTheme.white,
-                          size: 7,
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -109,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   OutlinedButton.icon(
                     onPressed: () async {
-                      authProvider.loginWithMicrosoft(context, showLoading);
+                      authProvider.loginWithMicrosoft(context);
                     },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(width: 1.0, color: ColorTheme.primary),
