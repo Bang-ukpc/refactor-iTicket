@@ -126,7 +126,7 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
+  Timer.periodic(const Duration(minutes: 5), (timer) async {
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
         flutterLocalNotificationsPlugin.show(

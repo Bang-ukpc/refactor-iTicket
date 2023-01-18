@@ -238,23 +238,23 @@ class _MyDrawerState extends State<MyDrawer> {
     }
 
     List<NavItemMenu> navItem = [
-      NavItemMenu(
-        title: 'Emerg. call',
-        icon: SvgPicture.asset(
-          'assets/svg/IconCall2.svg',
-        ),
-        route: HomeOverview.routeName,
-        background: ColorTheme.grey200,
-        check: null,
-        setCheck: () async {
-          final call = Uri.parse('tel:0981832226');
-          if (await canLaunchUrl(call)) {
-            launchUrl(call);
-          } else {
-            throw 'Could not launch $call';
-          }
-        },
-      ),
+      // NavItemMenu(
+      //   title: 'Emerg. call',
+      //   icon: SvgPicture.asset(
+      //     'assets/svg/IconCall2.svg',
+      //   ),
+      //   route: HomeOverview.routeName,
+      //   background: ColorTheme.grey200,
+      //   check: null,
+      //   setCheck: () async {
+      //     final call = Uri.parse('tel:0981832226');
+      //     if (await canLaunchUrl(call)) {
+      //       launchUrl(call);
+      //     } else {
+      //       throw 'Could not launch $call';
+      //     }
+      //   },
+      // ),
       NavItemMenu(
         title: '999',
         icon: SvgPicture.asset('assets/svg/IconCall3.svg'),
@@ -364,7 +364,7 @@ class _MyDrawerState extends State<MyDrawer> {
                     vertical: 30,
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: getListNav(),
                   ),
                 ),
