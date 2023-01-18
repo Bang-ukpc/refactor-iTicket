@@ -32,7 +32,7 @@ class DetailCar extends StatelessWidget {
             children: <Widget>[
               Text(
                 plate.toUpperCase(),
-                style: CustomTextStyle.h3,
+                style: CustomTextStyle.h3.copyWith(fontWeight: FontWeight.w600),
               ),
               Text("Color: ${color ?? "No data"}",
                   style:
