@@ -7,7 +7,6 @@ import 'package:iWarden/models/zone.dart';
 class Location extends BaseModel {
   final String Name;
   final String? LocationType;
-  final int? Revenue;
   final int? CountryRegionId;
   final int CountrySubRegionId;
   final int? ClusterId;
@@ -18,7 +17,7 @@ class Location extends BaseModel {
   final String? Address2;
   final String? Address3;
   final String? Town;
-  final String? Country;
+  final String? County;
   final String? Postcode;
   final String? Notes;
   final double? Distance;
@@ -32,11 +31,10 @@ class Location extends BaseModel {
     this.Address2,
     this.Address3,
     this.Town,
-    this.Country,
+    this.County,
     this.Postcode,
     required this.Name,
     this.LocationType,
-    this.Revenue,
     this.CountryRegionId,
     required this.CountrySubRegionId,
     this.ClusterId,
@@ -60,11 +58,10 @@ class LocationWithZones extends Location {
     String? Address2,
     String? Address3,
     String? Town,
-    String? Country,
+    String? County,
     String? Postcode,
     required String Name,
     String? LocationType,
-    int? Revenue,
     int? CountryRegionId,
     required int CountrySubRegionId,
     int? ClusterId,
@@ -85,11 +82,10 @@ class LocationWithZones extends Location {
           Address2: Address2,
           Address3: Address3,
           Town: Town,
-          Country: Country,
+          County: County,
           Postcode: Postcode,
           Name: Name,
           LocationType: LocationType,
-          Revenue: Revenue,
           CountryRegionId: CountryRegionId,
           CountrySubRegionId: CountrySubRegionId,
           ClusterId: ClusterId,
@@ -120,7 +116,7 @@ class LocationWithZones extends Location {
         'Address2': locationWithZones.Address2,
         'Address3': locationWithZones.Address3,
         'Town': locationWithZones.Town,
-        'Country': locationWithZones.Country,
+        'County': locationWithZones.County,
         'Postcode': locationWithZones.Postcode,
         'LocationType': locationWithZones.LocationType,
         'Notes': locationWithZones.Notes,
@@ -148,13 +144,18 @@ class LocationWithZones extends Location {
 
 LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
   var zonesFromJson = json['Zones'] as List<dynamic>;
-  List<Zone> zonesList =
-      zonesFromJson.map((model) => Zone.fromJson(model)).toList();
+  List<Zone> zonesList = [];
+  if (zonesFromJson.isNotEmpty) {
+    zonesList = zonesFromJson.map((model) => Zone.fromJson(model)).toList();
+  }
 
   var operationalPeriodsFromJson = json['OperationalPeriods'] as List<dynamic>;
-  List<OperationalPeriod> operationalPeriodsList = operationalPeriodsFromJson
-      .map((model) => OperationalPeriod.fromJson(model))
-      .toList();
+  List<OperationalPeriod> operationalPeriodsList = [];
+  if (operationalPeriodsFromJson.isNotEmpty) {
+    operationalPeriodsList = operationalPeriodsFromJson
+        .map((model) => OperationalPeriod.fromJson(model))
+        .toList();
+  }
 
   return LocationWithZones(
     Id: json['Id'],
@@ -165,11 +166,10 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Address2: json['Address2'],
     Address3: json['Address3'],
     Town: json['Town'],
-    Country: json['Country'],
+    County: json['County'],
     Postcode: json['Postcode'],
     Name: json['Name'],
     LocationType: json['LocationType'],
-    Revenue: json['Revenue'],
     CountryRegionId: json['CountryRegionId'],
     CountrySubRegionId: json['CountrySubRegionId'],
     ClusterId: json['ClusterId'],
@@ -207,7 +207,6 @@ class Rota extends BaseModel {
   int? wardenId;
   DateTime? timeFrom;
   DateTime? timeTo;
-  String? status;
   String? rotaType;
 
   Rota({
@@ -217,7 +216,6 @@ class Rota extends BaseModel {
     required this.wardenId,
     required this.timeFrom,
     required this.timeTo,
-    this.status,
     this.rotaType,
   }) : super(Id: Id, Created: Created, Deleted: Deleted);
 
@@ -228,7 +226,6 @@ class Rota extends BaseModel {
     wardenId = json['WardenId'];
     timeFrom = DateTime.parse(json['TimeFrom']);
     timeTo = DateTime.parse(json['TimeTo']);
-    status = json['Status'];
     rotaType = json['RotaType'];
   }
 }
@@ -245,7 +242,6 @@ class RotaWithLocation extends Rota {
     super.Deleted,
     super.Id,
     super.rotaType,
-    super.status,
   });
 
   factory RotaWithLocation.fromJson(Map<String, dynamic> json) =>
@@ -262,7 +258,6 @@ class RotaWithLocation extends Rota {
         'Id': rotaWithLocation.Id,
         'TimeFrom': rotaWithLocation.timeFrom!.toIso8601String(),
         'TimeTo': rotaWithLocation.timeTo!.toIso8601String(),
-        'Status': rotaWithLocation.status,
         'RotaType': rotaWithLocation.rotaType,
         'Locations': rotaWithLocation.locations!
             .map((i) => LocationWithZones.toJson(i))
@@ -281,9 +276,12 @@ class RotaWithLocation extends Rota {
 
 RotaWithLocation _$RotaWithLocationFromJson(Map<String, dynamic> json) {
   var locationWithZonesFromJson = json['Locations'] as List<dynamic>;
-  List<LocationWithZones> locationWithZones = locationWithZonesFromJson
-      .map((model) => LocationWithZones.fromJson(model))
-      .toList();
+  List<LocationWithZones> locationWithZones = [];
+  if (locationWithZonesFromJson.isNotEmpty) {
+    locationWithZones = locationWithZonesFromJson
+        .map((model) => LocationWithZones.fromJson(model))
+        .toList();
+  }
 
   return RotaWithLocation(
     wardenId: json['WardenId'],
@@ -293,7 +291,6 @@ RotaWithLocation _$RotaWithLocationFromJson(Map<String, dynamic> json) {
     Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
     Id: json['Id'],
     rotaType: json['RotaType'],
-    status: json['Status'],
     locations: locationWithZones,
   );
 }

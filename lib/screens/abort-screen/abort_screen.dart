@@ -69,15 +69,12 @@ class _AbortScreenState extends State<AbortScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final heightScreen = MediaQuery.of(context).size.height;
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
     final printIssue = Provider.of<PrintIssueProviders>(context);
 
     Future<void> abortPCN() async {
-      ConnectivityResult connectionStatus =
-          await (Connectivity().checkConnectivity());
       final wardenEventAbortPCN = WardenEvent(
         type: TypeWardenEvent.AbortPCN.index,
         detail: 'Abort PCN: ${args.reference}',
@@ -103,49 +100,42 @@ class _AbortScreenState extends State<AbortScreen> {
         return;
       }
 
-      if (connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile) {
-        try {
-          await abortController.abortPCN(abortPcnBody).then((value) async {
-            await userController
-                .createWardenEvent(wardenEventAbortPCN)
-                .then((value) {
-              Navigator.of(context).pushNamed(ParkingChargeList.routeName);
-            });
+      try {
+        await abortController.abortPCN(abortPcnBody).then((value) async {
+          await userController
+              .createWardenEvent(wardenEventAbortPCN)
+              .then((value) {
+            Navigator.of(context).pushNamed(ParkingChargeList.routeName);
           });
-        } on DioError catch (error) {
-          if (!mounted) return;
-          if (error.type == DioErrorType.other) {
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
-          }
+        });
+      } on DioError catch (error) {
+        if (!mounted) return;
+        if (error.type == DioErrorType.other) {
           CherryToast.error(
-            displayCloseButton: false,
+            toastDuration: const Duration(seconds: 3),
             title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
+              error.message.length > Constant.errorTypeOther
+                  ? 'Something went wrong, please try again'
+                  : error.message,
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
           ).show(context);
+          return;
         }
-      } else {
-        await abortController.abortPCN(abortPcnBody).then((value) async {
-          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
-        });
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Internal server error'
+                : error.response!.data['message'],
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
       }
       printIssue.resetData();
       _formKey.currentState!.save();

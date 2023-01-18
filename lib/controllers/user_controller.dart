@@ -33,15 +33,39 @@ class UserController {
   }
 
   Future<WardenEvent> createWardenEvent(WardenEvent wardenEvent) async {
-    try {
-      final response =
-          await dio.post('/wardenEvent', data: wardenEvent.toJson());
-      final wardenEventFromJson = WardenEvent.fromJson(response.data);
-      print(response.data);
-      return wardenEventFromJson;
-    } on DioError catch (error) {
-      print(error.response);
-      rethrow;
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+    if (connectionStatus == ConnectivityResult.wifi ||
+        connectionStatus == ConnectivityResult.mobile) {
+      try {
+        final response =
+            await dio.post('/wardenEvent', data: wardenEvent.toJson());
+        final wardenEventFromJson = WardenEvent.fromJson(response.data);
+        print(response.data);
+        return wardenEventFromJson;
+      } on DioError catch (error) {
+        print(error.response);
+        rethrow;
+      }
+    } else {
+      final String? wardenEventDataLocal =
+          await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
+      final String encodedNewData = json.encode(wardenEvent.toJson());
+
+      if (wardenEventDataLocal == null) {
+        List<String> newData = [];
+        newData.add(encodedNewData);
+        final encodedWardenEvent = json.encode(newData);
+        SharedPreferencesHelper.setStringValue(
+            'wardenEventDataLocal', encodedWardenEvent);
+      } else {
+        var createdData = json.decode(wardenEventDataLocal) as List<dynamic>;
+        createdData.add(encodedNewData);
+        final encodedCreatedData = json.encode(createdData);
+        SharedPreferencesHelper.setStringValue(
+            'wardenEventDataLocal', encodedCreatedData);
+      }
+      return wardenEvent;
     }
   }
 }

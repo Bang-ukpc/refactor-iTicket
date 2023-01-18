@@ -39,8 +39,11 @@ class Zone extends BaseModel {
 
 Zone _$ZoneFromJson(Map<String, dynamic> json) {
   var servicesFromJson = json['Services'] as List<dynamic>;
-  List<Service> servicesList =
-      servicesFromJson.map((model) => Service.fromJson(model)).toList();
+  List<Service> servicesList = [];
+  if (servicesFromJson.isNotEmpty) {
+    servicesList =
+        servicesFromJson.map((model) => Service.fromJson(model)).toList();
+  }
 
   return Zone(
     Id: json['Id'],

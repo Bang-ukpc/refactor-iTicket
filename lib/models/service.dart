@@ -5,7 +5,6 @@ class Service extends BaseModel {
   final int? ServiceType;
   final int? Status;
   final DateTime? InstallDate;
-  final DateTime? GoLiveDate;
   final DateTime? TerminationDate;
   final String? Notes;
   final ServiceConfigModel ServiceConfig;
@@ -18,7 +17,6 @@ class Service extends BaseModel {
     this.ServiceType,
     this.Status,
     this.InstallDate,
-    this.GoLiveDate,
     this.TerminationDate,
     this.Notes,
     required this.ServiceConfig,
@@ -39,21 +37,12 @@ class Service extends BaseModel {
         'InstallDate': service.InstallDate != null
             ? service.InstallDate!.toIso8601String()
             : null,
-        'GoLiveDate': service.GoLiveDate != null
-            ? service.GoLiveDate!.toIso8601String()
-            : null,
         'TerminationDate': service.TerminationDate != null
             ? service.TerminationDate!.toIso8601String()
             : null,
         'Notes': service.Notes,
         'ServiceConfig': ServiceConfigModel.toJson(service.ServiceConfig),
       };
-  // Map<String, dynamic> toJson() {
-  //   final Map<String, dynamic> data = <String, dynamic>{};
-  //   data['ZoneId'] = ZoneId;
-  //   data['ServiceConfig'] = ServiceConfig.toJson();
-  //   return data;
-  // }
 }
 
 Service _$ServiceFromJson(Map<String, dynamic> json) => Service(
@@ -66,9 +55,6 @@ Service _$ServiceFromJson(Map<String, dynamic> json) => Service(
       InstallDate: json['InstallDate'] == null
           ? null
           : DateTime.parse(json['InstallDate']),
-      GoLiveDate: json['GoLiveDate'] == null
-          ? null
-          : DateTime.parse(json['GoLiveDate']),
       TerminationDate: json['TerminationDate'] == null
           ? null
           : DateTime.parse(json['TerminationDate']),

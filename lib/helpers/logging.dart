@@ -1,11 +1,10 @@
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/login_screens.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/material.dart';
 
 class Logging extends Interceptor {
   @override
@@ -42,6 +41,7 @@ class Logging extends Interceptor {
 
       await oauth.logout();
       SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
+      SharedPreferencesHelper.removeStringValue('wardenDataLocal');
       SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
       SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
       SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');

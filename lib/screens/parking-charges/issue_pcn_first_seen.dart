@@ -459,10 +459,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               'contraventionDataLocal', encodedCreatedData);
         }
 
-        if (!mounted) return;
-        Navigator.of(context).pop();
-        Navigator.of(context)
-            .pushNamed(PrintPCN.routeName, arguments: contraventionDataFake);
+        await userController
+            .createWardenEvent(wardenEventIssuePCN)
+            .then((value) {
+          Navigator.of(context).pop();
+          Navigator.of(context)
+              .pushNamed(PrintPCN.routeName, arguments: contravention);
+        });
       }
 
       _formKey.currentState!.save();
@@ -736,12 +739,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               'contraventionDataLocal', encodedCreatedData);
         }
 
-        if (!mounted) return;
-        Navigator.of(context).pop();
-        Navigator.of(context).pushNamed(
-          ParkingChargeInfo.routeName,
-          arguments: contraventionDataFake,
-        );
+        await userController
+            .createWardenEvent(wardenEventIssuePCN)
+            .then((value) {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamed(
+            ParkingChargeInfo.routeName,
+            arguments: contravention,
+          );
+        });
       }
 
       _formKey.currentState!.save();

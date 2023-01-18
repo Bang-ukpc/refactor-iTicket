@@ -13,7 +13,6 @@ import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Auth with ChangeNotifier {
   Future<bool> isAuth() async {
@@ -87,6 +86,7 @@ class Auth with ChangeNotifier {
     await oauth.logout();
 
     SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
+    SharedPreferencesHelper.removeStringValue('wardenDataLocal');
     SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
     SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
     SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');

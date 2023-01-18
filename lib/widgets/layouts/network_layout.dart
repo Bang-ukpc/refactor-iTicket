@@ -7,11 +7,13 @@ import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
+import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
@@ -190,16 +192,47 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     }
   }
 
+  Future<bool> wardenEventDataSync() async {
+    final String? dataWardenEvent =
+        await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
+    if (dataWardenEvent != null) {
+      final decodedWardenEventData =
+          json.decode(dataWardenEvent) as List<dynamic>;
+      List<WardenEvent> wardenEventList = decodedWardenEventData
+          .map((i) => WardenEvent.fromJson(json.decode(i)))
+          .toList();
+      for (int i = 0; i < wardenEventList.length; i++) {
+        wardenEventList[i].Id = 0;
+        try {
+          await userController.createWardenEvent(wardenEventList[i]);
+        } catch (e) {
+          print('createWardenEvent: $e');
+          return true;
+        }
+      }
+      SharedPreferencesHelper.removeStringValue('wardenEventDataLocal');
+      return true;
+    } else {
+      return true;
+    }
+  }
+
   void dataSynch() async {
     bool vehicleInfoSynchStatus = false;
     bool issuePCNSynchStatus = false;
+    bool wardenEventSyncStatus = false;
     await vehicleInfoDataSynch().then((value) {
       vehicleInfoSynchStatus = value;
     });
     await parkingChargeDataSynch().then((value) {
       issuePCNSynchStatus = value;
     });
-    if (vehicleInfoSynchStatus == true && issuePCNSynchStatus == true) {
+    await wardenEventDataSync().then((value) {
+      wardenEventSyncStatus = value;
+    });
+    if (vehicleInfoSynchStatus == true &&
+        issuePCNSynchStatus == true &&
+        wardenEventSyncStatus == true) {
       await Future.delayed(const Duration(seconds: 1), () {
         NavigationService.navigatorKey.currentState!.pop();
       });

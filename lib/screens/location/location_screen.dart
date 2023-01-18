@@ -201,11 +201,6 @@ class _LocationScreenState extends State<LocationScreen> {
       return null;
     }
 
-    print(
-        'from: ${locations.rotaShift?.timeFrom}, to: ${locations.rotaShift?.timeTo}');
-    print('location: ${locations.location?.Name}');
-    print('zone: ${locations.zone?.Name}');
-
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(

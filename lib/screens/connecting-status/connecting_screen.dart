@@ -245,62 +245,48 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     );
 
     void onStartShift() async {
-      ConnectivityResult connectionStatus =
-          await (Connectivity().checkConnectivity());
-      if (connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile) {
-        try {
-          displayLoading(context: context, text: 'Starting shift');
-          await userController
-              .createWardenEvent(wardenEventStartShift)
-              .then((value) async {
-            final service = FlutterBackgroundService();
-            var isRunning = await service.isRunning();
-            if (!isRunning) {
-              await initializeService();
-            }
-            if (!mounted) return;
-            Navigator.of(context).pop();
-            Navigator.of(context)
-                .pushReplacementNamed(LocationScreen.routeName);
-          });
-        } on DioError catch (error) {
-          if (!mounted) return;
-          if (error.type == DioErrorType.other) {
-            toast.CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: toast.Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
+      try {
+        displayLoading(context: context, text: 'Starting shift');
+        await userController
+            .createWardenEvent(wardenEventStartShift)
+            .then((value) async {
+          final service = FlutterBackgroundService();
+          var isRunning = await service.isRunning();
+          if (!isRunning) {
+            await initializeService();
           }
+          if (!mounted) return;
+          Navigator.of(context).pop();
+          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+        });
+      } on DioError catch (error) {
+        if (!mounted) return;
+        if (error.type == DioErrorType.other) {
           toast.CherryToast.error(
-            displayCloseButton: false,
+            toastDuration: const Duration(seconds: 3),
             title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
+              error.message.length > Constant.errorTypeOther
+                  ? 'Something went wrong, please try again'
+                  : error.message,
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: toast.Position.bottom,
             borderRadius: 5,
           ).show(context);
+          return;
         }
-      } else {
-        final service = FlutterBackgroundService();
-        var isRunning = await service.isRunning();
-        if (!isRunning) {
-          await initializeService();
-        }
-        if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+        toast.CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Internal server error'
+                : error.response!.data['message'],
+            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: toast.Position.bottom,
+          borderRadius: 5,
+        ).show(context);
       }
     }
 
