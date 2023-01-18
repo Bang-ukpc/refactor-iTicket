@@ -94,18 +94,41 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     });
   }
 
+  void getSelectedTypeOfPCN(Locations locationProvider) {
+    var typeOfPCNFilter = typeOfPCN.where((e) {
+      if (locationProvider
+                  .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
+              true &&
+          locationProvider
+                  .zone!.Services![0].ServiceConfig.IssuePCNType.Virtual ==
+              true) {
+        return true;
+      } else if (locationProvider
+              .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
+          true) {
+        return e.value == 1;
+      } else {
+        return e.value == 0;
+      }
+    }).toList();
+    setState(() {
+      _typeOfPcnController.text = typeOfPCNFilter[0].value.toString();
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _anylineService = AnylineServiceImpl();
-    _typeOfPcnController.text = '0';
     getContraventionReasonList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+      final locationProvider = Provider.of<Locations>(context, listen: false);
       _vrnController.text = args != null ? args.Plate : '';
       if (args != null) {
         onSearchVehicleInfoByPlate(args.Plate);
       }
+      getSelectedTypeOfPCN(locationProvider);
     });
   }
 
@@ -724,6 +747,25 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       _formKey.currentState!.save();
     }
 
+    List<SelectModel> getSelectedTypeOfPCN() {
+      return typeOfPCN.where((e) {
+        if (locationProvider
+                    .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
+                true &&
+            locationProvider
+                    .zone!.Services![0].ServiceConfig.IssuePCNType.Virtual ==
+                true) {
+          return true;
+        } else if (locationProvider
+                .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
+            true) {
+          return e.value == 1;
+        } else {
+          return e.value == 0;
+        }
+      }).toList();
+    }
+
     Future<void> showMyDialog() async {
       return showDialog<void>(
         context: context,
@@ -833,7 +875,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                     if (!isValid) {
                       return;
                     } else {
-                      showMyDialog();
+                      if (getSelectedTypeOfPCN().length > 1) {
+                        showMyDialog();
+                      } else {
+                        createPhysicalPCN();
+                      }
                     }
                   },
                   icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
@@ -1021,8 +1067,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                   hintText: 'Select type of PCN',
                                 ),
                               ),
-                              items: typeOfPCN,
-                              selectedItem: typeOfPCN[0],
+                              items: getSelectedTypeOfPCN(),
+                              selectedItem: getSelectedTypeOfPCN()[0],
                               itemAsString: (item) => item.label,
                               popupProps: PopupProps.menu(
                                 fit: FlexFit.loose,
