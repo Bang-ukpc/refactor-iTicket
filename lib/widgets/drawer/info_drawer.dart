@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/circle.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -58,7 +59,9 @@ class InfoDrawer extends StatelessWidget {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {
+          displayLoading(context: context, text: 'Checking out');
           await userController.createWardenEvent(wardenEvent).then((value) {
+            Navigator.of(context).pop();
             Navigator.of(context)
                 .pushReplacementNamed(LocationScreen.routeName);
           });

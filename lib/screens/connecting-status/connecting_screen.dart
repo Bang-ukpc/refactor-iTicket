@@ -12,6 +12,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/common/dot.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -249,6 +250,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {
+          displayLoading(context: context, text: 'Starting shift');
           await userController
               .createWardenEvent(wardenEventStartShift)
               .then((value) async {
@@ -258,6 +260,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
               await initializeService();
             }
             if (!mounted) return;
+            Navigator.of(context).pop();
             Navigator.of(context)
                 .pushReplacementNamed(LocationScreen.routeName);
           });

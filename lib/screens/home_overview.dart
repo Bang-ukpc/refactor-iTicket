@@ -271,7 +271,9 @@ class _HomeOverviewState extends State<HomeOverview> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {
+          displayLoading(context: context, text: 'Checking out');
           await userController.createWardenEvent(wardenEvent).then((value) {
+            Navigator.of(context).pop();
             Navigator.of(context)
                 .pushReplacementNamed(LocationScreen.routeName);
           });
