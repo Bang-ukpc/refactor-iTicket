@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -22,11 +21,8 @@ class LocationController {
           data: listLocationOfTheDayByWardenIdProps.toJson(),
         );
         List<dynamic> temp = response.data;
-        log(temp.toString());
-        log('123');
         List<RotaWithLocation> rotaWithLocations =
             temp.map((model) => RotaWithLocation.fromJson(model)).toList();
-        log('456');
         final String encodedData = RotaWithLocation.encode(rotaWithLocations);
         SharedPreferencesHelper.setStringValue(
             'rotaWithLocationDataLocal', encodedData);

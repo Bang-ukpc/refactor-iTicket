@@ -242,22 +242,34 @@ class InfoDrawer extends StatelessWidget {
                         ),
                       ),
                       if (location != null)
-                        Text(
-                          "Location: ${location!}",
-                          overflow: TextOverflow.ellipsis,
-                          style: CustomTextStyle.body2.copyWith(
+                        SizedBox(
+                          width: isLogout == true
+                              ? MediaQuery.of(context).size.width * 0.4
+                              : MediaQuery.of(context).size.width * 0.5,
+                          child: Text(
+                            "Location: ${location!}",
+                            style: CustomTextStyle.body2.copyWith(
                               color: !isDrawer
                                   ? ColorTheme.textPrimary
-                                  : Colors.white),
+                                  : Colors.white,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ),
                       if (zone != null)
-                        Text(
-                          "Zone: ${zone!}",
-                          overflow: TextOverflow.ellipsis,
-                          style: CustomTextStyle.body2.copyWith(
+                        SizedBox(
+                          width: isLogout == true
+                              ? MediaQuery.of(context).size.width * 0.4
+                              : MediaQuery.of(context).size.width * 0.5,
+                          child: Text(
+                            "Zone: ${zone!}",
+                            style: CustomTextStyle.body2.copyWith(
                               color: !isDrawer
                                   ? ColorTheme.textPrimary
-                                  : Colors.white),
+                                  : Colors.white,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ),
                     ],
                   )
