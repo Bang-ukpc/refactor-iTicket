@@ -125,9 +125,15 @@ class _DetailScreenState extends State<DetailScreen> {
         drawer: const MyDrawer(),
         bottomNavigationBar: Container(
           decoration: const BoxDecoration(
-            border: Border(
-              top: BorderSide(width: 1, color: ColorTheme.grey300),
-            ),
+            color: ColorTheme.white,
+            boxShadow: [
+              BoxShadow(
+                color: ColorTheme.grey300,
+                offset: Offset(0, 0.75),
+                blurRadius: 10,
+                spreadRadius: 4,
+              ),
+            ],
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: padding),

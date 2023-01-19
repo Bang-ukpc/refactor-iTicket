@@ -1,12 +1,9 @@
-import 'dart:io';
-
 enum TypePCN {
   Physical,
   Virtual,
 }
 
 class ContraventionCreateWardenCommand {
-  final String ExternalReference;
   String ContraventionReference;
   final String Plate;
   final String VehicleMake;
@@ -21,10 +18,10 @@ class ContraventionCreateWardenCommand {
   final int LocationAccuracy;
   final String WardenComments;
   final int? TypePCN;
+  final int ZoneId;
   int? Id;
 
   ContraventionCreateWardenCommand({
-    required this.ExternalReference,
     required this.ContraventionReference,
     required this.Plate,
     required this.VehicleMake,
@@ -39,6 +36,7 @@ class ContraventionCreateWardenCommand {
     required this.LocationAccuracy,
     required this.WardenComments,
     this.TypePCN,
+    required this.ZoneId,
     this.Id,
   });
 
@@ -49,7 +47,6 @@ class ContraventionCreateWardenCommand {
   static Map<String, dynamic> toJson(
           ContraventionCreateWardenCommand instance) =>
       {
-        'ExternalReference': instance.ExternalReference,
         'ContraventionReference': instance.ContraventionReference,
         'Plate': instance.Plate,
         'VehicleMake': instance.VehicleMake,
@@ -65,6 +62,7 @@ class ContraventionCreateWardenCommand {
         'LocationAccuracy': instance.LocationAccuracy,
         'WardenComments': instance.WardenComments,
         'TypePCN': instance.TypePCN,
+        'ZoneId': instance.ZoneId,
         'Id': instance.Id ?? 0,
       };
 }
@@ -73,7 +71,7 @@ ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
     Map<String, dynamic> json) {
   return ContraventionCreateWardenCommand(
     Id: json['Id'] ?? 0,
-    ExternalReference: json['ExternalReference'],
+    ZoneId: json['ZoneId'],
     ContraventionReference: json['ContraventionReference'],
     Plate: json['Plate'],
     VehicleMake: json['VehicleMake'],

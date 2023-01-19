@@ -31,7 +31,7 @@ class CardHome extends StatelessWidget {
       onTap: () => Navigator.of(context).pushReplacementNamed(routeView),
       child: Container(
         decoration: const BoxDecoration(color: Colors.white),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         child: Column(
           children: <Widget>[
             Card(

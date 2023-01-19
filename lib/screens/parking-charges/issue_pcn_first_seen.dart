@@ -199,7 +199,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       int randomReference =
           (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
       final physicalPCN = ContraventionCreateWardenCommand(
-        ExternalReference: locationProvider.zone!.ExternalReference,
+        ZoneId: locationProvider.zone?.Id ?? 0,
         ContraventionReference: '$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
@@ -477,7 +477,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       int randomReference =
           (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
       final virtualTicket = ContraventionCreateWardenCommand(
-        ExternalReference: locationProvider.zone!.ExternalReference,
+        ZoneId: locationProvider.zone?.Id ?? 0,
         ContraventionReference: '$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,

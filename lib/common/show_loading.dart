@@ -53,9 +53,9 @@ void showCircularProgressIndicator({required BuildContext context}) {
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
+            children: const [
               CircularProgressIndicator(
-                color: Theme.of(context).primaryColor,
+                color: ColorTheme.white,
               ),
             ],
           ),

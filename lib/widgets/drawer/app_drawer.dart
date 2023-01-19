@@ -106,6 +106,7 @@ class _MyDrawerState extends State<MyDrawer> {
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -119,6 +120,7 @@ class _MyDrawerState extends State<MyDrawer> {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -161,6 +163,7 @@ class _MyDrawerState extends State<MyDrawer> {
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -174,6 +177,7 @@ class _MyDrawerState extends State<MyDrawer> {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -315,8 +319,7 @@ class _MyDrawerState extends State<MyDrawer> {
                         isDrawer: true,
                         assetImage: wardensProvider.wardens?.Picture ??
                             "assets/images/userAvatar.png",
-                        name:
-                            "Hello ${wardensProvider.wardens?.FullName ?? ""}",
+                        name: "Hi ${wardensProvider.wardens?.FullName ?? ""}",
                         location: locations.location?.Name ?? 'Empty name!!',
                         zone: locations.zone?.Name ?? 'Empty name!!',
                       ),

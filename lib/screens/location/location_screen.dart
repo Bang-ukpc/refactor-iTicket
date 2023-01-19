@@ -208,8 +208,42 @@ class _LocationScreenState extends State<LocationScreen> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Scaffold(
-          bottomNavigationBar: BottomSheet2(buttonList: [
-            BottomNavyBarItem(
+          // bottomNavigationBar: BottomSheet2(buttonList: [
+          //   BottomNavyBarItem(
+          //     onPressed: () {
+          //       final isValid = _formKey.currentState!.validate();
+          //       if (!isValid) {
+          //         return;
+          //       } else {
+          //         Navigator.of(context)
+          //             .pushNamed(ReadRegulationScreen.routeName);
+          //       }
+
+          //       _formKey.currentState!.save();
+          //       return;
+          //     },
+          //     icon: SvgPicture.asset('assets/svg/IconNext.svg'),
+          //     label: Text(
+          //       'Next',
+          //       style: CustomTextStyle.h6.copyWith(
+          //         color: ColorTheme.grey600,
+          //       ),
+          //     ),
+          //   ),
+          // ]),
+          bottomSheet: SizedBox(
+            height: 46,
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(ColorTheme.primary),
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(0),
+                  ),
+                ),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               onPressed: () {
                 final isValid = _formKey.currentState!.validate();
                 if (!isValid) {
@@ -222,15 +256,16 @@ class _LocationScreenState extends State<LocationScreen> {
                 _formKey.currentState!.save();
                 return;
               },
-              icon: SvgPicture.asset('assets/svg/IconNext.svg'),
+              icon: SvgPicture.asset('assets/svg/IconNext.svg',
+                  color: ColorTheme.white),
               label: Text(
                 'Next',
                 style: CustomTextStyle.h6.copyWith(
-                  color: ColorTheme.grey600,
+                  color: ColorTheme.white,
                 ),
               ),
             ),
-          ]),
+          ),
           body: SingleChildScrollView(
             child: Column(
               children: [
@@ -240,7 +275,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 InfoDrawer(
                   assetImage: wardensProvider.wardens?.Picture ??
                       "assets/images/userAvatar.png",
-                  name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
+                  name: "Hi ${wardensProvider.wardens?.FullName ?? ""}",
                   location: null,
                   zone: null,
                   isDrawer: false,

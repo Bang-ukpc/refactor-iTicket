@@ -44,7 +44,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
         ),
         Text(
           nameDevice,
-          style: CustomTextStyle.caption,
+          style: CustomTextStyle.body2,
         )
       ],
     );
@@ -149,7 +149,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   @override
   Widget build(BuildContext context) {
     Widget listDevice = Container(
-      height: 56,
+      height: 64,
       color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -199,7 +199,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
           child: Column(
             children: <Widget>[
               const SizedBox(
-                height: 16,
+                height: 8,
               ),
               listDevice,
               const SizedBox(

@@ -38,7 +38,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
               : null,
       systemOverlayStyle: systemUiSettings,
       automaticallyImplyLeading: automaticallyImplyLeading,
-      titleSpacing: !automaticallyImplyLeading ? 15 : 0,
+      titleSpacing: !automaticallyImplyLeading ? 16 : 0,
       title: SizedBox(
         child: Row(
           children: <Widget>[
@@ -61,14 +61,19 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: onRedirect ?? () => Navigator.of(context).pop(),
             )
           : null,
+      // leadingWidth: 16,
       actions: [
         isOpenDrawer == true
-            ? IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+            ? Container(
+                margin: const EdgeInsets.only(right: 8),
+                child: IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                  tooltip:
+                      MaterialLocalizations.of(context).openAppDrawerTooltip,
+                ),
               )
             : const SizedBox(),
       ],

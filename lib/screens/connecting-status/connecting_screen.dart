@@ -262,6 +262,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       } on DioError catch (error) {
         if (!mounted) return;
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           toast.CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -275,6 +276,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         toast.CherryToast.error(
           displayCloseButton: false,
           title: Text(

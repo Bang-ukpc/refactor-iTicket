@@ -24,6 +24,11 @@ class CustomTextStyle {
     color: ColorTheme.textPrimary,
     fontWeight: FontWeight.w400,
   );
+  static const TextStyle title = TextStyle(
+    fontSize: 18,
+    color: ColorTheme.textPrimary,
+    fontWeight: FontWeight.w500,
+  );
   static const TextStyle h1 = TextStyle(
     fontSize: 32,
     color: ColorTheme.textPrimary,

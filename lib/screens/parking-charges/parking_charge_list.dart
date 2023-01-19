@@ -90,7 +90,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
       onWillPop: () async => false,
       child: Scaffold(
         appBar: MyAppBar(
-          title: 'Parking charges',
+          title: 'Parking Charges',
           automaticallyImplyLeading: true,
           onRedirect: () {
             Navigator.of(context).pushNamed(HomeOverview.routeName);
@@ -120,7 +120,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
-                        margin: const EdgeInsets.only(top: 15, bottom: 100),
+                        margin: const EdgeInsets.only(top: 5, bottom: 100),
                         child: Column(
                           children: contraventionList
                               .map(

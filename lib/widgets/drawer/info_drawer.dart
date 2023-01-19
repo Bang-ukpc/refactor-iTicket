@@ -62,6 +62,7 @@ class InfoDrawer extends StatelessWidget {
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -75,6 +76,7 @@ class InfoDrawer extends StatelessWidget {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -173,8 +175,8 @@ class InfoDrawer extends StatelessWidget {
           //   BoxShadow(
           //     color: Colors.white,
           //     offset: Offset(-10, 15),
-          //     blurRadius: 18,
-          //     spreadRadius: 18,
+          //     blurRadius: 20,
+          //     spreadRadius: 20,
           //   ),
           // ]),
           child: SizedBox(
@@ -231,11 +233,11 @@ class InfoDrawer extends StatelessWidget {
                             : MediaQuery.of(context).size.width * 0.5,
                         child: Text(
                           name,
-                          style: CustomTextStyle.h6.copyWith(
+                          style: CustomTextStyle.h5.copyWith(
                             color: !isDrawer
                                 ? ColorTheme.textPrimary
                                 : Colors.white,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -244,7 +246,7 @@ class InfoDrawer extends StatelessWidget {
                         Text(
                           "Location: ${location!}",
                           overflow: TextOverflow.ellipsis,
-                          style: CustomTextStyle.caption.copyWith(
+                          style: CustomTextStyle.body2.copyWith(
                               color: !isDrawer
                                   ? ColorTheme.textPrimary
                                   : Colors.white),
@@ -253,7 +255,7 @@ class InfoDrawer extends StatelessWidget {
                         Text(
                           "Zone: ${zone!}",
                           overflow: TextOverflow.ellipsis,
-                          style: CustomTextStyle.caption.copyWith(
+                          style: CustomTextStyle.body2.copyWith(
                               color: !isDrawer
                                   ? ColorTheme.textPrimary
                                   : Colors.white),

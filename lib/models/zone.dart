@@ -6,7 +6,7 @@ class Zone extends BaseModel {
   final String Name;
   final String PublicName;
   final List<Service>? Services;
-  final String ExternalReference;
+  final String? ExternalReference;
 
   Zone({
     Id,
@@ -16,7 +16,7 @@ class Zone extends BaseModel {
     required this.Name,
     required this.PublicName,
     this.Services,
-    required this.ExternalReference,
+    this.ExternalReference,
   }) : super(Id: Id, Created: Created, Deleted: Deleted);
 
   factory Zone.fromJson(Map<String, dynamic> json) => _$ZoneFromJson(json);

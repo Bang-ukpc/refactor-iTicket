@@ -50,7 +50,9 @@ class _MyTabBarState extends State<MyTabBar> {
             onPressed: () {
               widget.funcAdd();
             },
-            icon: SvgPicture.asset('assets/svg/IconPlus.svg'),
+            icon: SvgPicture.asset(
+              'assets/svg/IconPlus.svg',
+            ),
             label: Text(
               widget.labelFuncAdd,
               style: CustomTextStyle.h6,
@@ -61,7 +63,7 @@ class _MyTabBarState extends State<MyTabBar> {
         body: Column(
           children: <Widget>[
             Container(
-              margin: const EdgeInsets.only(bottom: 20),
+              margin: const EdgeInsets.only(bottom: 8),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -83,7 +85,7 @@ class _MyTabBarState extends State<MyTabBar> {
                   Tab(
                     child: Text(
                       "Active (${widget.quantityActive})",
-                      style: CustomTextStyle.h6.copyWith(
+                      style: CustomTextStyle.h5.copyWith(
                           color: currentIndexTab == 0
                               ? ColorTheme.success
                               : ColorTheme.grey600),
@@ -92,7 +94,7 @@ class _MyTabBarState extends State<MyTabBar> {
                   Tab(
                     child: Text(
                       "Expired  (${widget.quantityExpired})",
-                      style: CustomTextStyle.h6.copyWith(
+                      style: CustomTextStyle.h5.copyWith(
                           color: currentIndexTab == 1
                               ? ColorTheme.success
                               : ColorTheme.grey600),

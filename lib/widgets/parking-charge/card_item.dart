@@ -48,11 +48,10 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(0.0),
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
       elevation: 0,
       child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(5.0),
           child: checkConnection == ConnectivityResult.wifi ||

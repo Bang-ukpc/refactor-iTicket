@@ -275,6 +275,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       } on DioError catch (error) {
         if (!mounted) return;
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -288,6 +289,7 @@ class _HomeOverviewState extends State<HomeOverview> {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -314,6 +316,7 @@ class _HomeOverviewState extends State<HomeOverview> {
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -327,6 +330,7 @@ class _HomeOverviewState extends State<HomeOverview> {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -372,13 +376,13 @@ class _HomeOverviewState extends State<HomeOverview> {
           child: Column(
             children: <Widget>[
               const SizedBox(
-                height: 16,
+                height: 10,
               ),
               InfoDrawer(
                 isDrawer: false,
                 assetImage: wardensProvider.wardens?.Picture ??
                     "assets/images/userAvatar.png",
-                name: "Hello ${wardensProvider.wardens?.FullName ?? ""}",
+                name: "Hi ${wardensProvider.wardens?.FullName ?? ""}",
                 location: locations.location?.Name ?? 'Empty name',
                 zone: locations.zone?.Name ?? 'Empty name',
               ),

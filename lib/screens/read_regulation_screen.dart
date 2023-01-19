@@ -62,6 +62,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
         } on DioError catch (error) {
           if (!mounted) return;
           if (error.type == DioErrorType.other) {
+            Navigator.of(context).pop();
             CherryToast.error(
               toastDuration: const Duration(seconds: 3),
               title: Text(
@@ -75,6 +76,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
             ).show(context);
             return;
           }
+          Navigator.of(context).pop();
           CherryToast.error(
             displayCloseButton: false,
             title: Text(
@@ -110,6 +112,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
             });
           } on DioError catch (error) {
             if (error.type == DioErrorType.other) {
+              Navigator.of(context).pop();
               CherryToast.error(
                 toastDuration: const Duration(seconds: 3),
                 title: Text(
@@ -123,6 +126,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
               ).show(context);
               return;
             }
+            Navigator.of(context).pop();
             CherryToast.error(
               displayCloseButton: false,
               title: Text(
@@ -222,7 +226,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                       locations.location?.Notes != null)
                     Container(
                       color: Colors.white,
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(16),
                       child: CustomCheckBox(
                         value: checkbox,
                         onChanged: (val) {
