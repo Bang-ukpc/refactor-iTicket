@@ -246,7 +246,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
 
     void onStartShift() async {
       try {
-        displayLoading(context: context, text: 'Starting shift');
+        showCircularProgressIndicator(context: context, text: 'Starting shift');
         await userController
             .createWardenEvent(wardenEventStartShift)
             .then((value) async {

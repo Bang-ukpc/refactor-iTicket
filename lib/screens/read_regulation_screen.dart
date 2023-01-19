@@ -53,7 +53,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
       if (locations.location?.Notes?.isEmpty == true ||
           locations.location?.Notes == null) {
         try {
-          displayLoading(context: context, text: 'Checking in');
+          showCircularProgressIndicator(context: context, text: 'Checking in');
           await userController.createWardenEvent(wardenEvent).then((value) {
             Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
@@ -104,7 +104,8 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           ).show(context);
         } else {
           try {
-            displayLoading(context: context, text: 'Checking in');
+            showCircularProgressIndicator(
+                context: context, text: 'Checking in');
             await userController.createWardenEvent(wardenEvent).then((value) {
               Navigator.of(context).pop();
               Navigator.of(context).pushNamedAndRemoveUntil(

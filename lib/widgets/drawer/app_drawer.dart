@@ -97,7 +97,7 @@ class _MyDrawerState extends State<MyDrawer> {
 
     void onStartBreak() async {
       try {
-        displayLoading(context: context, text: 'Processing');
+        showCircularProgressIndicator(context: context);
         await userController
             .createWardenEvent(wardenEventStartBreak)
             .then((value) {
@@ -138,7 +138,7 @@ class _MyDrawerState extends State<MyDrawer> {
 
     void onEndShift(Auth auth) async {
       try {
-        displayLoading(context: context, text: 'Processing');
+        showCircularProgressIndicator(context: context);
         await userController
             .createWardenEvent(wardenEventCheckOut)
             .then((value) async {
@@ -227,7 +227,7 @@ class _MyDrawerState extends State<MyDrawer> {
                               borderRadius: 5,
                             ).show(context);
                           } else {
-                            displayLoading(
+                            showCircularProgressIndicator(
                                 context: context,
                                 text: 'Connecting to printer');
                             bluetoothPrinterHelper.printReceiveTest();

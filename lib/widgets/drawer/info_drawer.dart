@@ -53,7 +53,7 @@ class InfoDrawer extends StatelessWidget {
 
     void onCheckOut() async {
       try {
-        displayLoading(context: context, text: 'Checking out');
+        showCircularProgressIndicator(context: context, text: 'Checking out');
         await userController.createWardenEvent(wardenEvent).then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);

@@ -267,7 +267,7 @@ class _HomeOverviewState extends State<HomeOverview> {
 
     void onCheckOut() async {
       try {
-        displayLoading(context: context, text: 'Checking out');
+        showCircularProgressIndicator(context: context, text: 'Checking out');
         await userController.createWardenEvent(wardenEvent).then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
@@ -307,7 +307,7 @@ class _HomeOverviewState extends State<HomeOverview> {
 
     void onStartBreak() async {
       try {
-        displayLoading(context: context, text: 'Processing');
+        showCircularProgressIndicator(context: context, text: 'Processing');
         await userController
             .createWardenEvent(wardenEventStartBreak)
             .then((value) {

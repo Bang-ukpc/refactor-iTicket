@@ -18,6 +18,8 @@ class ContraventionController {
         '/contravention/create-pcn',
         data: ContraventionCreateWardenCommand.toJson(pcn),
       );
+      print(123);
+      print(response.data.toString());
       Contravention contraventionResult = Contravention.fromJson(response.data);
       print('Api create PCN: ${response.data}');
       return contraventionResult;

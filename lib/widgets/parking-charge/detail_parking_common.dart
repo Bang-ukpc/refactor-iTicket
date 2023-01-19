@@ -75,7 +75,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
                     ),
                     Text(
                         "Issued at: ${FormatDate().getLocalDate(widget.contravention?.eventDateTime as DateTime)}",
-                        style: CustomTextStyle.caption.copyWith(
+                        style: CustomTextStyle.body2.copyWith(
                           color: ColorTheme.grey600,
                         )),
                   ],

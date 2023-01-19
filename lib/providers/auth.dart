@@ -26,7 +26,7 @@ class Auth with ChangeNotifier {
     await oauth.login();
     final accessToken = await oauth.getIdToken();
     if (accessToken != null) {
-      displayLoading(context: context, text: 'Signing in');
+      showCircularProgressIndicator(context: context, text: 'Signing in');
       SharedPreferencesHelper.setStringValue(
           PreferencesKeys.accessToken, 'Bearer $accessToken');
       // ignore: use_build_context_synchronously

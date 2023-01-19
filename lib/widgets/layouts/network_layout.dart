@@ -37,21 +37,27 @@ Future<void> showLoading() async {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Synchronizing data to the server',
-                        style: CustomTextStyle.h4.copyWith(
-                          decoration: TextDecoration.none,
-                          color: ColorTheme.white,
-                          overflow: TextOverflow.clip,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                const SizedBox(height: 250),
+                const Center(
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: CircularProgressIndicator(
+                      color: ColorTheme.white,
                     ),
-                  ],
+                  ),
+                ),
+                const SizedBox(height: 30),
+                Expanded(
+                  child: Text(
+                    'Synchronizing data to the server',
+                    style: CustomTextStyle.h4.copyWith(
+                      decoration: TextDecoration.none,
+                      color: ColorTheme.white,
+                      overflow: TextOverflow.clip,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
             ),
