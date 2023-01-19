@@ -22,7 +22,7 @@ class DetailCar extends StatelessWidget {
       decoration: const BoxDecoration(
         color: Colors.white,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(top: 8),
       child: Column(
         children: <Widget>[
@@ -38,6 +38,9 @@ class DetailCar extends StatelessWidget {
                   style:
                       CustomTextStyle.h6.copyWith(color: ColorTheme.grey600)),
             ],
+          ),
+          const SizedBox(
+            height: 5,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

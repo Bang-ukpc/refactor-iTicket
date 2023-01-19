@@ -5,7 +5,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/theme/color.dart';
@@ -101,10 +100,11 @@ class _AddImageState extends State<AddImage> {
                         imageUrl: item.toString(),
                         progressIndicatorBuilder:
                             (context, url, downloadProgress) => Center(
-                          child: Center(
-                            child: SpinKitCircle(
+                          child: SizedBox(
+                            width: 25,
+                            height: 25,
+                            child: CircularProgressIndicator(
                               color: ColorTheme.primary,
-                              size: 25,
                             ),
                           ),
                         ),
@@ -212,12 +212,13 @@ class _AddImageState extends State<AddImage> {
                                                           (context, url,
                                                                   downloadProgress) =>
                                                               Center(
-                                                                child: Center(
+                                                                child: SizedBox(
+                                                                  width: 25,
+                                                                  height: 25,
                                                                   child:
-                                                                      SpinKitCircle(
+                                                                      CircularProgressIndicator(
                                                                     color: ColorTheme
                                                                         .primary,
-                                                                    size: 25,
                                                                   ),
                                                                 ),
                                                               ),

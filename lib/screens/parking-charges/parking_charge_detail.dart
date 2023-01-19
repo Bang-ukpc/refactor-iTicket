@@ -27,10 +27,7 @@ class ParkingChargeDetail extends StatelessWidget {
           },
         ),
         drawer: const MyDrawer(),
-        body: Container(
-          margin: const EdgeInsets.only(top: 8),
-          child: DetailParkingCommon(contravention: args),
-        ),
+        body: DetailParkingCommon(contravention: args),
       ),
     );
   }

@@ -188,13 +188,10 @@ class _AbortScreenState extends State<AbortScreen> {
                 Container(
                   color: ColorTheme.white,
                   width: double.infinity,
-                  margin: const EdgeInsets.only(top: 16),
-                  height: 300,
+                  margin: const EdgeInsets.only(top: 18),
+                  height: 280,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 20,
-                    ),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -281,15 +278,12 @@ class _AbortScreenState extends State<AbortScreen> {
                                             value as String;
                                       },
                                     ),
-                                    const SizedBox(
-                                      height: 4,
-                                    ),
                                   ],
                                 ),
                               )
                             : const Padding(
                                 padding: EdgeInsets.only(
-                                  top: 20,
+                                  top: 30,
                                 ),
                                 child: Center(
                                   child: CircularProgressIndicator(),

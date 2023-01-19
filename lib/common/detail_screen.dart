@@ -236,7 +236,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   color: widget.type == TypeFirstSeen.Expired
                       ? ColorTheme.lightDanger
                       : ColorTheme.lightSuccess,
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   width: double.infinity,
                   child: Text(
                     widget.type == TypeFirstSeen.Active

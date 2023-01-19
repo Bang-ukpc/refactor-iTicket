@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/contravention.dart';
@@ -66,10 +65,11 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
                   fit: BoxFit.cover,
                   progressIndicatorBuilder: (context, url, downloadProgress) =>
                       Center(
-                    child: Center(
-                      child: SpinKitCircle(
+                    child: SizedBox(
+                      width: 25,
+                      height: 25,
+                      child: CircularProgressIndicator(
                         color: ColorTheme.primary,
-                        size: 25,
                       ),
                     ),
                   ),

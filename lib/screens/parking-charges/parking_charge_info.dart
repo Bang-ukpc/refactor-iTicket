@@ -40,11 +40,8 @@ class _ParkingChargeInfoState extends State<ParkingChargeInfo> {
               contraventionController.getContraventionDetail(args.id as int),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return Container(
-                margin: const EdgeInsets.only(top: 8),
-                child: DetailParkingCommon(
-                  contravention: snapshot.data as Contravention,
-                ),
+              return DetailParkingCommon(
+                contravention: snapshot.data as Contravention,
               );
             } else if (snapshot.hasError) {
               return Center(

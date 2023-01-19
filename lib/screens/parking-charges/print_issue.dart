@@ -333,7 +333,7 @@ class _PrintIssueState extends State<PrintIssue> {
                     Container(
                       width: double.infinity,
                       color: ColorTheme.darkPrimary,
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(10),
                       child: Center(
                           child: Text(
                         "Take photos",
@@ -350,7 +350,7 @@ class _PrintIssueState extends State<PrintIssue> {
                           Container(
                             margin: const EdgeInsets.only(top: 8),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                                horizontal: 16, vertical: 16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
@@ -360,6 +360,7 @@ class _PrintIssueState extends State<PrintIssue> {
                                     color: ColorTheme.grey600,
                                   ),
                                 ),
+                                const SizedBox(height: 5),
                                 Consumer<PrintIssueProviders>(
                                     builder: (_, value, __) {
                                   return Column(

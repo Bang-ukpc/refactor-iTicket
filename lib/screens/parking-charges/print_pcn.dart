@@ -104,7 +104,11 @@ class _PrintPCNState extends State<PrintPCN> {
                               args, locations.location?.Name ?? '');
                         }
                       },
-                      icon: SvgPicture.asset('assets/svg/IconPrinter.svg'),
+                      icon: SvgPicture.asset(
+                        'assets/svg/IconPrinter.svg',
+                        width: 18,
+                        height: 18,
+                      ),
                       label: const Text(
                         'Print again',
                         style: CustomTextStyle.h6,

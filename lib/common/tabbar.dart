@@ -52,6 +52,8 @@ class _MyTabBarState extends State<MyTabBar> {
             },
             icon: SvgPicture.asset(
               'assets/svg/IconPlus.svg',
+              width: 18,
+              height: 18,
             ),
             label: Text(
               widget.labelFuncAdd,

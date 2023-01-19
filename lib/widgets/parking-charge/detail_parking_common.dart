@@ -40,7 +40,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
             Container(
               width: double.infinity,
               color: ColorTheme.darkPrimary,
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               child: Center(
                   child: Text(
                 "Print PCN",
@@ -57,7 +57,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
             height: 8,
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.all(16),
             width: double.infinity,
             color: Colors.white,
             child: Column(
@@ -67,9 +67,11 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       "Contravention",
-                      style: CustomTextStyle.h4,
+                      style: CustomTextStyle.h4.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     Text(
                         "Issued at: ${FormatDate().getLocalDate(widget.contravention?.eventDateTime as DateTime)}",

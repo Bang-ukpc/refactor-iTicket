@@ -25,7 +25,7 @@ class TakePhotoItem extends StatelessWidget {
           InkWell(
             onTap: state ? func : null,
             child: Container(
-              margin: const EdgeInsets.only(bottom: 8),
+              margin: const EdgeInsets.only(bottom: 8, left: 16),
               color: state == true ? ColorTheme.lightSuccess : Colors.white,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
