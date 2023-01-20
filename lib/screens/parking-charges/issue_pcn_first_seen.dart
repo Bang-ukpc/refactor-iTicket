@@ -464,7 +464,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             .then((value) {
           Navigator.of(context).pop();
           Navigator.of(context)
-              .pushNamed(PrintPCN.routeName, arguments: contravention);
+              .pushNamed(PrintPCN.routeName, arguments: contraventionDataFake);
         });
       }
 
@@ -745,7 +745,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           Navigator.of(context).pop();
           Navigator.of(context).pushNamed(
             ParkingChargeInfo.routeName,
-            arguments: contravention,
+            arguments: contraventionDataFake,
           );
         });
       }
