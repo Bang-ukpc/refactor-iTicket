@@ -183,11 +183,21 @@ class InfoDrawer extends StatelessWidget {
             height: 48,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),
-              child: Image.asset(
-                assetImage,
-                errorBuilder: (context, error, stackTrace) =>
-                    Image.asset('assets/images/userAvatar.png'),
+              child: CachedNetworkImage(
+                imageUrl: assetImage,
                 fit: BoxFit.cover,
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    Center(
+                  child: SizedBox(
+                    width: 25,
+                    height: 25,
+                    child: CircularProgressIndicator(
+                      color: ColorTheme.primary,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) =>
+                    Image.asset('assets/images/userAvatar.png'),
               ),
             ),
           ),

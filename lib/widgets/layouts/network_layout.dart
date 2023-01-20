@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> showLoading() async {
   await showDialog(
@@ -201,12 +203,32 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   Future<bool> wardenEventDataSync() async {
     final String? dataWardenEvent =
         await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
+    final String? dataWardenEventTrackGPS =
+        await SharedPreferencesHelper.getStringValue(
+            'wardenEventCheckGPSDataLocal');
+
     if (dataWardenEvent != null) {
-      final decodedWardenEventData =
+      print(123);
+      var decodedWardenEventData =
           json.decode(dataWardenEvent) as List<dynamic>;
+      print(dataWardenEventTrackGPS);
+
+      if (dataWardenEventTrackGPS != null) {
+        log('dataWardenEventTrackGPS != null');
+        var decodedWardenEventTrackGPSData =
+            json.decode(dataWardenEventTrackGPS) as List<dynamic>;
+        decodedWardenEventData = List.from(decodedWardenEventData)
+          ..addAll(decodedWardenEventTrackGPSData);
+        SharedPreferencesHelper.removeStringValue(
+            'wardenEventCheckGPSDataLocal');
+      }
+
+      log(decodedWardenEventData.toString());
+
       List<WardenEvent> wardenEventList = decodedWardenEventData
           .map((i) => WardenEvent.fromJson(json.decode(i)))
           .toList();
+      wardenEventList.sort((i1, i2) => i1.Created!.compareTo(i2.Created!));
       for (int i = 0; i < wardenEventList.length; i++) {
         wardenEventList[i].Id = 0;
         try {
@@ -219,6 +241,26 @@ class _NetworkLayoutState extends State<NetworkLayout> {
       SharedPreferencesHelper.removeStringValue('wardenEventDataLocal');
       return true;
     } else {
+      print(456);
+      if (dataWardenEventTrackGPS != null) {
+        var decodedWardenEventTrackGPSData =
+            json.decode(dataWardenEventTrackGPS) as List<dynamic>;
+        List<WardenEvent> wardenEventList = decodedWardenEventTrackGPSData
+            .map((i) => WardenEvent.fromJson(json.decode(i)))
+            .toList();
+        wardenEventList.sort((i1, i2) => i1.Created!.compareTo(i2.Created!));
+        for (int i = 0; i < wardenEventList.length; i++) {
+          wardenEventList[i].Id = 0;
+          try {
+            await userController.createWardenEvent(wardenEventList[i]);
+          } catch (e) {
+            print('createWardenEvent: $e');
+            return true;
+          }
+        }
+        SharedPreferencesHelper.removeStringValue(
+            'wardenEventCheckGPSDataLocal');
+      }
       return true;
     }
   }

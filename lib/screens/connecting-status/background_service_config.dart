@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -69,7 +70,7 @@ void onStart(ServiceInstance service) async {
     PreferencesKeys.accessToken,
   );
   // const serviceUrl = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
-  const serviceUrl = 'http://192.168.1.200:7004';
+  const serviceUrl = 'http://192.168.1.200:7003';
   final dio = Dio();
   dio.options.headers['content-Type'] = 'application/json';
   dio.options.headers["authorization"] = accessToken;
@@ -94,6 +95,8 @@ void onStart(ServiceInstance service) async {
 
   Timer.periodic(const Duration(minutes: 5), (timer) async {
     if (service is AndroidServiceInstance) {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.reload();
       if (await service.isForegroundService()) {
         flutterLocalNotificationsPlugin.show(
           888,
@@ -119,9 +122,6 @@ void onStart(ServiceInstance service) async {
       wardenFromJson = Wardens.fromJson(decodedWarden);
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    prefs.reload();
-
     final String? rotaShift = await SharedPreferencesHelper.getStringValue(
         'rotaShiftSelectedByWarden');
     final String? locations = await SharedPreferencesHelper.getStringValue(
@@ -138,12 +138,10 @@ void onStart(ServiceInstance service) async {
 
     if (locations != null) {
       locationSelected = LocationWithZones.fromJson(json.decode(locations));
-      print(locationSelected.Id);
     }
 
     if (zone != null) {
       zoneSelected = Zone.fromJson(json.decode(zone));
-      print(zoneSelected.Id);
     }
 
     final wardenEventSendCurrentLocation = WardenEvent(
@@ -173,8 +171,10 @@ void onStart(ServiceInstance service) async {
         }
       }
     } else {
+      wardenEventSendCurrentLocation.Created = DateTime.now();
       final String? wardenEventDataLocal =
-          await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
+          await SharedPreferencesHelper.getStringValue(
+              'wardenEventCheckGPSDataLocal');
       final String encodedNewData =
           json.encode(wardenEventSendCurrentLocation.toJson());
 
@@ -183,13 +183,13 @@ void onStart(ServiceInstance service) async {
         newData.add(encodedNewData);
         final encodedWardenEvent = json.encode(newData);
         SharedPreferencesHelper.setStringValue(
-            'wardenEventDataLocal', encodedWardenEvent);
+            'wardenEventCheckGPSDataLocal', encodedWardenEvent);
       } else {
         var createdData = json.decode(wardenEventDataLocal) as List<dynamic>;
         createdData.add(encodedNewData);
         final encodedCreatedData = json.encode(createdData);
         SharedPreferencesHelper.setStringValue(
-            'wardenEventDataLocal', encodedCreatedData);
+            'wardenEventCheckGPSDataLocal', encodedCreatedData);
       }
     }
   });

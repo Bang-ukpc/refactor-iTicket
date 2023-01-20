@@ -320,8 +320,8 @@ class _MyDrawerState extends State<MyDrawer> {
                         assetImage: wardensProvider.wardens?.Picture ??
                             "assets/images/userAvatar.png",
                         name: "Hi ${wardensProvider.wardens?.FullName ?? ""}",
-                        location: locations.location?.Name ?? 'Empty name!!',
-                        zone: locations.zone?.Name ?? 'Empty name!!',
+                        location: locations.location?.Name ?? 'Empty name',
+                        zone: locations.zone?.Name ?? 'Empty name',
                       ),
                     ),
                     const SizedBox(

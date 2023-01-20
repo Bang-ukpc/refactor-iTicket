@@ -232,12 +232,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       Contravention? contravention;
       bool check = false;
 
-      if (arrayImage.isEmpty) {
+      if (arrayImage.length < 4) {
         if (!mounted) return;
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Please take at least 1 picture',
+            'Please take at least 4 picture',
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -510,12 +510,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       Contravention? contravention;
       bool check = false;
 
-      if (arrayImage.isEmpty) {
+      if (arrayImage.length < 4) {
         if (!mounted) return;
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'Please take at least 1 picture',
+            'Please take at least 4 picture',
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -865,11 +865,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                 BottomNavyBarItem(
                   onPressed: () {
                     final isValid = _formKey.currentState!.validate();
-                    if (arrayImage.isEmpty) {
+                    if (arrayImage.length < 4) {
                       CherryToast.error(
                         displayCloseButton: false,
                         title: Text(
-                          'Please take at least 1 picture',
+                          'Please take at least 4 picture',
                           style: CustomTextStyle.h5
                               .copyWith(color: ColorTheme.danger),
                         ),

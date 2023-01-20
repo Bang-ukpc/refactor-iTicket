@@ -48,6 +48,7 @@ class UserController {
         rethrow;
       }
     } else {
+      wardenEvent.Created = DateTime.now();
       final String? wardenEventDataLocal =
           await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
       final String encodedNewData = json.encode(wardenEvent.toJson());

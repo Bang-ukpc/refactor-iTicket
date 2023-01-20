@@ -71,15 +71,15 @@ Wardens _$WardensFromJson(Map<String, dynamic> json) => Wardens(
     );
 
 class WardenEvent extends BaseModel {
-  final int type;
-  final String? detail;
-  final double? latitude;
-  final double? longitude;
-  final int wardenId;
-  final int? zoneId;
-  final int? locationId;
-  final DateTime? rotaTimeFrom;
-  final DateTime? rotaTimeTo;
+  int type;
+  String? detail;
+  double? latitude;
+  double? longitude;
+  int wardenId;
+  int? zoneId;
+  int? locationId;
+  DateTime? rotaTimeFrom;
+  DateTime? rotaTimeTo;
 
   WardenEvent({
     int? Id,
@@ -138,6 +138,8 @@ WardenEvent _$WardenEventFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$WardenEventToJson(WardenEvent instance) {
   return <String, dynamic>{
+    'Created':
+        instance.Created != null ? instance.Created!.toIso8601String() : null,
     'Type': instance.type,
     'Detail': instance.detail,
     'Latitude': instance.latitude,
