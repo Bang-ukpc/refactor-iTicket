@@ -212,8 +212,14 @@ class _LocationScreenState extends State<LocationScreen> {
       if (listFilter.isNotEmpty) {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
         locations.onSelectedRotaShift(listFilter[0]);
-        locations.onSelectedLocation(listFilterByRota[0].locations![0]);
-        locations.onSelectedZone(listFilterByRota[0].locations![0].Zones![0]);
+        locations.onSelectedLocation(listFilterByRota[0].locations!.isNotEmpty
+            ? listFilterByRota[0].locations![0]
+            : null);
+        locations.onSelectedZone(listFilterByRota[0].locations!.isNotEmpty
+            ? listFilterByRota[0].locations![0].Zones!.isNotEmpty
+                ? listFilterByRota[0].locations![0].Zones![0]
+                : null
+            : null);
       }
     }
 
@@ -401,10 +407,15 @@ class _LocationScreenState extends State<LocationScreen> {
                                                     as List<LocationWithZones>
                                                 : []
                                             : [],
-                                        selectedItem: listFilterByRota
-                                                .isNotEmpty
-                                            ? listFilterByRota[0].locations![0]
-                                            : null,
+                                        selectedItem:
+                                            listFilterByRota.isNotEmpty
+                                                ? listFilterByRota[0]
+                                                        .locations!
+                                                        .isNotEmpty
+                                                    ? listFilterByRota[0]
+                                                        .locations![0]
+                                                    : null
+                                                : null,
                                         itemAsString: (item) => item.Name,
                                         popupProps: PopupProps.menu(
                                           fit: FlexFit.loose,

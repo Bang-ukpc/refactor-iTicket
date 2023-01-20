@@ -36,9 +36,7 @@ class BluetoothPrinterHelper {
         ));
         if (devices.isNotEmpty) {
           BluetoothPrinter deviceSelected = devices.firstWhere((device) =>
-              device.deviceName!
-                  .toUpperCase()
-                  .contains('Ezpcnb'.toUpperCase()));
+              device.deviceName!.toUpperCase().contains('ezpcn'.toUpperCase()));
           selectDevice(deviceSelected);
         }
       },
