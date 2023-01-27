@@ -205,7 +205,7 @@ class _MyDrawerState extends State<MyDrawer> {
                       CherryToast.info(
                         displayCloseButton: false,
                         title: Text(
-                          'coming soon',
+                          'Coming soon',
                           style: CustomTextStyle.h5
                               .copyWith(color: ColorTheme.primary),
                         ),
