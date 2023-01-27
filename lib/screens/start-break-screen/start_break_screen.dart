@@ -80,41 +80,42 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
 
     return WillPopScope(
       onWillPop: () async => false,
-      child: Container(
-        width: screenWidth,
-        height: screenHeight,
-        color: ColorTheme.primary,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'You are on break',
-                style: CustomTextStyle.h3.copyWith(
-                  decoration: TextDecoration.none,
-                  color: ColorTheme.white,
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              ElevatedButton.icon(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(
-                    ColorTheme.grey300,
+      child: Scaffold(
+        body: Container(
+          width: screenWidth,
+          height: screenHeight,
+          color: ColorTheme.primary,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'You are on break',
+                  style: CustomTextStyle.h3.copyWith(
+                    color: ColorTheme.white,
                   ),
                 ),
-                onPressed: onEndBreak,
-                icon: SvgPicture.asset(
-                  "assets/svg/IconEndBreak.svg",
-                  color: ColorTheme.textPrimary,
+                const SizedBox(
+                  height: 10,
                 ),
-                label: const Text(
-                  'End break',
-                  style: CustomTextStyle.body1,
+                ElevatedButton.icon(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                      ColorTheme.grey300,
+                    ),
+                  ),
+                  onPressed: onEndBreak,
+                  icon: SvgPicture.asset(
+                    "assets/svg/IconEndBreak.svg",
+                    color: ColorTheme.textPrimary,
+                  ),
+                  label: const Text(
+                    'End break',
+                    style: CustomTextStyle.body1,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

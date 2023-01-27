@@ -67,6 +67,7 @@ void showCircularProgressIndicator(
               Text(
                 text ?? 'Loading',
                 style: CustomTextStyle.h3.copyWith(
+                  fontFamily: 'Lato',
                   decoration: TextDecoration.none,
                   color: ColorTheme.white,
                 ),

@@ -205,7 +205,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                       children: [
                         Text(
                           "Please read below and confirm that you understand all regulations of this location.",
-                          style: CustomTextStyle.h5
+                          style: CustomTextStyle.h4
                               .copyWith(color: ColorTheme.primary),
                         ),
                         const SizedBox(
@@ -215,7 +215,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                           locations.location?.Notes?.isEmpty ?? true
                               ? "This location does not currently have any regulations!"
                               : locations.location?.Notes as String,
-                          style: CustomTextStyle.h5,
+                          style: CustomTextStyle.h4,
                         ),
                       ],
                     ),

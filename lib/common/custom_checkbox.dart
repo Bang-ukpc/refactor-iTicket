@@ -129,7 +129,7 @@ class _CustomCheckBoxState extends State<CustomCheckBox> {
           Expanded(
             child: Text(
               widget.title,
-              style: CustomTextStyle.h5,
+              style: CustomTextStyle.h4,
             ),
           )
         ],

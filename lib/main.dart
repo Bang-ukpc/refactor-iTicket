@@ -43,17 +43,19 @@ class MyApp extends StatelessWidget {
       theme: themeMain(),
       debugShowCheckedModeBanner: false,
       navigatorKey: NavigationService.navigatorKey,
-      home: NetworkLayout(
-        myWidget: Consumer<Auth>(
-          builder: (ctx, auth, _) => FutureBuilder<bool>(
-            future: auth.isAuth(),
-            builder: ((context, snapshot) {
-              if (snapshot.data == true) {
-                return const ConnectingScreen();
-              } else {
-                return const LoginScreen();
-              }
-            }),
+      home: Scaffold(
+        body: NetworkLayout(
+          myWidget: Consumer<Auth>(
+            builder: (ctx, auth, _) => FutureBuilder<bool>(
+              future: auth.isAuth(),
+              builder: ((context, snapshot) {
+                if (snapshot.data == true) {
+                  return const ConnectingScreen();
+                } else {
+                  return const LoginScreen();
+                }
+              }),
+            ),
           ),
         ),
       ),

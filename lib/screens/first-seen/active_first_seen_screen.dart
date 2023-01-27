@@ -187,136 +187,138 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
 
     return WillPopScope(
       onWillPop: () async => false,
-      child: MyTabBar(
-        labelFuncAdd: "Add first seen",
-        titleAppBar: "First seen",
-        funcAdd: () async {
-          Navigator.of(context)
-              .pushReplacementNamed(AddFirstSeenScreen.routeName);
-        },
-        tabBarViewTab1: RefreshIndicator(
-          onRefresh: refresh,
-          child: firstSeenLoading == false
-              ? firstSeenActive.isNotEmpty
-                  ? SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Container(
-                        height: firstSeenActive.length > 3
-                            ? (firstSeenActive.length.toDouble()) * 110
-                            : 350,
-                        margin:
-                            const EdgeInsets.only(bottom: ConstSpacing.bottom),
-                        child: Column(
-                          children: firstSeenActive
-                              .map(
-                                (item) => CardItem(
-                                  vehicleInfo: item,
-                                  type: TypeFirstSeen.Active,
-                                  expiring: calculateTime.daysBetween(
-                                    item.Created!.add(
-                                      Duration(
-                                        minutes: calculateTime.daysBetween(
-                                          item.Created as DateTime,
-                                          DateTime.now(),
+      child: Scaffold(
+        body: MyTabBar(
+          labelFuncAdd: "Add first seen",
+          titleAppBar: "First seen",
+          funcAdd: () async {
+            Navigator.of(context)
+                .pushReplacementNamed(AddFirstSeenScreen.routeName);
+          },
+          tabBarViewTab1: RefreshIndicator(
+            onRefresh: refresh,
+            child: firstSeenLoading == false
+                ? firstSeenActive.isNotEmpty
+                    ? SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Container(
+                          height: firstSeenActive.length > 3
+                              ? (firstSeenActive.length.toDouble()) * 110
+                              : 350,
+                          margin: const EdgeInsets.only(
+                              bottom: ConstSpacing.bottom),
+                          child: Column(
+                            children: firstSeenActive
+                                .map(
+                                  (item) => CardItem(
+                                    vehicleInfo: item,
+                                    type: TypeFirstSeen.Active,
+                                    expiring: calculateTime.daysBetween(
+                                      item.Created!.add(
+                                        Duration(
+                                          minutes: calculateTime.daysBetween(
+                                            item.Created as DateTime,
+                                            DateTime.now(),
+                                          ),
                                         ),
                                       ),
+                                      item.ExpiredAt,
                                     ),
-                                    item.ExpiredAt,
+                                    onCarLeft: () {
+                                      onCarLeft(item);
+                                    },
+                                    route: DetailActiveFirstSeen.routeName,
                                   ),
-                                  onCarLeft: () {
-                                    onCarLeft(item);
-                                  },
-                                  route: DetailActiveFirstSeen.routeName,
-                                ),
-                              )
-                              .toList(),
+                                )
+                                .toList(),
+                          ),
                         ),
-                      ),
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 100,
-                            height: 100,
-                            child: Image.asset(
-                              'assets/images/empty-list.png',
-                              color: ColorTheme.grey600,
-                            ),
-                          ),
-                          Text(
-                            'Your active first seen list is empty',
-                            style: CustomTextStyle.body1.copyWith(
-                              color: ColorTheme.grey600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-              : const Center(
-                  child: CircularProgressIndicator(),
-                ),
-        ),
-        tabBarViewTab2: RefreshIndicator(
-          onRefresh: refresh,
-          child: firstSeenLoading == false
-              ? firstSeenExpired.isNotEmpty
-                  ? SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Container(
-                        height: firstSeenExpired.length > 3
-                            ? (firstSeenExpired.length.toDouble() * 110)
-                            : 350,
-                        margin:
-                            const EdgeInsets.only(bottom: ConstSpacing.bottom),
+                      )
+                    : Center(
                         child: Column(
-                          children: firstSeenExpired
-                              .map(
-                                (item) => CardItem(
-                                  vehicleInfo: item,
-                                  type: TypeFirstSeen.Expired,
-                                  expiring: calculateTime.daysBetween(
-                                    item.ExpiredAt,
-                                    DateTime.now(),
-                                  ),
-                                  onCarLeft: () {
-                                    onCarLeft(item);
-                                  },
-                                  route: DetailExpiredFirstSeen.routeName,
-                                ),
-                              )
-                              .toList(),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 100,
+                              height: 100,
+                              child: Image.asset(
+                                'assets/images/empty-list.png',
+                                color: ColorTheme.grey600,
+                              ),
+                            ),
+                            Text(
+                              'Your active first seen list is empty',
+                              style: CustomTextStyle.body1.copyWith(
+                                color: ColorTheme.grey600,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 100,
-                            height: 100,
-                            child: Image.asset(
-                              'assets/images/empty-list.png',
-                              color: ColorTheme.grey600,
-                            ),
+                      )
+                : const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+          ),
+          tabBarViewTab2: RefreshIndicator(
+            onRefresh: refresh,
+            child: firstSeenLoading == false
+                ? firstSeenExpired.isNotEmpty
+                    ? SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Container(
+                          height: firstSeenExpired.length > 3
+                              ? (firstSeenExpired.length.toDouble() * 110)
+                              : 350,
+                          margin: const EdgeInsets.only(
+                              bottom: ConstSpacing.bottom),
+                          child: Column(
+                            children: firstSeenExpired
+                                .map(
+                                  (item) => CardItem(
+                                    vehicleInfo: item,
+                                    type: TypeFirstSeen.Expired,
+                                    expiring: calculateTime.daysBetween(
+                                      item.ExpiredAt,
+                                      DateTime.now(),
+                                    ),
+                                    onCarLeft: () {
+                                      onCarLeft(item);
+                                    },
+                                    route: DetailExpiredFirstSeen.routeName,
+                                  ),
+                                )
+                                .toList(),
                           ),
-                          Text(
-                            'Your expired first seen list is empty',
-                            style: CustomTextStyle.body1.copyWith(
-                              color: ColorTheme.grey600,
+                        ),
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 100,
+                              height: 100,
+                              child: Image.asset(
+                                'assets/images/empty-list.png',
+                                color: ColorTheme.grey600,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-              : const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                            Text(
+                              'Your expired first seen list is empty',
+                              style: CustomTextStyle.body1.copyWith(
+                                color: ColorTheme.grey600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                : const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+          ),
+          quantityActive: firstSeenActive.length,
+          quantityExpired: firstSeenExpired.length,
         ),
-        quantityActive: firstSeenActive.length,
-        quantityExpired: firstSeenExpired.length,
       ),
     );
   }
