@@ -122,6 +122,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         CarLeft: false,
         EvidencePhotos: evidencePhotoList,
+        Created: DateTime.now(),
       );
       final isValid = _formKey.currentState!.validate();
       bool check = false;

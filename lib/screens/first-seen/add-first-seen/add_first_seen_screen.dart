@@ -121,6 +121,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         CarLeft: false,
         EvidencePhotos: evidencePhotoList,
+        Created: DateTime.now(),
       );
       final isValid = _formKey.currentState!.validate();
       bool check = false;
