@@ -173,7 +173,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
             CherryToast.success(
               displayCloseButton: false,
               title: Text(
-                'Add successfully',
+                'First seen added successfully',
                 style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
               ),
               toastPosition: Position.bottom,
@@ -257,7 +257,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         CherryToast.success(
           displayCloseButton: false,
           title: Text(
-            'Add successfully',
+            'First seen added successfully',
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
           ),
           toastPosition: Position.bottom,
@@ -298,7 +298,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                   CherryToast.success(
                     displayCloseButton: false,
                     title: Text(
-                      'Add successfully',
+                      'First seen added successfully',
                       style: CustomTextStyle.h5
                           .copyWith(color: ColorTheme.success),
                     ),

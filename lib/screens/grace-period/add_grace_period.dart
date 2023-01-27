@@ -174,7 +174,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
             CherryToast.success(
               displayCloseButton: false,
               title: Text(
-                'Add successfully',
+                'Grace period added successfully',
                 style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
               ),
               toastPosition: Position.bottom,
@@ -258,7 +258,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
         CherryToast.success(
           displayCloseButton: false,
           title: Text(
-            'Add successfully',
+            'Grace period added successfully',
             style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
           ),
           toastPosition: Position.bottom,
@@ -298,7 +298,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                   CherryToast.success(
                     displayCloseButton: false,
                     title: Text(
-                      'Add successfully',
+                      'Grace period added successfully',
                       style: CustomTextStyle.h5
                           .copyWith(color: ColorTheme.success),
                     ),
