@@ -359,7 +359,7 @@ class _HomeOverviewState extends State<HomeOverview> {
               color: ColorTheme.grey600,
             ),
             label: const Text(
-              "Start lunch",
+              "Start break",
               style: CustomTextStyle.h6,
             ),
           ),
