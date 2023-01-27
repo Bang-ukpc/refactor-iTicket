@@ -208,7 +208,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             'wardenEventCheckGPSDataLocal');
 
     if (dataWardenEvent != null) {
-      print(123);
       var decodedWardenEventData =
           json.decode(dataWardenEvent) as List<dynamic>;
       print(dataWardenEventTrackGPS);
@@ -241,7 +240,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
       SharedPreferencesHelper.removeStringValue('wardenEventDataLocal');
       return true;
     } else {
-      print(456);
       if (dataWardenEventTrackGPS != null) {
         var decodedWardenEventTrackGPSData =
             json.decode(dataWardenEventTrackGPS) as List<dynamic>;

@@ -8,6 +8,7 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
+import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
@@ -38,6 +39,7 @@ class MyDrawer extends StatefulWidget {
 
 class _MyDrawerState extends State<MyDrawer> {
   bool check = false;
+  final _debouncer = Debouncer(milliseconds: 3000);
 
   @override
   void initState() {
@@ -49,6 +51,9 @@ class _MyDrawerState extends State<MyDrawer> {
   @override
   void dispose() {
     bluetoothPrinterHelper.disposePrinter();
+    if (_debouncer.timer != null) {
+      _debouncer.timer!.cancel();
+    }
     super.dispose();
   }
 
@@ -216,16 +221,23 @@ class _MyDrawerState extends State<MyDrawer> {
                   : e.route == 'testPrinter'
                       ? () async {
                           if (bluetoothPrinterHelper.selectedPrinter == null) {
-                            CherryToast.error(
-                              toastDuration: const Duration(seconds: 2),
-                              title: Text(
-                                'Please connect to the printer via bluetooth and try again',
-                                style: CustomTextStyle.h5
-                                    .copyWith(color: ColorTheme.danger),
-                              ),
-                              toastPosition: Position.bottom,
-                              borderRadius: 5,
-                            ).show(context);
+                            showCircularProgressIndicator(
+                              context: context,
+                              text: 'Connecting to printer',
+                            );
+                            _debouncer.run(() {
+                              Navigator.of(context).pop();
+                              CherryToast.error(
+                                toastDuration: const Duration(seconds: 5),
+                                title: Text(
+                                  "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                                  style: CustomTextStyle.h5
+                                      .copyWith(color: ColorTheme.danger),
+                                ),
+                                toastPosition: Position.bottom,
+                                borderRadius: 5,
+                              ).show(context);
+                            });
                           } else {
                             showCircularProgressIndicator(
                                 context: context,
@@ -242,23 +254,6 @@ class _MyDrawerState extends State<MyDrawer> {
     }
 
     List<NavItemMenu> navItem = [
-      // NavItemMenu(
-      //   title: 'Emerg. call',
-      //   icon: SvgPicture.asset(
-      //     'assets/svg/IconCall2.svg',
-      //   ),
-      //   route: HomeOverview.routeName,
-      //   background: ColorTheme.grey200,
-      //   check: null,
-      //   setCheck: () async {
-      //     final call = Uri.parse('tel:0981832226');
-      //     if (await canLaunchUrl(call)) {
-      //       launchUrl(call);
-      //     } else {
-      //       throw 'Could not launch $call';
-      //     }
-      //   },
-      // ),
       NavItemMenu(
         title: '999',
         icon: SvgPicture.asset('assets/svg/IconCall3.svg'),

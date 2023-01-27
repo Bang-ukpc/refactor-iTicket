@@ -40,13 +40,6 @@ class BluetoothPrinterHelper {
           selectDevice(deviceSelected);
         }
       },
-      onDone: () {
-        log('ao ma canada 1');
-      },
-      onError: (err) {
-        log('ao ma');
-      },
-      cancelOnError: true,
     );
   }
 
@@ -83,13 +76,6 @@ class BluetoothPrinterHelper {
         }
         count++;
       },
-      onDone: () {
-        log('ao ma canada 2');
-      },
-      onError: (err) {
-        log('ao ma');
-      },
-      cancelOnError: true,
     );
   }
 

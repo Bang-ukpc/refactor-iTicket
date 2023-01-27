@@ -3,9 +3,11 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
+import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
@@ -25,6 +27,8 @@ class PrintPCN extends StatefulWidget {
 }
 
 class _PrintPCNState extends State<PrintPCN> {
+  final _debouncer = Debouncer(milliseconds: 3000);
+
   @override
   void initState() {
     super.initState();
@@ -34,15 +38,22 @@ class _PrintPCNState extends State<PrintPCN> {
       final args = ModalRoute.of(context)!.settings.arguments as Contravention;
       final locations = Provider.of<Locations>(context, listen: false);
       if (bluetoothPrinterHelper.selectedPrinter == null) {
-        CherryToast.error(
-          toastDuration: const Duration(seconds: 2),
-          title: Text(
-            'Please connect to the printer via bluetooth and try again',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
+        showCircularProgressIndicator(
+          context: context,
+          text: 'Connecting to printer',
+        );
+        _debouncer.run(() {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 5),
+            title: Text(
+              "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        });
       } else {
         bluetoothPrinterHelper.printPhysicalPCN(
             args, locations.location?.Name ?? '');
@@ -53,6 +64,9 @@ class _PrintPCNState extends State<PrintPCN> {
   @override
   void dispose() {
     bluetoothPrinterHelper.disposePrinter();
+    if (_debouncer.timer != null) {
+      _debouncer.timer!.cancel();
+    }
     super.dispose();
   }
 
@@ -89,16 +103,23 @@ class _PrintPCNState extends State<PrintPCN> {
                     BottomNavyBarItem(
                       onPressed: () {
                         if (bluetoothPrinterHelper.selectedPrinter == null) {
-                          CherryToast.error(
-                            toastDuration: const Duration(seconds: 2),
-                            title: Text(
-                              'Please connect to the printer via bluetooth and try again',
-                              style: CustomTextStyle.h5
-                                  .copyWith(color: ColorTheme.danger),
-                            ),
-                            toastPosition: Position.bottom,
-                            borderRadius: 5,
-                          ).show(context);
+                          showCircularProgressIndicator(
+                            context: context,
+                            text: 'Connecting to printer',
+                          );
+                          _debouncer.run(() {
+                            Navigator.of(context).pop();
+                            CherryToast.error(
+                              toastDuration: const Duration(seconds: 5),
+                              title: Text(
+                                "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                                style: CustomTextStyle.h5
+                                    .copyWith(color: ColorTheme.danger),
+                              ),
+                              toastPosition: Position.bottom,
+                              borderRadius: 5,
+                            ).show(context);
+                          });
                         } else {
                           bluetoothPrinterHelper.printPhysicalPCN(
                               args, locations.location?.Name ?? '');
