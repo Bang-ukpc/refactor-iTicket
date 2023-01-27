@@ -45,7 +45,7 @@ class _SpotCheckState extends State<SpotCheck> {
           CherryToast.info(
             displayCloseButton: false,
             title: Text(
-              'Comming soon',
+              'Coming soon',
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.primary),
             ),
             toastPosition: Position.bottom,

@@ -51,6 +51,18 @@ class InfoDrawer extends StatelessWidget {
       rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
+    WardenEvent wardenEventEndShift = WardenEvent(
+      type: TypeWardenEvent.EndShift.index,
+      detail: 'Warden has ended shift',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardersProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
+    );
+
     void onCheckOut() async {
       try {
         showCircularProgressIndicator(context: context, text: 'Checking out');
@@ -92,18 +104,22 @@ class InfoDrawer extends StatelessWidget {
 
     void onLogout(Auth auth) async {
       try {
-        await auth.logout().then((value) {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-              LoginScreen.routeName, (Route<dynamic> route) => false);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'Log out successfully',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
+        await userController
+            .createWardenEvent(wardenEventEndShift)
+            .then((value) async {
+          await auth.logout().then((value) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                LoginScreen.routeName, (Route<dynamic> route) => false);
+            CherryToast.success(
+              displayCloseButton: false,
+              title: Text(
+                'Log out successfully',
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+          });
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {

@@ -199,13 +199,13 @@ class _MyDrawerState extends State<MyDrawer> {
           .map(
             (e) => ItemMenuWidget(
               itemMenu: e,
-              onTap: e.route == 'comming soon'
+              onTap: e.route == 'coming soon'
                   ? () {
                       Navigator.of(context).pop();
                       CherryToast.info(
                         displayCloseButton: false,
                         title: Text(
-                          'Comming soon',
+                          'coming soon',
                           style: CustomTextStyle.h5
                               .copyWith(color: ColorTheme.primary),
                         ),
