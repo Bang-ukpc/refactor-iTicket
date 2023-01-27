@@ -42,6 +42,7 @@ class _ParkingChargeInfoState extends State<ParkingChargeInfo> {
             if (snapshot.hasData) {
               return DetailParkingCommon(
                 contravention: snapshot.data as Contravention,
+                isDisplayBottomNavigate: true,
               );
             } else if (snapshot.hasError) {
               return Center(
