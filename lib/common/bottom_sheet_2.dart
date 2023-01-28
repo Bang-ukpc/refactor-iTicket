@@ -26,7 +26,7 @@ class BottomSheet2 extends StatefulWidget {
   final double padding;
   final List<BottomNavyBarItem> buttonList;
 
-  const BottomSheet2({this.padding = 30, required this.buttonList, super.key});
+  const BottomSheet2({this.padding = 5.0, required this.buttonList, super.key});
 
   @override
   State<BottomSheet2> createState() => _BottomSheet2State();
