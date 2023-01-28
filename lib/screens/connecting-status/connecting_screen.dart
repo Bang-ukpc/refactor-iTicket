@@ -28,7 +28,6 @@ import 'package:iWarden/screens/connecting-status/background_service_config.dart
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
 
@@ -46,7 +45,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
   bool checkGps = false;
-  LocationData? currentLocationOfWarder;
+  Position? currentLocationOfWarder;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;
   bool? checkBluetooth;
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
