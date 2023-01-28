@@ -14,10 +14,12 @@ class DetailParkingCommon extends StatefulWidget {
   final Contravention? contravention;
   final bool? isDisplayPrintPCN;
   final bool? isDisplayBottomNavigate;
+  final bool? imagePreviewStatus;
   const DetailParkingCommon({
     this.contravention,
     this.isDisplayPrintPCN = false,
     this.isDisplayBottomNavigate = false,
+    this.imagePreviewStatus = false,
     super.key,
   });
 
@@ -133,6 +135,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
               onAddImage: () {},
               isSlideImage: true,
               displayTitle: false,
+              imagePreview: widget.imagePreviewStatus,
             )
           ],
         ),

@@ -28,7 +28,6 @@ import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
-import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
@@ -196,6 +195,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     Future<void> createPhysicalPCN() async {
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
+      int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
       int randomReference =
           (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
       final physicalPCN = ContraventionCreateWardenCommand(
@@ -214,23 +214,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
         TypePCN: TypePCN.Physical.index,
-      );
-
-      final wardenEventIssuePCN = WardenEvent(
-        type: TypeWardenEvent.IssuePCN.index,
-        detail: '{"TicketNumber": "${physicalPCN.ContraventionReference}"}',
-        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        wardenId: wardensProvider.wardens?.Id ?? 0,
-        zoneId: locationProvider.zone?.Id ?? 0,
-        locationId: locationProvider.location?.Id ?? 0,
-        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
-        rotaTimeTo: locationProvider.rotaShift?.timeTo,
+        Id: randomNumber,
       );
 
       final isValid = _formKey.currentState!.validate();
-      Contravention? contravention;
-      bool check = false;
 
       if (arrayImage.length < 4) {
         if (!mounted) return;
@@ -248,132 +235,58 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       if (!isValid) {
         return;
       } else {
+        if (!mounted) return;
         showCircularProgressIndicator(context: context);
       }
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
-        try {
-          await contraventionController.createPCN(physicalPCN).then((value) {
-            contravention = value;
-          });
-          if (arrayImage.isNotEmpty && contravention != null) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              await contraventionController.uploadContraventionImage(
-                ContraventionCreatePhoto(
-                  contraventionReference: contravention?.reference ?? '',
-                  originalFileName: arrayImage[i].path.split('/').last,
-                  capturedDateTime: DateTime.now(),
-                  filePath: arrayImage[i].path,
-                ),
-              );
-              if (i == arrayImage.length - 1) {
-                check = true;
-              }
-            }
+        List<ContraventionPhotos> contraventionImageList = [];
+        if (arrayImage.isNotEmpty) {
+          for (int i = 0; i < arrayImage.length; i++) {
+            contraventionImageList.add(ContraventionPhotos(
+              blobName: arrayImage[i].path,
+              contraventionId: physicalPCN.Id,
+            ));
           }
-          if (contravention != null && check == true) {
-            await userController
-                .createWardenEvent(wardenEventIssuePCN)
-                .then((value) {
-              Navigator.of(context).pop();
-              Navigator.of(context)
-                  .pushNamed(PrintPCN.routeName, arguments: contravention);
-            });
-          }
-        } on DioError catch (error) {
-          log("log ${error.type.toString()}");
-          if (!mounted) return;
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            displayCloseButton: true,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
         }
+        Contravention contravention = Contravention(
+          reference: physicalPCN.ContraventionReference,
+          created: DateTime.now(),
+          id: physicalPCN.Id,
+          plate: physicalPCN.Plate,
+          colour: physicalPCN.VehicleColour,
+          make: physicalPCN.VehicleMake,
+          eventDateTime: physicalPCN.EventDateTime,
+          zoneId: locationProvider.zone?.Id ?? 0,
+          reason: Reason(
+            code: physicalPCN.ContraventionReasonCode,
+            contraventionReasonTranslations: contraventionReasonList
+                .where((e) =>
+                    e.contraventionReason!.code ==
+                    physicalPCN.ContraventionReasonCode)
+                .toList(),
+          ),
+          contraventionEvents: [
+            ContraventionEvents(
+              contraventionId: physicalPCN.Id,
+              detail: physicalPCN.WardenComments,
+            )
+          ],
+          contraventionDetailsWarden: ContraventionDetailsWarden(
+            FirstObserved: physicalPCN.FirstObservedDateTime,
+            ContraventionId: physicalPCN.Id,
+            WardenId: physicalPCN.WardenId,
+            IssuedAt: physicalPCN.EventDateTime,
+          ),
+          status: ContraventionStatus.Open.index,
+          contraventionPhotos: contraventionImageList,
+        );
+
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        Navigator.of(context)
+            .pushNamed(PrintPCN.routeName, arguments: contravention);
       } else {
-        int randomNumber =
-            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-        physicalPCN.Id = randomNumber;
-        final String encodedPhysicalPCNData =
-            json.encode(ContraventionCreateWardenCommand.toJson(physicalPCN));
-        final String? issuePCNData =
-            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
-        if (issuePCNData == null) {
-          List<String> newData = [];
-          newData.add(encodedPhysicalPCNData);
-          final encodedNewData = json.encode(newData);
-          SharedPreferencesHelper.setStringValue(
-              'issuePCNDataLocal', encodedNewData);
-        } else {
-          final createdData = json.decode(issuePCNData) as List<dynamic>;
-          createdData.add(encodedPhysicalPCNData);
-          final encodedCreatedData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'issuePCNDataLocal', encodedCreatedData);
-        }
-
-        final String? contraventionPhotoData =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionPhotoDataLocal');
-        if (contraventionPhotoData == null) {
-          List<String> newPhotoData = [];
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: physicalPCN.ContraventionReference,
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: arrayImage[i].path,
-              ).toJson());
-              newPhotoData.add(encodedData);
-            }
-          }
-          final encodedNewData = json.encode(newPhotoData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionPhotoData) as List<dynamic>;
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: randomNumber.toString(),
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: arrayImage[i].path,
-              ).toJson());
-              createdData.add(encodedData);
-            }
-          }
-          final encodedNewData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        }
-
         final String? reasonDataLocal =
             await SharedPreferencesHelper.getStringValue(
                 'contraventionReasonDataLocal');
@@ -429,43 +342,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           contraventionPhotos: contraventionImageList,
         );
 
-        final String? contraventionList =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionDataLocal');
-
-        if (contraventionList == null) {
-          List<dynamic> newData = [];
-          newData.add(Contravention.toJson(contraventionDataFake));
-          var dataFormat = Pagination(
-            page: 1,
-            pageSize: 1000,
-            total: newData.length,
-            totalPages: 1,
-            rows: newData,
-          );
-          final String encodedNewData =
-              json.encode(Pagination.toJson(dataFormat));
-          SharedPreferencesHelper.setStringValue(
-              'contraventionDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionList) as Map<String, dynamic>;
-          Pagination fromJsonContravention = Pagination.fromJson(createdData);
-          fromJsonContravention.rows
-              .add(Contravention.toJson(contraventionDataFake));
-          final String encodedCreatedData =
-              json.encode(Pagination.toJson(fromJsonContravention));
-          SharedPreferencesHelper.setStringValue(
-              'contraventionDataLocal', encodedCreatedData);
-        }
-
-        await userController
-            .createWardenEvent(wardenEventIssuePCN)
-            .then((value) {
-          Navigator.of(context).pop();
-          Navigator.of(context)
-              .pushNamed(PrintPCN.routeName, arguments: contraventionDataFake);
-        });
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        Navigator.of(context)
+            .pushNamed(PrintPCN.routeName, arguments: contraventionDataFake);
       }
 
       _formKey.currentState!.save();
@@ -474,6 +354,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     Future<void> createVirtualTicket() async {
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
+      int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
       int randomReference =
           (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
       final virtualTicket = ContraventionCreateWardenCommand(
@@ -492,23 +373,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
         TypePCN: TypePCN.Virtual.index,
-      );
-
-      final wardenEventIssuePCN = WardenEvent(
-        type: TypeWardenEvent.IssuePCN.index,
-        detail: '{"TicketNumber": "${virtualTicket.ContraventionReference}"}',
-        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        wardenId: wardensProvider.wardens?.Id ?? 0,
-        zoneId: locationProvider.zone?.Id ?? 0,
-        locationId: locationProvider.location?.Id ?? 0,
-        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
-        rotaTimeTo: locationProvider.rotaShift?.timeTo,
+        Id: randomNumber,
       );
 
       final isValid = _formKey.currentState!.validate();
-      Contravention? contravention;
-      bool check = false;
 
       if (arrayImage.length < 4) {
         if (!mounted) return;
@@ -526,134 +394,60 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       if (!isValid) {
         return;
       } else {
+        if (!mounted) return;
         showCircularProgressIndicator(context: context);
       }
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
-        try {
-          await contraventionController.createPCN(virtualTicket).then((value) {
-            contravention = value;
-          });
-          if (arrayImage.isNotEmpty && contravention != null) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              await contraventionController.uploadContraventionImage(
-                ContraventionCreatePhoto(
-                  contraventionReference: contravention?.reference ?? '',
-                  originalFileName: arrayImage[i].path.split('/').last,
-                  capturedDateTime: DateTime.now(),
-                  filePath: arrayImage[i].path,
-                ),
-              );
-              if (i == arrayImage.length - 1) {
-                check = true;
-              }
-            }
+        List<ContraventionPhotos> contraventionImageList = [];
+        if (arrayImage.isNotEmpty) {
+          for (int i = 0; i < arrayImage.length; i++) {
+            contraventionImageList.add(ContraventionPhotos(
+              blobName: arrayImage[i].path,
+              contraventionId: virtualTicket.Id,
+            ));
           }
-          if (contravention != null && check == true) {
-            await userController
-                .createWardenEvent(wardenEventIssuePCN)
-                .then((value) {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(
-                ParkingChargeInfo.routeName,
-                arguments: contravention,
-              );
-            });
-          }
-        } on DioError catch (error) {
-          if (!mounted) return;
-          log("log ${error.type.toString()}");
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            displayCloseButton: true,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
         }
+
+        Contravention contravention = Contravention(
+          reference: virtualTicket.ContraventionReference,
+          created: DateTime.now(),
+          id: virtualTicket.Id,
+          plate: virtualTicket.Plate,
+          colour: virtualTicket.VehicleColour,
+          make: virtualTicket.VehicleMake,
+          eventDateTime: virtualTicket.EventDateTime,
+          zoneId: locationProvider.zone?.Id ?? 0,
+          reason: Reason(
+            code: virtualTicket.ContraventionReasonCode,
+            contraventionReasonTranslations: contraventionReasonList
+                .where((e) =>
+                    e.contraventionReason!.code ==
+                    virtualTicket.ContraventionReasonCode)
+                .toList(),
+          ),
+          contraventionEvents: [
+            ContraventionEvents(
+              contraventionId: virtualTicket.Id,
+              detail: virtualTicket.WardenComments,
+            )
+          ],
+          contraventionDetailsWarden: ContraventionDetailsWarden(
+            FirstObserved: virtualTicket.FirstObservedDateTime,
+            ContraventionId: virtualTicket.Id,
+            WardenId: virtualTicket.WardenId,
+            IssuedAt: virtualTicket.EventDateTime,
+          ),
+          status: ContraventionStatus.Open.index,
+          contraventionPhotos: contraventionImageList,
+        );
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed(
+          ParkingChargeInfo.routeName,
+          arguments: contravention,
+        );
       } else {
-        int randomNumber =
-            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-        virtualTicket.Id = randomNumber;
-        final String encodedPhysicalPCNData =
-            json.encode(ContraventionCreateWardenCommand.toJson(virtualTicket));
-        final String? issuePCNData =
-            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
-        if (issuePCNData == null) {
-          List<String> newData = [];
-          newData.add(encodedPhysicalPCNData);
-          final encodedNewData = json.encode(newData);
-          SharedPreferencesHelper.setStringValue(
-              'issuePCNDataLocal', encodedNewData);
-        } else {
-          final createdData = json.decode(issuePCNData) as List<dynamic>;
-          createdData.add(encodedPhysicalPCNData);
-          final encodedCreatedData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'issuePCNDataLocal', encodedCreatedData);
-        }
-
-        final String? contraventionPhotoData =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionPhotoDataLocal');
-        if (contraventionPhotoData == null) {
-          List<String> newPhotoData = [];
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: virtualTicket.ContraventionReference,
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: arrayImage[i].path,
-              ).toJson());
-              newPhotoData.add(encodedData);
-            }
-          }
-          final encodedNewData = json.encode(newPhotoData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionPhotoData) as List<dynamic>;
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: randomNumber.toString(),
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: arrayImage[i].path,
-              ).toJson());
-              createdData.add(encodedData);
-            }
-          }
-          final encodedNewData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        }
-
         final String? reasonDataLocal =
             await SharedPreferencesHelper.getStringValue(
                 'contraventionReasonDataLocal');
@@ -709,45 +503,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           contraventionPhotos: contraventionImageList,
         );
 
-        final String? contraventionList =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionDataLocal');
-
-        if (contraventionList == null) {
-          List<dynamic> newData = [];
-          newData.add(Contravention.toJson(contraventionDataFake));
-          var dataFormat = Pagination(
-            page: 1,
-            pageSize: 1000,
-            total: newData.length,
-            totalPages: 1,
-            rows: newData,
-          );
-          final String encodedNewData =
-              json.encode(Pagination.toJson(dataFormat));
-          SharedPreferencesHelper.setStringValue(
-              'contraventionDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionList) as Map<String, dynamic>;
-          Pagination fromJsonContravention = Pagination.fromJson(createdData);
-          fromJsonContravention.rows
-              .add(Contravention.toJson(contraventionDataFake));
-          final String encodedCreatedData =
-              json.encode(Pagination.toJson(fromJsonContravention));
-          SharedPreferencesHelper.setStringValue(
-              'contraventionDataLocal', encodedCreatedData);
-        }
-
-        await userController
-            .createWardenEvent(wardenEventIssuePCN)
-            .then((value) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(
-            ParkingChargeInfo.routeName,
-            arguments: contraventionDataFake,
-          );
-        });
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed(
+          ParkingChargeInfo.routeName,
+          arguments: contraventionDataFake,
+        );
       }
 
       _formKey.currentState!.save();
@@ -855,9 +616,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                   onPressed: () {
                     createVirtualTicket();
                   },
-                  icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
+                  icon: SvgPicture.asset('assets/svg/IconNext.svg'),
                   label: const Text(
-                    'Complete',
+                    'Next',
                     style: CustomTextStyle.h6,
                   ),
                 ),

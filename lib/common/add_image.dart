@@ -18,6 +18,8 @@ class AddImage extends StatefulWidget {
   List<dynamic>? listImageFile;
   final bool? displayTitle;
   final VoidCallback onAddImage;
+  final bool? imagePreview;
+
   AddImage({
     Key? key,
     this.isSlideImage = false,
@@ -26,6 +28,7 @@ class AddImage extends StatefulWidget {
     required this.onAddImage,
     required this.listImage,
     this.listImageFile,
+    this.imagePreview = false,
   }) : super(key: key);
   @override
   State<AddImage> createState() => _AddImageState();
@@ -95,23 +98,31 @@ class _AddImageState extends State<AddImage> {
             CarouselSlider(
               items: checkConnection == ConnectivityResult.wifi ||
                       checkConnection == ConnectivityResult.mobile
-                  ? widget.listImage.map((item) {
-                      return CachedNetworkImage(
-                        imageUrl: item.toString(),
-                        progressIndicatorBuilder:
-                            (context, url, downloadProgress) => Center(
-                          child: SizedBox(
-                            width: 25,
-                            height: 25,
-                            child: CircularProgressIndicator(
-                              color: ColorTheme.primary,
+                  ? widget.imagePreview == false
+                      ? widget.listImage.map((item) {
+                          return CachedNetworkImage(
+                            imageUrl: item.toString(),
+                            progressIndicatorBuilder:
+                                (context, url, downloadProgress) => Center(
+                              child: SizedBox(
+                                width: 25,
+                                height: 25,
+                                child: CircularProgressIndicator(
+                                  color: ColorTheme.primary,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
-                      );
-                    }).toList()
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
+                          );
+                        }).toList()
+                      : widget.listImageFile!.map((item) {
+                          return Image.file(
+                            File(item),
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.error),
+                          );
+                        }).toList()
                   : widget.listImageFile!.map((item) {
                       return Image.file(
                         File(item),
@@ -204,28 +215,43 @@ class _AddImageState extends State<AddImage> {
                                                       checkConnection ==
                                                           ConnectivityResult
                                                               .mobile
-                                                  ? CachedNetworkImage(
-                                                      imageUrl: widget
-                                                          .listImage[index],
-                                                      fit: BoxFit.cover,
-                                                      progressIndicatorBuilder:
-                                                          (context, url,
-                                                                  downloadProgress) =>
-                                                              Center(
-                                                                child: SizedBox(
-                                                                  width: 25,
-                                                                  height: 25,
-                                                                  child:
-                                                                      CircularProgressIndicator(
-                                                                    color: ColorTheme
-                                                                        .primary,
+                                                  ? widget.imagePreview == false
+                                                      ? CachedNetworkImage(
+                                                          imageUrl: widget
+                                                              .listImage[index],
+                                                          fit: BoxFit.cover,
+                                                          progressIndicatorBuilder:
+                                                              (context, url,
+                                                                      downloadProgress) =>
+                                                                  Center(
+                                                                    child:
+                                                                        SizedBox(
+                                                                      width: 25,
+                                                                      height:
+                                                                          25,
+                                                                      child:
+                                                                          CircularProgressIndicator(
+                                                                        color: ColorTheme
+                                                                            .primary,
+                                                                      ),
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                              ),
-                                                      errorWidget: (context,
-                                                              url, error) =>
-                                                          const Icon(
-                                                              Icons.error))
+                                                          errorWidget: (context,
+                                                                  url, error) =>
+                                                              const Icon(
+                                                                  Icons.error))
+                                                      : Image.file(
+                                                          fit: BoxFit.cover,
+                                                          File(
+                                                            widget.listImageFile![
+                                                                index],
+                                                          ),
+                                                          errorBuilder: (context,
+                                                                  error,
+                                                                  stackTrace) =>
+                                                              const Icon(
+                                                                  Icons.error),
+                                                        )
                                                   : Image.file(
                                                       fit: BoxFit.cover,
                                                       File(
