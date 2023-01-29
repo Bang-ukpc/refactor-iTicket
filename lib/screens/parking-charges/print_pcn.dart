@@ -68,7 +68,7 @@ class _PrintPCNState extends State<PrintPCN> {
         });
       } else {
         bluetoothPrinterHelper.printPhysicalPCN(
-            args, locations.location?.Name ?? '');
+            args, locations.location!, 2002);
       }
     });
   }
@@ -335,7 +335,9 @@ class _PrintPCNState extends State<PrintPCN> {
                     });
                   } else {
                     bluetoothPrinterHelper.printPhysicalPCN(
-                        args, locations.location?.Name ?? '');
+                        args,
+                        locations.location!,
+                        wardensProvider.wardens!.Id as int);
                   }
                 },
                 icon: SvgPicture.asset(
