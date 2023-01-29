@@ -34,18 +34,18 @@ class _SendFormScreenState extends State<SendFormScreen> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            icon: SvgPicture.asset("assets/svg/IconCancel2.svg"),
-            label: const Text(
-              "Cancel",
-              style: CustomTextStyle.h6,
-            )),
+            icon: SvgPicture.asset(
+              "assets/svg/IconCancel2.svg",
+              color: Colors.white,
+            ),
+            label: "Cancel"),
         BottomNavyBarItem(
             onPressed: () {},
-            icon: SvgPicture.asset("assets/svg/IconComplete2.svg"),
-            label: const Text(
-              "Complete",
-              style: CustomTextStyle.h6,
-            ))
+            icon: SvgPicture.asset(
+              "assets/svg/IconComplete2.svg",
+              color: Colors.white,
+            ),
+            label: "Complete")
       ]),
       drawer: const MyDrawer(),
       body: SingleChildScrollView(

@@ -616,11 +616,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                   onPressed: () {
                     createVirtualTicket();
                   },
-                  icon: SvgPicture.asset('assets/svg/IconNext.svg'),
-                  label: const Text(
-                    'Next',
-                    style: CustomTextStyle.h6,
+                  icon: SvgPicture.asset(
+                    'assets/svg/IconNext.svg',
+                    color: Colors.white,
                   ),
+                  label: 'Next',
                 ),
               if (_typeOfPcnController.text == '1')
                 BottomNavyBarItem(
@@ -649,11 +649,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                       }
                     }
                   },
-                  icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-                  label: const Text(
-                    'Save & print PCN',
-                    style: CustomTextStyle.h6,
+                  icon: SvgPicture.asset(
+                    'assets/svg/IconComplete2.svg',
+                    color: Colors.white,
                   ),
+                  label: 'Save & print PCN',
                 ),
             ],
           ),

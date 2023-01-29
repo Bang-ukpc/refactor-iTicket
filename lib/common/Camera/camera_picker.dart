@@ -110,15 +110,14 @@ class CameraPicker extends HookWidget {
                 // drawer: const MyDrawer(),
                 bottomNavigationBar: BottomSheet2(buttonList: [
                   BottomNavyBarItem(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    icon: SvgPicture.asset('assets/svg/IconDelete.svg'),
-                    label: const Text(
-                      'Delete',
-                      style: CustomTextStyle.h6,
-                    ),
-                  ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: SvgPicture.asset(
+                        'assets/svg/IconDelete.svg',
+                        color: Colors.white,
+                      ),
+                      label: 'Delete'),
                   BottomNavyBarItem(
                     onPressed: () async {
                       if (printIssue.findIssueNoImage().id !=
@@ -141,11 +140,11 @@ class CameraPicker extends HookWidget {
                         Navigator.of(context).pop();
                       }
                     },
-                    icon: SvgPicture.asset('assets/svg/IconComplete.svg'),
-                    label: const Text(
-                      'Accept',
-                      style: CustomTextStyle.h6,
+                    icon: SvgPicture.asset(
+                      'assets/svg/IconComplete.svg',
+                      color: Colors.white,
                     ),
+                    label: 'Accept',
                   ),
                 ]),
                 body: Container(

@@ -307,11 +307,11 @@ class _PrintPCNState extends State<PrintPCN> {
                     arguments: args,
                   );
                 },
-                icon: SvgPicture.asset('assets/svg/IconAbort.svg'),
-                label: const Text(
-                  'Abort',
-                  style: CustomTextStyle.h6,
+                icon: SvgPicture.asset(
+                  'assets/svg/IconAbort.svg',
+                  color: Colors.white,
                 ),
+                label: 'Abort',
               ),
               BottomNavyBarItem(
                 onPressed: () {
@@ -344,21 +344,19 @@ class _PrintPCNState extends State<PrintPCN> {
                   'assets/svg/IconPrinter.svg',
                   width: 18,
                   height: 18,
+                  color: Colors.white,
                 ),
-                label: const Text(
-                  'Print again',
-                  style: CustomTextStyle.h6,
-                ),
+                label: 'Print again',
               ),
               BottomNavyBarItem(
                 onPressed: () {
                   createPhysicalPCN();
                 },
-                icon: SvgPicture.asset('assets/svg/IconComplete.svg'),
-                label: const Text(
-                  'Complete',
-                  style: CustomTextStyle.h6,
+                icon: SvgPicture.asset(
+                  'assets/svg/IconComplete.svg',
+                  color: Colors.white,
                 ),
+                label: 'Complete',
               ),
             ],
           ),

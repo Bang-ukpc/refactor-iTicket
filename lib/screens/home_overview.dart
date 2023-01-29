@@ -356,20 +356,17 @@ class _HomeOverviewState extends State<HomeOverview> {
             onPressed: onStartBreak,
             icon: SvgPicture.asset(
               'assets/svg/IconStartBreak.svg',
-              color: ColorTheme.grey600,
+              color: Colors.white,
             ),
-            label: const Text(
-              "Start break",
-              style: CustomTextStyle.h6,
-            ),
+            label: "Start break",
           ),
           BottomNavyBarItem(
             onPressed: onCheckOut,
-            icon: SvgPicture.asset("assets/svg/CheckOut.svg"),
-            label: Text(
-              "Check out",
-              style: CustomTextStyle.h6.copyWith(color: ColorTheme.danger),
+            icon: SvgPicture.asset(
+              "assets/svg/CheckOut.svg",
+              color: Colors.white,
             ),
+            label: "Check out",
           ),
         ]),
         body: SingleChildScrollView(

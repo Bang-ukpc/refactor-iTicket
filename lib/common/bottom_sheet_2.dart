@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:iWarden/theme/color.dart';
+import 'package:iWarden/theme/text_theme.dart';
 
 class BottomNavyBarItem extends StatelessWidget {
   final void Function()? onPressed;
   final Widget icon;
-  final Widget label;
+  final String label;
 
   const BottomNavyBarItem(
       {required this.onPressed,
@@ -14,10 +15,26 @@ class BottomNavyBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton.icon(
-      onPressed: onPressed,
-      icon: icon,
-      label: label,
+    bool typeButton = label.toUpperCase().endsWith("Abort".toUpperCase());
+    return Container(
+      height: 40,
+      child: TextButton.icon(
+        style: ButtonStyle(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0.0),
+              ),
+            ),
+            backgroundColor: MaterialStateProperty.all(
+                typeButton ? ColorTheme.danger : ColorTheme.primary)),
+        onPressed: onPressed,
+        icon: icon,
+        label: Text(
+          label,
+          style: CustomTextStyle.h6.copyWith(color: ColorTheme.white),
+        ),
+      ),
     );
   }
 }
@@ -38,7 +55,7 @@ class _BottomSheet2State extends State<BottomSheet2> {
     decoration: const BoxDecoration(
       border: Border.symmetric(
         vertical: BorderSide(
-          width: 0.5,
+          width: 1,
           color: ColorTheme.grey300,
         ),
       ),
@@ -49,48 +66,29 @@ class _BottomSheet2State extends State<BottomSheet2> {
   Widget build(BuildContext context) {
     final widthScreen = MediaQuery.of(context).size.width;
     return Container(
-      decoration: const BoxDecoration(
-        color: ColorTheme.white,
-        boxShadow: [
-          BoxShadow(
-            color: ColorTheme.grey300,
-            offset: Offset(0, 0.75),
-            blurRadius: 10,
-            spreadRadius: 4,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: widget.buttonList.length == 1 ? 0 : widget.padding,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: widget.buttonList.map(
-            (item) {
-              return (widget.buttonList.length == 1
-                  ? SizedBox(
-                      width: widthScreen,
-                      child: item,
-                    )
-                  : Row(
-                      children: [
-                        SizedBox(
-                          width: ((widthScreen -
-                                  ((widget.padding) * 2) -
-                                  widget.buttonList.length -
-                                  1) /
-                              widget.buttonList.length),
-                          child: item,
-                        ),
-                        if (item !=
-                            widget.buttonList[widget.buttonList.length - 1])
-                          verticalLine
-                      ],
-                    ));
-            },
-          ).toList(),
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: widget.buttonList.map(
+          (item) {
+            return (widget.buttonList.length == 1
+                ? SizedBox(
+                    width: widthScreen,
+                    child: item,
+                  )
+                : Row(
+                    children: [
+                      SizedBox(
+                        width: ((widthScreen - widget.buttonList.length - 1) /
+                            widget.buttonList.length),
+                        child: item,
+                      ),
+                      if (item !=
+                          widget.buttonList[widget.buttonList.length - 1])
+                        verticalLine
+                    ],
+                  ));
+          },
+        ).toList(),
       ),
     );
   }

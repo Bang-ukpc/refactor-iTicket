@@ -141,6 +141,7 @@ flutter:
     - assets/svg/IconNextBottom.svg
     - assets/svg/IconSave2.svg
     - assets/svg/IconStartShift.svg
+    - assets/svg/IconAbort2.svg
 
     - config/
     - assets/
