@@ -362,7 +362,6 @@ class _PrintPCNState extends State<PrintPCN> {
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconComplete.svg',
-                  color: Colors.white,
                 ),
                 label: 'Complete',
               ),

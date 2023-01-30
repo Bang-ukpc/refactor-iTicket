@@ -159,31 +159,33 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
         .map((model) => OperationalPeriod.fromJson(model))
         .toList();
   }
-
+  print(json['Rates'][0]['LowerAmount']);
+  print(json['Rates'][0]['UpperAmount']);
   return LocationWithZones(
-      Id: json['Id'],
-      Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
-      Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
-      Address: json['Address'],
-      Address1: json['Address1'],
-      Address2: json['Address2'],
-      Address3: json['Address3'],
-      Town: json['Town'],
-      County: json['County'],
-      Postcode: json['Postcode'],
-      Name: json['Name'],
-      LocationType: json['LocationType'],
-      CountryRegionId: json['CountryRegionId'],
-      CountrySubRegionId: json['CountrySubRegionId'],
-      ClusterId: json['ClusterId'],
-      Longitude: json['Longitude'],
-      Latitude: json['Latitude'],
-      Notes: json['Notes'],
-      Distance: json['Distance'],
-      Zones: zonesList,
-      OperationalPeriods: operationalPeriodsList,
-      UpperAmount: json['Rates'][0]['LowerAmount'],
-      LowerAmount: json['Rates'][0]['LowerAmount']);
+    Id: json['Id'],
+    Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
+    Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
+    Address: json['Address'],
+    Address1: json['Address1'],
+    Address2: json['Address2'],
+    Address3: json['Address3'],
+    Town: json['Town'],
+    County: json['County'],
+    Postcode: json['Postcode'],
+    Name: json['Name'],
+    LocationType: json['LocationType'],
+    CountryRegionId: json['CountryRegionId'],
+    CountrySubRegionId: json['CountrySubRegionId'],
+    ClusterId: json['ClusterId'],
+    Longitude: json['Longitude'],
+    Latitude: json['Latitude'],
+    Notes: json['Notes'],
+    Distance: json['Distance'],
+    Zones: zonesList,
+    OperationalPeriods: operationalPeriodsList,
+    UpperAmount: json['Rates'][0]['UpperAmount'].toDouble(),
+    LowerAmount: json['Rates'][0]['LowerAmount'].toDouble(),
+  );
 }
 
 class RotaStatus {

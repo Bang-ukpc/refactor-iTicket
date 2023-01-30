@@ -279,7 +279,6 @@ class _ParkingChargeInfoState extends State<ParkingChargeInfo> {
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconComplete.svg',
-                  color: Colors.white,
                 ),
                 label: 'Complete',
               ),

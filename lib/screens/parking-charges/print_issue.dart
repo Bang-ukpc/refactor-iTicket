@@ -314,7 +314,6 @@ class _PrintIssueState extends State<PrintIssue> {
               },
               icon: SvgPicture.asset(
                 'assets/svg/IconComplete2.svg',
-                color: Colors.white,
               ),
               label: 'Complete',
             ),
