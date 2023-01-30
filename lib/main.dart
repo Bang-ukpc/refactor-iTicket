@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart' as print_issue;
 import 'package:iWarden/providers/wardens_info.dart';
@@ -25,6 +26,7 @@ void main() async {
           create: (_) => print_issue.PrintIssueProviders(),
         ),
         ChangeNotifierProvider(create: (_) => Auth()),
+        ChangeNotifierProvider(create: (_) => ContraventionProvider()),
       ],
       child: const MyApp(),
     ),

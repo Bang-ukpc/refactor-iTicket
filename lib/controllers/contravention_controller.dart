@@ -155,13 +155,10 @@ class ContraventionController {
       final response = await dio.get(
         '/contravention/vehicle-details/$plate',
       );
-      if (response.data != '') {
-        VehicleRegistration vehicleRegistration =
-            VehicleRegistration.fromJson(response.data);
-        return vehicleRegistration;
-      } else {
-        return null;
-      }
+      print(response.data);
+      VehicleRegistration vehicleRegistration =
+          VehicleRegistration.fromJson(response.data);
+      return vehicleRegistration;
     } on DioError catch (error) {
       print(error.response);
       rethrow;
