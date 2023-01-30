@@ -51,6 +51,8 @@ class CameraPicker extends HookWidget {
 
   final List<File>? initialFiles;
 
+  final int? typePCN;
+
   final WidgetBuilder? noCameraBuilder;
   final String titleCamera;
   final bool? previewImage;
@@ -75,6 +77,7 @@ class CameraPicker extends HookWidget {
     this.previewImage = false,
     this.editImage = false,
     required this.titleCamera,
+    this.typePCN,
   }) : super(key: key);
 
   @override
@@ -121,11 +124,11 @@ class CameraPicker extends HookWidget {
                   ),
                   BottomNavyBarItem(
                     onPressed: () async {
-                      if (printIssue.findIssueNoImage().id !=
+                      if (printIssue.findIssueNoImage(typePCN: typePCN).id !=
                           printIssue.data.length) {
                         if (!editImage) {
-                          await printIssue
-                              .getIdIssue(printIssue.findIssueNoImage().id);
+                          await printIssue.getIdIssue(
+                              printIssue.findIssueNoImage(typePCN: typePCN).id);
                           printIssue.addImageToIssue(printIssue.idIssue, img);
                           Navigator.of(context).pop();
                         } else {
@@ -134,8 +137,8 @@ class CameraPicker extends HookWidget {
                           Navigator.of(context).pop();
                         }
                       } else {
-                        await printIssue
-                            .getIdIssue(printIssue.findIssueNoImage().id);
+                        await printIssue.getIdIssue(
+                            printIssue.findIssueNoImage(typePCN: typePCN).id);
                         printIssue.addImageToIssue(printIssue.idIssue, img);
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
@@ -316,7 +319,8 @@ class CameraPicker extends HookWidget {
                                               Text(
                                                 !editImage
                                                     ? printIssue
-                                                        .findIssueNoImage()
+                                                        .findIssueNoImage(
+                                                            typePCN: typePCN)
                                                         .title
                                                     : titleCamera,
                                                 style:

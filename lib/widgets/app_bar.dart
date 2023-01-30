@@ -61,6 +61,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : SizedBox(
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
                     title,

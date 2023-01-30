@@ -1,8 +1,8 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
@@ -14,6 +14,7 @@ import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -22,7 +23,6 @@ import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class AbortScreen extends StatefulWidget {
@@ -69,15 +69,16 @@ class _AbortScreenState extends State<AbortScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Contravention;
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
     final printIssue = Provider.of<PrintIssueProviders>(context);
+    final contraventionProvider = Provider.of<ContraventionProvider>(context);
 
     Future<void> abortPCN() async {
       final wardenEventAbortPCN = WardenEvent(
         type: TypeWardenEvent.AbortPCN.index,
-        detail: 'Abort PCN: ${args.reference}',
+        detail:
+            'Abort PCN, comment: ${_commentController.text.isNotEmpty ? _commentController.text : "no comment"}',
         latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         wardenId: wardensProvider.wardens?.Id ?? 0,
@@ -85,6 +86,7 @@ class _AbortScreenState extends State<AbortScreen> {
         locationId: locationProvider.location?.Id ?? 0,
         rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
         rotaTimeTo: locationProvider.rotaShift?.timeTo,
+        cancellationReasonId: int.parse(_cancellationReasonController.text),
       );
       final isValid = _formKey.currentState!.validate();
 
@@ -127,6 +129,7 @@ class _AbortScreenState extends State<AbortScreen> {
           borderRadius: 5,
         ).show(context);
       }
+      contraventionProvider.clearContraventionData();
       printIssue.resetData();
       _formKey.currentState!.save();
       return;
