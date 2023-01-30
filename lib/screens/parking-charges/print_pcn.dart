@@ -68,7 +68,12 @@ class _PrintPCNState extends State<PrintPCN> {
         });
       } else {
         bluetoothPrinterHelper.printPhysicalPCN(
-            args, locations.location!, 2002);
+          args,
+          locations.location!,
+          60,
+          100,
+          2002,
+        );
       }
     });
   }
@@ -87,7 +92,7 @@ class _PrintPCNState extends State<PrintPCN> {
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-
+    // print()
     Future<void> createPhysicalPCN() async {
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
@@ -335,9 +340,12 @@ class _PrintPCNState extends State<PrintPCN> {
                     });
                   } else {
                     bluetoothPrinterHelper.printPhysicalPCN(
-                        args,
-                        locations.location!,
-                        wardensProvider.wardens!.Id as int);
+                      args,
+                      locations.location!,
+                      locations.location!.LowerAmount,
+                      locations.location!.UpperAmount,
+                      wardensProvider.wardens!.Id as int,
+                    );
                   }
                 },
                 icon: SvgPicture.asset(

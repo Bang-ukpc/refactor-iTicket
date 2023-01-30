@@ -149,7 +149,6 @@ class _LocationScreenState extends State<LocationScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-
     // final sourceLocation = LatLng(
     //   currentLocationPosition.currentLocation?.latitude ?? 0,
     //   currentLocationPosition.currentLocation?.longitude ?? 0,

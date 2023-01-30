@@ -145,7 +145,7 @@ class BluetoothPrinterHelper {
   }
 
   Future printPhysicalPCN(Contravention physicalPCN, Location locationName,
-      int wardenIdPrint) async {
+      double lowerAmount, double upperAmount, int wardenIdPrint) async {
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 135;
@@ -194,9 +194,10 @@ class BluetoothPrinterHelper {
 
     String postCodeString =
         "$postCode^FB400,3,3,L,0^FD${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS^FO$xAxis";
-    String lowerPrintText = "$lower^FB400,3,3,L,0^FD${10.5}^FS^FO${xAxis + 78}";
-    String upperPrintText = "$upper^FB400,3,3,L,0^FD${12.5}^FS^FO$xAxis3";
-    String wardenIdPrintText = "$wardenId^FD${wardenIdPrint}^FS^FO$xAxis2";
+    String lowerPrintText =
+        "$lower^FB400,3,3,L,0^FD$lowerAmount^FS^FO${xAxis + 78}";
+    String upperPrintText = "$upper^FB400,3,3,L,0^FD$upperAmount^FS^FO$xAxis3";
+    String wardenIdPrintText = "$wardenId^FD$wardenIdPrint^FS^FO$xAxis2";
     bytes += generator.text(
         '! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis,$plate^FD${physicalPCN.plate}^FS^FO$xAxis,$make^FD${physicalPCN.make}^FS^FO$xAxis,$color^FD${physicalPCN.colour}^FS^FO$xAxis,$location^FB400,3,3,L,0^FD${locationName.Name}^FS^FO$xAxis,$roadString,$townString,$countyString,$postCodeString,$issueTime^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.eventDateTime as DateTime)}^FS^FO$xAxis,$timeFirstSeen^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime)}^FS^FO${xAxis3 + 110},$wardenIdPrintText,$desc^FB500,3,3,L,0^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$lowerPrintText, $upperPrintText, $referenceNo2^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis3,$plate2^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
 
