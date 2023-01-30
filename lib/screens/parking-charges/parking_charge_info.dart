@@ -264,7 +264,6 @@ class _ParkingChargeInfoState extends State<ParkingChargeInfo> {
                 onPressed: () {
                   Navigator.of(context).pushNamed(
                     AbortScreen.routeName,
-                    arguments: args,
                   );
                 },
                 icon: SvgPicture.asset(

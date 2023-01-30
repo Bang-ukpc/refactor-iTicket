@@ -12,12 +12,10 @@ import 'package:iWarden/widgets/parking-charge/detail_car.dart';
 
 class DetailParkingCommon extends StatefulWidget {
   final Contravention? contravention;
-  final bool? isDisplayPrintPCN;
   final bool? isDisplayBottomNavigate;
   final bool? imagePreviewStatus;
   const DetailParkingCommon({
     this.contravention,
-    this.isDisplayPrintPCN = false,
     this.isDisplayBottomNavigate = false,
     this.imagePreviewStatus = false,
     super.key,
@@ -60,17 +58,6 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            if (widget.isDisplayPrintPCN == true)
-              Container(
-                width: double.infinity,
-                color: ColorTheme.darkPrimary,
-                padding: const EdgeInsets.all(10),
-                child: Center(
-                    child: Text(
-                  "Print PCN",
-                  style: CustomTextStyle.h4.copyWith(color: Colors.white),
-                )),
-              ),
             DetailCar(
               plate: widget.contravention!.plate as String,
               make: widget.contravention?.make,
