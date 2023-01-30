@@ -309,11 +309,10 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                 }
               });
             },
-            icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-            label: const Text(
-              'Complete',
-              style: CustomTextStyle.h6,
+            icon: SvgPicture.asset(
+              'assets/svg/IconComplete2.svg',
             ),
+            label: 'Complete',
           ),
           BottomNavyBarItem(
             onPressed: saveForm,
@@ -321,11 +320,9 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
               'assets/svg/IconSave2.svg',
               width: 20,
               height: 20,
+              color: Colors.white,
             ),
-            label: const Text(
-              'Save & add',
-              style: CustomTextStyle.h6,
-            ),
+            label: 'Save & add',
           ),
         ]),
         body: GestureDetector(

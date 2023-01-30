@@ -48,7 +48,8 @@ class Location extends BaseModel {
 class LocationWithZones extends Location {
   final List<Zone>? Zones;
   final List<OperationalPeriod>? OperationalPeriods;
-
+  final double LowerAmount;
+  final double UpperAmount;
   LocationWithZones({
     int? Id,
     DateTime? Created,
@@ -71,6 +72,8 @@ class LocationWithZones extends Location {
     double? Distance,
     DateTime? From,
     DateTime? To,
+    required this.LowerAmount,
+    required this.UpperAmount,
     this.Zones,
     this.OperationalPeriods,
   }) : super(
@@ -156,7 +159,8 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
         .map((model) => OperationalPeriod.fromJson(model))
         .toList();
   }
-
+  print(json['Rates'][0]['LowerAmount']);
+  print(json['Rates'][0]['UpperAmount']);
   return LocationWithZones(
     Id: json['Id'],
     Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
@@ -179,6 +183,8 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Distance: json['Distance'],
     Zones: zonesList,
     OperationalPeriods: operationalPeriodsList,
+    UpperAmount: json['Rates'][0]['UpperAmount'].toDouble(),
+    LowerAmount: json['Rates'][0]['LowerAmount'].toDouble(),
   );
 }
 

@@ -6,6 +6,7 @@ import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter_pos_printer_platform/flutter_pos_printer_platform.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/location.dart';
 import 'package:intl/intl.dart';
 
 class BluetoothPrinterHelper {
@@ -121,8 +122,30 @@ class BluetoothPrinterHelper {
     printEscPos(bytes, generator);
   }
 
-  Future printPhysicalPCN(
-      Contravention physicalPCN, String locationName) async {
+  int calculatorItem(String? text) {
+    int num;
+    if (text == null || text.isEmpty) {
+      num = 0;
+    } else {
+      num = 30;
+    }
+    return num;
+  }
+
+  int calculatorLocation(List<String?> listText) {
+    int sum = 0;
+    for (int i = 0; i < listText.length; i++) {
+      sum += calculatorItem(listText[i]);
+    }
+    return sum;
+  }
+
+  bool isTextNull(String? text) {
+    return text == null || text.isEmpty;
+  }
+
+  Future printPhysicalPCN(Contravention physicalPCN, Location locationName,
+      double lowerAmount, double upperAmount, int wardenIdPrint) async {
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 135;
@@ -131,11 +154,27 @@ class BluetoothPrinterHelper {
     int plate = date + 70;
     int make = plate + 65;
     int color = make + 65;
-    int location = color + 50;
-    int issueTime = location + 170;
+    int location = color + 55;
+
+    int road = location + calculatorItem(locationName.Address1);
+    int town = road + calculatorItem(locationName.Town);
+    int county = town + calculatorItem(locationName.County);
+    int postCode = county + calculatorItem(locationName.Postcode);
+
+    int issueTime = postCode +
+        45 +
+        calculatorLocation([
+          locationName.Address1,
+          locationName.Town,
+          locationName.County,
+          locationName.Postcode
+        ]);
     int timeFirstSeen = issueTime + 60;
-    int desc = timeFirstSeen + 200;
-    int referenceNo2 = desc + 540;
+    int wardenId = timeFirstSeen + 55;
+    int desc = wardenId + (205 - 55);
+    int lower = desc + 95;
+    int upper = lower + 40;
+    int referenceNo2 = upper + 400;
     int date2 = referenceNo2 + 60;
     int plate2 = date2 + 60;
     int barcode = plate2 + 70;
@@ -144,9 +183,25 @@ class BluetoothPrinterHelper {
     final profile = await CapabilityProfile.load();
 
     final generator = Generator(PaperSize.mm80, profile);
-    bytes += generator.text(
-        '! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis,$plate^FD${physicalPCN.plate}^FS^FO$xAxis,$make^FD${physicalPCN.make}^FS^FO$xAxis,$color^FD${physicalPCN.colour}^FS^FO$xAxis,$location^FB400,3,3,L,0^FD$locationName^FS^FO$xAxis,$issueTime^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.eventDateTime as DateTime)}^FS^FO$xAxis,$timeFirstSeen^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime)}^FS^FO$xAxis2,$desc^FB500,3,3,L,0^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO$xAxis3,$referenceNo2^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis3,$plate2^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
+    String roadString =
+        "$road^FB400,3,3,L,0^FD${isTextNull(locationName.Address1) ? " " : locationName.Address1}^FS^FO$xAxis";
 
+    String townString =
+        "$town^FB400,3,3,L,0^FD${isTextNull(locationName.Town) ? " " : locationName.Town}^FS^FO$xAxis";
+
+    String countyString =
+        "$county^FB400,3,3,L,0^FD${isTextNull(locationName.County) ? " " : locationName.County}^FS^FO$xAxis";
+
+    String postCodeString =
+        "$postCode^FB400,3,3,L,0^FD${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS^FO$xAxis";
+    String lowerPrintText =
+        "$lower^FB400,3,3,L,0^FD$lowerAmount^FS^FO${xAxis + 78}";
+    String upperPrintText = "$upper^FB400,3,3,L,0^FD$upperAmount^FS^FO$xAxis3";
+    String wardenIdPrintText = "$wardenId^FD$wardenIdPrint^FS^FO$xAxis2";
+    bytes += generator.text(
+        '! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis,$plate^FD${physicalPCN.plate}^FS^FO$xAxis,$make^FD${physicalPCN.make}^FS^FO$xAxis,$color^FD${physicalPCN.colour}^FS^FO$xAxis,$location^FB400,3,3,L,0^FD${locationName.Name}^FS^FO$xAxis,$roadString,$townString,$countyString,$postCodeString,$issueTime^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.eventDateTime as DateTime)}^FS^FO$xAxis,$timeFirstSeen^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime)}^FS^FO${xAxis3 + 110},$wardenIdPrintText,$desc^FB500,3,3,L,0^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$lowerPrintText, $upperPrintText, $referenceNo2^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis3,$plate2^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
+
+    log('! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis,$plate^FD${physicalPCN.plate}^FS^FO$xAxis,$make^FD${physicalPCN.make}^FS^FO$xAxis,$color^FD${physicalPCN.colour}^FS^FO$xAxis,$location^FB400,3,3,L,0^FD${locationName.Name}^FS^FO$xAxis,$roadString,$townString,$countyString,$postCodeString,$issueTime^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.eventDateTime as DateTime)}^FS^FO$xAxis,$timeFirstSeen^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime)}^FS^FO${xAxis3 + 80},$wardenIdPrintText,$desc^FB500,3,3,L,0^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$lowerPrintText, $upperPrintText, $referenceNo2^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis3,$plate2^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
     printEscPos(bytes, generator);
   }
 

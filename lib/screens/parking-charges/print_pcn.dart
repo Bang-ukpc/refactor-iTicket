@@ -68,7 +68,12 @@ class _PrintPCNState extends State<PrintPCN> {
         });
       } else {
         bluetoothPrinterHelper.printPhysicalPCN(
-            args, locations.location?.Name ?? '');
+          args,
+          locations.location!,
+          60,
+          100,
+          2002,
+        );
       }
     });
   }
@@ -87,6 +92,7 @@ class _PrintPCNState extends State<PrintPCN> {
     final args = ModalRoute.of(context)!.settings.arguments as Contravention;
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
+<<<<<<< HEAD
 
     Future<void> createPhysicalPCN() async {
       ConnectivityResult connectionStatus =
@@ -127,6 +133,48 @@ class _PrintPCNState extends State<PrintPCN> {
         rotaTimeTo: locationProvider.rotaShift?.timeTo,
       );
 
+=======
+    // print()
+    Future<void> createPhysicalPCN() async {
+      ConnectivityResult connectionStatus =
+          await (Connectivity().checkConnectivity());
+      int randomReference =
+          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
+      final physicalPCN = ContraventionCreateWardenCommand(
+        ZoneId: locationProvider.zone?.Id ?? 0,
+        ContraventionReference: '$randomReference',
+        Plate: args.plate as String,
+        VehicleMake: args.make as String,
+        VehicleColour: args.colour as String,
+        ContraventionReasonCode: args.reason!.code as String,
+        EventDateTime: DateTime.now(),
+        FirstObservedDateTime: args.eventDateTime as DateTime,
+        WardenId: wardensProvider.wardens?.Id ?? 0,
+        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        WardenComments: args.contraventionEvents!
+            .map((item) => item.detail)
+            .toString()
+            .replaceAll('(', '')
+            .replaceAll(')', ''),
+        BadgeNumber: 'test',
+        LocationAccuracy: 0, // missing
+        TypePCN: TypePCN.Physical.index,
+      );
+
+      final wardenEventIssuePCN = WardenEvent(
+        type: TypeWardenEvent.IssuePCN.index,
+        detail: '{"TicketNumber": "${physicalPCN.ContraventionReference}"}',
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: wardensProvider.wardens?.Id ?? 0,
+        zoneId: locationProvider.zone?.Id ?? 0,
+        locationId: locationProvider.location?.Id ?? 0,
+        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
+        rotaTimeTo: locationProvider.rotaShift?.timeTo,
+      );
+
+>>>>>>> 89ecb9002d711c01ac47e4343a20ba8ad8955151
       Contravention? contravention;
       bool check = false;
 
@@ -307,11 +355,18 @@ class _PrintPCNState extends State<PrintPCN> {
                     arguments: args,
                   );
                 },
+<<<<<<< HEAD
                 icon: SvgPicture.asset('assets/svg/IconAbort.svg'),
                 label: const Text(
                   'Abort',
                   style: CustomTextStyle.h6,
+=======
+                icon: SvgPicture.asset(
+                  'assets/svg/IconAbort.svg',
+                  color: Colors.white,
+>>>>>>> 89ecb9002d711c01ac47e4343a20ba8ad8955151
                 ),
+                label: 'Abort',
               ),
               BottomNavyBarItem(
                 onPressed: () {
@@ -335,28 +390,48 @@ class _PrintPCNState extends State<PrintPCN> {
                     });
                   } else {
                     bluetoothPrinterHelper.printPhysicalPCN(
+<<<<<<< HEAD
                         args, locations.location?.Name ?? '');
+=======
+                      args,
+                      locations.location!,
+                      locations.location!.LowerAmount,
+                      locations.location!.UpperAmount,
+                      wardensProvider.wardens!.Id as int,
+                    );
+>>>>>>> 89ecb9002d711c01ac47e4343a20ba8ad8955151
                   }
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconPrinter.svg',
                   width: 18,
                   height: 18,
+<<<<<<< HEAD
                 ),
                 label: const Text(
                   'Print again',
                   style: CustomTextStyle.h6,
+=======
+                  color: Colors.white,
+>>>>>>> 89ecb9002d711c01ac47e4343a20ba8ad8955151
                 ),
+                label: 'Print again',
               ),
               BottomNavyBarItem(
                 onPressed: () {
                   createPhysicalPCN();
                 },
+<<<<<<< HEAD
                 icon: SvgPicture.asset('assets/svg/IconComplete.svg'),
                 label: const Text(
                   'Complete',
                   style: CustomTextStyle.h6,
+=======
+                icon: SvgPicture.asset(
+                  'assets/svg/IconComplete.svg',
+>>>>>>> 89ecb9002d711c01ac47e4343a20ba8ad8955151
                 ),
+                label: 'Complete',
               ),
             ],
           ),

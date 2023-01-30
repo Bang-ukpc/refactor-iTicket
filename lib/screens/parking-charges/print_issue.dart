@@ -276,11 +276,11 @@ class _PrintIssueState extends State<PrintIssue> {
                   arguments: contravention,
                 );
               },
-              icon: SvgPicture.asset('assets/svg/IconAbort.svg'),
-              label: const Text(
-                'Abort',
-                style: CustomTextStyle.h6,
+              icon: SvgPicture.asset(
+                'assets/svg/IconAbort.svg',
+                color: Colors.white,
               ),
+              label: 'Abort',
             ),
             if (!(printIssue.findIssueNoImage().id ==
                 printIssue.data.length + 1))
@@ -289,11 +289,9 @@ class _PrintIssueState extends State<PrintIssue> {
                 icon: SvgPicture.asset(
                   'assets/svg/IconCamera.svg',
                   width: 17,
+                  color: Colors.white,
                 ),
-                label: const Text(
-                  'Take a photo',
-                  style: CustomTextStyle.h6,
-                ),
+                label: 'Take a photo',
               ),
             if (printIssue.findIssueNoImage().id == printIssue.data.length + 1)
               BottomNavyBarItem(
@@ -301,11 +299,9 @@ class _PrintIssueState extends State<PrintIssue> {
                     Navigator.of(context).pushNamed(PreviewPhoto.routeName),
                 icon: SvgPicture.asset(
                   'assets/svg/IconPreview.svg',
+                  color: Colors.white,
                 ),
-                label: const Text(
-                  'Preview all',
-                  style: CustomTextStyle.h6,
-                ),
+                label: 'Preview all',
               ),
             BottomNavyBarItem(
               onPressed: () {
@@ -316,11 +312,10 @@ class _PrintIssueState extends State<PrintIssue> {
                   onCompleteTakePhotos();
                 }
               },
-              icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-              label: const Text(
-                'Complete',
-                style: CustomTextStyle.h6,
+              icon: SvgPicture.asset(
+                'assets/svg/IconComplete2.svg',
               ),
+              label: 'Complete',
             ),
           ]),
           body: SingleChildScrollView(

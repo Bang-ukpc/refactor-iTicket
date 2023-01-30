@@ -267,21 +267,36 @@ class _ParkingChargeInfoState extends State<ParkingChargeInfo> {
                     arguments: args,
                   );
                 },
+<<<<<<< HEAD
                 icon: SvgPicture.asset('assets/svg/IconAbort.svg'),
                 label: const Text(
                   'Abort',
                   style: CustomTextStyle.h6,
                 ),
+=======
+                icon: SvgPicture.asset(
+                  'assets/svg/IconAbort.svg',
+                  color: Colors.white,
+                ),
+                label: 'Abort',
+>>>>>>> 89ecb9002d711c01ac47e4343a20ba8ad8955151
               ),
               BottomNavyBarItem(
                 onPressed: () {
                   createVirtualTicket();
                 },
+<<<<<<< HEAD
                 icon: SvgPicture.asset('assets/svg/IconComplete.svg'),
                 label: const Text(
                   'Complete',
                   style: CustomTextStyle.h6,
                 ),
+=======
+                icon: SvgPicture.asset(
+                  'assets/svg/IconComplete.svg',
+                ),
+                label: 'Complete',
+>>>>>>> 89ecb9002d711c01ac47e4343a20ba8ad8955151
               ),
             ],
           ),

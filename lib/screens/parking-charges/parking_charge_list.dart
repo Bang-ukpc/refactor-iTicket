@@ -106,11 +106,9 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
             icon: SvgPicture.asset(
               "assets/svg/IconCharges2.svg",
               width: 16,
+              color: Colors.white,
             ),
-            label: const Text(
-              'Issue PCN',
-              style: CustomTextStyle.h6,
-            ),
+            label: 'Issue PCN',
           ),
         ]),
         body: RefreshIndicator(

@@ -145,21 +145,20 @@ class _AbortScreenState extends State<AbortScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              icon: SvgPicture.asset('assets/svg/IconCancel2.svg'),
-              label: const Text(
-                'Cancel',
-                style: CustomTextStyle.h6,
+              icon: SvgPicture.asset(
+                'assets/svg/IconCancel2.svg',
+                color: Colors.white,
               ),
+              label: 'Cancel',
             ),
             BottomNavyBarItem(
               onPressed: () {
                 abortPCN();
               },
-              icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-              label: const Text(
-                'Finish abort',
-                style: CustomTextStyle.h6,
+              icon: SvgPicture.asset(
+                'assets/svg/IconAbort2.svg',
               ),
+              label: 'Finish abort',
             ),
           ]),
           body: SafeArea(
