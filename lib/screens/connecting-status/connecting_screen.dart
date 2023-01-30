@@ -379,7 +379,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
+                    icon: SvgPicture.asset("assets/svg/IconStartShift.svg"),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       shadowColor: Colors.transparent,
@@ -401,7 +402,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                         ).show(context);
                       }
                     },
-                    child: Text(
+                    label: Text(
                       "Start shift",
                       style: CustomTextStyle.h5.copyWith(color: Colors.white),
                     ),

@@ -86,14 +86,6 @@ class _AbortScreenState extends State<AbortScreen> {
         rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
         rotaTimeTo: locationProvider.rotaShift?.timeTo,
       );
-
-      final abortPcnBody = AbortPCN(
-        contraventionId: args.id as int,
-        cancellationReasonId: _cancellationReasonController.text != ''
-            ? int.tryParse(_cancellationReasonController.text) as int
-            : 0,
-        comment: _commentController.text,
-      );
       final isValid = _formKey.currentState!.validate();
 
       if (!isValid) {
@@ -101,12 +93,10 @@ class _AbortScreenState extends State<AbortScreen> {
       }
 
       try {
-        await abortController.abortPCN(abortPcnBody).then((value) async {
-          await userController
-              .createWardenEvent(wardenEventAbortPCN)
-              .then((value) {
-            Navigator.of(context).pushNamed(ParkingChargeList.routeName);
-          });
+        await userController
+            .createWardenEvent(wardenEventAbortPCN)
+            .then((value) {
+          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
         });
       } on DioError catch (error) {
         if (!mounted) return;
