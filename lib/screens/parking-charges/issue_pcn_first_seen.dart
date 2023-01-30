@@ -616,16 +616,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                   onPressed: () {
                     createVirtualTicket();
                   },
-<<<<<<< HEAD
-                  icon: SvgPicture.asset('assets/svg/IconNext.svg'),
-                  label: const Text(
-                    'Next',
-                    style: CustomTextStyle.h6,
-=======
                   icon: SvgPicture.asset(
                     'assets/svg/IconNext.svg',
                     color: Colors.white,
->>>>>>> 89ecb9002d711c01ac47e4343a20ba8ad8955151
                   ),
                   label: 'Next',
                 ),
