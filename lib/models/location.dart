@@ -159,8 +159,6 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
         .map((model) => OperationalPeriod.fromJson(model))
         .toList();
   }
-  print(json['Rates'][0]['LowerAmount']);
-  print(json['Rates'][0]['UpperAmount']);
   return LocationWithZones(
     Id: json['Id'],
     Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
@@ -183,8 +181,12 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Distance: json['Distance'],
     Zones: zonesList,
     OperationalPeriods: operationalPeriodsList,
-    UpperAmount: json['Rates'][0]['UpperAmount'].toDouble(),
-    LowerAmount: json['Rates'][0]['LowerAmount'].toDouble(),
+    UpperAmount: (json['Rates'] as List<dynamic>).isEmpty
+        ? 0
+        : json['Rates'][0]['UpperAmount'].toDouble(),
+    LowerAmount: (json['Rates'] as List<dynamic>).isEmpty
+        ? 0
+        : json['Rates'][0]['LowerAmount'].toDouble(),
   );
 }
 
