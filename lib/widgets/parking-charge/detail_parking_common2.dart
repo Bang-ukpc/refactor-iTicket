@@ -141,10 +141,6 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                                 style: CustomTextStyle.h6
                                     .copyWith(color: ColorTheme.grey600),
                               ),
-                              Text(
-                                  "Model: ${widget.contravention?.model ?? "No data"}",
-                                  style: CustomTextStyle.h6
-                                      .copyWith(color: ColorTheme.grey600)),
                             ],
                           ),
                         ],

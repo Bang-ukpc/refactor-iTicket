@@ -6,13 +6,11 @@ class DetailCar extends StatelessWidget {
   final String plate;
   final String? make;
   final String? color;
-  final String? model;
 
   const DetailCar({
     required this.plate,
     required this.make,
     this.color,
-    this.model,
     Key? key,
   }) : super(key: key);
 
@@ -50,9 +48,6 @@ class DetailCar extends StatelessWidget {
                 "Make: ${make ?? "No data"}",
                 style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
               ),
-              Text("Model: ${model ?? "No data"}",
-                  style:
-                      CustomTextStyle.h6.copyWith(color: ColorTheme.grey600)),
             ],
           ),
         ],

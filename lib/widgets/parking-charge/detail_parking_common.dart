@@ -62,7 +62,6 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
               plate: widget.contravention!.plate as String,
               make: widget.contravention?.make,
               color: widget.contravention?.colour,
-              model: widget.contravention?.model,
             ),
             const SizedBox(
               height: 8,
