@@ -6,6 +6,8 @@ import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
+import '../../common/my_dialog.dart';
+
 class TakePhotoItem extends StatelessWidget {
   final int id;
   final String title;
@@ -22,6 +24,34 @@ class TakePhotoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Future<void> showMyDialog() async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: ColorTheme.backdrop,
+        builder: (BuildContext context) {
+          return MyDialog(
+            title: Text(
+              "Preview image",
+              style: CustomTextStyle.h4.copyWith(fontWeight: FontWeight.w600),
+            ),
+            subTitle: const Text(
+              "Please take enough proof photos to complete.",
+              textAlign: TextAlign.center,
+              style: CustomTextStyle.body1,
+            ),
+            func: ElevatedButton(
+              child: const Text("Ok"),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                print(123);
+              },
+            ),
+          );
+        },
+      );
+    }
+
     return Column(
       children: [
         if (title.length > 1)

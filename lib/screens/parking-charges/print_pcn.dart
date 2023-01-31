@@ -58,7 +58,8 @@ class _PrintPCNState extends State<PrintPCN> {
       VehicleColour: args?.colour as String,
       ContraventionReasonCode: args?.reason?.code as String,
       EventDateTime: DateTime.now(),
-      FirstObservedDateTime: args?.eventDateTime as DateTime,
+      FirstObservedDateTime:
+          args?.contraventionDetailsWarden?.FirstObserved ?? DateTime.now(),
       WardenId: args?.contraventionDetailsWarden?.WardenId ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,

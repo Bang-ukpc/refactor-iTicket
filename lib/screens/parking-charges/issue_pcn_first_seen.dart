@@ -222,10 +222,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           await (Connectivity().checkConnectivity());
       int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
       int randomReference =
-          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
+          (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
       final physicalPCN = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '$randomReference',
+        ContraventionReference: '5$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
@@ -372,10 +372,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           await (Connectivity().checkConnectivity());
       int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
       int randomReference =
-          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
+          (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
       final virtualTicket = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '$randomReference',
+        ContraventionReference: '5$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
@@ -764,16 +764,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                             : null
                                         : null
                                 : null,
-                            // onTap3: contraventionProvider.contravention != null
-                            //     ? contraventionProvider.contravention!
-                            //             .contraventionPhotos!.isNotEmpty
-                            //         ? () {
-                            //             _selectedItemTypePCN!.value == 0
-                            //                 ? createPhysicalPCN(step3: true)
-                            //                 : createVirtualTicket(step3: true);
-                            //           }
-                            //         : null
-                            //     : null,
                           ),
                           const SizedBox(
                             height: 30,
