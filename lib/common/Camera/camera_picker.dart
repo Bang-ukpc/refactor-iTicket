@@ -86,6 +86,7 @@ class CameraPicker extends HookWidget {
         filesData: List.from(initialFiles ?? []),
         minPicture: minPicture,
         maxPicture: maxPicture));
+    var filesDataImage = useState<int>(store.filesData.length);
     final availableCamerasFuture = useMemoized(() => availableCameras());
     final cameras = useState<List<CameraDescription>?>(null);
     final printIssue = Provider.of<PrintIssueProviders>(context);
@@ -193,6 +194,8 @@ class CameraPicker extends HookWidget {
 
     var isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+
+    print(filesDataImage.value);
     return Material(
       child: SizedBox(
         width: double.infinity,
@@ -407,6 +410,10 @@ class CameraPicker extends HookWidget {
                                                           store.removeFile(
                                                               store.filesData[
                                                                   index]);
+                                                          filesDataImage.value =
+                                                              filesDataImage
+                                                                      .value -
+                                                                  1;
                                                         }
                                                       },
                                                     ),
@@ -450,8 +457,8 @@ class CameraPicker extends HookWidget {
                                                             MainAxisAlignment
                                                                 .spaceBetween,
                                                         children: [
-                                                          store.filesData
-                                                                  .isNotEmpty
+                                                          filesDataImage.value >
+                                                                  0
                                                               ? InkWell(
                                                                   onTap: () {
                                                                     cameraController
@@ -515,6 +522,11 @@ class CameraPicker extends HookWidget {
                                                                       encodeImage);
                                                                 store.addFile(
                                                                     finalImage);
+                                                                filesDataImage
+                                                                        .value =
+                                                                    filesDataImage
+                                                                            .value +
+                                                                        1;
                                                                 previewImage ==
                                                                         true
                                                                     ? SystemChrome
@@ -557,8 +569,8 @@ class CameraPicker extends HookWidget {
                                                                   "assets/svg/IconCamera2.svg",
                                                             ),
                                                           ),
-                                                          store.filesData
-                                                                  .isNotEmpty
+                                                          filesDataImage.value >
+                                                                  0
                                                               ? HookBuilder(
                                                                   builder:
                                                                       (context) {
@@ -622,6 +634,8 @@ class CameraPicker extends HookWidget {
                                                   store.filesData[index])) {
                                             store.removeFile(
                                                 store.filesData[index]);
+                                            filesDataImage.value =
+                                                filesDataImage.value - 1;
                                           }
                                         },
                                       );
@@ -635,7 +649,7 @@ class CameraPicker extends HookWidget {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        store.filesData.isNotEmpty
+                                        filesDataImage.value > 0
                                             ? InkWell(
                                                 onTap: () {
                                                   cameraController.dispose();
@@ -685,6 +699,8 @@ class CameraPicker extends HookWidget {
                                               var finalImage = files
                                                 ..writeAsBytesSync(encodeImage);
                                               store.addFile(finalImage);
+                                              filesDataImage.value =
+                                                  filesDataImage.value + 1;
                                               previewImage == true
                                                   ? SystemChrome
                                                       .setPreferredOrientations([
@@ -719,7 +735,7 @@ class CameraPicker extends HookWidget {
                                                 "assets/svg/IconCamera2.svg",
                                           ),
                                         ),
-                                        store.filesData.isNotEmpty
+                                        filesDataImage.value > 0
                                             ? HookBuilder(builder: (context) {
                                                 useListenable(store);
 
