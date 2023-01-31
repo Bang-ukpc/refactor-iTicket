@@ -129,12 +129,12 @@ class VehicleInfoController {
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
-      log(vehicleInfo.toJson().toString());
       try {
         final response = await dio.post(
           '/vehicleInformation',
           data: vehicleInfo.toJson(),
         );
+        print(response.data);
         final vehicleFromJson = VehicleInformation.fromJson(response.data);
         return vehicleFromJson;
       } on DioError catch (error) {

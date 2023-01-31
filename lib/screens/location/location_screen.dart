@@ -181,25 +181,6 @@ class _LocationScreenState extends State<LocationScreen> {
     //   setState(() => _info = directions);
     // }
 
-    OperationalPeriod? getOperationalPeriodNearest(
-        List<OperationalPeriod> operationalPeriodList) {
-      var date = DateTime.now();
-      int currentMinutes = date.hour * 60 + date.minute;
-      if (operationalPeriodList.isNotEmpty) {
-        for (int i = 0; i < operationalPeriodList.length; i++) {
-          var item = operationalPeriodList[i];
-          print('time from: ${item.TimeFrom}, time to: ${item.TimeTo}');
-          print('current time: $currentMinutes');
-          if (currentMinutes <= item.TimeFrom ||
-              currentMinutes > item.TimeFrom && currentMinutes <= item.TimeTo) {
-            return item;
-          }
-        }
-        return operationalPeriodList[operationalPeriodList.length - 1];
-      }
-      return null;
-    }
-
     print(
         'from: ${locations.rotaShift?.timeFrom}, to: ${locations.rotaShift?.timeTo}');
     print('location: ${locations.location?.Name}');
@@ -428,15 +409,10 @@ class _LocationScreenState extends State<LocationScreen> {
                                               subTitle: '${item.Distance}km',
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
-                                              operationalPeriods: item
-                                                      .OperationalPeriods!
-                                                      .isNotEmpty
-                                                  ? getOperationalPeriodNearest(
-                                                      locations.location!
-                                                              .OperationalPeriods ??
-                                                          [],
-                                                    )
-                                                  : null,
+                                              operationalPeriodsList: locations
+                                                      .location!
+                                                      .OperationalPeriods ??
+                                                  [],
                                             );
                                           },
                                         ),
@@ -650,12 +626,12 @@ class DropDownItem2 extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
-  final OperationalPeriod? operationalPeriods;
+  final List<OperationalPeriod> operationalPeriodsList;
   const DropDownItem2({
     required this.title,
     this.subTitle,
     this.isSelected = false,
-    required this.operationalPeriods,
+    required this.operationalPeriodsList,
     super.key,
   });
 
@@ -669,10 +645,9 @@ class DropDownItem2 extends StatelessWidget {
       return DateFormat('HH:mm').format(date);
     }
 
-    Color getStatusColor() {
-      if (currentMinutes <= operationalPeriods!.TimeFrom ||
-          currentMinutes > operationalPeriods!.TimeFrom &&
-              currentMinutes <= operationalPeriods!.TimeTo) {
+    Color getStatusColor({required int timeFrom, required int timeTo}) {
+      if (currentMinutes <= timeFrom ||
+          currentMinutes > timeFrom && currentMinutes <= timeTo) {
         return ColorTheme.success;
       }
       return ColorTheme.danger;
@@ -692,11 +667,13 @@ class DropDownItem2 extends StatelessWidget {
           horizontal: 12,
           vertical: subTitle != null ? 10 : 15,
         ),
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.5,
@@ -710,20 +687,35 @@ class DropDownItem2 extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (operationalPeriods != null)
+                const SizedBox(
+                  height: 5,
+                ),
+                if (subTitle != null)
                   Text(
-                    'Op ${formatOperationalPeriods(startDay.add(Duration(minutes: operationalPeriods!.TimeFrom)))} - ${formatOperationalPeriods(startDay.add(Duration(minutes: operationalPeriods!.TimeTo)))}',
-                    style: CustomTextStyle.body2.copyWith(
-                      color: getStatusColor(),
-                      fontWeight: FontWeight.w600,
-                    ),
+                    subTitle ?? '',
+                    style: CustomTextStyle.body2,
                   ),
               ],
             ),
-            if (subTitle != null)
-              Text(
-                subTitle ?? '',
-                style: CustomTextStyle.body2,
+            if (operationalPeriodsList.isNotEmpty)
+              Column(
+                children: operationalPeriodsList.map((e) {
+                  return Column(
+                    children: [
+                      Text(
+                        'Op ${formatOperationalPeriods(startDay.add(Duration(minutes: e.TimeFrom)))} - ${formatOperationalPeriods(startDay.add(Duration(minutes: e.TimeTo)))}',
+                        style: CustomTextStyle.body2.copyWith(
+                          color: getStatusColor(
+                              timeFrom: e.TimeFrom, timeTo: e.TimeTo),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                    ],
+                  );
+                }).toList(),
               ),
           ],
         ),
