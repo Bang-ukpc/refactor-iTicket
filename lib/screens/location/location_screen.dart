@@ -203,6 +203,8 @@ class _LocationScreenState extends State<LocationScreen> {
       }
     }
 
+    print(locations.location?.OperationalPeriods?.length);
+
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
@@ -409,10 +411,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                               subTitle: '${item.Distance}km',
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
-                                              operationalPeriodsList: locations
-                                                      .location!
-                                                      .OperationalPeriods ??
-                                                  [],
+                                              operationalPeriodsList:
+                                                  item.OperationalPeriods ?? [],
                                             );
                                           },
                                         ),
