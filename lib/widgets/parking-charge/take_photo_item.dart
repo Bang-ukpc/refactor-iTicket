@@ -2,16 +2,19 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 class TakePhotoItem extends StatelessWidget {
+  final int id;
   final String title;
   final File? image;
   final bool state;
   final VoidCallback? func;
   const TakePhotoItem(
-      {required this.title,
+      {required this.id,
+      required this.title,
       required this.image,
       required this.state,
       this.func,
@@ -43,10 +46,28 @@ class TakePhotoItem extends StatelessWidget {
                       const SizedBox(
                         width: 12,
                       ),
-                      Text(
-                        title,
-                        style: CustomTextStyle.h6,
-                      )
+                      if (id == 1 || id == 2 || id == 3 || id == 4 || id == 5)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              style: CustomTextStyle.h6,
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            const Text(
+                              '*',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      if (id == 6 || id == 7 || id == 8 || id == 9)
+                        Text(
+                          title,
+                          style: CustomTextStyle.h6,
+                        )
                     ],
                   ),
                   if (image != null)

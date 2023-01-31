@@ -114,6 +114,38 @@ class PrintIssueProviders with ChangeNotifier {
     return false;
   }
 
+  bool checkIssueHasPhotoRequireVirtual() {
+    bool check1 = false;
+    bool check2 = false;
+    bool check3 = false;
+    bool check4 = false;
+
+    for (int i = 0; i < _data.length; i++) {
+      if (_data[i].id == 1) {
+        if (_data[i].image != null) {
+          check1 = true;
+        }
+      } else if (_data[i].id == 3) {
+        if (_data[i].image != null) {
+          check2 = true;
+        }
+      } else if (_data[i].id == 4) {
+        if (_data[i].image != null) {
+          check3 = true;
+        }
+      } else if (_data[i].id == 5) {
+        if (_data[i].image != null) {
+          check4 = true;
+        }
+      }
+    }
+
+    if (check1 == true && check2 == true && check3 == true && check4 == true) {
+      return true;
+    }
+    return false;
+  }
+
   void addImageToIssue(int id, File image) {
     print({
       id,

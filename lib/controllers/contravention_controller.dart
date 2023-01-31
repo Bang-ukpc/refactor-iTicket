@@ -165,6 +165,22 @@ class ContraventionController {
     }
   }
 
+  Future<CheckPermit?> checkHasPermit(
+      ContraventionCreateWardenCommand pcn) async {
+    try {
+      final response = await dio.post(
+        '/contravention/check-has-permit',
+        data: ContraventionCreateWardenCommand.toJson(pcn),
+      );
+      print('check permit: ${response.data}');
+      CheckPermit data = CheckPermit.fromJson(response.data);
+      return data;
+    } on DioError catch (error) {
+      print(error.response);
+      rethrow;
+    }
+  }
+
   Future<dynamic> uploadContraventionImage(
       ContraventionCreatePhoto contraventionCreatePhoto) async {
     var formData = FormData.fromMap({

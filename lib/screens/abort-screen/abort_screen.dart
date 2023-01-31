@@ -86,7 +86,8 @@ class _AbortScreenState extends State<AbortScreen> {
         locationId: locationProvider.location?.Id ?? 0,
         rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
         rotaTimeTo: locationProvider.rotaShift?.timeTo,
-        cancellationReasonId: int.parse(_cancellationReasonController.text),
+        cancellationReasonId:
+            int.tryParse(_cancellationReasonController.text) ?? 0,
       );
       final isValid = _formKey.currentState!.validate();
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -19,8 +20,10 @@ import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
+import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -44,37 +47,39 @@ class _PrintPCNState extends State<PrintPCN> {
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
     var args = contraventionProvider.contravention;
+    final printIssue = Provider.of<PrintIssueProviders>(context);
 
-    Future<void> createPhysicalPCN() async {
+    int randomReference = (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
+    final contraventionCreate = ContraventionCreateWardenCommand(
+      ZoneId: args?.zoneId ?? 0,
+      ContraventionReference: args?.reference ?? '$randomReference',
+      Plate: args?.plate as String,
+      VehicleMake: args?.make as String,
+      VehicleColour: args?.colour as String,
+      ContraventionReasonCode: args?.reason?.code as String,
+      EventDateTime: DateTime.now(),
+      FirstObservedDateTime: args?.eventDateTime as DateTime,
+      WardenId: args?.contraventionDetailsWarden?.WardenId ?? 0,
+      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      WardenComments: args!.contraventionEvents!
+          .map((item) => item.detail)
+          .toString()
+          .replaceAll('(', '')
+          .replaceAll(')', ''),
+      BadgeNumber: 'test',
+      LocationAccuracy: 0, // missing
+      TypePCN: args.type,
+    );
+
+    Future<void> issuePCN() async {
+      print('Print physical');
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
-      int randomReference =
-          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
-      final physicalPCN = ContraventionCreateWardenCommand(
-        ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '$randomReference',
-        Plate: args?.plate as String,
-        VehicleMake: args?.make as String,
-        VehicleColour: args?.colour as String,
-        ContraventionReasonCode: args?.reason?.code as String,
-        EventDateTime: DateTime.now(),
-        FirstObservedDateTime: args?.eventDateTime as DateTime,
-        WardenId: wardensProvider.wardens?.Id ?? 0,
-        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        WardenComments: args!.contraventionEvents!
-            .map((item) => item.detail)
-            .toString()
-            .replaceAll('(', '')
-            .replaceAll(')', ''),
-        BadgeNumber: 'test',
-        LocationAccuracy: 0, // missing
-        TypePCN: TypePCN.Physical.index,
-      );
-
       final wardenEventIssuePCN = WardenEvent(
         type: TypeWardenEvent.IssuePCN.index,
-        detail: '{"TicketNumber": "${physicalPCN.ContraventionReference}"}',
+        detail:
+            '{"TicketNumber": "${contraventionCreate.ContraventionReference}"}',
         latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         wardenId: wardensProvider.wardens?.Id ?? 0,
@@ -93,7 +98,9 @@ class _PrintPCNState extends State<PrintPCN> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {
-          await contraventionController.createPCN(physicalPCN).then((value) {
+          await contraventionController
+              .createPCN(contraventionCreate)
+              .then((value) {
             contravention = value;
           });
           if (contravention != null) {
@@ -116,8 +123,11 @@ class _PrintPCNState extends State<PrintPCN> {
             await userController
                 .createWardenEvent(wardenEventIssuePCN)
                 .then((value) {
+              contraventionProvider.clearContraventionData();
+              printIssue.resetData();
               Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+              Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
+                  arguments: contravention);
             });
           }
         } on DioError catch (error) {
@@ -143,10 +153,10 @@ class _PrintPCNState extends State<PrintPCN> {
             toastDuration: const Duration(seconds: 3),
             displayCloseButton: true,
             title: Text(
-              error.response!.data['message'].toString().length >
+              (error.response?.data['message'].toString().length ?? 0) >
                       Constant.errorMaxLength
                   ? 'Internal server error'
-                  : error.response!.data['message'],
+                  : error.response?.data['message'],
               style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
@@ -157,9 +167,9 @@ class _PrintPCNState extends State<PrintPCN> {
       } else {
         int randomNumber =
             (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-        physicalPCN.Id = randomNumber;
-        final String encodedPhysicalPCNData =
-            json.encode(ContraventionCreateWardenCommand.toJson(physicalPCN));
+        contraventionCreate.Id = randomNumber;
+        final String encodedPhysicalPCNData = json.encode(
+            ContraventionCreateWardenCommand.toJson(contraventionCreate));
         final String? issuePCNData =
             await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
         if (issuePCNData == null) {
@@ -183,7 +193,8 @@ class _PrintPCNState extends State<PrintPCN> {
           List<String> newPhotoData = [];
           for (int i = 0; i < args.contraventionPhotos!.length; i++) {
             final String encodedData = json.encode(ContraventionCreatePhoto(
-              contraventionReference: physicalPCN.ContraventionReference,
+              contraventionReference:
+                  contraventionCreate.ContraventionReference,
               originalFileName:
                   args.contraventionPhotos![i].blobName!.split('/').last,
               capturedDateTime: DateTime.now(),
@@ -199,7 +210,8 @@ class _PrintPCNState extends State<PrintPCN> {
               json.decode(contraventionPhotoData) as List<dynamic>;
           for (int i = 0; i < args.contraventionPhotos!.length; i++) {
             final String encodedData = json.encode(ContraventionCreatePhoto(
-              contraventionReference: physicalPCN.ContraventionReference,
+              contraventionReference:
+                  contraventionCreate.ContraventionReference,
               originalFileName:
                   args.contraventionPhotos![i].blobName!.split('/').last,
               capturedDateTime: DateTime.now(),
@@ -244,10 +256,170 @@ class _PrintPCNState extends State<PrintPCN> {
         await userController
             .createWardenEvent(wardenEventIssuePCN)
             .then((value) {
+          contraventionProvider.clearContraventionData();
+          printIssue.resetData();
           Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+          Navigator.of(context)
+              .pushNamed(ParkingChargeInfo.routeName, arguments: contravention);
         });
       }
+    }
+
+    Future<void> showDialogPermitExists(CheckPermit? value) async {
+      return showDialog<void>(
+        context: context,
+        barrierColor: ColorTheme.backdrop,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    5.0,
+                  ),
+                ),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 0),
+              contentPadding: EdgeInsets.zero,
+              title: Center(
+                  child: Column(
+                children: [
+                  Text(
+                    "Permit exists with in this location",
+                    style: CustomTextStyle.h4.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: ColorTheme.danger,
+                    ),
+                  ),
+                  const Divider(),
+                ],
+              )),
+              content: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'VRN: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.VRN ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Bay information: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.bayNumber ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Source: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.source ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Tennant: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.tenant ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.danger,
+                              ),
+                              child: Text(
+                                "Abort",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.white),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pushNamed(
+                                  AbortScreen.routeName,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 16,
+                          ),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.primary,
+                              ),
+                              child: Text(
+                                "Issue PCN",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.white),
+                              ),
+                              onPressed: () {
+                                issuePCN();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 24,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
     }
 
     return WillPopScope(
@@ -271,10 +443,19 @@ class _PrintPCNState extends State<PrintPCN> {
               ),
               BottomNavyBarItem(
                 onPressed: () {
-                  createPhysicalPCN();
+                  contraventionController
+                      .checkHasPermit(contraventionCreate)
+                      .then((value) {
+                    if (value?.hasPermit == true) {
+                      showDialogPermitExists(value);
+                    } else {
+                      issuePCN();
+                    }
+                  });
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconComplete.svg',
+                  color: Colors.white,
                 ),
                 label: 'Complete',
               ),

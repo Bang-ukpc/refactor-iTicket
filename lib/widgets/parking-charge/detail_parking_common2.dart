@@ -30,8 +30,9 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
   Widget build(BuildContext context) {
     final List<String> imgList = [];
     final List<String> imgListFile = [];
-    List<ContraventionPhotos> contraventionImage =
-        widget.contravention!.contraventionPhotos!.toList();
+    List<ContraventionPhotos> contraventionImage = widget.contravention != null
+        ? widget.contravention!.contraventionPhotos!.toList()
+        : [];
     for (int i = 0; i < contraventionImage.length; i++) {
       imgList.add(
           '${ConfigEnvironmentVariable.azureContainerImageUrl}/${contraventionImage[i].blobName}');
@@ -50,10 +51,7 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                   "assets/svg/IconCharges2.svg",
                   width: 16,
                 ),
-                label: const Text(
-                  'Issue another PCN',
-                  style: CustomTextStyle.h6,
-                ),
+                label: "Issue another PCN",
               ),
             ])
           : null,
@@ -117,9 +115,10 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                widget.contravention!.plate
-                                    .toString()
-                                    .toUpperCase(),
+                                widget.contravention?.plate
+                                        .toString()
+                                        .toUpperCase() ??
+                                    'No data',
                                 style: CustomTextStyle.h3
                                     .copyWith(fontWeight: FontWeight.w600),
                               ),

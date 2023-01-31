@@ -45,7 +45,7 @@ class _PrintIssueState extends State<PrintIssue> {
       final locations = Provider.of<Locations>(context, listen: false);
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
-      final wardensProvider = Provider.of<WardensInfo>(context);
+      final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
 
       if (contraventionProvider.contravention!.type == TypePCN.Physical.index) {
         if (bluetoothPrinterHelper.selectedPrinter == null) {
@@ -198,10 +198,13 @@ class _PrintIssueState extends State<PrintIssue> {
                     AbortScreen.routeName,
                   );
                 },
-                icon: SvgPicture.asset('assets/svg/IconAbort.svg'),
+                icon: SvgPicture.asset(
+                  'assets/svg/IconAbort.svg',
+                  color: Colors.white,
+                ),
                 label: "Abort",
               ),
-              if (contraventionProvider.contravention!.type ==
+              if (contraventionProvider.contravention?.type ==
                   TypePCN.Physical.index)
                 BottomNavyBarItem(
                   onPressed: () {
@@ -235,25 +238,53 @@ class _PrintIssueState extends State<PrintIssue> {
                   },
                   icon: SvgPicture.asset(
                     'assets/svg/IconPrinter.svg',
-                    color: ColorTheme.textPrimary,
+                    color: Colors.white,
                   ),
                   label: "Re-print",
                 ),
               BottomNavyBarItem(
                 onPressed: () {
+                  // if (printIssue
+                  //             .findIssueNoImage(
+                  //                 typePCN:
+                  //                     contraventionProvider.contravention!.type)
+                  //             .title !=
+                  //         'null' &&
+                  //     printIssue.checkIssueHasPhotoRequirePhysical() == false) {
+                  //   showMyDialog();
+                  // } else {
+                  //   onCompleteTakePhotos();
+                  // }
                   if (printIssue
-                              .findIssueNoImage(
-                                  typePCN:
-                                      contraventionProvider.contravention!.type)
-                              .title !=
-                          'null' &&
-                      printIssue.checkIssueHasPhotoRequirePhysical() == false) {
-                    showMyDialog();
+                          .findIssueNoImage(
+                              typePCN:
+                                  contraventionProvider.contravention!.type)
+                          .title !=
+                      'null') {
+                    if (contraventionProvider.contravention!.type ==
+                        TypePCN.Physical.index) {
+                      if (printIssue.checkIssueHasPhotoRequirePhysical() ==
+                          false) {
+                        showMyDialog();
+                      } else {
+                        onCompleteTakePhotos();
+                      }
+                    } else {
+                      if (printIssue.checkIssueHasPhotoRequireVirtual() ==
+                          false) {
+                        showMyDialog();
+                      } else {
+                        onCompleteTakePhotos();
+                      }
+                    }
                   } else {
                     onCompleteTakePhotos();
                   }
                 },
-                icon: SvgPicture.asset('assets/svg/IconNext.svg'),
+                icon: SvgPicture.asset(
+                  'assets/svg/IconNext.svg',
+                  color: Colors.white,
+                ),
                 label: "Next",
               ),
             ]),
@@ -305,12 +336,31 @@ class _PrintIssueState extends State<PrintIssue> {
                                   isActiveStep3: false,
                                   onTap3: contraventionProvider.contravention !=
                                           null
-                                      ? contraventionProvider.contravention!
-                                              .contraventionPhotos!.isNotEmpty
-                                          ? () {
-                                              onCompleteTakePhotos();
-                                            }
-                                          : null
+                                      ? contraventionProvider
+                                                  .contravention!.type ==
+                                              TypePCN.Physical.index
+                                          ? contraventionProvider
+                                                      .contravention!
+                                                      .contraventionPhotos!
+                                                      .length >=
+                                                  5
+                                              ? () {
+                                                  onCompleteTakePhotos();
+                                                }
+                                              : null
+                                          : contraventionProvider
+                                                      .contravention!.type ==
+                                                  TypePCN.Virtual.index
+                                              ? contraventionProvider
+                                                          .contravention!
+                                                          .contraventionPhotos!
+                                                          .length >=
+                                                      4
+                                                  ? () {
+                                                      onCompleteTakePhotos();
+                                                    }
+                                                  : null
+                                              : null
                                       : null,
                                 ),
                                 const SizedBox(
@@ -330,7 +380,7 @@ class _PrintIssueState extends State<PrintIssue> {
                                   var filterImageByTypePCN =
                                       value.data.where((e) {
                                     if (contraventionProvider
-                                            .contravention!.type ==
+                                            .contravention?.type ==
                                         TypePCN.Virtual.index) {
                                       return e.id != 2;
                                     }
@@ -340,6 +390,7 @@ class _PrintIssueState extends State<PrintIssue> {
                                     children: filterImageByTypePCN
                                         .map(
                                           (e) => TakePhotoItem(
+                                            id: e.id,
                                             func: () async {
                                               await printIssue.getIdIssue(printIssue
                                                   .findIssueNoImage(

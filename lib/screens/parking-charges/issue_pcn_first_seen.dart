@@ -634,7 +634,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                     AbortScreen.routeName,
                   );
                 },
-                icon: SvgPicture.asset('assets/svg/IconAbort.svg'),
+                icon: SvgPicture.asset(
+                  'assets/svg/IconAbort.svg',
+                  color: ColorTheme.white,
+                ),
                 label: "Abort",
               ),
               if (_selectedItemTypePCN?.value == 1)
@@ -653,7 +656,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                   onPressed: () {
                     createPhysicalPCN();
                   },
-                  icon: SvgPicture.asset('assets/svg/IconNext.svg'),
+                  icon: SvgPicture.asset(
+                    'assets/svg/IconNext.svg',
+                    color: Colors.white,
+                  ),
                   label: 'Print & Next',
                 ),
             ],
