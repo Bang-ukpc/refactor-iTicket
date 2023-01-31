@@ -104,10 +104,12 @@ class InfoDrawer extends StatelessWidget {
 
     void onLogout(Auth auth) async {
       try {
+        showCircularProgressIndicator(context: context, text: "Logging out");
         await userController
             .createWardenEvent(wardenEventEndShift)
             .then((value) async {
           await auth.logout().then((value) {
+            Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
                 LoginScreen.routeName, (Route<dynamic> route) => false);
             CherryToast.success(
@@ -123,6 +125,7 @@ class InfoDrawer extends StatelessWidget {
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -136,6 +139,7 @@ class InfoDrawer extends StatelessWidget {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
