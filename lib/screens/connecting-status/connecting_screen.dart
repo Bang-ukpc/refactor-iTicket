@@ -404,7 +404,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                     },
                     label: Text(
                       "Start shift",
-                      style: CustomTextStyle.h5.copyWith(color: Colors.white),
+                      style: CustomTextStyle.h5
+                          .copyWith(color: Colors.white, fontSize: 16),
                     ),
                   ),
                 ),

@@ -201,7 +201,7 @@ class _PrintIssueState extends State<PrintIssue> {
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconAbort.svg',
-                  color: Colors.white,
+                  color: ColorTheme.textPrimary,
                 ),
                 label: "Abort",
               ),

@@ -545,7 +545,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             buttonCancel: false,
             title: const Text(
               "Suggestion for you",
-              style: TextStyle(color: ColorTheme.success),
+              style: TextStyle(
+                color: ColorTheme.success,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             subTitle: const Text(
               "Virtual ticketing is enabled for this site, we would encourage you to use virtual ticketing.",
@@ -561,7 +565,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                     style: ButtonStyle(
                       elevation: MaterialStateProperty.all(0),
                     ),
-                    child: const Text("Switch to virtual ticketing"),
+                    child: const Text(
+                      "Switch to virtual ticketing",
+                      style: TextStyle(fontSize: 16),
+                    ),
                     onPressed: () async {
                       Navigator.of(context).pop();
                       setState(() {
@@ -586,7 +593,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                         ColorTheme.textPrimary,
                       ),
                     ),
-                    child: const Text("Proceed with physical ticketing"),
+                    child: const Text(
+                      "Proceed with physical ticketing",
+                      style: TextStyle(fontSize: 16),
+                    ),
                     onPressed: () async {
                       Navigator.of(context).pop();
                       setState(() {
@@ -638,7 +648,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconAbort.svg',
-                  color: ColorTheme.white,
+                  color: ColorTheme.textPrimary,
                 ),
                 label: "Abort",
               ),
@@ -788,11 +798,17 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         textCapitalization:
                                             TextCapitalization.characters,
                                         controller: _vrnController,
-                                        style: CustomTextStyle.h5,
-                                        decoration: const InputDecoration(
-                                          label: LabelRequire(labelText: "VRN"),
-                                          hintText: "Enter VRN",
+                                        style: CustomTextStyle.h5.copyWith(
+                                          fontSize: 16,
                                         ),
+                                        decoration: const InputDecoration(
+                                            label:
+                                                LabelRequire(labelText: "VRN"),
+                                            hintText: "Enter VRN",
+                                            hintStyle: TextStyle(
+                                              fontSize: 16,
+                                              color: ColorTheme.grey400,
+                                            )),
                                         validator: ((value) {
                                           if (value!.isEmpty) {
                                             return 'Please enter VRN';
@@ -1069,13 +1085,19 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                     ),
                                   ],
                                   controller: _commentController,
-                                  style: CustomTextStyle.h5,
+                                  style: CustomTextStyle.h5.copyWith(
+                                    fontSize: 16,
+                                  ),
                                   keyboardType: TextInputType.multiline,
                                   minLines: 3,
                                   maxLines: 5,
                                   decoration: const InputDecoration(
                                     labelText: "Comment",
                                     hintText: "Enter comment",
+                                    hintStyle: TextStyle(
+                                      fontSize: 16,
+                                      color: ColorTheme.grey400,
+                                    ),
                                   ),
                                   onSaved: (value) {
                                     _commentController.text = value as String;

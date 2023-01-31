@@ -15,7 +15,11 @@ class BottomNavyBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool typeButton = label.toUpperCase().endsWith("Abort".toUpperCase());
+    bool typeButton = label.toUpperCase().endsWith("Abort".toUpperCase()) ||
+        label.toUpperCase().endsWith("Check out".toUpperCase());
+    bool abortButton =
+        label.toUpperCase().endsWith("Finish abort".toUpperCase());
+
     return Container(
       height: 40,
       child: TextButton.icon(
@@ -26,13 +30,22 @@ class BottomNavyBarItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(0.0),
               ),
             ),
-            backgroundColor: MaterialStateProperty.all(
-                typeButton ? ColorTheme.danger : ColorTheme.primary)),
+            backgroundColor: MaterialStateProperty.all(abortButton
+                ? ColorTheme.danger
+                : typeButton
+                    ? ColorTheme.grey300
+                    : ColorTheme.primary)),
         onPressed: onPressed,
         icon: icon,
         label: Text(
           label,
-          style: CustomTextStyle.h6.copyWith(color: ColorTheme.white),
+          style: CustomTextStyle.h6.copyWith(
+              color: abortButton
+                  ? ColorTheme.white
+                  : typeButton
+                      ? ColorTheme.textPrimary
+                      : ColorTheme.white,
+              fontSize: 14),
         ),
       ),
     );

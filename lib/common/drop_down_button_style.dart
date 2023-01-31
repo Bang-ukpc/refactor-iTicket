@@ -19,6 +19,7 @@ class DropDownButtonStyle {
       hintText: hintText,
       hintStyle: CustomTextStyle.body2.copyWith(
         color: ColorTheme.grey400,
+        fontSize: 16,
       ),
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(

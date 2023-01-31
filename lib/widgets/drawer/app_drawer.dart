@@ -273,6 +273,7 @@ class _MyDrawerState extends State<MyDrawer> {
         title: 'Start break',
         icon: SvgPicture.asset('assets/svg/IconStartBreak.svg'),
         route: HomeOverview.routeName,
+        check: true,
         background: ColorTheme.lighterSecondary,
         setCheck: onStartBreak,
       ),

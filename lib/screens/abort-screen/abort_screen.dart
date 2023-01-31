@@ -197,6 +197,7 @@ class _AbortScreenState extends State<AbortScreen> {
                           'Please select the reasons and submit to abort this parking charge.',
                           style: CustomTextStyle.body1.copyWith(
                             color: ColorTheme.grey600,
+                            fontSize: 16,
                           ),
                         ),
                         isLoading == false
@@ -261,7 +262,8 @@ class _AbortScreenState extends State<AbortScreen> {
                                           RegExp(r'[^\s]+\b\s?'),
                                         ),
                                       ],
-                                      style: CustomTextStyle.h5,
+                                      style: CustomTextStyle.h5
+                                          .copyWith(fontSize: 16),
                                       controller: _commentController,
                                       decoration: const InputDecoration(
                                         hintText: 'Enter comment',
@@ -269,6 +271,10 @@ class _AbortScreenState extends State<AbortScreen> {
                                           "Comment",
                                         ),
                                         hintMaxLines: 1,
+                                        hintStyle: TextStyle(
+                                          fontSize: 16,
+                                          color: ColorTheme.grey400,
+                                        ),
                                       ),
                                       maxLines: 3,
                                       onSaved: (value) {

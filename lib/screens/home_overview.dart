@@ -364,7 +364,7 @@ class _HomeOverviewState extends State<HomeOverview> {
             onPressed: onCheckOut,
             icon: SvgPicture.asset(
               "assets/svg/CheckOut.svg",
-              color: Colors.white,
+              color: ColorTheme.textPrimary,
             ),
             label: "Check out",
           ),

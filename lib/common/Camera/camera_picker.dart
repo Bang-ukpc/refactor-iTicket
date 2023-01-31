@@ -340,10 +340,12 @@ class CameraPicker extends HookWidget {
                                                         style: CustomTextStyle
                                                             .h5
                                                             .copyWith(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: 16),
                                                       ),
                                                     ],
                                                   ),

@@ -82,7 +82,7 @@ class TakePhotoItem extends StatelessWidget {
                           children: [
                             Text(
                               title,
-                              style: CustomTextStyle.h6,
+                              style: CustomTextStyle.h6.copyWith(fontSize: 14),
                             ),
                             const SizedBox(
                               width: 5,
@@ -96,7 +96,7 @@ class TakePhotoItem extends StatelessWidget {
                       if (id == 6 || id == 7 || id == 8 || id == 9)
                         Text(
                           title,
-                          style: CustomTextStyle.h6,
+                          style: CustomTextStyle.h6.copyWith(fontSize: 14),
                         )
                     ],
                   ),

@@ -49,10 +49,11 @@ class ItemMenuWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 itemMenu.title,
-                style: CustomTextStyle.h6.copyWith(
+                style: CustomTextStyle.h5.copyWith(
                     color: itemMenu.route == null
                         ? ColorTheme.danger
-                        : ColorTheme.textPrimary),
+                        : ColorTheme.textPrimary,
+                    fontSize: 14),
               ),
             )
           ],

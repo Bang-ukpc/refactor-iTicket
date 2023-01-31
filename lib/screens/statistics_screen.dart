@@ -217,7 +217,13 @@ class _StatisticScreenState extends State<StatisticScreen> {
                     children: [
                       Row(
                         children: [
-                          const Expanded(flex: 1, child: Text("My statistic")),
+                          Expanded(
+                              flex: 1,
+                              child: Text(
+                                "My statistic",
+                                style: CustomTextStyle.h5
+                                    .copyWith(fontWeight: FontWeight.w600),
+                              )),
                           Expanded(
                             flex: 1,
                             child: DropdownSearch<DateFilter>(

@@ -52,6 +52,7 @@ class StatisticItem extends StatelessWidget {
                     style:
                         CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     quantity.toString(),
                     style: CustomTextStyle.h2.copyWith(
