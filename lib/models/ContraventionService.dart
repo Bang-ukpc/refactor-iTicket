@@ -198,3 +198,38 @@ Map<String, dynamic> _$ContraventionCreatePhotoToJson(
     'file': instance.filePath,
   };
 }
+
+class PermitInfo {
+  final String? bayNumber;
+  final String? source;
+  final String? tenant;
+  final String? VRN;
+
+  PermitInfo({
+    this.bayNumber,
+    this.source,
+    this.tenant,
+    this.VRN,
+  });
+
+  factory PermitInfo.fromJson(Map<String, dynamic> json) => PermitInfo(
+        VRN: json['VRN'],
+        bayNumber: json['bayNumber'],
+        source: json['source'],
+        tenant: json['tenant'],
+      );
+}
+
+class CheckPermit {
+  final bool? hasPermit;
+  final PermitInfo? permitInfo;
+
+  CheckPermit({this.hasPermit, this.permitInfo});
+
+  factory CheckPermit.fromJson(Map<String, dynamic> json) => CheckPermit(
+        hasPermit: json['hasPermit'],
+        permitInfo: PermitInfo.fromJson(
+          json['permitInfo'],
+        ),
+      );
+}
