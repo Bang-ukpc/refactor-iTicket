@@ -60,7 +60,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   late AnylineService _anylineService;
   final _vrnController = TextEditingController();
   final _vehicleMakeController = TextEditingController();
-  final _vehicleModelController = TextEditingController();
   final _vehicleColorController = TextEditingController();
   final _contraventionReasonController = TextEditingController();
   final _commentController = TextEditingController();
@@ -86,13 +85,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         .then((value) {
       setState(() {
         _vehicleMakeController.text = value?.Make ?? '';
-        _vehicleModelController.text = value?.Model ?? '';
         _vehicleColorController.text = value?.Colour ?? '';
       });
     }).catchError(((e) {
       setState(() {
         _vehicleMakeController.text = '';
-        _vehicleModelController.text = '';
         _vehicleColorController.text = '';
       });
     }));
@@ -143,7 +140,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
         _vehicleMakeController.text = contraventionData.make ?? '';
-        _vehicleModelController.text = contraventionData.model ?? '';
         _vehicleColorController.text = contraventionData.colour ?? '';
         _contraventionReasonController.text =
             contraventionData.reason?.code ?? '';
@@ -200,7 +196,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   void dispose() {
     _vrnController.dispose();
     _vehicleMakeController.dispose();
-    _vehicleModelController.dispose();
     _vehicleColorController.dispose();
     _commentController.dispose();
     _contraventionReasonController.dispose();
@@ -275,7 +270,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           plate: physicalPCN.Plate,
           colour: physicalPCN.VehicleColour,
           make: physicalPCN.VehicleMake,
-          model: _vehicleModelController.text,
           eventDateTime: physicalPCN.EventDateTime,
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
@@ -332,7 +326,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           plate: physicalPCN.Plate,
           colour: physicalPCN.VehicleColour,
           make: physicalPCN.VehicleMake,
-          model: _vehicleModelController.text,
           eventDateTime: physicalPCN.EventDateTime,
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
@@ -427,7 +420,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           plate: virtualTicket.Plate,
           colour: virtualTicket.VehicleColour,
           make: virtualTicket.VehicleMake,
-          model: _vehicleModelController.text,
           eventDateTime: virtualTicket.EventDateTime,
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
@@ -483,7 +475,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           plate: virtualTicket.Plate,
           colour: virtualTicket.VehicleColour,
           make: virtualTicket.VehicleMake,
-          model: _vehicleModelController.text,
           eventDateTime: virtualTicket.EventDateTime,
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
@@ -785,8 +776,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 ),
                                 SizedBox(
                                   child: DropdownSearch<String>(
-                                    // key: Key(
-                                    //     '${DateTime.now().microsecondsSinceEpoch / 888}'),
                                     dropdownDecoratorProps:
                                         DropDownDecoratorProps(
                                       dropdownSearchDecoration:
@@ -799,17 +788,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                       ),
                                     ),
                                     items: arrMake,
-                                    // selectedItem:
-                                    //     contraventionProvider.contravention !=
-                                    //             null
-                                    //         ? contraventionProvider
-                                    //                     .contravention!.make !=
-                                    //                 null
-                                    //             ? arrMake.firstWhere((e) =>
-                                    //                 e ==
-                                    //                 _vehicleMakeController.text)
-                                    //             : null
-                                    //         : null,
                                     selectedItem: contraventionProvider
                                                 .contravention !=
                                             null
@@ -828,8 +806,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                 _vehicleMakeController.text
                                                     .toUpperCase())
                                             : null,
-                                    // itemAsString: (item) =>
-                                    //     item.summary as String,
                                     popupProps: PopupProps.menu(
                                         showSearchBox: true,
                                         fit: FlexFit.loose,
@@ -839,9 +815,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         itemBuilder:
                                             (context, item, isSelected) {
                                           return DropDownItem(
-                                            isSelected:
-                                                _vehicleMakeController.text ==
-                                                    item,
+                                            isSelected: _vehicleMakeController
+                                                    .text
+                                                    .toUpperCase() ==
+                                                item.toUpperCase(),
                                             title: item,
                                           );
                                         }),
@@ -860,42 +837,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         AutovalidateMode.onUserInteraction,
                                   ),
                                 ),
-
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                TextFormField(
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[^\s]+\b\s?'),
-                                    ),
-                                  ],
-                                  style: CustomTextStyle.h5,
-                                  controller: _vehicleModelController,
-                                  decoration: const InputDecoration(
-                                    label: LabelRequire(
-                                        labelText: "Vehicle model"),
-                                    hintText: "Enter vehicle model",
-                                  ),
-                                  validator: ((value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter vehicle model';
-                                    }
-                                    return null;
-                                  }),
-                                  onSaved: (value) {
-                                    _vehicleModelController.text =
-                                        value as String;
-                                  },
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                ),
                                 const SizedBox(
                                   height: 20,
                                 ),
                                 SizedBox(
-                                  // key: Key(
-                                  //     '${DateTime.now().microsecondsSinceEpoch / 888}'),
                                   child: DropdownSearch<String>(
                                     dropdownDecoratorProps:
                                         DropDownDecoratorProps(
@@ -937,9 +882,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         itemBuilder:
                                             (context, item, isSelected) {
                                           return DropDownItem(
-                                            isSelected:
-                                                _vehicleColorController.text ==
-                                                    item,
+                                            isSelected: _vehicleColorController
+                                                    .text
+                                                    .toUpperCase() ==
+                                                item.toUpperCase(),
                                             title: item,
                                           );
                                         }),
@@ -958,32 +904,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         AutovalidateMode.onUserInteraction,
                                   ),
                                 ),
-                                // TextFormField(
-                                //   inputFormatters: [
-                                //     FilteringTextInputFormatter.allow(
-                                //       RegExp(r'[^\s]+\b\s?'),
-                                //     ),
-                                //   ],
-                                //   style: CustomTextStyle.h5,
-                                //   controller: _vehicleColorController,
-                                //   decoration: const InputDecoration(
-                                //     label: LabelRequire(
-                                //         labelText: "Vehicle color"),
-                                //     hintText: "Enter vehicle color",
-                                //   ),
-                                //   validator: ((value) {
-                                //     if (value!.isEmpty) {
-                                //       return 'Please enter vehicle color';
-                                //     }
-                                //     return null;
-                                //   }),
-                                //   onSaved: (value) {
-                                //     _vehicleColorController.text =
-                                //         value as String;
-                                //   },
-                                //   autovalidateMode:
-                                //       AutovalidateMode.onUserInteraction,
-                                // ),
                                 const SizedBox(
                                   height: 20,
                                 ),

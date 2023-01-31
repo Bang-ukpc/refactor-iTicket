@@ -688,7 +688,7 @@ class DropDownItem2 extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(
-                  height: 5,
+                  height: 2,
                 ),
                 if (subTitle != null)
                   Text(
