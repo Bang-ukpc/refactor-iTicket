@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -96,14 +97,17 @@ class _AbortScreenState extends State<AbortScreen> {
       }
 
       try {
+        showCircularProgressIndicator(context: context);
         await userController
             .createWardenEvent(wardenEventAbortPCN)
             .then((value) {
+          Navigator.of(context).pop();
           Navigator.of(context).pushNamed(ParkingChargeList.routeName);
         });
       } on DioError catch (error) {
         if (!mounted) return;
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -117,6 +121,7 @@ class _AbortScreenState extends State<AbortScreen> {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(

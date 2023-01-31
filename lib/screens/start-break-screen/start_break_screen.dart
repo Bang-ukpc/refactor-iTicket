@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -43,13 +44,16 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
 
     void onEndBreak() async {
       try {
+        showCircularProgressIndicator(context: context);
         await userController
             .createWardenEvent(wardenEventEndBreak)
             .then((value) {
+          Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(HomeOverview.routeName);
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
@@ -63,6 +67,7 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
