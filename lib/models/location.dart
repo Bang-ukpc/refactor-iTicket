@@ -181,12 +181,16 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Distance: json['Distance'],
     Zones: zonesList,
     OperationalPeriods: operationalPeriodsList,
-    UpperAmount: (json['Rates'] as List<dynamic>).isEmpty
-        ? 0
-        : json['Rates'][0]['UpperAmount'].toDouble(),
-    LowerAmount: (json['Rates'] as List<dynamic>).isEmpty
-        ? 0
-        : json['Rates'][0]['LowerAmount'].toDouble(),
+    UpperAmount: json['Rates'] != null
+        ? (json['Rates'] as List<dynamic>).isNotEmpty
+            ? json['Rates'][0]['UpperAmount'].toDouble()
+            : 0
+        : 0,
+    LowerAmount: json['Rates'] != null
+        ? (json['Rates'] as List<dynamic>).isNotEmpty
+            ? json['Rates'][0]['LowerAmount'].toDouble()
+            : 0
+        : 0,
   );
 }
 

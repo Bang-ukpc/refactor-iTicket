@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -69,7 +70,7 @@ void onStart(ServiceInstance service) async {
     PreferencesKeys.accessToken,
   );
   // const serviceUrl = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
-  const serviceUrl = 'http://192.168.1.200:7004';
+  const serviceUrl = 'http://192.168.1.200:7003';
   final dio = Dio();
   dio.options.headers['content-Type'] = 'application/json';
   dio.options.headers["authorization"] = accessToken;
@@ -160,10 +161,12 @@ void onStart(ServiceInstance service) async {
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
       try {
-        await dio.post(
-          '$serviceUrl/wardenEvent',
-          data: wardenEventSendCurrentLocation.toJson(),
-        );
+        await dio
+            .post(
+              '$serviceUrl/wardenEvent',
+              data: wardenEventSendCurrentLocation.toJson(),
+            )
+            .then((value) => log(value.toString()));
       } on DioError catch (err) {
         if (err.type != DioErrorType.other) {
           service.stopSelf();

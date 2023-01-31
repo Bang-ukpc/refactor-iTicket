@@ -203,8 +203,6 @@ class _LocationScreenState extends State<LocationScreen> {
       }
     }
 
-    print(locations.location?.OperationalPeriods?.length);
-
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
