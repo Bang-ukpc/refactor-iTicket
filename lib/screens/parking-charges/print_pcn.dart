@@ -24,7 +24,6 @@ import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
@@ -269,6 +268,15 @@ class _PrintPCNState extends State<PrintPCN> {
           Navigator.of(context).pop();
           Navigator.of(context)
               .pushNamed(ParkingChargeInfo.routeName, arguments: contravention);
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'The PCN has been created successfully',
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
         });
       }
     }
@@ -451,29 +459,52 @@ class _PrintPCNState extends State<PrintPCN> {
                 label: 'Abort',
               ),
               BottomNavyBarItem(
-                onPressed: () {
-                  try {
-                    showCircularProgressIndicator(context: context);
-                    contraventionController
-                        .checkHasPermit(contraventionCreate)
-                        .then((value) {
-                      Navigator.of(context).pop();
-                      if (value?.hasPermit == true) {
-                        showDialogPermitExists(value);
-                      } else {
-                        showCircularProgressIndicator(context: context);
-                        issuePCN();
+                onPressed: () async {
+                  ConnectivityResult connectionStatus =
+                      await (Connectivity().checkConnectivity());
+                  if (connectionStatus == ConnectivityResult.wifi ||
+                      connectionStatus == ConnectivityResult.mobile) {
+                    try {
+                      if (!mounted) return;
+                      showCircularProgressIndicator(context: context);
+                      contraventionController
+                          .checkHasPermit(contraventionCreate)
+                          .then((value) {
+                        Navigator.of(context).pop();
+                        if (value?.hasPermit == true) {
+                          showDialogPermitExists(value);
+                        } else {
+                          showCircularProgressIndicator(context: context);
+                          issuePCN();
+                        }
+                      });
+                    } on DioError catch (error) {
+                      if (error.type == DioErrorType.other) {
+                        if (!mounted) return;
+                        Navigator.of(context).pop();
+                        CherryToast.error(
+                          toastDuration: const Duration(seconds: 3),
+                          title: Text(
+                            error.message.length > Constant.errorTypeOther
+                                ? 'Something went wrong, please try again'
+                                : error.message,
+                            style: CustomTextStyle.h5
+                                .copyWith(color: ColorTheme.danger),
+                          ),
+                          toastPosition: Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                        return;
                       }
-                    });
-                  } on DioError catch (error) {
-                    if (error.type == DioErrorType.other) {
+                      if (!mounted) return;
                       Navigator.of(context).pop();
                       CherryToast.error(
-                        toastDuration: const Duration(seconds: 3),
+                        displayCloseButton: false,
                         title: Text(
-                          error.message.length > Constant.errorTypeOther
-                              ? 'Something went wrong, please try again'
-                              : error.message,
+                          error.response!.data['message'].toString().length >
+                                  Constant.errorMaxLength
+                              ? 'Internal server error'
+                              : error.response!.data['message'],
                           style: CustomTextStyle.h5
                               .copyWith(color: ColorTheme.danger),
                         ),
@@ -482,21 +513,10 @@ class _PrintPCNState extends State<PrintPCN> {
                       ).show(context);
                       return;
                     }
-                    Navigator.of(context).pop();
-                    CherryToast.error(
-                      displayCloseButton: false,
-                      title: Text(
-                        error.response!.data['message'].toString().length >
-                                Constant.errorMaxLength
-                            ? 'Internal server error'
-                            : error.response!.data['message'],
-                        style: CustomTextStyle.h5
-                            .copyWith(color: ColorTheme.danger),
-                      ),
-                      toastPosition: Position.bottom,
-                      borderRadius: 5,
-                    ).show(context);
-                    return;
+                  } else {
+                    if (!mounted) return;
+                    showCircularProgressIndicator(context: context);
+                    issuePCN();
                   }
                 },
                 icon: SvgPicture.asset(
