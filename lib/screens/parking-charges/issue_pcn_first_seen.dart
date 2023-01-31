@@ -636,7 +636,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconAbort.svg',
-                  color: ColorTheme.white,
+                  color: ColorTheme.textPrimary,
                 ),
                 label: "Abort",
               ),

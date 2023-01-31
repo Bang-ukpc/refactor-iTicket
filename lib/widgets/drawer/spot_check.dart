@@ -63,7 +63,7 @@ class _SpotCheckState extends State<SpotCheck> {
               child: Text(
                 "Spot check",
                 style:
-                    CustomTextStyle.h6.copyWith(color: ColorTheme.textPrimary),
+                    CustomTextStyle.h5.copyWith(color: ColorTheme.textPrimary),
               ),
             )
           ],

@@ -281,7 +281,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   color: ColorTheme.white),
               label: Text(
                 'Next',
-                style: CustomTextStyle.h6.copyWith(
+                style: CustomTextStyle.h4.copyWith(
                   color: ColorTheme.white,
                 ),
               ),
@@ -319,9 +319,11 @@ class _LocationScreenState extends State<LocationScreen> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
-                                    const Text(
+                                    Text(
                                         'Please select your location for this shift',
-                                        style: CustomTextStyle.body1),
+                                        style: CustomTextStyle.body1.copyWith(
+                                          fontSize: 16,
+                                        )),
                                     const SizedBox(
                                       height: 20,
                                     ),
@@ -332,8 +334,11 @@ class _LocationScreenState extends State<LocationScreen> {
                                           dropdownSearchDecoration:
                                               dropDownButtonStyle
                                                   .getInputDecorationCustom(
-                                            labelText:
-                                                const Text('My rota shift'),
+                                            labelText: Text(
+                                              'My rota shift',
+                                              style: CustomTextStyle.body1
+                                                  .copyWith(fontSize: 18),
+                                            ),
                                             hintText: 'Select rota shift',
                                           ),
                                         ),
@@ -629,10 +634,10 @@ class DropDownItem extends StatelessWidget {
             Text(
               title,
               style: CustomTextStyle.body1.copyWith(
-                color: isSelected == false
-                    ? ColorTheme.textPrimary
-                    : ColorTheme.primary,
-              ),
+                  color: isSelected == false
+                      ? ColorTheme.textPrimary
+                      : ColorTheme.primary,
+                  fontSize: 16),
             ),
             if (subTitle != null)
               Text(
@@ -703,11 +708,11 @@ class DropDownItem2 extends StatelessWidget {
                   child: Text(
                     title,
                     style: CustomTextStyle.body1.copyWith(
-                      color: isSelected == false
-                          ? ColorTheme.textPrimary
-                          : ColorTheme.primary,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                        color: isSelected == false
+                            ? ColorTheme.textPrimary
+                            : ColorTheme.primary,
+                        overflow: TextOverflow.ellipsis,
+                        fontSize: 16),
                   ),
                 ),
                 if (operationalPeriods != null)

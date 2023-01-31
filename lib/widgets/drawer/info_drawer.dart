@@ -323,7 +323,7 @@ class InfoDrawer extends StatelessWidget {
                       ),
                       label: const Text(
                         "Check out",
-                        style: CustomTextStyle.h6,
+                        style: CustomTextStyle.h5,
                       ),
                       onPressed: onCheckOut,
                     ),
@@ -348,9 +348,9 @@ class InfoDrawer extends StatelessWidget {
                     children: [
                       Text(
                         "Log out",
-                        style: CustomTextStyle.h6.copyWith(
+                        style: CustomTextStyle.h5.copyWith(
                             color: ColorTheme.danger,
-                            fontWeight: FontWeight.w500),
+                            fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(
                         width: 10,

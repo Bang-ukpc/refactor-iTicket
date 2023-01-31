@@ -364,6 +364,10 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                                   decoration: const InputDecoration(
                                     label: LabelRequire(labelText: "VRN"),
                                     hintText: "Enter VRN",
+                                    hintStyle: TextStyle(
+                                      fontSize: 16,
+                                      color: ColorTheme.grey400,
+                                    ),
                                   ),
                                   validator: ((value) {
                                     if (value!.isEmpty) {
@@ -398,6 +402,10 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                             decoration: const InputDecoration(
                               labelText: 'Bay number',
                               hintText: "Enter bay number",
+                              hintStyle: TextStyle(
+                                fontSize: 16,
+                                color: ColorTheme.grey400,
+                              ),
                             ),
                             controller: _bayNumberController,
                           ),

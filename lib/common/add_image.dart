@@ -150,14 +150,19 @@ class _AddImageState extends State<AddImage> {
                   if (widget.displayTitle == true)
                     Text(
                       "Evidence photos (${widget.listImage.length})",
-                      style: CustomTextStyle.h5
-                          .copyWith(color: ColorTheme.darkPrimary),
+                      style: CustomTextStyle.h5.copyWith(
+                        color: ColorTheme.darkPrimary,
+                        fontSize: 16,
+                      ),
                     ),
                   if (AddFirstSeenScreen.routeName ==
                       ModalRoute.of(context)!.settings.name)
                     const SizedBox(
                       height: 16,
                     ),
+                  const SizedBox(
+                    height: 5,
+                  ),
                   Row(
                     children: <Widget>[
                       if (widget.isCamera)
