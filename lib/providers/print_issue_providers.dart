@@ -36,12 +36,6 @@ class PrintIssueProviders with ChangeNotifier {
 
   late int idIssue;
 
-  void resetData() {
-    for (int i = 0; i < _data.length; i++) {
-      _data[i].image = null;
-    }
-  }
-
   Future getIdIssue(id) async {
     if (id != null) {
       idIssue = id;
@@ -161,5 +155,11 @@ class PrintIssueProviders with ChangeNotifier {
 
   List<PrintIssue> get data {
     return [..._data];
+  }
+
+  void resetData() {
+    for (int i = 0; i < _data.length; i++) {
+      _data[i].image = null;
+    }
   }
 }

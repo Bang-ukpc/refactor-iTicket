@@ -161,12 +161,10 @@ void onStart(ServiceInstance service) async {
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
       try {
-        await dio
-            .post(
-              '$serviceUrl/wardenEvent',
-              data: wardenEventSendCurrentLocation.toJson(),
-            )
-            .then((value) => log(value.toString()));
+        await dio.post(
+          '$serviceUrl/wardenEvent',
+          data: wardenEventSendCurrentLocation.toJson(),
+        );
       } on DioError catch (err) {
         if (err.type != DioErrorType.other) {
           service.stopSelf();

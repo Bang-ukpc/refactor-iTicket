@@ -704,16 +704,76 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                   }
                                 : null,
                             isActiveStep3: false,
-                            onTap3: contraventionProvider.contravention != null
-                                ? contraventionProvider.contravention!
-                                        .contraventionPhotos!.isNotEmpty
-                                    ? () {
-                                        _selectedItemTypePCN!.value == 0
-                                            ? createPhysicalPCN(step3: true)
-                                            : createVirtualTicket(step3: true);
-                                      }
-                                    : null
+                            isEnableStep3: _selectedItemTypePCN != null
+                                ? _selectedItemTypePCN!.value ==
+                                        TypePCN.Physical.index
+                                    ? contraventionProvider.contravention !=
+                                            null
+                                        ? contraventionProvider
+                                                    .contravention!
+                                                    .contraventionPhotos!
+                                                    .length >=
+                                                5
+                                            ? true
+                                            : false
+                                        : false
+                                    : contraventionProvider.contravention !=
+                                            null
+                                        ? contraventionProvider
+                                                    .contravention!
+                                                    .contraventionPhotos!
+                                                    .length >=
+                                                4
+                                            ? true
+                                            : false
+                                        : false
+                                : false,
+                            onTap3: _selectedItemTypePCN != null
+                                ? _selectedItemTypePCN!.value ==
+                                        TypePCN.Physical.index
+                                    ? contraventionProvider.contravention !=
+                                            null
+                                        ? contraventionProvider
+                                                    .contravention!
+                                                    .contraventionPhotos!
+                                                    .length >=
+                                                5
+                                            ? () {
+                                                _selectedItemTypePCN!.value == 0
+                                                    ? createPhysicalPCN(
+                                                        step3: true)
+                                                    : createVirtualTicket(
+                                                        step3: true);
+                                              }
+                                            : null
+                                        : null
+                                    : contraventionProvider.contravention !=
+                                            null
+                                        ? contraventionProvider
+                                                    .contravention!
+                                                    .contraventionPhotos!
+                                                    .length >=
+                                                4
+                                            ? () {
+                                                _selectedItemTypePCN!.value == 0
+                                                    ? createPhysicalPCN(
+                                                        step3: true)
+                                                    : createVirtualTicket(
+                                                        step3: true);
+                                              }
+                                            : null
+                                        : null
                                 : null,
+                            // onTap3: contraventionProvider.contravention != null
+                            //     ? contraventionProvider.contravention!
+                            //             .contraventionPhotos!.isNotEmpty
+                            //         ? () {
+                            //             _selectedItemTypePCN!.value == 0
+                            //                 ? createPhysicalPCN(step3: true)
+                            //                 : createVirtualTicket(step3: true);
+                            //           }
+                            //         : null
+                            //     : null,
                           ),
                           const SizedBox(
                             height: 30,

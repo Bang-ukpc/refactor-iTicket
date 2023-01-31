@@ -48,8 +48,8 @@ class Location extends BaseModel {
 class LocationWithZones extends Location {
   final List<Zone>? Zones;
   final List<OperationalPeriod>? OperationalPeriods;
-  final double LowerAmount;
-  final double UpperAmount;
+  final double? LowerAmount;
+  final double? UpperAmount;
   LocationWithZones({
     int? Id,
     DateTime? Created,
@@ -72,8 +72,8 @@ class LocationWithZones extends Location {
     double? Distance,
     DateTime? From,
     DateTime? To,
-    required this.LowerAmount,
-    required this.UpperAmount,
+    this.LowerAmount,
+    this.UpperAmount,
     this.Zones,
     this.OperationalPeriods,
   }) : super(

@@ -90,6 +90,7 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                             }
                           : null,
                       isActiveStep2: false,
+                      isEnableStep3: true,
                       onTap2: widget.contravention != null
                           ? widget.contravention!.contraventionPhotos!
                                   .isNotEmpty

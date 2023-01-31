@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -11,12 +13,14 @@ class StepIssuePCN extends StatefulWidget {
   final bool isActiveStep2;
   final void Function()? onTap2;
   final bool isActiveStep3;
+  final bool isEnableStep3;
   final void Function()? onTap3;
   const StepIssuePCN({
     required this.isActiveStep1,
     this.onTap1,
     required this.isActiveStep2,
     this.onTap2,
+    required this.isEnableStep3,
     required this.isActiveStep3,
     this.onTap3,
     super.key,
@@ -175,8 +179,7 @@ class _StepIssuePCNState extends State<StepIssuePCN> {
                       color: widget.isActiveStep3 == true
                           ? ColorTheme.primary
                           : contraventionProvider.contravention != null
-                              ? contraventionProvider.contravention!
-                                      .contraventionPhotos!.isNotEmpty
+                              ? widget.isEnableStep3 == true
                                   ? ColorTheme.primary
                                   : ColorTheme.grey600
                               : ColorTheme.grey600,
@@ -201,8 +204,7 @@ class _StepIssuePCNState extends State<StepIssuePCN> {
                               color: widget.isActiveStep3 == true
                                   ? ColorTheme.white
                                   : contraventionProvider.contravention != null
-                                      ? contraventionProvider.contravention!
-                                              .contraventionPhotos!.isNotEmpty
+                                      ? widget.isEnableStep3 == true
                                           ? ColorTheme.primary
                                           : ColorTheme.grey600
                                       : ColorTheme.grey600,
@@ -222,8 +224,7 @@ class _StepIssuePCNState extends State<StepIssuePCN> {
                     color: widget.isActiveStep3 == true
                         ? ColorTheme.primary
                         : contraventionProvider.contravention != null
-                            ? contraventionProvider.contravention!
-                                    .contraventionPhotos!.isNotEmpty
+                            ? widget.isEnableStep3 == true
                                 ? ColorTheme.primary
                                 : ColorTheme.grey600
                             : ColorTheme.grey600,

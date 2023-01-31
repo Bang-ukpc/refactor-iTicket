@@ -73,7 +73,6 @@ class _PrintPCNState extends State<PrintPCN> {
     );
 
     Future<void> issuePCN() async {
-      print('Print physical');
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
       final wardenEventIssuePCN = WardenEvent(
@@ -93,7 +92,6 @@ class _PrintPCNState extends State<PrintPCN> {
       bool check = false;
 
       if (!mounted) return;
-      showCircularProgressIndicator(context: context);
 
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
@@ -403,6 +401,7 @@ class _PrintPCNState extends State<PrintPCN> {
                                     .copyWith(color: ColorTheme.white),
                               ),
                               onPressed: () {
+                                showCircularProgressIndicator(context: context);
                                 issuePCN();
                               },
                             ),
@@ -449,6 +448,7 @@ class _PrintPCNState extends State<PrintPCN> {
                     if (value?.hasPermit == true) {
                       showDialogPermitExists(value);
                     } else {
+                      showCircularProgressIndicator(context: context);
                       issuePCN();
                     }
                   });

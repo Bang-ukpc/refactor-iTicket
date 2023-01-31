@@ -69,8 +69,8 @@ class _PrintIssueState extends State<PrintIssue> {
           bluetoothPrinterHelper.printPhysicalPCN(
             contraventionProvider.contravention as Contravention,
             locations.location!,
-            locations.location!.LowerAmount,
-            locations.location!.UpperAmount,
+            locations.location?.LowerAmount ?? 0,
+            locations.location?.UpperAmount ?? 0,
             wardensProvider.wardens!.Id as int,
           );
         }
@@ -104,6 +104,7 @@ class _PrintIssueState extends State<PrintIssue> {
       await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => CameraPicker(
+            typePCN: contraventionProvider.contravention!.type,
             titleCamera: printIssue
                 .findIssueNoImage(
                     typePCN: contraventionProvider.contravention!.type)
@@ -230,8 +231,8 @@ class _PrintIssueState extends State<PrintIssue> {
                       bluetoothPrinterHelper.printPhysicalPCN(
                         contraventionProvider.contravention as Contravention,
                         locations.location!,
-                        locations.location!.LowerAmount,
-                        locations.location!.UpperAmount,
+                        locations.location?.LowerAmount ?? 0,
+                        locations.location?.UpperAmount ?? 0,
                         wardensProvider.wardens!.Id as int,
                       );
                     }
@@ -334,6 +335,27 @@ class _PrintIssueState extends State<PrintIssue> {
                                       : null,
                                   isActiveStep2: true,
                                   isActiveStep3: false,
+                                  isEnableStep3:
+                                      contraventionProvider.contravention !=
+                                              null
+                                          ? contraventionProvider
+                                                      .contravention!.type ==
+                                                  TypePCN.Physical.index
+                                              ? contraventionProvider
+                                                          .contravention!
+                                                          .contraventionPhotos!
+                                                          .length >=
+                                                      5
+                                                  ? true
+                                                  : false
+                                              : contraventionProvider
+                                                          .contravention!
+                                                          .contraventionPhotos!
+                                                          .length >=
+                                                      4
+                                                  ? true
+                                                  : false
+                                          : false,
                                   onTap3: contraventionProvider.contravention !=
                                           null
                                       ? contraventionProvider
@@ -349,17 +371,13 @@ class _PrintIssueState extends State<PrintIssue> {
                                                 }
                                               : null
                                           : contraventionProvider
-                                                      .contravention!.type ==
-                                                  TypePCN.Virtual.index
-                                              ? contraventionProvider
-                                                          .contravention!
-                                                          .contraventionPhotos!
-                                                          .length >=
-                                                      4
-                                                  ? () {
-                                                      onCompleteTakePhotos();
-                                                    }
-                                                  : null
+                                                      .contravention!
+                                                      .contraventionPhotos!
+                                                      .length >=
+                                                  4
+                                              ? () {
+                                                  onCompleteTakePhotos();
+                                                }
                                               : null
                                       : null,
                                 ),
