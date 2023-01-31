@@ -307,8 +307,8 @@ class CameraPicker extends HookWidget {
                                             Container(
                                               color: ColorTheme.backdrop2,
                                               padding: const EdgeInsets.only(
-                                                left: 30,
-                                                right: 40,
+                                                left: 0,
+                                                right: 15,
                                               ),
                                               child: Row(
                                                 mainAxisAlignment:

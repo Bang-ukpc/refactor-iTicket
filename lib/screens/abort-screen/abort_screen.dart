@@ -254,7 +254,7 @@ class _AbortScreenState extends State<AbortScreen> {
                                       ),
                                     ),
                                     const SizedBox(
-                                      height: 30,
+                                      height: 20,
                                     ),
                                     TextFormField(
                                       inputFormatters: [
