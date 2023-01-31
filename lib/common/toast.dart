@@ -29,7 +29,7 @@ enum ToastLayout {
 }
 
 const Color errorColor = Color(0xFFE01B00);
-const Color errorColorLight = Color.fromRGBO(224, 27, 0, 0.1);
+const Color errorColorLight = Color(0xFFFCE9E6);
 const Color successColor = ColorTheme.success;
 const Color lightSuccess = ColorTheme.lightSuccess;
 const Color infoColor = Color(0xFF4E5CB9);
@@ -111,7 +111,7 @@ class CherryToast extends StatefulWidget {
       this.animationType = AnimationType.fromLeft,
       this.autoDismiss = true,
       this.toastDuration = const Duration(
-        milliseconds: 1990,
+        milliseconds: 2000,
       ),
       this.layout = ToastLayout.ltr,
       this.displayCloseButton = true,
