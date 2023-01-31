@@ -2,8 +2,13 @@ class StatisticWardenPropsFilter {
   final int zoneId;
   final DateTime timeStart;
   final DateTime timeEnd;
-  StatisticWardenPropsFilter(
-      {required this.zoneId, required this.timeEnd, required this.timeStart});
+  final int WardenId;
+  StatisticWardenPropsFilter({
+    required this.zoneId,
+    required this.timeEnd,
+    required this.timeStart,
+    required this.WardenId,
+  });
 }
 
 class StatisticWardenPropsData {

@@ -14,6 +14,7 @@ import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/date_filter.dart';
 import 'package:iWarden/models/statistic.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/theme/color.dart';
@@ -110,10 +111,13 @@ class _StatisticScreenState extends State<StatisticScreen> {
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
+      final warden = Provider.of<WardensInfo>(context, listen: false);
+
       getDataStatistic(
           locations.zone!.Id as int,
           formatDate.startOfDay(DateTime.now()),
-          formatDate.endOfDay(DateTime.now()));
+          formatDate.endOfDay(DateTime.now()),
+          warden.wardens?.Id ?? 0);
     });
     _checkDeviceLocationIsOn();
     initConnectivity();
@@ -129,10 +133,16 @@ class _StatisticScreenState extends State<StatisticScreen> {
   StatisticWardenPropsData? statisticWardenData;
   String? selectedValue = DataDateFilter().data[0].value;
 
-  getDataStatistic(int zoneId, DateTime from, DateTime to) {
+  getDataStatistic(int zoneId, DateTime from, DateTime to, int wardenId) {
     statisticController
-        .getDataStatistic(StatisticWardenPropsFilter(
-            zoneId: zoneId, timeEnd: to, timeStart: from))
+        .getDataStatistic(
+      StatisticWardenPropsFilter(
+        zoneId: zoneId,
+        timeEnd: to,
+        timeStart: from,
+        WardenId: wardenId,
+      ),
+    )
         .then((value) {
       setState(() {
         statisticWardenData = value;
@@ -148,6 +158,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final warden = Provider.of<WardensInfo>(context, listen: false);
+
     Widget listDevice = Container(
       height: 64,
       color: Colors.white,
@@ -259,7 +271,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
                                     DateTime.parse(
                                         from.substring(7, from.length)),
                                     DateTime.parse(
-                                        to.substring(5, to.length - 1)));
+                                        to.substring(5, to.length - 1)),
+                                    warden.wardens?.Id ?? 0);
                                 setState(() {
                                   selectedValue = value.value;
                                 });
