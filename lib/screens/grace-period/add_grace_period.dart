@@ -25,6 +25,7 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/configs/scan-plate/anyline_service.dart';
 import 'package:iWarden/configs/scan-plate/result.dart';
 import 'package:iWarden/configs/scan-plate/scan_modes.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -102,6 +103,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
+    final wardenProvider = Provider.of<WardensInfo>(context);
 
     Future<bool> saveForm() async {
       ConnectivityResult connectionStatus =
@@ -123,6 +125,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
         CarLeft: false,
         EvidencePhotos: evidencePhotoList,
         Created: DateTime.now(),
+        CreatedBy: wardenProvider.wardens?.Id ?? 0,
       );
       final isValid = _formKey.currentState!.validate();
       bool check = false;

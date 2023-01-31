@@ -20,6 +20,7 @@ import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/configs/scan-plate/anyline_service.dart';
 import 'package:iWarden/configs/scan-plate/result.dart';
@@ -101,6 +102,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
+    final wardenProvider = Provider.of<WardensInfo>(context);
 
     Future<bool> saveForm() async {
       ConnectivityResult connectionStatus =
@@ -122,6 +124,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         CarLeft: false,
         EvidencePhotos: evidencePhotoList,
         Created: DateTime.now(),
+        CreatedBy: wardenProvider.wardens?.Id ?? 0,
       );
       final isValid = _formKey.currentState!.validate();
       bool check = false;

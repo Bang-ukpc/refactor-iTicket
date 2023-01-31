@@ -55,6 +55,7 @@ class VehicleInformation extends BaseModel {
     Id,
     Created,
     Deleted,
+    CreatedBy,
     required this.ExpiredAt,
     required this.Plate,
     required this.ZoneId,
@@ -65,7 +66,7 @@ class VehicleInformation extends BaseModel {
     required this.Longitude,
     required this.CarLeft,
     this.EvidencePhotos,
-  }) : super(Id: Id, Created: Created, Deleted: Deleted);
+  }) : super(Id: Id, Created: Created, Deleted: Deleted, CreatedBy: CreatedBy);
 
   factory VehicleInformation.fromJson(Map<String, dynamic> json) =>
       _$VehicleInformationFromJson(json);
@@ -104,6 +105,7 @@ Map<String, dynamic> _$VehicleInformationToJson(VehicleInformation instance) {
     'Id': instance.Id ?? 0,
     'Created':
         instance.Created != null ? instance.Created!.toIso8601String() : null,
+    'CreatedBy': instance.CreatedBy,
     'ExpiredAt': instance.ExpiredAt.toIso8601String(),
     'Plate': instance.Plate,
     'ZoneId': instance.ZoneId,
