@@ -264,6 +264,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   ),
                 ),
                 AddImage(
+                  displayTitle: false,
                   isSlideImage: true,
                   listImage: imgList,
                   listImageFile: imgListFile,
