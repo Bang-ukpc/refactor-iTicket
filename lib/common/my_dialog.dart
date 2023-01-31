@@ -39,7 +39,7 @@ class MyDialog extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 const SizedBox(
-                  height: 8,
+                  height: 16,
                 ),
                 Center(
                   child: subTitle,
@@ -56,9 +56,11 @@ class MyDialog extends StatelessWidget {
                             elevation: 0,
                             backgroundColor: ColorTheme.grey300,
                           ),
-                          child: const Text(
+                          child: Text(
                             "Cancel",
-                            style: CustomTextStyle.h5,
+                            style: CustomTextStyle.h5.copyWith(
+                              fontSize: 16,
+                            ),
                           ),
                           onPressed: () {
                             Navigator.of(context).pop();

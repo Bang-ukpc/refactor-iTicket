@@ -634,10 +634,11 @@ class DropDownItem extends StatelessWidget {
             Text(
               title,
               style: CustomTextStyle.body1.copyWith(
-                  color: isSelected == false
-                      ? ColorTheme.textPrimary
-                      : ColorTheme.primary,
-                  fontSize: 16),
+                color: isSelected == false
+                    ? ColorTheme.textPrimary
+                    : ColorTheme.primary,
+                fontSize: 16,
+              ),
             ),
             if (subTitle != null)
               Text(

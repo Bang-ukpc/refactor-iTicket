@@ -308,11 +308,11 @@ class _PrintPCNState extends State<PrintPCN> {
                         children: [
                           const Text(
                             'VRN: ',
-                            style: CustomTextStyle.h5,
+                            style: CustomTextStyle.h4,
                           ),
                           Text(
                             value?.permitInfo?.VRN ?? 'No data',
-                            style: CustomTextStyle.h5
+                            style: CustomTextStyle.h4
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -324,11 +324,11 @@ class _PrintPCNState extends State<PrintPCN> {
                         children: [
                           const Text(
                             'Bay information: ',
-                            style: CustomTextStyle.h5,
+                            style: CustomTextStyle.h4,
                           ),
                           Text(
                             value?.permitInfo?.bayNumber ?? 'No data',
-                            style: CustomTextStyle.h5
+                            style: CustomTextStyle.h4
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -340,11 +340,11 @@ class _PrintPCNState extends State<PrintPCN> {
                         children: [
                           const Text(
                             'Source: ',
-                            style: CustomTextStyle.h5,
+                            style: CustomTextStyle.h4,
                           ),
                           Text(
                             value?.permitInfo?.source ?? 'No data',
-                            style: CustomTextStyle.h5
+                            style: CustomTextStyle.h4
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -355,12 +355,12 @@ class _PrintPCNState extends State<PrintPCN> {
                       Row(
                         children: [
                           const Text(
-                            'Tennant: ',
-                            style: CustomTextStyle.h5,
+                            'Tenant: ',
+                            style: CustomTextStyle.h4,
                           ),
                           Text(
                             value?.permitInfo?.tenant ?? 'No data',
-                            style: CustomTextStyle.h5
+                            style: CustomTextStyle.h4
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -437,7 +437,7 @@ class _PrintPCNState extends State<PrintPCN> {
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconAbort.svg',
-                  color: Colors.white,
+                  color: ColorTheme.textPrimary,
                 ),
                 label: 'Abort',
               ),
@@ -454,8 +454,7 @@ class _PrintPCNState extends State<PrintPCN> {
                   });
                 },
                 icon: SvgPicture.asset(
-                  'assets/svg/IconComplete.svg',
-                  color: Colors.white,
+                  'assets/svg/IconComplete2.svg',
                 ),
                 label: 'Complete',
               ),

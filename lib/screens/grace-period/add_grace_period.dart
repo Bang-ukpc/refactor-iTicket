@@ -360,10 +360,15 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                                   textCapitalization:
                                       TextCapitalization.characters,
                                   controller: _vrnController,
-                                  style: CustomTextStyle.h5,
+                                  style:
+                                      CustomTextStyle.h5.copyWith(fontSize: 16),
                                   decoration: const InputDecoration(
                                     label: LabelRequire(labelText: "VRN"),
                                     hintText: "Enter VRN",
+                                    hintStyle: TextStyle(
+                                      fontSize: 16,
+                                      color: ColorTheme.grey400,
+                                    ),
                                   ),
                                   validator: ((value) {
                                     if (value!.isEmpty) {
@@ -397,10 +402,14 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                                 RegExp(r'[^\s]+\b\s?'),
                               ),
                             ],
-                            style: CustomTextStyle.h5,
+                            style: CustomTextStyle.h5.copyWith(fontSize: 16),
                             decoration: const InputDecoration(
                               labelText: 'Bay number',
                               hintText: "Enter bay number",
+                              hintStyle: TextStyle(
+                                fontSize: 16,
+                                color: ColorTheme.grey400,
+                              ),
                             ),
                             controller: _bayNumberController,
                           ),

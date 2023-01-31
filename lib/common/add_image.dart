@@ -47,21 +47,25 @@ class _AddImageState extends State<AddImage> {
         return MyDialog(
           title: Text(
             "Confirm",
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(
+                color: ColorTheme.danger, fontWeight: FontWeight.w600),
           ),
-          subTitle: const Text(
+          subTitle: Text(
             "Are you sure you want to delete this photo?",
-            style: CustomTextStyle.h5,
+            style: CustomTextStyle.h5.copyWith(fontSize: 16),
           ),
           func: ElevatedButton(
             style: ElevatedButton.styleFrom(
               elevation: 0,
               backgroundColor: ColorTheme.danger,
             ),
-            child: Text("Proceed",
-                style: CustomTextStyle.h5.copyWith(
-                  color: Colors.white,
-                )),
+            child: Text(
+              "Proceed",
+              style: CustomTextStyle.h5.copyWith(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+            ),
             onPressed: () {
               setState(() {
                 widget.listImage.removeAt(index);
