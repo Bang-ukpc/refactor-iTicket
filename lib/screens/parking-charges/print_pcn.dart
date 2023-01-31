@@ -126,6 +126,15 @@ class _PrintPCNState extends State<PrintPCN> {
               Navigator.of(context).pop();
               Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
                   arguments: contravention);
+              CherryToast.success(
+                displayCloseButton: false,
+                title: Text(
+                  'The PCN has been created successfully',
+                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
             });
           }
         } on DioError catch (error) {
@@ -270,7 +279,7 @@ class _PrintPCNState extends State<PrintPCN> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
             child: AlertDialog(
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(
@@ -442,16 +451,52 @@ class _PrintPCNState extends State<PrintPCN> {
               ),
               BottomNavyBarItem(
                 onPressed: () {
-                  contraventionController
-                      .checkHasPermit(contraventionCreate)
-                      .then((value) {
-                    if (value?.hasPermit == true) {
-                      showDialogPermitExists(value);
-                    } else {
-                      showCircularProgressIndicator(context: context);
-                      issuePCN();
+                  try {
+                    showCircularProgressIndicator(context: context);
+                    contraventionController
+                        .checkHasPermit(contraventionCreate)
+                        .then((value) {
+                      Navigator.of(context).pop();
+                      if (value?.hasPermit == true) {
+                        showDialogPermitExists(value);
+                      } else {
+                        showCircularProgressIndicator(context: context);
+                        issuePCN();
+                      }
+                    });
+                  } on DioError catch (error) {
+                    if (error.type == DioErrorType.other) {
+                      Navigator.of(context).pop();
+                      CherryToast.error(
+                        toastDuration: const Duration(seconds: 3),
+                        title: Text(
+                          error.message.length > Constant.errorTypeOther
+                              ? 'Something went wrong, please try again'
+                              : error.message,
+                          style: CustomTextStyle.h5
+                              .copyWith(color: ColorTheme.danger),
+                        ),
+                        toastPosition: Position.bottom,
+                        borderRadius: 5,
+                      ).show(context);
+                      return;
                     }
-                  });
+                    Navigator.of(context).pop();
+                    CherryToast.error(
+                      displayCloseButton: false,
+                      title: Text(
+                        error.response!.data['message'].toString().length >
+                                Constant.errorMaxLength
+                            ? 'Internal server error'
+                            : error.response!.data['message'],
+                        style: CustomTextStyle.h5
+                            .copyWith(color: ColorTheme.danger),
+                      ),
+                      toastPosition: Position.bottom,
+                      borderRadius: 5,
+                    ).show(context);
+                    return;
+                  }
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconComplete.svg',
