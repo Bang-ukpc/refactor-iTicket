@@ -50,10 +50,7 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                   "assets/svg/IconCharges2.svg",
                   width: 16,
                 ),
-                label: const Text(
-                  'Issue another PCN',
-                  style: CustomTextStyle.h6,
-                ),
+                label: 'Issue another PCN',
               ),
             ])
           : null,

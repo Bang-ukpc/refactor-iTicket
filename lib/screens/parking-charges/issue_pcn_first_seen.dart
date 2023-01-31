@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/providers/car_info_data.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -62,6 +64,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final _vehicleColorController = TextEditingController();
   final _contraventionReasonController = TextEditingController();
   final _commentController = TextEditingController();
+
   List<ContraventionReasonTranslations> contraventionReasonList = [];
   List<EvidencePhoto> evidencePhotoList = [];
   final _debouncer = Debouncer(milliseconds: 300);
@@ -86,7 +89,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         _vehicleModelController.text = value?.Model ?? '';
         _vehicleColorController.text = value?.Colour ?? '';
       });
-    });
+    }).catchError(((e) {
+      setState(() {
+        _vehicleMakeController.text = '';
+        _vehicleModelController.text = '';
+        _vehicleColorController.text = '';
+      });
+    }));
   }
 
   void getSelectedTypeOfPCN(
@@ -619,6 +628,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       }
     }
 
+    List<String> arrMake = DataInfoCar().make;
+    List<String> arrColor = DataInfoCar().color;
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
@@ -766,32 +777,84 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 const SizedBox(
                                   height: 20,
                                 ),
-                                TextFormField(
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[^\s]+\b\s?'),
+                                SizedBox(
+                                  child: DropdownSearch<String>(
+                                    // key: Key(
+                                    //     '${DateTime.now().microsecondsSinceEpoch / 888}'),
+                                    dropdownDecoratorProps:
+                                        DropDownDecoratorProps(
+                                      dropdownSearchDecoration:
+                                          dropDownButtonStyle
+                                              .getInputDecorationCustom(
+                                        labelText: const LabelRequire(
+                                          labelText: "Vehicle make",
+                                        ),
+                                        hintText: "Enter vehicle make",
+                                      ),
                                     ),
-                                  ],
-                                  style: CustomTextStyle.h5,
-                                  controller: _vehicleMakeController,
-                                  decoration: const InputDecoration(
-                                    label:
-                                        LabelRequire(labelText: "Vehicle make"),
-                                    hintText: "Enter vehicle make",
+                                    items: arrMake,
+                                    // selectedItem:
+                                    //     contraventionProvider.contravention !=
+                                    //             null
+                                    //         ? contraventionProvider
+                                    //                     .contravention!.make !=
+                                    //                 null
+                                    //             ? arrMake.firstWhere((e) =>
+                                    //                 e ==
+                                    //                 _vehicleMakeController.text)
+                                    //             : null
+                                    //         : null,
+                                    selectedItem: contraventionProvider
+                                                .contravention !=
+                                            null
+                                        ? contraventionProvider
+                                                    .contravention!.make !=
+                                                null
+                                            ? arrMake.firstWhereOrNull((e) =>
+                                                e.toUpperCase() ==
+                                                contraventionProvider
+                                                    .contravention!.make!
+                                                    .toUpperCase())
+                                            : null
+                                        : _vehicleMakeController.text.isNotEmpty
+                                            ? arrMake.firstWhereOrNull((e) =>
+                                                e.toUpperCase() ==
+                                                _vehicleMakeController.text
+                                                    .toUpperCase())
+                                            : null,
+                                    // itemAsString: (item) =>
+                                    //     item.summary as String,
+                                    popupProps: PopupProps.menu(
+                                        showSearchBox: true,
+                                        fit: FlexFit.loose,
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 325,
+                                        ),
+                                        itemBuilder:
+                                            (context, item, isSelected) {
+                                          return DropDownItem(
+                                            isSelected:
+                                                _vehicleMakeController.text ==
+                                                    item,
+                                            title: item,
+                                          );
+                                        }),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _vehicleMakeController.text = value!;
+                                      });
+                                    },
+                                    validator: ((value) {
+                                      if (value == null) {
+                                        return 'Please select make';
+                                      }
+                                      return null;
+                                    }),
+                                    autoValidateMode:
+                                        AutovalidateMode.onUserInteraction,
                                   ),
-                                  validator: ((value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter vehicle make';
-                                    }
-                                    return null;
-                                  }),
-                                  onSaved: (value) {
-                                    _vehicleMakeController.text =
-                                        value as String;
-                                  },
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
                                 ),
+
                                 const SizedBox(
                                   height: 20,
                                 ),
@@ -824,32 +887,97 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 const SizedBox(
                                   height: 20,
                                 ),
-                                TextFormField(
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[^\s]+\b\s?'),
+                                SizedBox(
+                                  // key: Key(
+                                  //     '${DateTime.now().microsecondsSinceEpoch / 888}'),
+                                  child: DropdownSearch<String>(
+                                    dropdownDecoratorProps:
+                                        DropDownDecoratorProps(
+                                      dropdownSearchDecoration:
+                                          dropDownButtonStyle
+                                              .getInputDecorationCustom(
+                                        labelText: const LabelRequire(
+                                          labelText: "Vehicle color",
+                                        ),
+                                        hintText: "Enter vehicle color",
+                                      ),
                                     ),
-                                  ],
-                                  style: CustomTextStyle.h5,
-                                  controller: _vehicleColorController,
-                                  decoration: const InputDecoration(
-                                    label: LabelRequire(
-                                        labelText: "Vehicle color"),
-                                    hintText: "Enter vehicle color",
+                                    items: arrColor,
+                                    selectedItem: contraventionProvider
+                                                .contravention !=
+                                            null
+                                        ? contraventionProvider
+                                                    .contravention!.colour !=
+                                                null
+                                            ? arrColor.firstWhereOrNull((e) =>
+                                                e.toUpperCase() ==
+                                                contraventionProvider
+                                                    .contravention!.colour!
+                                                    .toUpperCase())
+                                            : null
+                                        : _vehicleColorController
+                                                .text.isNotEmpty
+                                            ? arrColor.firstWhereOrNull((e) =>
+                                                e.toUpperCase() ==
+                                                _vehicleColorController.text
+                                                    .toUpperCase())
+                                            : null,
+                                    popupProps: PopupProps.menu(
+                                        showSearchBox: true,
+                                        fit: FlexFit.loose,
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 325,
+                                        ),
+                                        itemBuilder:
+                                            (context, item, isSelected) {
+                                          return DropDownItem(
+                                            isSelected:
+                                                _vehicleColorController.text ==
+                                                    item,
+                                            title: item,
+                                          );
+                                        }),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _vehicleColorController.text = value!;
+                                      });
+                                    },
+                                    validator: ((value) {
+                                      if (value == null) {
+                                        return 'Please select color';
+                                      }
+                                      return null;
+                                    }),
+                                    autoValidateMode:
+                                        AutovalidateMode.onUserInteraction,
                                   ),
-                                  validator: ((value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter vehicle color';
-                                    }
-                                    return null;
-                                  }),
-                                  onSaved: (value) {
-                                    _vehicleColorController.text =
-                                        value as String;
-                                  },
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
                                 ),
+                                // TextFormField(
+                                //   inputFormatters: [
+                                //     FilteringTextInputFormatter.allow(
+                                //       RegExp(r'[^\s]+\b\s?'),
+                                //     ),
+                                //   ],
+                                //   style: CustomTextStyle.h5,
+                                //   controller: _vehicleColorController,
+                                //   decoration: const InputDecoration(
+                                //     label: LabelRequire(
+                                //         labelText: "Vehicle color"),
+                                //     hintText: "Enter vehicle color",
+                                //   ),
+                                //   validator: ((value) {
+                                //     if (value!.isEmpty) {
+                                //       return 'Please enter vehicle color';
+                                //     }
+                                //     return null;
+                                //   }),
+                                //   onSaved: (value) {
+                                //     _vehicleColorController.text =
+                                //         value as String;
+                                //   },
+                                //   autovalidateMode:
+                                //       AutovalidateMode.onUserInteraction,
+                                // ),
                                 const SizedBox(
                                   height: 20,
                                 ),
