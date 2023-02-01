@@ -166,6 +166,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       }
       if (args != null) {
         onSearchVehicleInfoByPlate(args.Plate);
+        // ContraventionReasonTranslations? argsOverstayingTime =
+        //     fromJsonContraventionList
+        //         .firstWhere((e) => e.contraventionReason?.code == '36');
+        // _contraventionReasonController.text =
+        //       argsOverstayingTime.contraventionReason!.code.toString();
       }
       getSelectedTypeOfPCN(locationProvider, contraventionData);
     });
@@ -229,6 +234,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
     final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
+    final argsFromExpired =
+        ModalRoute.of(context)!.settings.arguments as dynamic;
+
+    print(_contraventionReasonController.text);
 
     log('Issue PCN screen');
 
@@ -959,15 +968,22 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                     items: contraventionReasonList,
                                     selectedItem: fromJsonContraventionList
                                             .isNotEmpty
-                                        ? contraventionProvider.contravention !=
-                                                null
-                                            ? fromJsonContraventionList
-                                                .firstWhere((e) =>
-                                                    e.contraventionReason
-                                                        ?.code ==
-                                                    _contraventionReasonController
-                                                        .text)
-                                            : null
+                                        ? argsFromExpired == null
+                                            ? contraventionProvider
+                                                        .contravention !=
+                                                    null
+                                                ? fromJsonContraventionList
+                                                    .firstWhere((e) =>
+                                                        e.contraventionReason
+                                                            ?.code ==
+                                                        _contraventionReasonController
+                                                            .text)
+                                                : null
+                                            : fromJsonContraventionList
+                                                .firstWhereOrNull((e) =>
+                                                    e.contraventionReason!
+                                                        .code ==
+                                                    '36')
                                         : null,
                                     itemAsString: (item) =>
                                         item.summary as String,
