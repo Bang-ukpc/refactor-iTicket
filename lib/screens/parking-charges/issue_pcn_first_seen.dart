@@ -1002,7 +1002,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                         .contravention !=
                                                     null
                                                 ? fromJsonContraventionList
-                                                    .firstWhere((e) =>
+                                                    .firstWhereOrNull((e) =>
                                                         e.contraventionReason
                                                             ?.code ==
                                                         _contraventionReasonController

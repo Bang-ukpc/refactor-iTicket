@@ -35,6 +35,7 @@ class PrintIssue extends StatefulWidget {
 
 class _PrintIssueState extends State<PrintIssue> {
   final _debouncer = Debouncer(milliseconds: 3000);
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -183,6 +184,23 @@ class _PrintIssueState extends State<PrintIssue> {
       }
     }
 
+    void setLoading(bool value) {
+      setState(() {
+        isLoading = value;
+      });
+    }
+
+    void setLoadingEnd() async {
+      await Future.delayed(const Duration(seconds: 3), () {
+        // Code to be executed after timeout
+        setState(() {
+          isLoading = false;
+        });
+      });
+    }
+
+    log(isLoading.toString());
+
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
@@ -209,6 +227,10 @@ class _PrintIssueState extends State<PrintIssue> {
                   TypePCN.Physical.index)
                 BottomNavyBarItem(
                   onPressed: () {
+                    //set disable button on 3s
+                    setLoading(true);
+                    setLoadingEnd();
+                    //
                     if (bluetoothPrinterHelper.selectedPrinter == null) {
                       showCircularProgressIndicator(
                         context: context,
@@ -237,10 +259,30 @@ class _PrintIssueState extends State<PrintIssue> {
                       );
                     }
                   },
-                  icon: SvgPicture.asset(
-                    'assets/svg/IconPrinter.svg',
-                    color: Colors.white,
-                  ),
+                  isDisabled: isLoading,
+                  icon: isLoading
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Center(
+                              child: Container(
+                                height: 13,
+                                width: 13,
+                                margin: const EdgeInsets.all(5),
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2.0,
+                                  valueColor: AlwaysStoppedAnimation(
+                                      ColorTheme.textPrimary),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : SvgPicture.asset(
+                          'assets/svg/IconPrinter.svg',
+                          color: Colors.white,
+                        ),
                   label: "Re-print",
                 ),
               BottomNavyBarItem(

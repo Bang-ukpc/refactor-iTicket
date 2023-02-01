@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -6,11 +8,13 @@ class BottomNavyBarItem extends StatelessWidget {
   final void Function()? onPressed;
   final Widget icon;
   final String label;
+  final bool? isDisabled;
 
   const BottomNavyBarItem(
       {required this.onPressed,
       required this.icon,
       required this.label,
+      this.isDisabled = false,
       super.key});
 
   @override
@@ -21,29 +25,32 @@ class BottomNavyBarItem extends StatelessWidget {
     bool abortButton =
         label.toUpperCase().endsWith("Finish abort".toUpperCase());
 
+    bool disabled = isDisabled != null && isDisabled == true;
+
     return Container(
       height: 40,
       child: TextButton.icon(
         style: ButtonStyle(
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(0.0),
-              ),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(0.0),
             ),
-            backgroundColor: MaterialStateProperty.all(abortButton
-                ? ColorTheme.danger
-                : typeButton
-                    ? ColorTheme.grey300
-                    : ColorTheme.primary)),
-        onPressed: onPressed,
+          ),
+          backgroundColor: MaterialStateProperty.all(abortButton
+              ? ColorTheme.danger
+              : typeButton || disabled
+                  ? ColorTheme.grey300
+                  : ColorTheme.primary),
+        ),
+        onPressed: disabled ? () {} : onPressed,
         icon: icon,
         label: Text(
           label,
           style: CustomTextStyle.h6.copyWith(
               color: abortButton
                   ? ColorTheme.white
-                  : typeButton
+                  : typeButton || disabled
                       ? ColorTheme.textPrimary
                       : ColorTheme.white,
               fontSize: 14),
