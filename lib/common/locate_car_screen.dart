@@ -121,8 +121,8 @@ class _LocateCarScreenState extends State<LocateCarScreen> {
               ),
               MapScreen(
                 screenHeight: MediaQuery.of(context).size.width < 400
-                    ? screenHeight / 1.3
-                    : screenHeight / 1.8,
+                    ? screenHeight - 200
+                    : screenHeight / 2,
                 destination: destination,
                 info: _info,
               ),

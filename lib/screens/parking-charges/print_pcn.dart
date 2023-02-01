@@ -260,14 +260,16 @@ class _PrintPCNState extends State<PrintPCN> {
               'contraventionDataLocal', encodedCreatedData);
         }
 
+        var contraventionDataFake = contraventionProvider.contravention;
+
         await userController
             .createWardenEvent(wardenEventIssuePCN)
             .then((value) {
           contraventionProvider.clearContraventionData();
           printIssue.resetData();
           Navigator.of(context).pop();
-          Navigator.of(context)
-              .pushNamed(ParkingChargeInfo.routeName, arguments: contravention);
+          Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
+              arguments: contraventionDataFake);
           CherryToast.success(
             displayCloseButton: false,
             title: Text(
@@ -467,7 +469,7 @@ class _PrintPCNState extends State<PrintPCN> {
                     try {
                       if (!mounted) return;
                       showCircularProgressIndicator(context: context);
-                      contraventionController
+                      await contraventionController
                           .checkHasPermit(contraventionCreate)
                           .then((value) {
                         Navigator.of(context).pop();
