@@ -210,6 +210,19 @@ class _AbortScreenState extends State<AbortScreen> {
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<CancellationReason>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Enter vehicle color"
+                                                  : selectedItem.reason,
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:

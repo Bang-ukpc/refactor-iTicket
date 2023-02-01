@@ -842,6 +842,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 ),
                                 SizedBox(
                                   child: DropdownSearch<String>(
+                                    dropdownBuilder: (context, selectedItem) {
+                                      return Text(selectedItem ?? "Select zone",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: selectedItem == null
+                                                ? ColorTheme.grey400
+                                                : ColorTheme.textPrimary,
+                                          ));
+                                    },
                                     dropdownDecoratorProps:
                                         DropDownDecoratorProps(
                                       dropdownSearchDecoration:
@@ -908,6 +917,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 ),
                                 SizedBox(
                                   child: DropdownSearch<String>(
+                                    dropdownBuilder: (context, selectedItem) {
+                                      return Text(
+                                          selectedItem ?? "Enter vehicle color",
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              color: selectedItem == null
+                                                  ? ColorTheme.grey400
+                                                  : ColorTheme.textPrimary));
+                                    },
                                     dropdownDecoratorProps:
                                         DropDownDecoratorProps(
                                       dropdownSearchDecoration:
@@ -976,6 +994,17 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 SizedBox(
                                   child: DropdownSearch<
                                       ContraventionReasonTranslations>(
+                                    dropdownBuilder: (context, selectedItem) {
+                                      return Text(
+                                          selectedItem == null
+                                              ? "Select zone"
+                                              : selectedItem.summary as String,
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              color: selectedItem == null
+                                                  ? ColorTheme.grey400
+                                                  : ColorTheme.textPrimary));
+                                    },
                                     dropdownDecoratorProps:
                                         DropDownDecoratorProps(
                                       dropdownSearchDecoration:
@@ -1041,6 +1070,17 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                 ),
                                 SizedBox(
                                   child: DropdownSearch<SelectModel>(
+                                    dropdownBuilder: (context, selectedItem) {
+                                      return Text(
+                                          selectedItem == null
+                                              ? "Select zone"
+                                              : selectedItem.label,
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              color: selectedItem == null
+                                                  ? ColorTheme.grey400
+                                                  : ColorTheme.textPrimary));
+                                    },
                                     key: Key(
                                         '${DateTime.now().microsecondsSinceEpoch / 1000}'),
                                     dropdownDecoratorProps:

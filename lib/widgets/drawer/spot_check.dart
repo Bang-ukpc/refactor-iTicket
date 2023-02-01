@@ -46,7 +46,7 @@ class _SpotCheckState extends State<SpotCheck> {
             displayCloseButton: false,
             title: Text(
               'Coming soon',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.primary),
+              style: CustomTextStyle.h5.copyWith(color: ColorTheme.secondary),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,

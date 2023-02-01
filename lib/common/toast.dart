@@ -31,9 +31,10 @@ enum ToastLayout {
 const Color errorColor = Color(0xFFE01B00);
 const Color errorColorLight = Color(0xFFFCE9E6);
 const Color successColor = ColorTheme.success;
-const Color lightSuccess = ColorTheme.lightSuccess;
+const Color lightSuccess = Color(0xFFE6F6EE);
 const Color infoColor = Color(0xFF4E5CB9);
 const Color warningColor = Color(0xffFC9F00);
+const Color warningColorLight = Color(0xFFFEF8E6);
 
 // ignore: must_be_immutable
 class CherryToast extends StatefulWidget {
@@ -154,33 +155,36 @@ class CherryToast extends StatefulWidget {
     _initializeAttributes(warningColor);
   }
 
-  CherryToast.info(
-      {Key? key,
-      required this.title,
-      this.action,
-      this.actionHandler,
-      this.description,
-      this.color = errorColor,
-      this.displayTitle = true,
-      this.toastPosition = Position.top,
-      this.animationDuration = const Duration(
-        milliseconds: 700,
-      ),
-      this.animationCurve = Curves.ease,
-      this.animationType = AnimationType.fromLeft,
-      this.autoDismiss = true,
-      this.toastDuration = const Duration(
-        milliseconds: 1990,
-      ),
-      this.layout = ToastLayout.ltr,
-      this.displayCloseButton = true,
-      this.borderRadius = 20,
-      this.displayIcon = true,
-      this.enableIconAnimation = true,
-      this.background = ColorTheme.lightSuccess})
-      : super(key: key) {
-    icon = SvgPicture.asset("assets/svg/IconComplete2.svg");
-    _initializeAttributes(infoColor);
+  CherryToast.info({
+    Key? key,
+    required this.title,
+    this.action,
+    this.actionHandler,
+    this.description,
+    this.color = warningColor,
+    this.displayTitle = true,
+    this.toastPosition = Position.top,
+    this.animationDuration = const Duration(
+      milliseconds: 700,
+    ),
+    this.animationCurve = Curves.ease,
+    this.animationType = AnimationType.fromLeft,
+    this.autoDismiss = true,
+    this.toastDuration = const Duration(
+      milliseconds: 2000,
+    ),
+    this.layout = ToastLayout.ltr,
+    this.displayCloseButton = true,
+    this.borderRadius = 20,
+    this.displayIcon = true,
+    this.enableIconAnimation = true,
+    this.background = warningColorLight,
+  }) : super(key: key) {
+    icon = SvgPicture.asset(
+      "assets/svg/IconComplete3.svg",
+      // color: ColorTheme.white,
+    );
+    _initializeAttributes(warningColor);
   }
 
   void _initializeAttributes(Color color) {

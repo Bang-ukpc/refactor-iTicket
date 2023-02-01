@@ -64,12 +64,12 @@ class BottomSheet2 extends StatefulWidget {
 
 class _BottomSheet2State extends State<BottomSheet2> {
   Widget verticalLine = Container(
-    height: 25,
+    height: 40,
     decoration: const BoxDecoration(
       border: Border.symmetric(
         vertical: BorderSide(
-          width: 1,
-          color: ColorTheme.grey300,
+          width: 0.5,
+          color: ColorTheme.white,
         ),
       ),
     ),
@@ -91,7 +91,7 @@ class _BottomSheet2State extends State<BottomSheet2> {
                 : Row(
                     children: [
                       SizedBox(
-                        width: ((widthScreen - widget.buttonList.length - 1) /
+                        width: ((widthScreen - widget.buttonList.length + 1) /
                             widget.buttonList.length),
                         child: item,
                       ),

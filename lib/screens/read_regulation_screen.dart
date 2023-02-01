@@ -182,9 +182,8 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
           label: Text(
             'Check in',
-            style: CustomTextStyle.h6.copyWith(
-              color: Colors.white,
-            ),
+            style:
+                CustomTextStyle.h6.copyWith(color: Colors.white, fontSize: 14),
           ),
         ),
       ),

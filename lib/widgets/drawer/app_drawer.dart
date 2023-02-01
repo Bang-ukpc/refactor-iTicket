@@ -212,7 +212,7 @@ class _MyDrawerState extends State<MyDrawer> {
                         title: Text(
                           'Coming soon',
                           style: CustomTextStyle.h5
-                              .copyWith(color: ColorTheme.primary),
+                              .copyWith(color: ColorTheme.secondary),
                         ),
                         toastPosition: Position.bottom,
                         borderRadius: 5,
