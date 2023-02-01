@@ -239,6 +239,17 @@ class _StatisticScreenState extends State<StatisticScreen> {
                           Expanded(
                             flex: 1,
                             child: DropdownSearch<DateFilter>(
+                              dropdownBuilder: (context, selectedItem) {
+                                return Text(
+                                    selectedItem == null
+                                        ? "Date filter"
+                                        : selectedItem.label,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: selectedItem == null
+                                            ? ColorTheme.grey400
+                                            : ColorTheme.textPrimary));
+                              },
                               dropdownDecoratorProps: DropDownDecoratorProps(
                                 dropdownSearchDecoration: dropDownButtonStyle
                                     .getInputDecorationCustom(

@@ -268,7 +268,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: toast.Position.bottom,
             borderRadius: 5,
@@ -283,7 +283,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: toast.Position.bottom,
           borderRadius: 5,
@@ -394,7 +394,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                           toastDuration: const Duration(seconds: 5),
                           title: Text(
                             'Please allow the app to access your location to continue',
-                            style: CustomTextStyle.h5
+                            style: CustomTextStyle.h4
                                 .copyWith(color: ColorTheme.danger),
                           ),
                           toastPosition: toast.Position.bottom,

@@ -114,7 +114,7 @@ class _AbortScreenState extends State<AbortScreen> {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -129,7 +129,7 @@ class _AbortScreenState extends State<AbortScreen> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -210,6 +210,19 @@ class _AbortScreenState extends State<AbortScreen> {
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<CancellationReason>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Enter vehicle color"
+                                                  : selectedItem.reason,
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:

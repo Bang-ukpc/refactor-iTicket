@@ -69,7 +69,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                 error.message.length > Constant.errorTypeOther
                     ? 'Something went wrong, please try again'
                     : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -84,7 +84,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                       Constant.errorMaxLength
                   ? 'Internal server error'
                   : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -97,7 +97,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
             displayCloseButton: false,
             title: Text(
               'Please tick to confirm and go next',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -120,7 +120,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                   error.message.length > Constant.errorTypeOther
                       ? 'Something went wrong, please try again'
                       : error.message,
-                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
                 ),
                 toastPosition: Position.bottom,
                 borderRadius: 5,
@@ -135,7 +135,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                         Constant.errorMaxLength
                     ? 'Internal server error'
                     : error.response!.data['message'],
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -182,9 +182,8 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
           label: Text(
             'Check in',
-            style: CustomTextStyle.h6.copyWith(
-              color: Colors.white,
-            ),
+            style:
+                CustomTextStyle.h6.copyWith(color: Colors.white, fontSize: 14),
           ),
         ),
       ),

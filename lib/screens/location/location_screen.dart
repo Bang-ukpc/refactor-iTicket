@@ -258,7 +258,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   color: ColorTheme.white),
               label: Text(
                 'Next',
-                style: CustomTextStyle.h4.copyWith(
+                style: CustomTextStyle.h5.copyWith(
                   color: ColorTheme.white,
                 ),
               ),
@@ -306,6 +306,19 @@ class _LocationScreenState extends State<LocationScreen> {
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<RotaWithLocation>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Select rota shift"
+                                                  : '${formatRotaShift(selectedItem.timeFrom as DateTime)} - ${formatRotaShift(selectedItem.timeTo as DateTime)}',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:
@@ -372,6 +385,19 @@ class _LocationScreenState extends State<LocationScreen> {
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<LocationWithZones>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Select location"
+                                                  : selectedItem.Name,
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:
@@ -442,6 +468,19 @@ class _LocationScreenState extends State<LocationScreen> {
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<Zone>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Select zone"
+                                                  : selectedItem.Name,
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:

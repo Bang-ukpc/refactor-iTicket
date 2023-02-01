@@ -79,7 +79,7 @@ class InfoDrawer extends StatelessWidget {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -94,7 +94,7 @@ class InfoDrawer extends StatelessWidget {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -116,7 +116,7 @@ class InfoDrawer extends StatelessWidget {
               displayCloseButton: false,
               title: Text(
                 'Log out successfully',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -132,7 +132,7 @@ class InfoDrawer extends StatelessWidget {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -147,7 +147,7 @@ class InfoDrawer extends StatelessWidget {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
