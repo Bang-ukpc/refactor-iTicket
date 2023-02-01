@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 24,
                   ),
                   const Text(
-                    "Welcome to iWarden! We’re glad you’re here!",
+                    "Welcome to iTicket! We’re glad you’re here!",
                     style: CustomTextStyle.h6,
                   ),
                   const SizedBox(

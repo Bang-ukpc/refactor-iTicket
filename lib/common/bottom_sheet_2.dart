@@ -16,7 +16,8 @@ class BottomNavyBarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool typeButton = label.toUpperCase().endsWith("Abort".toUpperCase()) ||
-        label.toUpperCase().endsWith("Check out".toUpperCase());
+        label.toUpperCase().endsWith("Check out".toUpperCase()) ||
+        label.toUpperCase().endsWith("Cancel".toUpperCase());
     bool abortButton =
         label.toUpperCase().endsWith("Finish abort".toUpperCase());
 

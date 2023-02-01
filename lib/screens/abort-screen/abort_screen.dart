@@ -156,7 +156,7 @@ class _AbortScreenState extends State<AbortScreen> {
               },
               icon: SvgPicture.asset(
                 'assets/svg/IconCancel2.svg',
-                color: Colors.white,
+                color: ColorTheme.textPrimary,
               ),
               label: 'Cancel',
             ),
