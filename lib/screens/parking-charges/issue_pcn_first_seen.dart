@@ -206,15 +206,17 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             .replaceAll(')', '');
       }
       if (args != null) {
-        print(args.Type);
         onSearchVehicleInfoByPlate(args.Plate);
         if (args.Type == VehicleInformationType.FIRST_SEEN.index) {
           ContraventionReasonTranslations? argsOverstayingTime =
-              fromJsonContraventionList
-                  .firstWhereOrNull((e) => e.contraventionReason?.code == '36');
+              fromJsonContraventionList.firstWhereOrNull((e) => e.summary!
+                  .toUpperCase()
+                  .contains('Overstaying'.toUpperCase()));
           _contraventionReasonController.text = argsOverstayingTime != null
               ? argsOverstayingTime.contraventionReason!.code.toString()
               : '';
+        } else {
+          _contraventionReasonController.text = '';
         }
       }
       setSelectedTypeOfPCN(locationProvider, contraventionData);
@@ -894,7 +896,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                     child: DropdownSearch<String>(
                                       dropdownBuilder: (context, selectedItem) {
                                         return Text(
-                                            selectedItem ?? "Select zone",
+                                            selectedItem ??
+                                                "Select vehicle make",
                                             style: TextStyle(
                                               fontSize: 16,
                                               color: selectedItem == null
@@ -910,7 +913,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                           labelText: const LabelRequire(
                                             labelText: "Vehicle make",
                                           ),
-                                          hintText: "Enter vehicle make",
+                                          hintText: "Select vehicle make",
                                         ),
                                       ),
                                       items: arrMake,
@@ -972,7 +975,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                       dropdownBuilder: (context, selectedItem) {
                                         return Text(
                                             selectedItem ??
-                                                "Enter vehicle color",
+                                                "Select vehicle color",
                                             style: TextStyle(
                                                 fontSize: 16,
                                                 color: selectedItem == null
@@ -987,7 +990,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                           labelText: const LabelRequire(
                                             labelText: "Vehicle color",
                                           ),
-                                          hintText: "Enter vehicle color",
+                                          hintText: "Select vehicle color",
                                         ),
                                       ),
                                       items: arrColor,
@@ -1049,15 +1052,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         ContraventionReasonTranslations>(
                                       dropdownBuilder: (context, selectedItem) {
                                         return Text(
-                                            selectedItem == null
-                                                ? "Select zone"
-                                                : selectedItem.summary
-                                                    as String,
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                color: selectedItem == null
-                                                    ? ColorTheme.grey400
-                                                    : ColorTheme.textPrimary));
+                                          selectedItem == null
+                                              ? "Select contravention"
+                                              : selectedItem.summary as String,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: selectedItem == null
+                                                ? ColorTheme.grey400
+                                                : ColorTheme.textPrimary,
+                                          ),
+                                        );
                                       },
                                       dropdownDecoratorProps:
                                           DropDownDecoratorProps(
@@ -1084,11 +1088,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                           _contraventionReasonController
                                                               .text)
                                                   : null
-                                              : fromJsonContraventionList
-                                                  .firstWhereOrNull((e) =>
-                                                      e.contraventionReason!
-                                                          .code ==
-                                                      '36')
+                                              : argsFromExpired.Type ==
+                                                      VehicleInformationType
+                                                          .FIRST_SEEN.index
+                                                  ? fromJsonContraventionList
+                                                      .firstWhereOrNull((e) => e
+                                                          .summary!
+                                                          .toUpperCase()
+                                                          .contains('Overstaying'
+                                                              .toUpperCase()))
+                                                  : null
                                           : null,
                                       itemAsString: (item) =>
                                           item.summary as String,
