@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -11,20 +10,22 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/button_scan.dart';
+import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/evidence_photo_controller.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
-import 'package:iWarden/models/vehicle_information.dart';
-import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/configs/scan-plate/anyline_service.dart';
 import 'package:iWarden/configs/scan-plate/result.dart';
 import 'package:iWarden/configs/scan-plate/scan_modes.dart';
+import 'package:iWarden/controllers/evidence_photo_controller.dart';
+import 'package:iWarden/controllers/location_controller.dart';
+import 'package:iWarden/controllers/vehicle_information_controller.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/models/location.dart';
+import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
 import 'package:iWarden/theme/color.dart';
@@ -48,6 +49,34 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
   final _bayNumberController = TextEditingController();
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
+
+  Future<void> getLocationList(Locations locations, int wardenId) async {
+    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
+        ListLocationOfTheDayByWardenIdProps(
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardenId,
+    );
+
+    await locationController
+        .getAll(listLocationOfTheDayByWardenIdProps)
+        .then((value) {
+      for (int i = 0; i < value.length; i++) {
+        for (int j = 0; j < value.length; j++) {
+          if (value[i].locations![j].Id == locations.location!.Id) {
+            var zoneSelected = value[i]
+                .locations![j]
+                .Zones!
+                .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
+            locations.onSelectedZone(zoneSelected);
+            return;
+          }
+        }
+      }
+    }).catchError((err) {
+      print(err);
+    });
+  }
 
   @override
   void initState() {
@@ -103,7 +132,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
-    final wardenProvider = Provider.of<WardensInfo>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
 
     Future<bool> saveForm() async {
       ConnectivityResult connectionStatus =
@@ -125,7 +154,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
         CarLeft: false,
         EvidencePhotos: evidencePhotoList,
         Created: DateTime.now(),
-        CreatedBy: wardenProvider.wardens?.Id ?? 0,
+        CreatedBy: wardensProvider.wardens?.Id ?? 0,
       );
       final isValid = _formKey.currentState!.validate();
       bool check = false;
@@ -153,6 +182,8 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {
+          await getLocationList(
+              locationProvider, wardensProvider.wardens?.Id ?? 0);
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               await evidencePhotoController

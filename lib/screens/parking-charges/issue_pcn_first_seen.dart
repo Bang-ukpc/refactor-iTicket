@@ -20,6 +20,7 @@ import 'package:iWarden/configs/scan-plate/anyline_service.dart';
 import 'package:iWarden/configs/scan-plate/result.dart';
 import 'package:iWarden/configs/scan-plate/scan_modes.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
+import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
@@ -37,6 +38,7 @@ import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
+import '../../models/location.dart';
 import '../../providers/print_issue_providers.dart' as prefix;
 import '../../widgets/parking-charge/step_issue_pcn.dart';
 
@@ -63,12 +65,75 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final _vehicleColorController = TextEditingController();
   final _contraventionReasonController = TextEditingController();
   final _commentController = TextEditingController();
-
   List<ContraventionReasonTranslations> contraventionReasonList = [];
   List<ContraventionReasonTranslations> fromJsonContraventionList = [];
   List<EvidencePhoto> evidencePhotoList = [];
   final _debouncer = Debouncer(milliseconds: 300);
   SelectModel? _selectedItemTypePCN;
+  List<RotaWithLocation> locationWithRotaList = [];
+
+  void setSelectedTypeOfPCN(
+      Locations locationProvider, Contravention? contraventionValue) {
+    var typeOfPCNFilter = typeOfPCN.where((e) {
+      if (locationProvider
+                  .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
+              true &&
+          locationProvider
+                  .zone!.Services![0].ServiceConfig.IssuePCNType.Virtual ==
+              true) {
+        return true;
+      } else if (locationProvider
+              .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
+          true) {
+        return e.value == 0;
+      } else if (locationProvider
+              .zone!.Services![0].ServiceConfig.IssuePCNType.Virtual ==
+          true) {
+        return e.value == 1;
+      } else {
+        return false;
+      }
+    }).toList();
+    if (contraventionValue != null) {
+      setState(() {
+        _selectedItemTypePCN = typeOfPCNFilter
+            .firstWhere((e) => e.value == contraventionValue.type);
+      });
+    } else {
+      setState(() {
+        _selectedItemTypePCN =
+            typeOfPCNFilter.isNotEmpty ? typeOfPCNFilter[0] : null;
+      });
+    }
+  }
+
+  Future<void> getLocationList(Locations locations, int wardenId) async {
+    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
+        ListLocationOfTheDayByWardenIdProps(
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardenId,
+    );
+
+    await locationController
+        .getAll(listLocationOfTheDayByWardenIdProps)
+        .then((value) {
+      for (int i = 0; i < value.length; i++) {
+        for (int j = 0; j < value.length; j++) {
+          if (value[i].locations![j].Id == locations.location!.Id) {
+            var zoneSelected = value[i]
+                .locations![j]
+                .Zones!
+                .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
+            locations.onSelectedZone(zoneSelected);
+            return;
+          }
+        }
+      }
+    }).catchError((err) {
+      print(err);
+    });
+  }
 
   void getContraventionReasonList() async {
     final Pagination list =
@@ -109,49 +174,25 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }));
   }
 
-  void getSelectedTypeOfPCN(
-      Locations locationProvider, Contravention? contraventionValue) {
-    var typeOfPCNFilter = typeOfPCN.where((e) {
-      if (locationProvider
-                  .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
-              true &&
-          locationProvider
-                  .zone!.Services![0].ServiceConfig.IssuePCNType.Virtual ==
-              true) {
-        return true;
-      } else if (locationProvider
-              .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
-          true) {
-        return e.value == 0;
-      } else {
-        return e.value == 1;
-      }
-    }).toList();
-    if (contraventionValue != null) {
-      setState(() {
-        _selectedItemTypePCN = typeOfPCNFilter
-            .firstWhere((e) => e.value == contraventionValue.type);
-      });
-    } else {
-      setState(() {
-        _selectedItemTypePCN = typeOfPCNFilter[0];
-      });
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     _anylineService = AnylineServiceImpl();
     getContraventionReasonList();
     getContraventionReasonListOffline();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final args = ModalRoute.of(context)!.settings.arguments as dynamic;
       final locationProvider = Provider.of<Locations>(context, listen: false);
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
-      _vrnController.text = args != null ? args.Plate : '';
+      final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
       var contraventionData = contraventionProvider.contravention;
+      await getLocationList(locationProvider, wardersProvider.wardens?.Id ?? 0)
+          .then((value) {
+        setSelectedTypeOfPCN(locationProvider, contraventionData);
+      });
+
+      _vrnController.text = args != null ? args.Plate : '';
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
         _vehicleMakeController.text = contraventionData.make ?? '';
@@ -165,14 +206,18 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             .replaceAll(')', '');
       }
       if (args != null) {
+        print(args.Type);
         onSearchVehicleInfoByPlate(args.Plate);
-        // ContraventionReasonTranslations? argsOverstayingTime =
-        //     fromJsonContraventionList
-        //         .firstWhere((e) => e.contraventionReason?.code == '36');
-        // _contraventionReasonController.text =
-        //       argsOverstayingTime.contraventionReason!.code.toString();
+        if (args.Type == VehicleInformationType.FIRST_SEEN.index) {
+          ContraventionReasonTranslations? argsOverstayingTime =
+              fromJsonContraventionList
+                  .firstWhereOrNull((e) => e.contraventionReason?.code == '36');
+          _contraventionReasonController.text = argsOverstayingTime != null
+              ? argsOverstayingTime.contraventionReason!.code.toString()
+              : '';
+        }
       }
-      getSelectedTypeOfPCN(locationProvider, contraventionData);
+      setSelectedTypeOfPCN(locationProvider, contraventionData);
     });
   }
 
@@ -237,11 +282,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final argsFromExpired =
         ModalRoute.of(context)!.settings.arguments as dynamic;
 
-    print(_contraventionReasonController.text);
-
     log('Issue PCN screen');
 
-    Future<void> createPhysicalPCN({bool? step2, bool? step3}) async {
+    Future<void> createPhysicalPCN(
+        {bool? step2, bool? step3, required bool isPrinter}) async {
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
       int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
@@ -325,11 +369,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         contraventionProvider.upDateContravention(contravention);
         Navigator.of(context).pop();
         step2 == true
-            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName)
+            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName,
+                arguments: {'isPrinter': isPrinter})
             : step3 == true
                 ? Navigator.of(context).pushReplacementNamed(PrintPCN.routeName)
-                : Navigator.of(context)
-                    .pushReplacementNamed(PrintIssue.routeName);
+                : Navigator.of(context).pushReplacementNamed(
+                    PrintIssue.routeName,
+                    arguments: {'isPrinter': isPrinter});
       } else {
         Contravention contraventionDataFake = Contravention(
           reference: physicalPCN.ContraventionReference,
@@ -369,11 +415,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         contraventionProvider.upDateContravention(contraventionDataFake);
         Navigator.of(context).pop();
         step2 == true
-            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName)
+            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName,
+                arguments: {'isPrinter': isPrinter})
             : step3 == true
                 ? Navigator.of(context).pushReplacementNamed(PrintPCN.routeName)
-                : Navigator.of(context)
-                    .pushReplacementNamed(PrintIssue.routeName);
+                : Navigator.of(context).pushReplacementNamed(
+                    PrintIssue.routeName,
+                    arguments: {'isPrinter': isPrinter});
       }
 
       _formKey.currentState!.save();
@@ -529,8 +577,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                 .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
             true) {
           return e.value == 0;
-        } else {
+        } else if (locationProvider
+                .zone!.Services![0].ServiceConfig.IssuePCNType.Virtual ==
+            true) {
           return e.value == 1;
+        } else {
+          return false;
         }
       }).toList();
     }
@@ -629,8 +681,17 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       }
     }
 
+    Future<void> refresh() async {
+      await getLocationList(locationProvider, wardensProvider.wardens?.Id ?? 0)
+          .then((value) {
+        setSelectedTypeOfPCN(
+            locationProvider, contraventionProvider.contravention);
+      });
+    }
+
     List<String> arrMake = DataInfoCar().make;
     List<String> arrColor = DataInfoCar().color;
+
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
@@ -666,7 +727,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               if (_selectedItemTypePCN?.value == 0)
                 BottomNavyBarItem(
                   onPressed: () {
-                    createPhysicalPCN();
+                    createPhysicalPCN(isPrinter: true);
                   },
                   icon: SvgPicture.asset(
                     'assets/svg/IconNext.svg',
@@ -676,465 +737,481 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                 ),
             ],
           ),
-          body: SingleChildScrollView(
-            child: SafeArea(
-              child: Container(
-                margin: const EdgeInsets.only(bottom: ConstSpacing.bottom),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      width: double.infinity,
-                      color: ColorTheme.white,
-                      padding: const EdgeInsets.all(12),
-                      child: Center(
-                        child: Text(
-                          "Issue PCN",
-                          style: CustomTextStyle.h4
-                              .copyWith(fontWeight: FontWeight.w600),
+          body: RefreshIndicator(
+            onRefresh: refresh,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SafeArea(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: ConstSpacing.bottom),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        width: double.infinity,
+                        color: ColorTheme.white,
+                        padding: const EdgeInsets.all(12),
+                        child: Center(
+                          child: Text(
+                            "Issue PCN",
+                            style: CustomTextStyle.h4
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(15, 16, 15, 30),
-                      color: Colors.white,
-                      child: Column(
-                        children: [
-                          StepIssuePCN(
-                            isActiveStep1: true,
-                            isActiveStep2: false,
-                            onTap2: contraventionProvider.contravention != null
-                                ? () {
-                                    _selectedItemTypePCN!.value == 0
-                                        ? createPhysicalPCN(step2: true)
-                                        : createVirtualTicket(step2: true);
-                                  }
-                                : null,
-                            isActiveStep3: false,
-                            isEnableStep3: _selectedItemTypePCN != null
-                                ? _selectedItemTypePCN!.value ==
-                                        TypePCN.Physical.index
-                                    ? printIssue.checkIssueHasPhotoRequirePhysical() ==
-                                            true
-                                        ? true
-                                        : false
-                                    : printIssue.checkIssueHasPhotoRequireVirtual() ==
-                                            true
-                                        ? true
-                                        : false
-                                : false,
-                            onTap3: _selectedItemTypePCN != null
-                                ? _selectedItemTypePCN!.value ==
-                                        TypePCN.Physical.index
-                                    ? printIssue.checkIssueHasPhotoRequirePhysical() ==
-                                            true
-                                        ? () {
-                                            _selectedItemTypePCN!.value == 0
-                                                ? createPhysicalPCN(step3: true)
-                                                : createVirtualTicket(
-                                                    step3: true);
-                                          }
-                                        : null
-                                    : printIssue.checkIssueHasPhotoRequireVirtual() ==
-                                            true
-                                        ? () {
-                                            _selectedItemTypePCN!.value == 0
-                                                ? createPhysicalPCN(step3: true)
-                                                : createVirtualTicket(
-                                                    step3: true);
-                                          }
-                                        : null
-                                : null,
-                          ),
-                          const SizedBox(
-                            height: 30,
-                          ),
-                          Form(
-                            key: _formKey,
-                            child: Column(
-                              children: <Widget>[
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Flexible(
-                                      flex: 8,
-                                      child: TextFormField(
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter.allow(
-                                            RegExp(r'[a-zA-Z0-9]'),
-                                          ),
-                                        ],
-                                        textCapitalization:
-                                            TextCapitalization.characters,
-                                        controller: _vrnController,
-                                        style: CustomTextStyle.h5.copyWith(
-                                          fontSize: 16,
-                                        ),
-                                        decoration: const InputDecoration(
-                                            label:
-                                                LabelRequire(labelText: "VRN"),
-                                            hintText: "Enter VRN",
-                                            hintStyle: TextStyle(
-                                              fontSize: 16,
-                                              color: ColorTheme.grey400,
-                                            )),
-                                        validator: ((value) {
-                                          if (value!.isEmpty) {
-                                            return 'Please enter VRN';
-                                          } else {
-                                            if (value.length < 2) {
-                                              return 'Please enter at least 2 characters';
-                                            }
-                                            return null;
-                                          }
-                                        }),
-                                        onSaved: (value) {
-                                          _vrnController.text = value as String;
-                                        },
-                                        onChanged: (value) {
-                                          _debouncer.run(() {
-                                            onSearchVehicleInfoByPlate(value);
-                                          });
-                                        },
-                                        autovalidateMode:
-                                            AutovalidateMode.onUserInteraction,
-                                      ),
-                                    ),
-                                    Flexible(
-                                      flex: 2,
-                                      child: ButtonScan(
-                                        onTap: () {
-                                          scan(ScanMode.LicensePlate);
-                                        },
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                SizedBox(
-                                  child: DropdownSearch<String>(
-                                    dropdownBuilder: (context, selectedItem) {
-                                      return Text(selectedItem ?? "Select zone",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: selectedItem == null
-                                                ? ColorTheme.grey400
-                                                : ColorTheme.textPrimary,
-                                          ));
-                                    },
-                                    dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
-                                      dropdownSearchDecoration:
-                                          dropDownButtonStyle
-                                              .getInputDecorationCustom(
-                                        labelText: const LabelRequire(
-                                          labelText: "Vehicle make",
-                                        ),
-                                        hintText: "Enter vehicle make",
-                                      ),
-                                    ),
-                                    items: arrMake,
-                                    selectedItem: contraventionProvider
-                                                .contravention !=
-                                            null
-                                        ? contraventionProvider
-                                                    .contravention!.make !=
-                                                null
-                                            ? arrMake.firstWhereOrNull((e) =>
-                                                e.toUpperCase() ==
-                                                contraventionProvider
-                                                    .contravention!.make!
-                                                    .toUpperCase())
-                                            : null
-                                        : _vehicleMakeController.text.isNotEmpty
-                                            ? arrMake.firstWhereOrNull((e) =>
-                                                e.toUpperCase() ==
-                                                _vehicleMakeController.text
-                                                    .toUpperCase())
-                                            : null,
-                                    popupProps: PopupProps.menu(
-                                        showSearchBox: true,
-                                        fit: FlexFit.loose,
-                                        constraints: const BoxConstraints(
-                                          maxHeight: 325,
-                                        ),
-                                        itemBuilder:
-                                            (context, item, isSelected) {
-                                          return DropDownItem(
-                                            isSelected: _vehicleMakeController
-                                                    .text
-                                                    .toUpperCase() ==
-                                                item.toUpperCase(),
-                                            title: item,
-                                          );
-                                        }),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _vehicleMakeController.text = value!;
-                                      });
-                                    },
-                                    validator: ((value) {
-                                      if (value == null) {
-                                        return 'Please select make';
-                                      }
-                                      return null;
-                                    }),
-                                    autoValidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                SizedBox(
-                                  child: DropdownSearch<String>(
-                                    dropdownBuilder: (context, selectedItem) {
-                                      return Text(
-                                          selectedItem ?? "Enter vehicle color",
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: selectedItem == null
-                                                  ? ColorTheme.grey400
-                                                  : ColorTheme.textPrimary));
-                                    },
-                                    dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
-                                      dropdownSearchDecoration:
-                                          dropDownButtonStyle
-                                              .getInputDecorationCustom(
-                                        labelText: const LabelRequire(
-                                          labelText: "Vehicle color",
-                                        ),
-                                        hintText: "Enter vehicle color",
-                                      ),
-                                    ),
-                                    items: arrColor,
-                                    selectedItem: contraventionProvider
-                                                .contravention !=
-                                            null
-                                        ? contraventionProvider
-                                                    .contravention!.colour !=
-                                                null
-                                            ? arrColor.firstWhereOrNull((e) =>
-                                                e.toUpperCase() ==
-                                                contraventionProvider
-                                                    .contravention!.colour!
-                                                    .toUpperCase())
-                                            : null
-                                        : _vehicleColorController
-                                                .text.isNotEmpty
-                                            ? arrColor.firstWhereOrNull((e) =>
-                                                e.toUpperCase() ==
-                                                _vehicleColorController.text
-                                                    .toUpperCase())
-                                            : null,
-                                    popupProps: PopupProps.menu(
-                                        showSearchBox: true,
-                                        fit: FlexFit.loose,
-                                        constraints: const BoxConstraints(
-                                          maxHeight: 325,
-                                        ),
-                                        itemBuilder:
-                                            (context, item, isSelected) {
-                                          return DropDownItem(
-                                            isSelected: _vehicleColorController
-                                                    .text
-                                                    .toUpperCase() ==
-                                                item.toUpperCase(),
-                                            title: item,
-                                          );
-                                        }),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _vehicleColorController.text = value!;
-                                      });
-                                    },
-                                    validator: ((value) {
-                                      if (value == null) {
-                                        return 'Please select color';
-                                      }
-                                      return null;
-                                    }),
-                                    autoValidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                SizedBox(
-                                  child: DropdownSearch<
-                                      ContraventionReasonTranslations>(
-                                    dropdownBuilder: (context, selectedItem) {
-                                      return Text(
-                                          selectedItem == null
-                                              ? "Select zone"
-                                              : selectedItem.summary as String,
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: selectedItem == null
-                                                  ? ColorTheme.grey400
-                                                  : ColorTheme.textPrimary));
-                                    },
-                                    dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
-                                      dropdownSearchDecoration:
-                                          dropDownButtonStyle
-                                              .getInputDecorationCustom(
-                                        labelText: const LabelRequire(
-                                          labelText: 'Contravention',
-                                        ),
-                                        hintText: 'Select contravention',
-                                      ),
-                                    ),
-                                    items: contraventionReasonList,
-                                    selectedItem: fromJsonContraventionList
-                                            .isNotEmpty
-                                        ? argsFromExpired == null
-                                            ? contraventionProvider
-                                                        .contravention !=
-                                                    null
-                                                ? fromJsonContraventionList
-                                                    .firstWhere((e) =>
-                                                        e.contraventionReason
-                                                            ?.code ==
-                                                        _contraventionReasonController
-                                                            .text)
-                                                : null
-                                            : fromJsonContraventionList
-                                                .firstWhereOrNull((e) =>
-                                                    e.contraventionReason!
-                                                        .code ==
-                                                    '36')
-                                        : null,
-                                    itemAsString: (item) =>
-                                        item.summary as String,
-                                    popupProps: PopupProps.menu(
-                                        showSearchBox: true,
-                                        fit: FlexFit.loose,
-                                        constraints: const BoxConstraints(
-                                          maxHeight: 325,
-                                        ),
-                                        itemBuilder:
-                                            (context, item, isSelected) {
-                                          return DropDownItem(
-                                            isSelected: item
-                                                    .contraventionReason!
-                                                    .code ==
-                                                _contraventionReasonController
-                                                    .text,
-                                            title: item.summary as String,
-                                          );
-                                        }),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _contraventionReasonController.text =
-                                            value!.contraventionReason!.code
-                                                .toString();
-                                      });
-                                    },
-                                    validator: ((value) {
-                                      if (value == null) {
-                                        return 'Please select contravention';
-                                      }
-                                      return null;
-                                    }),
-                                    autoValidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                SizedBox(
-                                  child: DropdownSearch<SelectModel>(
-                                    dropdownBuilder: (context, selectedItem) {
-                                      return Text(
-                                          selectedItem == null
-                                              ? "Select zone"
-                                              : selectedItem.label,
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: selectedItem == null
-                                                  ? ColorTheme.grey400
-                                                  : ColorTheme.textPrimary));
-                                    },
-                                    key: Key(
-                                        '${DateTime.now().microsecondsSinceEpoch / 1000}'),
-                                    dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
-                                      dropdownSearchDecoration:
-                                          dropDownButtonStyle
-                                              .getInputDecorationCustom(
-                                        labelText: const LabelRequire(
-                                          labelText: 'Type of PCN',
-                                        ),
-                                        hintText: 'Select type of PCN',
-                                      ),
-                                    ),
-                                    items: getSelectedTypeOfPCN(),
-                                    selectedItem: _selectedItemTypePCN,
-                                    itemAsString: (item) => item.label,
-                                    popupProps: PopupProps.menu(
-                                      fit: FlexFit.loose,
-                                      constraints: const BoxConstraints(
-                                        maxHeight: 200,
-                                      ),
-                                      itemBuilder:
-                                          (context, item, isSelected) =>
-                                              DropDownItem(
-                                        isSelected:
-                                            item == _selectedItemTypePCN,
-                                        title: item.label,
-                                      ),
-                                    ),
-                                    onChanged: (value) {
-                                      suggestion(value);
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                TextFormField(
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[^\s]+\b\s?'),
-                                    ),
-                                  ],
-                                  controller: _commentController,
-                                  style: CustomTextStyle.h5.copyWith(
-                                    fontSize: 16,
-                                  ),
-                                  keyboardType: TextInputType.multiline,
-                                  minLines: 3,
-                                  maxLines: 5,
-                                  decoration: const InputDecoration(
-                                    labelText: "Comment",
-                                    hintText: "Enter comment",
-                                    hintStyle: TextStyle(
-                                      fontSize: 16,
-                                      color: ColorTheme.grey400,
-                                    ),
-                                  ),
-                                  onSaved: (value) {
-                                    _commentController.text = value as String;
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      const SizedBox(
+                        height: 10,
                       ),
-                    ),
-                  ],
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(15, 16, 15, 30),
+                        color: Colors.white,
+                        child: Column(
+                          children: [
+                            StepIssuePCN(
+                              isActiveStep1: true,
+                              isActiveStep2: false,
+                              onTap2: contraventionProvider.contravention !=
+                                      null
+                                  ? () {
+                                      _selectedItemTypePCN!.value == 0
+                                          ? createPhysicalPCN(
+                                              step2: true, isPrinter: false)
+                                          : createVirtualTicket(step2: true);
+                                    }
+                                  : null,
+                              isActiveStep3: false,
+                              isEnableStep3: _selectedItemTypePCN != null
+                                  ? _selectedItemTypePCN!.value ==
+                                          TypePCN.Physical.index
+                                      ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                              true
+                                          ? true
+                                          : false
+                                      : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                              true
+                                          ? true
+                                          : false
+                                  : false,
+                              onTap3: _selectedItemTypePCN != null
+                                  ? _selectedItemTypePCN!.value ==
+                                          TypePCN.Physical.index
+                                      ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                              true
+                                          ? () {
+                                              _selectedItemTypePCN!.value == 0
+                                                  ? createPhysicalPCN(
+                                                      step3: true,
+                                                      isPrinter: false)
+                                                  : createVirtualTicket(
+                                                      step3: true);
+                                            }
+                                          : null
+                                      : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                              true
+                                          ? () {
+                                              _selectedItemTypePCN!.value == 0
+                                                  ? createPhysicalPCN(
+                                                      step3: true,
+                                                      isPrinter: false)
+                                                  : createVirtualTicket(
+                                                      step3: true);
+                                            }
+                                          : null
+                                  : null,
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Flexible(
+                                        flex: 8,
+                                        child: TextFormField(
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp(r'[a-zA-Z0-9]'),
+                                            ),
+                                          ],
+                                          textCapitalization:
+                                              TextCapitalization.characters,
+                                          controller: _vrnController,
+                                          style: CustomTextStyle.h5.copyWith(
+                                            fontSize: 16,
+                                          ),
+                                          decoration: const InputDecoration(
+                                              label: LabelRequire(
+                                                  labelText: "VRN"),
+                                              hintText: "Enter VRN",
+                                              hintStyle: TextStyle(
+                                                fontSize: 16,
+                                                color: ColorTheme.grey400,
+                                              )),
+                                          validator: ((value) {
+                                            if (value!.isEmpty) {
+                                              return 'Please enter VRN';
+                                            } else {
+                                              if (value.length < 2) {
+                                                return 'Please enter at least 2 characters';
+                                              }
+                                              return null;
+                                            }
+                                          }),
+                                          onSaved: (value) {
+                                            _vrnController.text =
+                                                value as String;
+                                          },
+                                          onChanged: (value) {
+                                            _debouncer.run(() {
+                                              onSearchVehicleInfoByPlate(value);
+                                            });
+                                          },
+                                          autovalidateMode: AutovalidateMode
+                                              .onUserInteraction,
+                                        ),
+                                      ),
+                                      Flexible(
+                                        flex: 2,
+                                        child: ButtonScan(
+                                          onTap: () {
+                                            scan(ScanMode.LicensePlate);
+                                          },
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<String>(
+                                      dropdownBuilder: (context, selectedItem) {
+                                        return Text(
+                                            selectedItem ?? "Select zone",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: selectedItem == null
+                                                  ? ColorTheme.grey400
+                                                  : ColorTheme.textPrimary,
+                                            ));
+                                      },
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const LabelRequire(
+                                            labelText: "Vehicle make",
+                                          ),
+                                          hintText: "Enter vehicle make",
+                                        ),
+                                      ),
+                                      items: arrMake,
+                                      selectedItem: contraventionProvider
+                                                  .contravention !=
+                                              null
+                                          ? contraventionProvider
+                                                      .contravention!.make !=
+                                                  null
+                                              ? arrMake.firstWhereOrNull((e) =>
+                                                  e.toUpperCase() ==
+                                                  contraventionProvider
+                                                      .contravention!.make!
+                                                      .toUpperCase())
+                                              : null
+                                          : _vehicleMakeController
+                                                  .text.isNotEmpty
+                                              ? arrMake.firstWhereOrNull((e) =>
+                                                  e.toUpperCase() ==
+                                                  _vehicleMakeController.text
+                                                      .toUpperCase())
+                                              : null,
+                                      popupProps: PopupProps.menu(
+                                          showSearchBox: true,
+                                          fit: FlexFit.loose,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 325,
+                                          ),
+                                          itemBuilder:
+                                              (context, item, isSelected) {
+                                            return DropDownItem(
+                                              isSelected: _vehicleMakeController
+                                                      .text
+                                                      .toUpperCase() ==
+                                                  item.toUpperCase(),
+                                              title: item,
+                                            );
+                                          }),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _vehicleMakeController.text = value!;
+                                        });
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select make';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<String>(
+                                      dropdownBuilder: (context, selectedItem) {
+                                        return Text(
+                                            selectedItem ??
+                                                "Enter vehicle color",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: selectedItem == null
+                                                    ? ColorTheme.grey400
+                                                    : ColorTheme.textPrimary));
+                                      },
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const LabelRequire(
+                                            labelText: "Vehicle color",
+                                          ),
+                                          hintText: "Enter vehicle color",
+                                        ),
+                                      ),
+                                      items: arrColor,
+                                      selectedItem: contraventionProvider
+                                                  .contravention !=
+                                              null
+                                          ? contraventionProvider
+                                                      .contravention!.colour !=
+                                                  null
+                                              ? arrColor.firstWhereOrNull((e) =>
+                                                  e.toUpperCase() ==
+                                                  contraventionProvider
+                                                      .contravention!.colour!
+                                                      .toUpperCase())
+                                              : null
+                                          : _vehicleColorController
+                                                  .text.isNotEmpty
+                                              ? arrColor.firstWhereOrNull((e) =>
+                                                  e.toUpperCase() ==
+                                                  _vehicleColorController.text
+                                                      .toUpperCase())
+                                              : null,
+                                      popupProps: PopupProps.menu(
+                                          showSearchBox: true,
+                                          fit: FlexFit.loose,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 325,
+                                          ),
+                                          itemBuilder:
+                                              (context, item, isSelected) {
+                                            return DropDownItem(
+                                              isSelected:
+                                                  _vehicleColorController.text
+                                                          .toUpperCase() ==
+                                                      item.toUpperCase(),
+                                              title: item,
+                                            );
+                                          }),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _vehicleColorController.text = value!;
+                                        });
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select color';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<
+                                        ContraventionReasonTranslations>(
+                                      dropdownBuilder: (context, selectedItem) {
+                                        return Text(
+                                            selectedItem == null
+                                                ? "Select zone"
+                                                : selectedItem.summary
+                                                    as String,
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: selectedItem == null
+                                                    ? ColorTheme.grey400
+                                                    : ColorTheme.textPrimary));
+                                      },
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const LabelRequire(
+                                            labelText: 'Contravention',
+                                          ),
+                                          hintText: 'Select contravention',
+                                        ),
+                                      ),
+                                      items: contraventionReasonList,
+                                      selectedItem: fromJsonContraventionList
+                                              .isNotEmpty
+                                          ? argsFromExpired == null
+                                              ? contraventionProvider
+                                                          .contravention !=
+                                                      null
+                                                  ? fromJsonContraventionList
+                                                      .firstWhereOrNull((e) =>
+                                                          e.contraventionReason
+                                                              ?.code ==
+                                                          _contraventionReasonController
+                                                              .text)
+                                                  : null
+                                              : fromJsonContraventionList
+                                                  .firstWhereOrNull((e) =>
+                                                      e.contraventionReason!
+                                                          .code ==
+                                                      '36')
+                                          : null,
+                                      itemAsString: (item) =>
+                                          item.summary as String,
+                                      popupProps: PopupProps.menu(
+                                          showSearchBox: true,
+                                          fit: FlexFit.loose,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 325,
+                                          ),
+                                          itemBuilder:
+                                              (context, item, isSelected) {
+                                            return DropDownItem(
+                                              isSelected: item
+                                                      .contraventionReason!
+                                                      .code ==
+                                                  _contraventionReasonController
+                                                      .text,
+                                              title: item.summary as String,
+                                            );
+                                          }),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _contraventionReasonController.text =
+                                              value!.contraventionReason!.code
+                                                  .toString();
+                                        });
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select contravention';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<SelectModel>(
+                                      dropdownBuilder: (context, selectedItem) {
+                                        return Text(
+                                            selectedItem == null
+                                                ? "Select zone"
+                                                : selectedItem.label,
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: selectedItem == null
+                                                    ? ColorTheme.grey400
+                                                    : ColorTheme.textPrimary));
+                                      },
+                                      key: Key(
+                                          '${DateTime.now().microsecondsSinceEpoch / 1000}'),
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const LabelRequire(
+                                            labelText: 'Type of PCN',
+                                          ),
+                                          hintText: 'Select type of PCN',
+                                        ),
+                                      ),
+                                      items: getSelectedTypeOfPCN(),
+                                      selectedItem: _selectedItemTypePCN,
+                                      itemAsString: (item) => item.label,
+                                      popupProps: PopupProps.menu(
+                                        fit: FlexFit.loose,
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 200,
+                                        ),
+                                        itemBuilder:
+                                            (context, item, isSelected) =>
+                                                DropDownItem(
+                                          isSelected:
+                                              item == _selectedItemTypePCN,
+                                          title: item.label,
+                                        ),
+                                      ),
+                                      onChanged: (value) {
+                                        suggestion(value);
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  TextFormField(
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'[^\s]+\b\s?'),
+                                      ),
+                                    ],
+                                    controller: _commentController,
+                                    style: CustomTextStyle.h5.copyWith(
+                                      fontSize: 16,
+                                    ),
+                                    keyboardType: TextInputType.multiline,
+                                    minLines: 3,
+                                    maxLines: 5,
+                                    decoration: const InputDecoration(
+                                      labelText: "Comment",
+                                      hintText: "Enter comment",
+                                      hintStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: ColorTheme.grey400,
+                                      ),
+                                    ),
+                                    onSaved: (value) {
+                                      _commentController.text = value as String;
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

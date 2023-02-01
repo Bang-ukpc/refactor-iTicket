@@ -46,8 +46,10 @@ class _PrintIssueState extends State<PrintIssue> {
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
       final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
+      final args = ModalRoute.of(context)!.settings.arguments as dynamic;
 
-      if (contraventionProvider.contravention!.type == TypePCN.Physical.index) {
+      if (contraventionProvider.contravention!.type == TypePCN.Physical.index &&
+          args['isPrinter'] == true) {
         if (bluetoothPrinterHelper.selectedPrinter == null) {
           showCircularProgressIndicator(
             context: context,

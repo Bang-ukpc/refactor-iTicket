@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,9 @@ import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../../../controllers/location_controller.dart';
+import '../../../models/location.dart';
+
 class AddFirstSeenScreen extends StatefulWidget {
   static const routeName = '/add-first-seen';
   const AddFirstSeenScreen({super.key});
@@ -46,6 +50,34 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   final _bayNumberController = TextEditingController();
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
+
+  Future<void> getLocationList(Locations locations, int wardenId) async {
+    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
+        ListLocationOfTheDayByWardenIdProps(
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardenId,
+    );
+
+    await locationController
+        .getAll(listLocationOfTheDayByWardenIdProps)
+        .then((value) {
+      for (int i = 0; i < value.length; i++) {
+        for (int j = 0; j < value.length; j++) {
+          if (value[i].locations![j].Id == locations.location!.Id) {
+            var zoneSelected = value[i]
+                .locations![j]
+                .Zones!
+                .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
+            locations.onSelectedZone(zoneSelected);
+            return;
+          }
+        }
+      }
+    }).catchError((err) {
+      print(err);
+    });
+  }
 
   @override
   void initState() {
@@ -152,6 +184,8 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {
+          await getLocationList(
+              locationProvider, wardenProvider.wardens?.Id ?? 0);
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               await evidencePhotoController

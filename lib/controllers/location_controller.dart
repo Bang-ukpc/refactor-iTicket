@@ -25,7 +25,6 @@ class LocationController {
         print(temp);
         List<RotaWithLocation> rotaWithLocations =
             temp.map((model) => RotaWithLocation.fromJson(model)).toList();
-        print(123456);
         final String encodedData = RotaWithLocation.encode(rotaWithLocations);
         SharedPreferencesHelper.setStringValue(
             'rotaWithLocationDataLocal', encodedData);
