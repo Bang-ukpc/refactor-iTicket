@@ -376,8 +376,12 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                                   validator: ((value) {
                                     if (value!.isEmpty) {
                                       return 'Please enter VRN';
+                                    } else {
+                                      if (value.length < 2) {
+                                        return 'Please enter at least 2 characters';
+                                      }
+                                      return null;
                                     }
-                                    return null;
                                   }),
                                   autovalidateMode:
                                       AutovalidateMode.onUserInteraction,

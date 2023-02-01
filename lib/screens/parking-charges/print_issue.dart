@@ -335,46 +335,34 @@ class _PrintIssueState extends State<PrintIssue> {
                                       : null,
                                   isActiveStep2: true,
                                   isActiveStep3: false,
-                                  isEnableStep3:
-                                      contraventionProvider.contravention !=
-                                              null
-                                          ? contraventionProvider
-                                                      .contravention!.type ==
-                                                  TypePCN.Physical.index
-                                              ? contraventionProvider
-                                                          .contravention!
-                                                          .contraventionPhotos!
-                                                          .length >=
-                                                      5
-                                                  ? true
-                                                  : false
-                                              : contraventionProvider
-                                                          .contravention!
-                                                          .contraventionPhotos!
-                                                          .length >=
-                                                      4
-                                                  ? true
-                                                  : false
-                                          : false,
+                                  isEnableStep3: contraventionProvider
+                                              .contravention !=
+                                          null
+                                      ? contraventionProvider
+                                                  .contravention!.type ==
+                                              TypePCN.Physical.index
+                                          ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                                  true
+                                              ? true
+                                              : false
+                                          : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                                  true
+                                              ? true
+                                              : false
+                                      : false,
                                   onTap3: contraventionProvider.contravention !=
                                           null
                                       ? contraventionProvider
                                                   .contravention!.type ==
                                               TypePCN.Physical.index
-                                          ? contraventionProvider
-                                                      .contravention!
-                                                      .contraventionPhotos!
-                                                      .length >=
-                                                  5
+                                          ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                                  true
                                               ? () {
                                                   onCompleteTakePhotos();
                                                 }
                                               : null
-                                          : contraventionProvider
-                                                      .contravention!
-                                                      .contraventionPhotos!
-                                                      .length >=
-                                                  4
+                                          : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                                  true
                                               ? () {
                                                   onCompleteTakePhotos();
                                                 }

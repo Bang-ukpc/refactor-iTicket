@@ -376,8 +376,12 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                                   validator: ((value) {
                                     if (value!.isEmpty) {
                                       return 'Please enter VRN';
+                                    } else {
+                                      if (value.length < 2) {
+                                        return 'Please enter at least 2 characters';
+                                      }
+                                      return null;
                                     }
-                                    return null;
                                   }),
                                   onSaved: (value) {
                                     _vrnController.text = value as String;

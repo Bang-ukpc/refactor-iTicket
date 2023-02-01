@@ -65,6 +65,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final _commentController = TextEditingController();
 
   List<ContraventionReasonTranslations> contraventionReasonList = [];
+  List<ContraventionReasonTranslations> fromJsonContraventionList = [];
   List<EvidencePhoto> evidencePhotoList = [];
   final _debouncer = Debouncer(milliseconds: 300);
   SelectModel? _selectedItemTypePCN;
@@ -77,6 +78,19 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           .map((item) => ContraventionReasonTranslations.fromJson(item))
           .toList();
     });
+  }
+
+  void getContraventionReasonListOffline() async {
+    final String? reasonDataLocal =
+        await SharedPreferencesHelper.getStringValue(
+            'contraventionReasonDataLocal');
+    final contraventionReason =
+        json.decode(reasonDataLocal as String) as Map<String, dynamic>;
+    Pagination fromJsonContraventionReason =
+        Pagination.fromJson(contraventionReason);
+    fromJsonContraventionList = fromJsonContraventionReason.rows
+        .map((item) => ContraventionReasonTranslations.fromJson(item))
+        .toList();
   }
 
   void onSearchVehicleInfoByPlate(String plate) async {
@@ -130,6 +144,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     super.initState();
     _anylineService = AnylineServiceImpl();
     getContraventionReasonList();
+    getContraventionReasonListOffline();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final args = ModalRoute.of(context)!.settings.arguments as dynamic;
       final locationProvider = Provider.of<Locations>(context, listen: false);
@@ -307,18 +322,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                 : Navigator.of(context)
                     .pushReplacementNamed(PrintIssue.routeName);
       } else {
-        final String? reasonDataLocal =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionReasonDataLocal');
-        final contraventionReason =
-            json.decode(reasonDataLocal as String) as Map<String, dynamic>;
-        Pagination fromJsonContraventionReason =
-            Pagination.fromJson(contraventionReason);
-        List<ContraventionReasonTranslations> fromJsonContraventionList =
-            fromJsonContraventionReason.rows
-                .map((item) => ContraventionReasonTranslations.fromJson(item))
-                .toList();
-
         Contravention contraventionDataFake = Contravention(
           reference: physicalPCN.ContraventionReference,
           created: DateTime.now(),
@@ -456,18 +459,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                 : Navigator.of(context)
                     .pushReplacementNamed(PrintIssue.routeName);
       } else {
-        final String? reasonDataLocal =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionReasonDataLocal');
-        final contraventionReason =
-            json.decode(reasonDataLocal as String) as Map<String, dynamic>;
-        Pagination fromJsonContraventionReason =
-            Pagination.fromJson(contraventionReason);
-        List<ContraventionReasonTranslations> fromJsonContraventionList =
-            fromJsonContraventionReason.rows
-                .map((item) => ContraventionReasonTranslations.fromJson(item))
-                .toList();
-
         Contravention contraventionDataFake = Contravention(
           reference: virtualTicket.ContraventionReference,
           created: DateTime.now(),
@@ -717,61 +708,35 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                             isEnableStep3: _selectedItemTypePCN != null
                                 ? _selectedItemTypePCN!.value ==
                                         TypePCN.Physical.index
-                                    ? contraventionProvider.contravention !=
-                                            null
-                                        ? contraventionProvider
-                                                    .contravention!
-                                                    .contraventionPhotos!
-                                                    .length >=
-                                                5
-                                            ? true
-                                            : false
+                                    ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                            true
+                                        ? true
                                         : false
-                                    : contraventionProvider.contravention !=
-                                            null
-                                        ? contraventionProvider
-                                                    .contravention!
-                                                    .contraventionPhotos!
-                                                    .length >=
-                                                4
-                                            ? true
-                                            : false
+                                    : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                            true
+                                        ? true
                                         : false
                                 : false,
                             onTap3: _selectedItemTypePCN != null
                                 ? _selectedItemTypePCN!.value ==
                                         TypePCN.Physical.index
-                                    ? contraventionProvider.contravention !=
-                                            null
-                                        ? contraventionProvider
-                                                    .contravention!
-                                                    .contraventionPhotos!
-                                                    .length >=
-                                                5
-                                            ? () {
-                                                _selectedItemTypePCN!.value == 0
-                                                    ? createPhysicalPCN(
-                                                        step3: true)
-                                                    : createVirtualTicket(
-                                                        step3: true);
-                                              }
-                                            : null
+                                    ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                            true
+                                        ? () {
+                                            _selectedItemTypePCN!.value == 0
+                                                ? createPhysicalPCN(step3: true)
+                                                : createVirtualTicket(
+                                                    step3: true);
+                                          }
                                         : null
-                                    : contraventionProvider.contravention !=
-                                            null
-                                        ? contraventionProvider
-                                                    .contravention!
-                                                    .contraventionPhotos!
-                                                    .length >=
-                                                4
-                                            ? () {
-                                                _selectedItemTypePCN!.value == 0
-                                                    ? createPhysicalPCN(
-                                                        step3: true)
-                                                    : createVirtualTicket(
-                                                        step3: true);
-                                              }
-                                            : null
+                                    : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                            true
+                                        ? () {
+                                            _selectedItemTypePCN!.value == 0
+                                                ? createPhysicalPCN(step3: true)
+                                                : createVirtualTicket(
+                                                    step3: true);
+                                          }
                                         : null
                                 : null,
                           ),
@@ -812,8 +777,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         validator: ((value) {
                                           if (value!.isEmpty) {
                                             return 'Please enter VRN';
+                                          } else {
+                                            if (value.length < 2) {
+                                              return 'Please enter at least 2 characters';
+                                            }
+                                            return null;
                                           }
-                                          return null;
                                         }),
                                         onSaved: (value) {
                                           _vrnController.text = value as String;
@@ -1017,11 +986,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                       ),
                                     ),
                                     items: contraventionReasonList,
-                                    selectedItem: contraventionReasonList
+                                    selectedItem: fromJsonContraventionList
                                             .isNotEmpty
                                         ? contraventionProvider.contravention !=
                                                 null
-                                            ? contraventionReasonList
+                                            ? fromJsonContraventionList
                                                 .firstWhere((e) =>
                                                     e.contraventionReason
                                                         ?.code ==

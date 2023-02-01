@@ -37,7 +37,7 @@ dependencies:
   timeago: ^3.3.0
   fluttertoast: ^8.0.9
   shared_preferences: ^2.0.15
-  anyline_plugin: ^41.0.1
+  anyline_plugin: ^42.2.0
   image: ^3.2.0
   camera: ^0.10.0+3
   collection: ">=1.15.0 <2.0.0"
@@ -54,7 +54,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   geolocator: ^9.0.2
   connectivity_plus: ^3.0.2
-  permission_handler: ^9.2.0
+  permission_handler: ^10.2.0
   dropdown_search: ^5.0.5
   skeletons: ^0.0.3
   flutter_background_service: ^2.4.6
