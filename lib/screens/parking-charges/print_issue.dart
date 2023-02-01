@@ -59,7 +59,7 @@ class _PrintIssueState extends State<PrintIssue> {
               toastDuration: const Duration(seconds: 5),
               title: Text(
                 "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -220,7 +220,7 @@ class _PrintIssueState extends State<PrintIssue> {
                           toastDuration: const Duration(seconds: 5),
                           title: Text(
                             "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
-                            style: CustomTextStyle.h5
+                            style: CustomTextStyle.h4
                                 .copyWith(color: ColorTheme.danger),
                           ),
                           toastPosition: Position.bottom,

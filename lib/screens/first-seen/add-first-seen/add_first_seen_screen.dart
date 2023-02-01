@@ -137,7 +137,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
           displayCloseButton: false,
           title: Text(
             'Please take at least 1 picture',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -178,7 +178,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
               displayCloseButton: false,
               title: Text(
                 'First seen added successfully',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -201,7 +201,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                 error.message.length > Constant.errorTypeOther
                     ? 'Something went wrong, please try again'
                     : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -216,7 +216,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                       Constant.errorMaxLength
                   ? 'Internal server error'
                   : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -262,7 +262,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
           displayCloseButton: false,
           title: Text(
             'First seen added successfully',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -303,7 +303,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                     displayCloseButton: false,
                     title: Text(
                       'First seen added successfully',
-                      style: CustomTextStyle.h5
+                      style: CustomTextStyle.h4
                           .copyWith(color: ColorTheme.success),
                     ),
                     toastPosition: Position.bottom,

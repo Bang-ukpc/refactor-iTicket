@@ -118,7 +118,7 @@ class _MyDrawerState extends State<MyDrawer> {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -133,7 +133,7 @@ class _MyDrawerState extends State<MyDrawer> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -175,7 +175,7 @@ class _MyDrawerState extends State<MyDrawer> {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -190,7 +190,7 @@ class _MyDrawerState extends State<MyDrawer> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -211,7 +211,7 @@ class _MyDrawerState extends State<MyDrawer> {
                         displayCloseButton: false,
                         title: Text(
                           'Coming soon',
-                          style: CustomTextStyle.h5
+                          style: CustomTextStyle.h4
                               .copyWith(color: ColorTheme.secondary),
                         ),
                         toastPosition: Position.bottom,
@@ -231,7 +231,7 @@ class _MyDrawerState extends State<MyDrawer> {
                                 toastDuration: const Duration(seconds: 5),
                                 title: Text(
                                   "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
-                                  style: CustomTextStyle.h5
+                                  style: CustomTextStyle.h4
                                       .copyWith(color: ColorTheme.danger),
                                 ),
                                 toastPosition: Position.bottom,
