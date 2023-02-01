@@ -1,4 +1,4 @@
-package io.anyline.flutter.examples;
+package io.flutter.examples;
 
 import io.flutter.embedding.android.FlutterActivity;
 

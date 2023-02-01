@@ -53,7 +53,7 @@
                     note that the leading "/" is required for android:path
                 -->
                 <data
-                    android:host="io.anyline.flutter.examples"
+                    android:host="io.flutter.examples"
                     android:path="/VzSiQcXRmi2kyjzcA+mYLEtbGVs="
                     android:scheme="msauth" />
             </intent-filter>

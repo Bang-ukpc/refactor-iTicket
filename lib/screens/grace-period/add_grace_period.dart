@@ -16,9 +16,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/configs/scan-plate/anyline_service.dart';
-import 'package:iWarden/configs/scan-plate/result.dart';
-import 'package:iWarden/configs/scan-plate/scan_modes.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
@@ -43,7 +40,6 @@ class AddGracePeriod extends StatefulWidget {
 }
 
 class _AddGracePeriodState extends State<AddGracePeriod> {
-  late AnylineService _anylineService;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _vrnController = TextEditingController();
   final _bayNumberController = TextEditingController();
@@ -76,48 +72,6 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
     }).catchError((err) {
       print(err);
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _anylineService = AnylineServiceImpl();
-  }
-
-  Future<void> scan(ScanMode mode) async {
-    try {
-      Result? result = await _anylineService.scan(mode);
-      if (result != null) {
-        String resultText = result.jsonMap!.values
-            .take(2)
-            .toString()
-            .split(',')[1]
-            .replaceAll(RegExp('[^A-Za-z0-9]'), '')
-            .replaceAll(' ', '');
-        setState(() {
-          _vrnController.text = resultText.substring(0, resultText.length);
-        });
-      }
-    } catch (e, s) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          elevation: 0,
-          title: const FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              'Error',
-            ),
-          ),
-          content: FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              '$e, $s',
-            ),
-          ),
-        ),
-      );
-    }
   }
 
   @override
@@ -421,14 +375,6 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                                       AutovalidateMode.onUserInteraction,
                                 ),
                               ),
-                              Flexible(
-                                flex: 2,
-                                child: ButtonScan(
-                                  onTap: () {
-                                    scan(ScanMode.LicensePlate);
-                                  },
-                                ),
-                              )
                             ],
                           ),
                           const SizedBox(

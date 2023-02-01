@@ -9,16 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/configs/scan-plate/anyline_service.dart';
-import 'package:iWarden/configs/scan-plate/result.dart';
-import 'package:iWarden/configs/scan-plate/scan_modes.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/helpers/debouncer.dart';
@@ -38,6 +34,7 @@ import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
+
 import '../../models/location.dart';
 import '../../providers/print_issue_providers.dart' as prefix;
 import '../../widgets/parking-charge/step_issue_pcn.dart';
@@ -59,7 +56,6 @@ class IssuePCNFirstSeenScreen extends StatefulWidget {
 
 class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late AnylineService _anylineService;
   final _vrnController = TextEditingController();
   final _vehicleMakeController = TextEditingController();
   final _vehicleColorController = TextEditingController();
@@ -177,7 +173,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   void initState() {
     super.initState();
-    _anylineService = AnylineServiceImpl();
     getContraventionReasonList();
     getContraventionReasonListOffline();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -223,42 +218,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     });
   }
 
-  Future<void> scan(ScanMode mode) async {
-    try {
-      Result? result = await _anylineService.scan(mode);
-      if (result != null) {
-        String resultText = result.jsonMap!.values
-            .take(2)
-            .toString()
-            .split(',')[1]
-            .replaceAll(RegExp('[^A-Za-z0-9]'), '')
-            .replaceAll(' ', '');
-        setState(() {
-          _vrnController.text = resultText.substring(0, resultText.length);
-        });
-      }
-    } catch (e, s) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          elevation: 0,
-          title: const FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              'Error',
-            ),
-          ),
-          content: FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              '$e, $s',
-            ),
-          ),
-        ),
-      );
-    }
-  }
-
   @override
   void dispose() {
     _vrnController.dispose();
@@ -295,7 +254,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
       final physicalPCN = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '5$randomReference',
+        ContraventionReference: '2$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
@@ -437,7 +396,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
       final virtualTicket = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '5$randomReference',
+        ContraventionReference: '3$randomReference',
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
@@ -879,14 +838,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               .onUserInteraction,
                                         ),
                                       ),
-                                      Flexible(
-                                        flex: 2,
-                                        child: ButtonScan(
-                                          onTap: () {
-                                            scan(ScanMode.LicensePlate);
-                                          },
-                                        ),
-                                      )
                                     ],
                                   ),
                                   const SizedBox(

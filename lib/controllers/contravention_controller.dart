@@ -75,7 +75,6 @@ class ContraventionController {
             "pageSize": pageSize,
             "sorts": ["-Created"],
             "filter": {
-              "status": ContraventionStatus.Open.index,
               "zoneId": zoneId,
             }
           },

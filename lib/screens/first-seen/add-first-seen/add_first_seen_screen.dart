@@ -10,7 +10,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
@@ -23,9 +22,6 @@ import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
-import 'package:iWarden/configs/scan-plate/anyline_service.dart';
-import 'package:iWarden/configs/scan-plate/result.dart';
-import 'package:iWarden/configs/scan-plate/scan_modes.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -44,7 +40,6 @@ class AddFirstSeenScreen extends StatefulWidget {
 }
 
 class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
-  late AnylineService _anylineService;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _vrnController = TextEditingController();
   final _bayNumberController = TextEditingController();
@@ -77,49 +72,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     }).catchError((err) {
       print(err);
     });
-  }
-
-  @override
-  void initState() {
-    if (!mounted) return;
-    super.initState();
-    _anylineService = AnylineServiceImpl();
-  }
-
-  Future<void> scan(ScanMode mode) async {
-    try {
-      Result? result = await _anylineService.scan(mode);
-      if (result != null) {
-        String resultText = result.jsonMap!.values
-            .take(2)
-            .toString()
-            .split(',')[1]
-            .replaceAll(RegExp('[^A-Za-z0-9]'), '')
-            .replaceAll(' ', '');
-        setState(() {
-          _vrnController.text = resultText.substring(0, resultText.length);
-        });
-      }
-    } catch (e, s) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          elevation: 0,
-          title: const FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              'Error',
-            ),
-          ),
-          content: FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              '$e, $s',
-            ),
-          ),
-        ),
-      );
-    }
   }
 
   @override
@@ -421,14 +373,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                                       AutovalidateMode.onUserInteraction,
                                 ),
                               ),
-                              Flexible(
-                                flex: 2,
-                                child: ButtonScan(
-                                  onTap: () {
-                                    scan(ScanMode.LicensePlate);
-                                  },
-                                ),
-                              )
                             ],
                           ),
                           const SizedBox(

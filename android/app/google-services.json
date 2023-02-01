@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:902954600694:android:5bf075a7621fda8eec04d7",
         "android_client_info": {
-          "package_name": "io.anyline.flutter.examples"
+          "package_name": "com.example.iWarden"
         }
       },
       "oauth_client": [
