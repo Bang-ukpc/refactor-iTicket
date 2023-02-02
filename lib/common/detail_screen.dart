@@ -33,10 +33,6 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
-    final widthScreen = MediaQuery.of(context).size.width;
-    final padding = 5.0;
-    final divisor = widget.type == TypeFirstSeen.Expired ? 3 : 2;
-    final divisor2 = widget.type == TypeFirstSeen.Expired ? 0.00 : 12;
     final args =
         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
     final calculateTime = CalculateTime();

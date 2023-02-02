@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,9 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
+
+import '../../common/my_dialog.dart';
 
 class LocationScreen extends StatefulWidget {
   static const routeName = '/location';
@@ -139,6 +143,9 @@ class _LocationScreenState extends State<LocationScreen> {
     super.dispose();
   }
 
+  double? distanceValue = 0.0;
+
+  // double distanceInMeters =
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
@@ -154,6 +161,49 @@ class _LocationScreenState extends State<LocationScreen> {
       locations.location?.Latitude ?? 0,
       locations.location?.Longitude ?? 0,
     );
+    double handelDistanceInMeters() {
+      return Geolocator.distanceBetween(
+          currentLocationPosition.currentLocation?.latitude ?? 0,
+          currentLocationPosition.currentLocation?.longitude ?? 0,
+          destination.latitude,
+          destination.longitude);
+    }
+
+    Future<void> showMyDialog() async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: true,
+        barrierColor: ColorTheme.backdrop,
+        builder: (BuildContext context) {
+          return MyDialog(
+            buttonCancel: false,
+            title: Text(
+              "Warning",
+              style: CustomTextStyle.h4.copyWith(
+                  color: ColorTheme.danger, fontWeight: FontWeight.w600),
+            ),
+            subTitle: const Text(
+              "Your current location is too far from the check-in location, please move to the nearest location.",
+              style: CustomTextStyle.h5,
+              textAlign: TextAlign.center,
+            ),
+            func: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: ColorTheme.danger,
+              ),
+              child: Text("Accept",
+                  style: CustomTextStyle.h5.copyWith(
+                    color: Colors.white,
+                  )),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          );
+        },
+      );
+    }
 
     void setZoneWhenSelectedLocation(LocationWithZones locationSelected) {
       locations.onSelectedZone(
@@ -247,8 +297,12 @@ class _LocationScreenState extends State<LocationScreen> {
                 if (!isValid) {
                   return;
                 } else {
-                  Navigator.of(context)
-                      .pushNamed(ReadRegulationScreen.routeName);
+                  if (handelDistanceInMeters() <= 1609.344) {
+                    Navigator.of(context)
+                        .pushNamed(ReadRegulationScreen.routeName);
+                  } else {
+                    showMyDialog();
+                  }
                 }
 
                 _formKey.currentState!.save();
@@ -452,6 +506,9 @@ class _LocationScreenState extends State<LocationScreen> {
                                           setZoneWhenSelectedLocation(
                                             locationSelected,
                                           );
+                                          setState(() {
+                                            distanceValue = value!.Distance;
+                                          });
                                         },
                                         validator: ((value) {
                                           if (value == null) {
