@@ -3,9 +3,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/label_require.dart';
+import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:provider/provider.dart';
 
 import '../../common/my_dialog.dart';
 
@@ -25,6 +28,23 @@ class TakePhotoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final printIssue = Provider.of<PrintIssueProviders>(context);
+    void editPhotoIssue() {
+      printIssue.getIdIssue(id);
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => CameraPicker(
+            titleCamera: title,
+            previewImage: true,
+            editImage: true,
+            onDelete: (file) {
+              return true;
+            },
+          ),
+        ),
+      );
+    }
+
     Future<void> showMyDialog() async {
       print("show dialog");
       return showDialog<void>(
@@ -42,14 +62,73 @@ class TakePhotoItem extends StatelessWidget {
                   ),
                 ),
               ),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16.0),
               contentPadding: EdgeInsets.zero,
-              title: Center(child: Text("he")),
               content: SingleChildScrollView(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
-                    children: <Widget>[Image.file(image!)],
+                    children: <Widget>[
+                      Center(
+                        child: Text(title,
+                            style: CustomTextStyle.h4
+                                .copyWith(fontWeight: FontWeight.w600)),
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: Image.file(image!)),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                elevation: 0,
+                                backgroundColor: ColorTheme.grey300,
+                              ),
+                              child: Text(
+                                "Cancel",
+                                style: CustomTextStyle.h5.copyWith(
+                                  fontSize: 16,
+                                ),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 16,
+                          ),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                // elevation: 0,
+                                // backgroundColor: ColorTheme.grey300,
+                              ),
+                              child: Text(
+                                "Edit image",
+                                style: CustomTextStyle.h5.copyWith(
+                                    fontSize: 16, color: ColorTheme.white),
+                              ),
+                              onPressed: () {
+                                Future.delayed(const Duration(seconds: 0), () {
+                                  editPhotoIssue();
+                                });
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
