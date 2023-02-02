@@ -410,7 +410,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                           await Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => CameraPicker(
                                     initialFiles: arrayImage,
-                                    titleCamera: "Take photo of vehicle",
+                                    titleCamera: "Take evidence photo",
                                     onDelete: (file) {
                                       return true;
                                     },

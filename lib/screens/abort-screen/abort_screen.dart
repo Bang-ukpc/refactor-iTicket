@@ -186,7 +186,7 @@ class _AbortScreenState extends State<AbortScreen> {
                 Container(
                   color: ColorTheme.white,
                   width: double.infinity,
-                  margin: const EdgeInsets.only(top: 18),
+                  margin: const EdgeInsets.only(top: 8),
                   height: 280,
                   child: Padding(
                     padding: const EdgeInsets.all(16),

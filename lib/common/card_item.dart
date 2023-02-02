@@ -74,7 +74,7 @@ class CardItem extends StatelessWidget {
                 ),
                 Text(
                   "Visited at: ${FormatDate().getLocalDate(vehicleInfo.Created as DateTime)}",
-                  style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
+                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.grey600),
                 )
               ],
             ),

@@ -326,11 +326,11 @@ class _PrintPCNState extends State<PrintPCN> {
                         children: [
                           const Text(
                             'VRN: ',
-                            style: CustomTextStyle.h4,
+                            style: CustomTextStyle.h5,
                           ),
                           Text(
                             value?.permitInfo?.VRN ?? 'No data',
-                            style: CustomTextStyle.h4
+                            style: CustomTextStyle.h5
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -342,11 +342,11 @@ class _PrintPCNState extends State<PrintPCN> {
                         children: [
                           const Text(
                             'Bay information: ',
-                            style: CustomTextStyle.h4,
+                            style: CustomTextStyle.h5,
                           ),
                           Text(
                             value?.permitInfo?.bayNumber ?? 'No data',
-                            style: CustomTextStyle.h4
+                            style: CustomTextStyle.h5
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -358,11 +358,11 @@ class _PrintPCNState extends State<PrintPCN> {
                         children: [
                           const Text(
                             'Source: ',
-                            style: CustomTextStyle.h4,
+                            style: CustomTextStyle.h5,
                           ),
                           Text(
                             value?.permitInfo?.source ?? 'No data',
-                            style: CustomTextStyle.h4
+                            style: CustomTextStyle.h5
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -374,11 +374,11 @@ class _PrintPCNState extends State<PrintPCN> {
                         children: [
                           const Text(
                             'Tenant: ',
-                            style: CustomTextStyle.h4,
+                            style: CustomTextStyle.h5,
                           ),
                           Text(
                             value?.permitInfo?.tenant ?? 'No data',
-                            style: CustomTextStyle.h4
+                            style: CustomTextStyle.h5
                                 .copyWith(fontWeight: FontWeight.w600),
                           ),
                         ],
