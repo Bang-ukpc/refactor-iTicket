@@ -13,8 +13,9 @@ class WardensInfo with ChangeNotifier {
 
   Future<void> getWardensInfoLogging() async {
     await userController.getMe().then((value) {
-      FirebaseCrashlytics.instance.setCustomKey('userId', value.Id.toString());
-      FirebaseCrashlytics.instance.setUserIdentifier(value.Id.toString());
+      FirebaseCrashlytics.instance
+          .setCustomKey('userEmail', value.Email.toString());
+      FirebaseCrashlytics.instance.setUserIdentifier(value.Email.toString());
       _wardens = value;
       notifyListeners();
     });
