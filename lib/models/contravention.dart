@@ -234,7 +234,7 @@ class ContraventionEvents {
   DateTime? created;
   DateTime? deleted;
   int? id;
-  Null? accountId;
+  int? accountId;
   int? contraventionId;
   int? createdByUserId;
   String? detail;

@@ -136,8 +136,6 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {
-          await getLocationList(
-              locationProvider, wardensProvider.wardens?.Id ?? 0);
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               await evidencePhotoController
@@ -149,12 +147,21 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
             }
           }
 
-          await vehicleInfoController
-              .upsertVehicleInfo(vehicleInfo)
-              .then((value) {
-            if (value != null) {
-              check = true;
-            }
+          await getLocationList(
+                  locationProvider, wardensProvider.wardens?.Id ?? 0)
+              .then((value) async {
+            vehicleInfo.ExpiredAt = DateTime.now().add(
+              Duration(
+                seconds: locationProvider.expiringTimeGracePeriod,
+              ),
+            );
+            await vehicleInfoController
+                .upsertVehicleInfo(vehicleInfo)
+                .then((value) {
+              if (value != null) {
+                check = true;
+              }
+            });
           });
 
           if (check == true) {

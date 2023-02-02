@@ -40,15 +40,15 @@ Map<String, dynamic> _$EvidencePhotoToJson(EvidencePhoto instance) {
 }
 
 class VehicleInformation extends BaseModel {
-  final DateTime ExpiredAt;
+  DateTime ExpiredAt;
   String Plate;
-  final int ZoneId;
-  final int LocationId;
-  final String BayNumber;
-  final int Type;
-  final double Latitude;
-  final double Longitude;
-  final bool CarLeft;
+  int ZoneId;
+  int LocationId;
+  String BayNumber;
+  int Type;
+  double Latitude;
+  double Longitude;
+  bool CarLeft;
   List<EvidencePhoto>? EvidencePhotos;
 
   VehicleInformation({
