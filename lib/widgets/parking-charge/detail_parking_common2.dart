@@ -111,26 +111,20 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                       ),
                       child: Column(
                         children: <Widget>[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Text(
-                                widget.contravention?.plate
-                                        .toString()
-                                        .toUpperCase() ??
-                                    'No data',
-                                style: CustomTextStyle.h3
-                                    .copyWith(fontWeight: FontWeight.w600),
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              widget.contravention?.plate
+                                      .toString()
+                                      .toUpperCase() ??
+                                  'No data',
+                              style: CustomTextStyle.h3.copyWith(
+                                fontWeight: FontWeight.w600,
                               ),
-                              Text(
-                                  "Color: ${widget.contravention?.colour ?? "No data"}",
-                                  style: CustomTextStyle.h6
-                                      .copyWith(color: ColorTheme.grey600)),
-                            ],
+                            ),
                           ),
                           const SizedBox(
-                            height: 5,
+                            height: 4,
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -138,8 +132,15 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                             children: <Widget>[
                               Text(
                                 "Make: ${widget.contravention?.make ?? "No data"}",
-                                style: CustomTextStyle.h6
-                                    .copyWith(color: ColorTheme.grey600),
+                                style: CustomTextStyle.h5.copyWith(
+                                  color: ColorTheme.grey600,
+                                ),
+                              ),
+                              Text(
+                                "Color: ${widget.contravention?.colour ?? "No data"}",
+                                style: CustomTextStyle.h5.copyWith(
+                                  color: ColorTheme.grey600,
+                                ),
                               ),
                             ],
                           ),
@@ -166,24 +167,23 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                       ],
                     ),
                     const SizedBox(
-                      height: 4,
+                      height: 5,
                     ),
                     Text(
                       "Type: ${widget.contravention?.reason?.contraventionReasonTranslations?.map((item) => item.detail).toString().replaceAll('(', '').replaceAll(')', '')}",
-                      style: CustomTextStyle.h6
-                          .copyWith(color: ColorTheme.grey600),
+                      style: CustomTextStyle.h5.copyWith(
+                        color: ColorTheme.grey600,
+                      ),
                     ),
                     const SizedBox(
-                      height: 4,
+                      height: 5,
                     ),
                     Text(
                       "Comment: ${widget.contravention?.contraventionEvents?.map((item) => item.detail).toString().replaceAll('(', '').replaceAll(')', '')}",
-                      style: CustomTextStyle.h6
-                          .copyWith(color: ColorTheme.grey600),
+                      style: CustomTextStyle.h5.copyWith(
+                        color: ColorTheme.grey600,
+                      ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    )
                   ],
                 ),
               ),

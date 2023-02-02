@@ -48,9 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Text(
                     "Parking operative",
-                    style: CustomTextStyle.h6.copyWith(
+                    style: CustomTextStyle.h5.copyWith(
                       color: ColorTheme.grey600,
                     ),
+                  ),
+                  const SizedBox(
+                    height: 5,
                   ),
                   Text(
                     "iTicket",
@@ -62,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const Text(
                     "Welcome to iTicket! We’re glad you’re here!",
-                    style: CustomTextStyle.h6,
+                    style: CustomTextStyle.h5,
                   ),
                   const SizedBox(
                     height: 24,
@@ -81,6 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: SvgPicture.asset("assets/svg/IconMicrosoft.svg"),
                     label: const Text(
                       "Sign in with Microsoft",
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ],
