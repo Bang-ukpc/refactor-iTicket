@@ -136,8 +136,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {
-          await getLocationList(
-              locationProvider, wardenProvider.wardens?.Id ?? 0);
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               await evidencePhotoController
@@ -149,12 +147,21 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
             }
           }
 
-          await vehicleInfoController
-              .upsertVehicleInfo(vehicleInfo)
-              .then((value) {
-            if (value != null) {
-              check = true;
-            }
+          await getLocationList(
+                  locationProvider, wardenProvider.wardens?.Id ?? 0)
+              .then((value) async {
+            vehicleInfo.ExpiredAt = DateTime.now().add(
+              Duration(
+                seconds: locationProvider.expiringTimeFirstSeen,
+              ),
+            );
+            await vehicleInfoController
+                .upsertVehicleInfo(vehicleInfo)
+                .then((value) {
+              if (value != null) {
+                check = true;
+              }
+            });
           });
 
           if (check == true) {

@@ -7,7 +7,6 @@ import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
@@ -118,6 +117,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     final locations = Provider.of<Locations>(context, listen: false);
 
     log('Active first seen screen');
+    print('time first seen ${locations.expiringTimeFirstSeen / 60}');
 
     void onCarLeft(VehicleInformation vehicleInfo) {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(
