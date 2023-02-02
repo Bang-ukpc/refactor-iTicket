@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -37,6 +38,9 @@ class _LocationScreenState extends State<LocationScreen> {
   List<RotaWithLocation> listFilterByRota = [];
   Directions? _info;
   bool isLoading = true;
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
+  Position? currentLocation;
 
   String formatRotaShift(DateTime date) {
     return DateFormat('HH:mm').format(date);
@@ -112,6 +116,20 @@ class _LocationScreenState extends State<LocationScreen> {
     return listFilterByRota;
   }
 
+//   _getLocation() async {
+//    currentLocation = await Geolocator()
+//        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+
+//    var newPosition = CameraPosition(
+//        target: LatLng(currentLocation.latitude, currentLocation.longitude),
+//        zoom: 16);
+
+//    CameraUpdate update =CameraUpdate.newCameraPosition(newPosition);
+//    CameraUpdate zoom = CameraUpdate.zoomTo(16);
+
+//    _mapController.moveCamera(update);
+//  }
+
   @override
   void initState() {
     super.initState();
@@ -145,14 +163,22 @@ class _LocationScreenState extends State<LocationScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-    // final sourceLocation = LatLng(
-    //   currentLocationPosition.currentLocation?.latitude ?? 0,
-    //   currentLocationPosition.currentLocation?.longitude ?? 0,
-    // );
+    final sourceLocation = LatLng(
+      currentLocationPosition.currentLocation?.latitude ?? 0,
+      currentLocationPosition.currentLocation?.longitude ?? 0,
+    );
 
     final destination = LatLng(
       locations.location?.Latitude ?? 0,
       locations.location?.Longitude ?? 0,
+    );
+
+    CameraPosition initialPosition = CameraPosition(
+      target: LatLng(
+        locations.location?.Latitude ?? 0,
+        locations.location?.Longitude ?? 0,
+      ),
+      zoom: 16,
     );
 
     void setZoneWhenSelectedLocation(LocationWithZones locationSelected) {
@@ -161,21 +187,24 @@ class _LocationScreenState extends State<LocationScreen> {
       );
     }
 
-    // Future<void> goToDestination() async {
-    //   final GoogleMapController controller = await _mapController.future;
-    //   controller.animateCamera(
-    //     CameraUpdate.newLatLngBounds(
-    //       LatLngBounds(
-    //         southwest: sourceLocation,
-    //         northeast: destination,
-    //       ),
-    //       48,
-    //     ),
-    //   );
-    //   final directions = await directionsRepository.getDirections(
-    //       origin: sourceLocation, destination: destination);
-    //   setState(() => _info = directions);
-    // }
+    Future<void> goToDestination(
+        {required double latitude, required double longitude}) async {
+      // final GoogleMapController controller = await _controller.future;
+      // controller.animateCamera(CameraUpdate.newCameraPosition(initialPosition));
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: sourceLocation,
+            northeast: LatLng(
+              latitude,
+              longitude,
+            ),
+          ),
+          38,
+        ),
+      );
+    }
 
     print(
         'from: ${locations.rotaShift?.timeFrom}, to: ${locations.rotaShift?.timeTo}');
@@ -441,7 +470,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                             );
                                           },
                                         ),
-                                        onChanged: (value) {
+                                        onChanged: (value) async {
                                           LocationWithZones locationSelected =
                                               locations.rotaShift!.locations!
                                                   .firstWhere(
@@ -452,6 +481,9 @@ class _LocationScreenState extends State<LocationScreen> {
                                           setZoneWhenSelectedLocation(
                                             locationSelected,
                                           );
+                                          await goToDestination(
+                                              latitude: value?.Latitude ?? 0,
+                                              longitude: value?.Longitude ?? 0);
                                         },
                                         validator: ((value) {
                                           if (value == null) {
@@ -586,7 +618,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                                           400
                                                       ? screenHeight / 3
                                                       : screenHeight / 1.5,
-                                              destination: destination,
+                                              mapController: _controller,
+                                              initialPosition: initialPosition,
                                               info: _info,
                                             )
                                           : const SizedBox(),

@@ -231,7 +231,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wardersProvider = Provider.of<WardensInfo>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
 
     log('Connecting screen');
 
@@ -240,7 +240,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       detail: 'Warden has started shift',
       latitude: currentLocationOfWarder?.latitude ?? 0,
       longitude: currentLocationOfWarder?.longitude ?? 0,
-      wardenId: wardersProvider.wardens?.Id ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
     );
 
     void onStartShift() async {
