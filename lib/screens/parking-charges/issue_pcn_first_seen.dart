@@ -136,13 +136,27 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   }
 
   void getContraventionReasonList({int? zoneId}) async {
-    final Pagination list = await contraventionController
-        .getContraventionReasonServiceList(zoneId: zoneId);
-    setState(() {
-      contraventionReasonList = list.rows
-          .map((item) => ContraventionReasonTranslations.fromJson(item))
-          .toList();
-    });
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+
+    if (connectionStatus == ConnectivityResult.wifi ||
+        connectionStatus == ConnectivityResult.mobile) {
+      final Pagination list = await contraventionController
+          .getContraventionReasonServiceList(zoneId: zoneId);
+      setState(() {
+        contraventionReasonList = list.rows
+            .map((item) => ContraventionReasonTranslations.fromJson(item))
+            .toList();
+      });
+    } else {
+      final Pagination list =
+          await contraventionController.getContraventionReasonServiceList();
+      setState(() {
+        contraventionReasonList = list.rows
+            .map((item) => ContraventionReasonTranslations.fromJson(item))
+            .toList();
+      });
+    }
   }
 
   void getContraventionReasonListOffline() async {
@@ -255,9 +269,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
 
     log('Issue PCN screen');
-    print('ContraventionReasonList: ${contraventionReasonList.length}');
-    print(
-        'ContraventionReasonList offline: ${fromJsonContraventionList.length}');
 
     int randomReference =
         (DateTime.now().microsecondsSinceEpoch / 10000).ceil();

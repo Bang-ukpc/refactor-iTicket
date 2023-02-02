@@ -145,7 +145,7 @@ class BluetoothPrinterHelper {
   }
 
   Future printPhysicalPCN(Contravention physicalPCN, Location locationName,
-      double lowerAmount, double upperAmount, int wardenIdPrint) async {
+      double lowerAmount, double upperAmount, String externalId) async {
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 135;
@@ -169,13 +169,13 @@ class BluetoothPrinterHelper {
     //       locationName.County,
     //       locationName.Postcode
     //     ]);
-    int issueTime = color + 230;
+    int issueTime = color + 220;
     int timeFirstSeen = issueTime + 60;
     int wardenId = timeFirstSeen + 55;
-    int desc = wardenId + (205 - 55);
-    int lower = desc + 95;
-    int upper = lower + 40;
-    int referenceNo2 = upper + 400;
+    int desc = wardenId + (205 - 65);
+    int upper = desc + 101;
+    int lower = upper + 42;
+    int referenceNo2 = upper + 441;
     int date2 = referenceNo2 + 60;
     int plate2 = date2 + 60;
     int barcode = plate2 + 70;
@@ -198,9 +198,9 @@ class BluetoothPrinterHelper {
     String lowerPrintText = "$lower^FB400,3,3,L,0^FD$lowerAmount^FS^FO$xAxis3";
     String upperPrintText =
         "$upper^FB400,3,3,L,0^FD$upperAmount^FS^FO${xAxis3 + 115}";
-    String wardenIdPrintText = "$wardenId^FD$wardenIdPrint^FS^FO$xAxis2";
+    String externalIdSpace = "$wardenId^FD$externalId^FS^FO$xAxis2";
     bytes += generator.text(
-        '! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis,$plate^FD${physicalPCN.plate}^FS^FO$xAxis,$make^FD${physicalPCN.make}^FS^FO$xAxis,$color^FD${physicalPCN.colour}^FS^FO$xAxis,$location^FB400,3,3,L,0^FD${locationName.Name}^FS^FO$xAxis,$roadString,$townString,$countyString,$postCodeString,$issueTime^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.eventDateTime as DateTime)}^FS^FO$xAxis,$timeFirstSeen^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime)}^FS^FO${xAxis3 + 110},$wardenIdPrintText,$desc^FB500,3,3,L,0^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis3,$plate2^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
+        '! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis,$plate^FD${physicalPCN.plate}^FS^FO$xAxis,$make^FD${physicalPCN.make}^FS^FO$xAxis,$color^FD${physicalPCN.colour}^FS^FO$xAxis,$location^FB400,3,3,L,0^FD${locationName.Name}^FS^FO$xAxis,$roadString,$townString,$countyString,$postCodeString,$issueTime^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.eventDateTime as DateTime)}^FS^FO$xAxis,$timeFirstSeen^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime)}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB500,3,3,L,0^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2^FD${DateFormat('dd-MM-yyyy').format(DateTime.now())}^FS^FO$xAxis3,$plate2^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
 
     printEscPos(bytes, generator);
   }

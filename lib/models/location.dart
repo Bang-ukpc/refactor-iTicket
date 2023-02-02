@@ -47,7 +47,7 @@ class Location extends BaseModel {
 
 class LocationWithZones extends Location {
   final List<Zone>? Zones;
-  final List<OperationalPeriod>? OperationalPeriods;
+  final List<OperationalPeriodHistories>? operationalPeriodHistories;
   final double? LowerAmount;
   final double? UpperAmount;
   LocationWithZones({
@@ -75,7 +75,7 @@ class LocationWithZones extends Location {
     this.LowerAmount,
     this.UpperAmount,
     this.Zones,
-    this.OperationalPeriods,
+    this.operationalPeriodHistories,
   }) : super(
           Id: Id,
           Created: Created,
@@ -127,11 +127,12 @@ class LocationWithZones extends Location {
             ? locationWithZones.Zones!.map((v) => Zone.toJson(v)).toList()
             : [],
         'Distance': locationWithZones.Distance,
-        'OperationalPeriods': locationWithZones.OperationalPeriods != null
-            ? locationWithZones.OperationalPeriods!
-                .map((e) => OperationalPeriod.toJson(e))
-                .toList()
-            : []
+        'OperationalPeriodHistories':
+            locationWithZones.operationalPeriodHistories != null
+                ? locationWithZones.operationalPeriodHistories!
+                    .map((e) => OperationalPeriodHistories.toJson(e))
+                    .toList()
+                : []
       };
 
   static String encode(List<LocationWithZones> locationWithZones) =>
@@ -152,11 +153,12 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     zonesList = zonesFromJson.map((model) => Zone.fromJson(model)).toList();
   }
 
-  var operationalPeriodsFromJson = json['OperationalPeriods'] as List<dynamic>;
-  List<OperationalPeriod> operationalPeriodsList = [];
+  var operationalPeriodsFromJson =
+      json['OperationalPeriodHistories'] as List<dynamic>;
+  List<OperationalPeriodHistories> operationalPeriodsList = [];
   if (operationalPeriodsFromJson.isNotEmpty) {
     operationalPeriodsList = operationalPeriodsFromJson
-        .map((model) => OperationalPeriod.fromJson(model))
+        .map((model) => OperationalPeriodHistories.fromJson(model))
         .toList();
   }
   return LocationWithZones(
@@ -180,7 +182,7 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Notes: json['Notes'],
     Distance: json['Distance'],
     Zones: zonesList,
-    OperationalPeriods: operationalPeriodsList,
+    operationalPeriodHistories: operationalPeriodsList,
     UpperAmount: json['Rates'] != null
         ? (json['Rates'] as List<dynamic>).isNotEmpty
             ? json['Rates'][0]['UpperAmount'].toDouble()

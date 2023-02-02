@@ -524,7 +524,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
                                               operationalPeriodsList:
-                                                  item.OperationalPeriods ?? [],
+                                                  item.operationalPeriodHistories ??
+                                                      [],
                                             );
                                           },
                                         ),
@@ -759,7 +760,7 @@ class DropDownItem2 extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
-  final List<OperationalPeriod> operationalPeriodsList;
+  final List<OperationalPeriodHistories> operationalPeriodsList;
   const DropDownItem2({
     required this.title,
     this.subTitle,
@@ -836,10 +837,12 @@ class DropDownItem2 extends StatelessWidget {
                   return Column(
                     children: [
                       Text(
-                        'Op ${formatOperationalPeriods(startDay.add(Duration(minutes: e.TimeFrom)))} - ${formatOperationalPeriods(startDay.add(Duration(minutes: e.TimeTo)))}',
+                        'Op ${formatOperationalPeriods(e.TimeFrom)} - ${formatOperationalPeriods(e.TimeTo)}',
                         style: CustomTextStyle.body2.copyWith(
                           color: getStatusColor(
-                              timeFrom: e.TimeFrom, timeTo: e.TimeTo),
+                              timeFrom:
+                                  e.TimeFrom.hour * 60 + e.TimeFrom.minute,
+                              timeTo: e.TimeTo.hour * 60 + e.TimeTo.minute),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

@@ -18,7 +18,6 @@ class ContraventionController {
         '/contravention/create-pcn',
         data: ContraventionCreateWardenCommand.toJson(pcn),
       );
-      print(123);
       print(response.data.toString());
       Contravention contraventionResult = Contravention.fromJson(response.data);
       print('Api create PCN: ${response.data}');
@@ -216,6 +215,8 @@ class ContraventionController {
 
   Future<CheckPermit?> checkHasPermit(
       ContraventionCreateWardenCommand pcn) async {
+    print('data: ${pcn.Plate}');
+    print('data: ${pcn.WardenComments}');
     try {
       final response = await dio.post(
         '/contravention/check-has-permit',
