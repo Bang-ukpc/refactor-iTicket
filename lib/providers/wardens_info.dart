@@ -1,6 +1,7 @@
+import 'dart:developer';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:iWarden/controllers/user_controller.dart';
-
 import '../models/wardens.dart';
 
 class WardensInfo with ChangeNotifier {
@@ -12,6 +13,8 @@ class WardensInfo with ChangeNotifier {
 
   Future<void> getWardensInfoLogging() async {
     await userController.getMe().then((value) {
+      FirebaseCrashlytics.instance.setCustomKey('userId', value.Id.toString());
+      FirebaseCrashlytics.instance.setUserIdentifier(value.Id.toString());
       _wardens = value;
       notifyListeners();
     });
