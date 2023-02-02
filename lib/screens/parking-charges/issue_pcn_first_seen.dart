@@ -161,10 +161,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     await contraventionController
         .getVehicleDetailByPlate(plate: plate)
         .then((value) {
-      setState(() {
-        _vehicleMakeController.text = value?.Make ?? '';
-        _vehicleColorController.text = value?.Colour ?? '';
-      });
+      if (value?.Make != null) {
+        setState(() {
+          _vehicleMakeController.text = value?.Make ?? '';
+        });
+      }
+      if (value?.Colour != null) {
+        setState(() {
+          _vehicleColorController.text = value?.Colour ?? '';
+        });
+      }
     }).catchError(((e) {
       setState(() {
         _vehicleMakeController.text = '';
@@ -272,6 +278,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
     Future<void> createPhysicalPCN(
         {bool? step2, bool? step3, required bool isPrinter}) async {
+      physicalPCN.Plate = _vrnController.text;
+      physicalPCN.WardenComments = _commentController.text;
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
 
@@ -1045,7 +1053,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                             _debouncer.run(() {
                                               onSearchVehicleInfoByPlate(value);
                                             });
-                                            _vrnController.text = value;
                                           },
                                           autovalidateMode: AutovalidateMode
                                               .onUserInteraction,
@@ -1373,9 +1380,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         color: ColorTheme.grey400,
                                       ),
                                     ),
-                                    onChanged: (value) {
-                                      _commentController.text = value;
-                                    },
                                   ),
                                 ],
                               ),
