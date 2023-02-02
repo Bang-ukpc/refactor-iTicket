@@ -86,28 +86,28 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
                       Text(
                           "Issued at: ${FormatDate().getLocalDate(widget.contravention?.eventDateTime as DateTime)}",
                           style: CustomTextStyle.body2.copyWith(
-                            color: ColorTheme.grey600,
+                            color: ColorTheme.success,
                           )),
                     ],
                   ),
                   const SizedBox(
-                    height: 4,
+                    height: 6,
                   ),
                   Text(
                     "Type: ${widget.contravention?.reason?.contraventionReasonTranslations?.map((item) => item.detail).toString().replaceAll('(', '').replaceAll(')', '')}",
                     style:
-                        CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
+                        CustomTextStyle.h5.copyWith(color: ColorTheme.grey600),
                   ),
                   const SizedBox(
-                    height: 4,
+                    height: 6,
                   ),
                   Text(
                     "Comment: ${widget.contravention?.contraventionEvents?.map((item) => item.detail).toString().replaceAll('(', '').replaceAll(')', '')}",
                     style:
-                        CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
+                        CustomTextStyle.h5.copyWith(color: ColorTheme.grey600),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 6,
                   )
                 ],
               ),

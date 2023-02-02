@@ -22,8 +22,9 @@ class BottomNavyBarItem extends StatelessWidget {
     bool typeButton = label.toUpperCase().endsWith("Abort".toUpperCase()) ||
         label.toUpperCase().endsWith("Check out".toUpperCase()) ||
         label.toUpperCase().endsWith("Cancel".toUpperCase());
-    bool abortButton =
-        label.toUpperCase().endsWith("Finish abort".toUpperCase());
+    bool redButton =
+        label.toUpperCase().endsWith("Finish abort".toUpperCase()) ||
+            label.toUpperCase().endsWith("Delete".toUpperCase());
 
     bool disabled = isDisabled != null && isDisabled == true;
 
@@ -37,7 +38,7 @@ class BottomNavyBarItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(0.0),
             ),
           ),
-          backgroundColor: MaterialStateProperty.all(abortButton
+          backgroundColor: MaterialStateProperty.all(redButton
               ? ColorTheme.danger
               : typeButton || disabled
                   ? ColorTheme.grey300
@@ -48,7 +49,7 @@ class BottomNavyBarItem extends StatelessWidget {
         label: Text(
           label,
           style: CustomTextStyle.h6.copyWith(
-              color: abortButton
+              color: redButton
                   ? ColorTheme.white
                   : typeButton || disabled
                       ? ColorTheme.textPrimary

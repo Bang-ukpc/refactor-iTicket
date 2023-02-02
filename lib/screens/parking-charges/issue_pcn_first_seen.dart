@@ -567,7 +567,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             subTitle: const Text(
               "Virtual ticketing is enabled for this site, we would encourage you to use virtual ticketing.",
               textAlign: TextAlign.center,
-              style: CustomTextStyle.body2,
+              style: CustomTextStyle.h5,
             ),
             func: Column(
               mainAxisAlignment: MainAxisAlignment.center,

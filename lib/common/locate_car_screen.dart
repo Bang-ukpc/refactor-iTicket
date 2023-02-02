@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
@@ -21,6 +23,8 @@ class LocateCarScreen extends StatefulWidget {
 
 class _LocateCarScreenState extends State<LocateCarScreen> {
   Directions? _info;
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
 
   // Future<void> goToDestination(
   //     {required LatLng sourceLocation, required LatLng destination}) async {
@@ -63,10 +67,15 @@ class _LocateCarScreenState extends State<LocateCarScreen> {
 
     final vehicleInfo =
         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
-    final destination = LatLng(
-      vehicleInfo.Latitude,
-      vehicleInfo.Longitude,
+
+    CameraPosition initialPosition = CameraPosition(
+      target: LatLng(
+        vehicleInfo.Latitude,
+        vehicleInfo.Longitude,
+      ),
+      zoom: 16,
     );
+
     double distance = Geolocator.distanceBetween(
       currentLocationPosition.currentLocation?.latitude ?? 0,
       currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -123,7 +132,8 @@ class _LocateCarScreenState extends State<LocateCarScreen> {
                 screenHeight: MediaQuery.of(context).size.width < 400
                     ? screenHeight - 200
                     : screenHeight / 2,
-                destination: destination,
+                mapController: _controller,
+                initialPosition: initialPosition,
                 info: _info,
               ),
             ],
