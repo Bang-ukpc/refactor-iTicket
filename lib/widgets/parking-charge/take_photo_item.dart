@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,27 +26,33 @@ class TakePhotoItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future<void> showMyDialog() async {
+      print("show dialog");
       return showDialog<void>(
         context: context,
-        barrierDismissible: false,
+        barrierDismissible: true,
         barrierColor: ColorTheme.backdrop,
         builder: (BuildContext context) {
-          return MyDialog(
-            title: Text(
-              "Preview image",
-              style: CustomTextStyle.h4.copyWith(fontWeight: FontWeight.w600),
-            ),
-            subTitle: const Text(
-              "Please take enough proof photos to complete.",
-              textAlign: TextAlign.center,
-              style: CustomTextStyle.body1,
-            ),
-            func: ElevatedButton(
-              child: const Text("Ok"),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                print(123);
-              },
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    5.0,
+                  ),
+                ),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+              contentPadding: EdgeInsets.zero,
+              title: Center(child: Text("he")),
+              content: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: <Widget>[Image.file(image!)],
+                  ),
+                ),
+              ),
             ),
           );
         },
@@ -56,7 +63,12 @@ class TakePhotoItem extends StatelessWidget {
       children: [
         if (title.length > 1)
           InkWell(
-            onTap: state ? func : null,
+            // tim id image null
+            onTap: state
+                ? func
+                : image != null
+                    ? showMyDialog
+                    : null,
             child: Container(
               margin: const EdgeInsets.only(bottom: 8, left: 16),
               color: state == true ? ColorTheme.lightSuccess : Colors.white,
