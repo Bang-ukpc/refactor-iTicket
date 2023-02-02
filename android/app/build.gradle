@@ -79,4 +79,5 @@ dependencies {
     implementation 'com.microsoft.identity.client:msal:2.+'
     implementation 'com.google.android.gms:play-services-maps:18.0.2'
 }
- 
+
+apply plugin: 'com.google.firebase.crashlytics'
