@@ -117,7 +117,7 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
                     'You are on break. \nPlease click End break to start again.',
                     style: CustomTextStyle.h4.copyWith(
                       color: ColorTheme.textPrimary,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w400,
                     ),
                     textAlign: TextAlign.center,
                   ),
