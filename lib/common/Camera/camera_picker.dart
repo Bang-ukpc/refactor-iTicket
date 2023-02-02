@@ -106,8 +106,8 @@ class CameraPicker extends HookWidget {
           pageBuilder: (BuildContext buildContext, Animation animation,
               Animation secondaryAnimation) {
             return Scaffold(
-                appBar: const MyAppBar(
-                  title: "UKPC take picture",
+                appBar: MyAppBar(
+                  title: printIssue.findIssueNoImage(typePCN: typePCN).title,
                   automaticallyImplyLeading: true,
                   isOpenDrawer: false,
                 ),
