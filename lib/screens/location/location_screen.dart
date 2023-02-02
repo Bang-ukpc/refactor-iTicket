@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +22,6 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
 
 import '../../common/my_dialog.dart';
 

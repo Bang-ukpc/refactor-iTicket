@@ -10,7 +10,11 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/models/abort_pcn.dart';
+import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -29,6 +33,26 @@ class ReadRegulationScreen extends StatefulWidget {
 
 class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
   bool checkbox = false;
+  List<ContraventionReasonTranslations> contraventionReasonList = [];
+
+  void getContraventionReasonList({int? zoneId}) async {
+    final Pagination list = await contraventionController
+        .getContraventionReasonServiceList(zoneId: zoneId);
+    setState(() {
+      contraventionReasonList = list.rows
+          .map((item) => ContraventionReasonTranslations.fromJson(item))
+          .toList();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final locations = Provider.of<Locations>(context, listen: false);
+      getContraventionReasonList(zoneId: locations.zone?.Id);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

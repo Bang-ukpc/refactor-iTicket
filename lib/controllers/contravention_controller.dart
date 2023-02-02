@@ -115,25 +115,52 @@ class ContraventionController {
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
-      try {
-        final response = await dio.post(
-          '/contravention-reason-translation/filter',
-          data: {
-            "page": 1,
-            "pageSize": 1000,
-            "ZoneId": zoneId,
-          },
-        );
-        Pagination contraventionReasonPagination =
-            Pagination.fromJson(response.data);
-        final String encodedData =
-            json.encode(Pagination.toJson(contraventionReasonPagination));
-        SharedPreferencesHelper.setStringValue(
-            'contraventionReasonDataLocal', encodedData);
-        return contraventionReasonPagination;
-      } on DioError catch (error) {
-        print(error.response);
-        rethrow;
+      if (zoneId != null) {
+        try {
+          final response = await dio.post(
+            '/contravention-reason-translation/filter',
+            data: {
+              "page": 1,
+              "pageSize": 1000,
+              "ZoneId": zoneId,
+              "filter": {},
+            },
+          );
+          print(response.data);
+          Pagination contraventionReasonPagination =
+              Pagination.fromJson(response.data);
+          final String encodedData =
+              json.encode(Pagination.toJson(contraventionReasonPagination));
+          SharedPreferencesHelper.setStringValue(
+              'contraventionReasonDataLocalWithHaveZoneId', encodedData);
+          return contraventionReasonPagination;
+        } on DioError catch (error) {
+          print(error.response);
+          rethrow;
+        }
+      } else {
+        try {
+          final response = await dio.post(
+            '/contravention-reason-translation/filter',
+            data: {
+              "page": 1,
+              "pageSize": 1000,
+              "ZoneId": zoneId,
+              "filter": {},
+            },
+          );
+          print(response.data);
+          Pagination contraventionReasonPagination =
+              Pagination.fromJson(response.data);
+          final String encodedData =
+              json.encode(Pagination.toJson(contraventionReasonPagination));
+          SharedPreferencesHelper.setStringValue(
+              'contraventionReasonDataLocalWithNotHaveZoneId', encodedData);
+          return contraventionReasonPagination;
+        } on DioError catch (error) {
+          print(error.response);
+          rethrow;
+        }
       }
     } else {
       final String? dataHaveZoneId =
