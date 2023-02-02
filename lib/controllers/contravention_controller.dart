@@ -110,7 +110,7 @@ class ContraventionController {
     }
   }
 
-  Future<Pagination> getContraventionReasonServiceList() async {
+  Future<Pagination> getContraventionReasonServiceList({int? zoneId}) async {
     ConnectivityResult connectionStatus =
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
@@ -121,6 +121,7 @@ class ContraventionController {
           data: {
             "page": 1,
             "pageSize": 1000,
+            "ZoneId": zoneId,
           },
         );
         Pagination contraventionReasonPagination =
@@ -135,16 +136,38 @@ class ContraventionController {
         rethrow;
       }
     } else {
-      final String? data = await SharedPreferencesHelper.getStringValue(
-          'contraventionReasonDataLocal');
-      if (data != null) {
-        final contraventionReason = json.decode(data) as Map<String, dynamic>;
-        Pagination fromJsonContraventionReason =
-            Pagination.fromJson(contraventionReason);
-        return fromJsonContraventionReason;
+      final String? dataHaveZoneId =
+          await SharedPreferencesHelper.getStringValue(
+              'contraventionReasonDataLocalWithHaveZoneId');
+      final String? dataNotHaveZoneId =
+          await SharedPreferencesHelper.getStringValue(
+              'contraventionReasonDataLocalWithNotHaveZoneId');
+
+      if (zoneId != null) {
+        if (dataHaveZoneId != null) {
+          final contraventionReason =
+              json.decode(dataHaveZoneId) as Map<String, dynamic>;
+          Pagination fromJsonContraventionReason =
+              Pagination.fromJson(contraventionReason);
+          return fromJsonContraventionReason;
+        }
+      } else {
+        if (dataNotHaveZoneId != null) {
+          final contraventionReason =
+              json.decode(dataNotHaveZoneId) as Map<String, dynamic>;
+          Pagination fromJsonContraventionReason =
+              Pagination.fromJson(contraventionReason);
+          return fromJsonContraventionReason;
+        }
       }
+
       return Pagination(
-          page: 1, pageSize: 1000, total: 0, totalPages: 1, rows: []);
+        page: 1,
+        pageSize: 1000,
+        total: 0,
+        totalPages: 1,
+        rows: [],
+      );
     }
   }
 

@@ -239,21 +239,27 @@ class _LocationScreenState extends State<LocationScreen> {
 
     Future<void> goToDestination(
         {required double latitude, required double longitude}) async {
-      // final GoogleMapController controller = await _controller.future;
-      // controller.animateCamera(CameraUpdate.newCameraPosition(initialPosition));
       final GoogleMapController controller = await _controller.future;
-      controller.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: sourceLocation,
-            northeast: LatLng(
-              latitude,
-              longitude,
-            ),
-          ),
-          38,
+      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: LatLng(
+          latitude,
+          longitude,
         ),
-      );
+        zoom: 16,
+      )));
+      // final GoogleMapController controller = await _controller.future;
+      // controller.animateCamera(
+      //   CameraUpdate.newLatLngBounds(
+      //     LatLngBounds(
+      //       southwest: sourceLocation,
+      //       northeast: LatLng(
+      //         latitude,
+      //         longitude,
+      //       ),
+      //     ),
+      //     38,
+      //   ),
+      // );
     }
 
     print(
