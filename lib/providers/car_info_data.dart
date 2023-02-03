@@ -123,7 +123,7 @@ class DataInfoCar {
   List<String> color = [
     "BEIGE",
     "BLACK",
-    "BLUE2",
+    "BLUE",
     "BRONZE",
     "BROWN",
     "CREAM",
