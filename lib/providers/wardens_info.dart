@@ -13,11 +13,11 @@ class WardensInfo with ChangeNotifier {
 
   Future<void> getWardensInfoLogging() async {
     await userController.getMe().then((value) {
+      _wardens = value;
+      notifyListeners();
       FirebaseCrashlytics.instance
           .setCustomKey('userEmail', value.Email.toString());
       FirebaseCrashlytics.instance.setUserIdentifier(value.Email.toString());
-      _wardens = value;
-      notifyListeners();
     });
   }
 
