@@ -144,6 +144,7 @@ flutter:
     - assets/svg/IconStartShift.svg
     - assets/svg/IconAbort2.svg
     - assets/svg/IconComplete3.svg
+    - assets/svg/IconSearch.svg
 
     - assets/
     - .env

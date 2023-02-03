@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
+import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -38,6 +39,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../controllers/car_info.dart';
 import '../../models/location.dart';
 import '../../providers/print_issue_providers.dart' as prefix;
 import '../../widgets/parking-charge/step_issue_pcn.dart';
@@ -173,6 +175,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   }
 
   void onSearchVehicleInfoByPlate(String plate) async {
+    showCircularProgressIndicator(context: context);
     await contraventionController
         .getVehicleDetailByPlate(plate: plate)
         .then((value) {
@@ -186,11 +189,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           _vehicleColorController.text = value?.Colour ?? '';
         });
       }
+      Navigator.of(context).pop();
     }).catchError(((e) {
       setState(() {
         _vehicleMakeController.text = '';
         _vehicleColorController.text = '';
       });
+      Navigator.of(context).pop();
     }));
   }
 
@@ -269,7 +274,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
 
     log('Issue PCN screen');
-
+    // print(carInfoController.listMakeCar());
     int randomReference =
         (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
     final physicalPCN = ContraventionCreateWardenCommand(
@@ -1121,15 +1126,23 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               return null;
                                             }
                                           }),
-                                          onChanged: (value) {
-                                            _debouncer.run(() {
-                                              onSearchVehicleInfoByPlate(value);
-                                            });
-                                          },
+                                          // onChanged: (value) {
+                                          //   _debouncer.run(() {
+                                          //     onSearchVehicleInfoByPlate(value);
+                                          //   });
+                                          // },
                                           autovalidateMode: AutovalidateMode
                                               .onUserInteraction,
                                         ),
                                       ),
+                                      Flexible(
+                                          flex: 2,
+                                          child: ButtonScan(
+                                            onTap: () {
+                                              onSearchVehicleInfoByPlate(
+                                                  _vrnController.text);
+                                            },
+                                          ))
                                     ],
                                   ),
                                   const SizedBox(

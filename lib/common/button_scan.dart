@@ -17,7 +17,7 @@ class ButtonScan extends StatelessWidget {
           borderRadius: BorderRadius.circular(5),
         ),
         padding: const EdgeInsets.all(14),
-        child: SvgPicture.asset("assets/svg/IconScan.svg"),
+        child: SvgPicture.asset("assets/svg/IconSearch.svg"),
       ),
     );
   }
