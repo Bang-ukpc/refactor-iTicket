@@ -389,7 +389,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                     onPressed: () {
-                      eventAnalytics.test();
                       if (checkGps == true) {
                         onStartShift();
                       } else {

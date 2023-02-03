@@ -24,11 +24,12 @@ void main() async {
   await dotenv.load(fileName: ".env").then((value) => {});
   WidgetsFlutterBinding.ensureInitialized();
   //firebase Crashlytics config
-  if (ConfigEnvironmentVariable.environment.toString() == 'local') {
+  if (ConfigEnvironmentVariable.environment.toString() != 'local') {
     //test err
     // FirebaseCrashlytics.instance.crash();
     await Firebase.initializeApp();
-    FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+    //Action Check
+    // FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     FlutterError.onError = (errorDetails) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
     };
