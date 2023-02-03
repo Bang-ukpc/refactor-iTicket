@@ -102,7 +102,7 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
                     color: ColorTheme.lighterSecondary,
                     borderRadius: BorderRadius.circular(40)),
                 child: SvgPicture.asset(
-                  "assets/svg/IconEndBreak.svg",
+                  "assets/svg/IconStartBreak.svg",
                   height: 32,
                   width: 32,
                   color: ColorTheme.secondary,

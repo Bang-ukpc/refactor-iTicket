@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -16,6 +17,7 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/configs/google_analytics.dart';
 import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
@@ -23,6 +25,7 @@ import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
@@ -30,6 +33,9 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
+
+import '../../providers/locations.dart';
+import '../login_screens.dart';
 
 enum StateDevice { connected, pending, disconnect }
 
@@ -232,8 +238,10 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   @override
   Widget build(BuildContext context) {
     final wardensProvider = Provider.of<WardensInfo>(context);
-
-    log('Connecting screen');
+    final locations = Provider.of<Locations>(context);
+    //check is route from checkout screen
+    final data = ModalRoute.of(context)!.settings.arguments as dynamic;
+    final isCheckoutScreen = (data == null) ? false : true;
 
     final wardenEventStartShift = WardenEvent(
       type: TypeWardenEvent.StartShift.index,
@@ -291,6 +299,71 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       }
     }
 
+    WardenEvent wardenEventEndShift = WardenEvent(
+      type: TypeWardenEvent.EndShift.index,
+      detail: 'Warden has ended shift',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
+    );
+
+    void onLogout(Auth auth) async {
+      try {
+        showCircularProgressIndicator(context: context, text: "Logging out");
+        await userController
+            .createWardenEvent(wardenEventEndShift)
+            .then((value) async {
+          await auth.logout().then((value) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                LoginScreen.routeName, (Route<dynamic> route) => false);
+            toast.CherryToast.success(
+              displayCloseButton: false,
+              title: Text(
+                'Log out successfully',
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+              ),
+              toastPosition: toast.Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+          });
+        });
+      } on DioError catch (error) {
+        if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
+          toast.CherryToast.error(
+            toastDuration: const Duration(seconds: 3),
+            title: Text(
+              error.message.length > Constant.errorTypeOther
+                  ? 'Something went wrong, please try again'
+                  : error.message,
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: toast.Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
+        Navigator.of(context).pop();
+        toast.CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            error.response!.data['message'].toString().length >
+                    Constant.errorMaxLength
+                ? 'Internal server error'
+                : error.response!.data['message'],
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: toast.Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
+    }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -317,7 +390,9 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                     if (isPending == false &&
                         pendingGetCurrentLocation == false)
                       Text(
-                        "Connect successfully",
+                        isCheckoutScreen
+                            ? 'Shift ended successfully'
+                            : "Connected successfully",
                         style: CustomTextStyle.h3
                             .copyWith(color: ColorTheme.primary),
                       ),
@@ -379,34 +454,78 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    icon: SvgPicture.asset("assets/svg/IconStartShift.svg"),
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                    ),
-                    onPressed: () {
-                      if (checkGps == true) {
-                        onStartShift();
-                      } else {
-                        toast.CherryToast.error(
-                          toastDuration: const Duration(seconds: 5),
-                          title: Text(
-                            'Please allow the app to access your location to continue',
-                            style: CustomTextStyle.h4
-                                .copyWith(color: ColorTheme.danger),
+                  child: Row(
+                    children: [
+                      if (isCheckoutScreen)
+                        Consumer<Auth>(
+                          builder: (context, auth, _) {
+                            return Expanded(
+                              child: ElevatedButton.icon(
+                                icon: SvgPicture.asset(
+                                  "assets/svg/IconEndShift.svg",
+                                  width: 18,
+                                  height: 18,
+                                  color: ColorTheme.textPrimary,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  shadowColor: Colors.transparent,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  backgroundColor: ColorTheme.grey300,
+                                ),
+                                onPressed: () {
+                                  onLogout(auth);
+                                },
+                                label: Text(
+                                  "Log out",
+                                  style: CustomTextStyle.h5.copyWith(
+                                    color: ColorTheme.textPrimary,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      if (isCheckoutScreen)
+                        const SizedBox(
+                          width: 16,
+                        ),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon:
+                              SvgPicture.asset("assets/svg/IconStartShift.svg"),
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
-                          toastPosition: toast.Position.bottom,
-                          borderRadius: 5,
-                        ).show(context);
-                      }
-                    },
-                    label: Text(
-                      "Start shift",
-                      style: CustomTextStyle.h5
-                          .copyWith(color: Colors.white, fontSize: 16),
-                    ),
+                          onPressed: () {
+                            if (checkGps == true) {
+                              onStartShift();
+                            } else {
+                              toast.CherryToast.error(
+                                toastDuration: const Duration(seconds: 5),
+                                title: Text(
+                                  'Please allow the app to access your location to continue',
+                                  style: CustomTextStyle.h4.copyWith(
+                                    color: ColorTheme.danger,
+                                  ),
+                                ),
+                                toastPosition: toast.Position.bottom,
+                                borderRadius: 5,
+                              ).show(context);
+                            }
+                          },
+                          label: Text(
+                            "Start shift",
+                            style: CustomTextStyle.h5
+                                .copyWith(color: Colors.white, fontSize: 16),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
             ],

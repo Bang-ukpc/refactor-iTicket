@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
+import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -190,7 +191,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
+  String? colorNull;
+
+  List<String> arrMake = DataInfoCar().make;
+  List<String> arrColor = DataInfoCar().color;
   void onSearchVehicleInfoByPlate(String plate) async {
+    showCircularProgressIndicator(context: context);
     await contraventionController
         .getVehicleDetailByPlate(plate: plate)
         .then((value) {
@@ -200,15 +206,30 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         });
       }
       if (value?.Colour != null) {
-        setState(() {
-          _vehicleColorController.text = value?.Colour ?? '';
-        });
+        bool flag = false;
+        for (int i = 0; i < arrColor.length; i++) {
+          if (value?.Colour == arrColor[i]) {
+            flag = true;
+          }
+        }
+        if (flag) {
+          // mau ton tai trong mang
+          setState(() {
+            _vehicleColorController.text = value?.Colour ?? '';
+          });
+        } else {
+          setState(() {
+            colorNull = value?.Colour;
+          });
+        }
       }
+      Navigator.of(context).pop();
     }).catchError(((e) {
       setState(() {
         _vehicleMakeController.text = '';
         _vehicleColorController.text = '';
       });
+      Navigator.of(context).pop();
     }));
   }
 
@@ -287,7 +308,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
 
     log('Issue PCN screen');
-
+    // print(carInfoController.listMakeCar());
     int randomReference =
         (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
     final physicalPCN = ContraventionCreateWardenCommand(
@@ -441,7 +462,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       ContraventionReference: '3$randomReference2',
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
-      VehicleColour: _vehicleColorController.text,
+      VehicleColour: colorNull != null
+          ? colorNull as String
+          : _vehicleColorController.text,
       ContraventionReasonCode: _contraventionReasonController.text,
       EventDateTime: DateTime.now(),
       FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
@@ -869,11 +892,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           });
     }
 
-    List<String> arrMake = DataInfoCar().make;
-    List<String> arrColor = DataInfoCar().color;
-
-    print(_contraventionReasonController.text);
-
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
@@ -1154,15 +1172,23 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               return null;
                                             }
                                           }),
-                                          onChanged: (value) {
-                                            _debouncer.run(() {
-                                              onSearchVehicleInfoByPlate(value);
-                                            });
-                                          },
+                                          // onChanged: (value) {
+                                          //   _debouncer.run(() {
+                                          //     onSearchVehicleInfoByPlate(value);
+                                          //   });
+                                          // },
                                           autovalidateMode: AutovalidateMode
                                               .onUserInteraction,
                                         ),
                                       ),
+                                      Flexible(
+                                          flex: 2,
+                                          child: ButtonScan(
+                                            onTap: () {
+                                              onSearchVehicleInfoByPlate(
+                                                  _vrnController.text);
+                                            },
+                                          ))
                                     ],
                                   ),
                                   const SizedBox(
@@ -1270,25 +1296,33 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         ),
                                       ),
                                       items: arrColor,
-                                      selectedItem: contraventionProvider
-                                                  .contravention !=
-                                              null
-                                          ? contraventionProvider
-                                                      .contravention!.colour !=
+                                      // ignore: prefer_if_null_operators
+                                      selectedItem: colorNull != null
+                                          ? colorNull
+                                          : contraventionProvider
+                                                      .contravention !=
                                                   null
-                                              ? arrColor.firstWhereOrNull((e) =>
-                                                  e.toUpperCase() ==
-                                                  contraventionProvider
-                                                      .contravention!.colour!
-                                                      .toUpperCase())
-                                              : null
-                                          : _vehicleColorController
-                                                  .text.isNotEmpty
-                                              ? arrColor.firstWhereOrNull((e) =>
-                                                  e.toUpperCase() ==
-                                                  _vehicleColorController.text
-                                                      .toUpperCase())
-                                              : null,
+                                              ? contraventionProvider
+                                                          .contravention!
+                                                          .colour !=
+                                                      null
+                                                  ? arrColor.firstWhereOrNull(
+                                                      (e) =>
+                                                          e.toUpperCase() ==
+                                                          contraventionProvider
+                                                              .contravention!
+                                                              .colour!
+                                                              .toUpperCase())
+                                                  : null
+                                              : _vehicleColorController
+                                                      .text.isNotEmpty
+                                                  ? arrColor.firstWhereOrNull(
+                                                      (e) =>
+                                                          e.toUpperCase() ==
+                                                          _vehicleColorController
+                                                              .text
+                                                              .toUpperCase())
+                                                  : null,
                                       popupProps: PopupProps.menu(
                                           showSearchBox: true,
                                           fit: FlexFit.loose,

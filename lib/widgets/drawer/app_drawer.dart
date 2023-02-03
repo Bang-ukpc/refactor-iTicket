@@ -167,7 +167,8 @@ class _MyDrawerState extends State<MyDrawer> {
             if (!mounted) return;
             Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
-                ConnectingScreen.routeName, (Route<dynamic> route) => false);
+                ConnectingScreen.routeName, (Route<dynamic> route) => false,
+                arguments: 'check-out');
           });
         });
       } on DioError catch (error) {
