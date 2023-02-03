@@ -35,6 +35,8 @@ class ContraventionProvider with ChangeNotifier {
 
   void clearContraventionData() {
     contraventionData = null;
+    colorNullProvider = null;
+    makeNullProvider = null;
     notifyListeners();
   }
 }
