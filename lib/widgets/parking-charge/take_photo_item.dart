@@ -114,7 +114,7 @@ class TakePhotoItem extends StatelessWidget {
                                 // backgroundColor: ColorTheme.grey300,
                               ),
                               child: Text(
-                                "Edit image",
+                                "Change image",
                                 style: CustomTextStyle.h5.copyWith(
                                     fontSize: 16, color: ColorTheme.white),
                               ),
