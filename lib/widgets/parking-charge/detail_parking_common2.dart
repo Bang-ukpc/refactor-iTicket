@@ -4,11 +4,13 @@ import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/print_issue.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/parking-charge/step_issue_pcn.dart';
+import 'package:provider/provider.dart';
 
 class DetailParkingCommon2 extends StatefulWidget {
   final Contravention? contravention;
@@ -38,6 +40,7 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
           '${ConfigEnvironmentVariable.azureContainerImageUrl}/${contraventionImage[i].blobName}');
       imgListFile.add(contraventionImage[i].blobName ?? '');
     }
+    final contraventionProvider = Provider.of<ContraventionProvider>(context);
 
     return Scaffold(
       bottomNavigationBar: widget.isDisplayBottomNavigate == true
@@ -131,13 +134,13 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                "Make: ${widget.contravention?.make ?? "No data"}",
+                                "Make: ${contraventionProvider.getMakeNullProvider ?? "No data"}",
                                 style: CustomTextStyle.h5.copyWith(
                                   color: ColorTheme.grey600,
                                 ),
                               ),
                               Text(
-                                "Color: ${widget.contravention?.colour ?? "No data"}",
+                                "Color: ${contraventionProvider.getColorNullProvider ?? "No data"}",
                                 style: CustomTextStyle.h5.copyWith(
                                   color: ColorTheme.grey600,
                                 ),

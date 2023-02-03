@@ -194,6 +194,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   List<String> arrMake = DataInfoCar().make;
   List<String> arrColor = DataInfoCar().color;
   String? colourNull;
+
   void onSearchVehicleInfoByPlate(
       String plate, ContraventionProvider contraventionProvider) async {
     showCircularProgressIndicator(context: context);
@@ -201,6 +202,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         .getVehicleDetailByPlate(plate: plate)
         .then((value) {
       if (value?.Make != null) {
+        contraventionProvider.setMakeNullProvider(value?.Make);
         setState(() {
           _vehicleMakeController.text = value?.Make ?? '';
         });
@@ -211,21 +213,20 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           _vehicleColorController.text = value?.Colour ?? '';
           colourNull = value?.Colour ?? '';
         });
-        // bool flag = false;
-        // for (int i = 0; i < arrColor.length; i++) {
-        //   if (value?.Colour == arrColor[i]) {
-        //     flag = true;
-        //   }
-        // }
-        // if (flag == true) {
-        //   setState(() {
-        //     _vehicleColorController.text = value?.Colour ?? '';
-        //   });
-        // } else {
-        //   _
-        // }
       }
       Navigator.of(context).pop();
+      if (value?.Colour == null && value?.Make == null) {
+        CherryToast.error(
+          toastDuration: const Duration(seconds: 3),
+          title: Text(
+            "Couldn't find vehicle info",
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+        return;
+      }
     }).catchError(((e) {
       setState(() {
         _vehicleMakeController.text = '';
@@ -255,7 +256,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
         _vehicleMakeController.text = contraventionData.make ?? '';
-        _vehicleColorController.text = contraventionData.colour ?? '';
+        // _vehicleColorController.text = contraventionData.colour
         _contraventionReasonController.text =
             contraventionData.reason?.code ?? '';
         _commentController.text = contraventionData.contraventionEvents!
@@ -895,6 +896,18 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           });
     }
 
+    // String? getValueColor() {
+    //   if (contraventionProvider.contravention != null) {
+    //     if (contraventionProvider.contravention!.colour != null) {
+    //       return contraventionProvider.contravention!.colour;
+    //     } else {
+    //       return _vehicleColorController.text;
+    //     }
+    //   } else {
+    //     return null;
+    //   }
+    // }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
@@ -1224,24 +1237,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                       ),
                                       items: arrMake,
                                       selectedItem: contraventionProvider
-                                                  .contravention !=
-                                              null
-                                          ? contraventionProvider
-                                                      .contravention!.make !=
-                                                  null
-                                              ? arrMake.firstWhereOrNull((e) =>
-                                                  e.toUpperCase() ==
-                                                  contraventionProvider
-                                                      .contravention!.make!
-                                                      .toUpperCase())
-                                              : null
-                                          : _vehicleMakeController
-                                                  .text.isNotEmpty
-                                              ? arrMake.firstWhereOrNull((e) =>
-                                                  e.toUpperCase() ==
-                                                  _vehicleMakeController.text
-                                                      .toUpperCase())
-                                              : null,
+                                          .getMakeNullProvider,
                                       popupProps: PopupProps.menu(
                                           showSearchBox: true,
                                           fit: FlexFit.loose,
@@ -1262,6 +1258,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         setState(() {
                                           _vehicleMakeController.text = value!;
                                         });
+                                        contraventionProvider
+                                            .setMakeNullProvider(value);
                                       },
                                       validator: ((value) {
                                         if (value == null) {
@@ -1300,33 +1298,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         ),
                                       ),
                                       items: arrColor,
-                                      // ignore: prefer_if_null_operators
                                       selectedItem: contraventionProvider
-                                                  .contravention !=
-                                              null
-                                          ? contraventionProvider
-                                                      .contravention!.colour !=
-                                                  null
-                                              ? arrColor.firstWhereOrNull((e) =>
-                                                      e.toUpperCase() ==
-                                                      contraventionProvider
-                                                          .contravention!
-                                                          .colour!
-                                                          .toUpperCase()) ??
-                                                  contraventionProvider
-                                                      .getColorNullProvider
-                                              : null
-                                          : _vehicleColorController
-                                                  .text.isNotEmpty
-                                              ? arrColor.firstWhereOrNull(
-                                                    (e) =>
-                                                        e.toUpperCase() ==
-                                                        _vehicleColorController
-                                                            .text
-                                                            .toUpperCase(),
-                                                  ) ??
-                                                  colourNull
-                                              : null,
+                                          .getColorNullProvider,
                                       popupProps: PopupProps.menu(
                                           showSearchBox: true,
                                           fit: FlexFit.loose,
@@ -1347,6 +1320,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         setState(() {
                                           _vehicleColorController.text = value!;
                                         });
+                                        contraventionProvider
+                                            .setColorNullProvider(value);
                                       },
                                       validator: ((value) {
                                         if (value == null) {
