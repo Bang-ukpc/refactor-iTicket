@@ -680,7 +680,6 @@ class CameraPicker extends HookWidget {
                                               final file =
                                                   await cameraController
                                                       .takePicture();
-                                              log(file.path.toString());
                                               final tempDir = await syspaths
                                                   .getTemporaryDirectory();
                                               final fileName =
