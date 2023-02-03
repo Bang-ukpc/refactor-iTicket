@@ -1,3 +1,7 @@
+import 'dart:developer';
+import 'dart:ui';
+
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:iWarden/configs/configs.dart';
@@ -13,10 +17,28 @@ import 'package:iWarden/settings/app_settings.dart';
 import 'package:iWarden/theme/theme.dart';
 import 'package:iWarden/widgets/layouts/network_layout.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 void main() async {
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env").then((value) => {});
   WidgetsFlutterBinding.ensureInitialized();
+  //firebase Crashlytics config
+  if (ConfigEnvironmentVariable.environment.toString() != 'local') {
+    //test err
+    // FirebaseCrashlytics.instance.crash();
+    await Firebase.initializeApp();
+    //Action Check
+    // FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
+
   runApp(
     MultiProvider(
       providers: [
@@ -39,7 +61,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     appSetting.settings();
-
     return MaterialApp(
       title: 'iTicket',
       theme: themeMain(),

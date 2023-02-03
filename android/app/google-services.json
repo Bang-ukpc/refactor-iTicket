@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "902954600694",
-    "project_id": "fir-flutter-codelab-c591b",
-    "storage_bucket": "fir-flutter-codelab-c591b.appspot.com"
+    "project_number": "484228264764",
+    "project_id": "iwardenlog",
+    "storage_bucket": "iwardenlog.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:902954600694:android:5bf075a7621fda8eec04d7",
+        "mobilesdk_app_id": "1:484228264764:android:ef0997f0e2a0b3cab92439",
         "android_client_info": {
           "package_name": "com.example.iWarden"
         }
       },
       "oauth_client": [
         {
-          "client_id": "902954600694-bqk145tmnucc90aoqi1ecdtpm6psjqd9.apps.googleusercontent.com",
+          "client_id": "484228264764-vjqpah4njfcqq0623ecbf1rpsfjnoip8.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAWE5CYJcxqL_ZBWy5d0gmjQwEQkq-fbAo"
+          "current_key": "AIzaSyD_VB3r1TLzL8JVzk0ENzuUt1xJxTLHoFU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "902954600694-bqk145tmnucc90aoqi1ecdtpm6psjqd9.apps.googleusercontent.com",
+              "client_id": "484228264764-vjqpah4njfcqq0623ecbf1rpsfjnoip8.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

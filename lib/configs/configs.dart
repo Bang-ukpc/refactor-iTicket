@@ -8,6 +8,7 @@ class ConfigEnvironmentVariable {
   static final redirectUri = dotenv.get('AZURE_REDIRECT_URI');
   static final azureContainerImageUrl = dotenv.get('AZURE_CONTAINER_IMAGE_URL');
   static final serviceURL = dotenv.get('SERVICE_URL');
+  static final environment = dotenv.get('ENVIRONMENT');
 }
 
 class NavigationService {
