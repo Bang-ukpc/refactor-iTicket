@@ -1,12 +1,10 @@
-import 'dart:developer';
-import 'dart:ui';
-
 import 'package:flutter/foundation.dart';
 import 'package:iWarden/models/contravention.dart';
 
 class ContraventionProvider with ChangeNotifier {
   static Contravention? contraventionData;
   static String? colorNullProvider;
+
   Contravention? get contravention {
     return contraventionData;
   }
@@ -16,7 +14,6 @@ class ContraventionProvider with ChangeNotifier {
   }
 
   void setColorNullProvider(String? data) {
-    log("data color $data");
     colorNullProvider = data;
     notifyListeners();
   }

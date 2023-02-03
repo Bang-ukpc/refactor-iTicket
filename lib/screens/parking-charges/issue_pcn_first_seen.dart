@@ -191,11 +191,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
-  String? colorNull;
-
   List<String> arrMake = DataInfoCar().make;
   List<String> arrColor = DataInfoCar().color;
-  void onSearchVehicleInfoByPlate(String plate) async {
+  String? colourNull;
+  void onSearchVehicleInfoByPlate(
+      String plate, ContraventionProvider contraventionProvider) async {
     showCircularProgressIndicator(context: context);
     await contraventionController
         .getVehicleDetailByPlate(plate: plate)
@@ -206,21 +206,24 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         });
       }
       if (value?.Colour != null) {
-        bool flag = false;
-        for (int i = 0; i < arrColor.length; i++) {
-          if (value?.Colour == arrColor[i]) {
-            flag = true;
-          }
-        }
-        if (flag) {
-          setState(() {
-            _vehicleColorController.text = value?.Colour ?? '';
-          });
-        } else {
-          setState(() {
-            colorNull = value?.Colour;
-          });
-        }
+        contraventionProvider.setColorNullProvider(value?.Colour);
+        setState(() {
+          _vehicleColorController.text = value?.Colour ?? '';
+          colourNull = value?.Colour ?? '';
+        });
+        // bool flag = false;
+        // for (int i = 0; i < arrColor.length; i++) {
+        //   if (value?.Colour == arrColor[i]) {
+        //     flag = true;
+        //   }
+        // }
+        // if (flag == true) {
+        //   setState(() {
+        //     _vehicleColorController.text = value?.Colour ?? '';
+        //   });
+        // } else {
+        //   _
+        // }
       }
       Navigator.of(context).pop();
     }).catchError(((e) {
@@ -248,16 +251,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         setSelectedTypeOfPCN(locationProvider, contraventionData);
       });
       getContraventionReasonList(zoneId: locationProvider.zone?.Id);
-      setState(() {
-        colorNull = contraventionProvider.getColorNullProvider;
-      });
       _vrnController.text = args != null ? args.Plate : '';
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
         _vehicleMakeController.text = contraventionData.make ?? '';
-        _vehicleColorController.text = colorNull != null
-            ? colorNull.toString()
-            : contraventionData.colour ?? '';
+        _vehicleColorController.text = contraventionData.colour ?? '';
         _contraventionReasonController.text =
             contraventionData.reason?.code ?? '';
         _commentController.text = contraventionData.contraventionEvents!
@@ -267,7 +265,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             .replaceAll(')', '');
       }
       if (args != null) {
-        onSearchVehicleInfoByPlate(args.Plate);
+        _vrnController.text = args.Plate;
         if (args.Type == VehicleInformationType.FIRST_SEEN.index) {
           ContraventionReasonTranslations? argsOverstayingTime =
               fromJsonContraventionList.firstWhereOrNull((e) => e.summary!
@@ -310,9 +308,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         ModalRoute.of(context)!.settings.arguments as dynamic;
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
 
-    log('Issue PCN screen');
+    // log('Issue PCN screen');
     // print(carInfoController.listMakeCar());
-    print(_vehicleColorController.text);
+    log(_vehicleMakeController.text);
+    log(_vehicleColorController.text);
+    // log('color null: ${colorNull.toString()}');
+
     int randomReference =
         (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
     final physicalPCN = ContraventionCreateWardenCommand(
@@ -542,7 +543,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         );
         if (!mounted) return;
         contraventionProvider.upDateContravention(contravention);
-        contraventionProvider.setColorNullProvider(virtualTicket.VehicleColour);
         Navigator.of(context).pop();
         step2 == true
             ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName)
@@ -1189,7 +1189,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                           child: ButtonScan(
                                             onTap: () {
                                               onSearchVehicleInfoByPlate(
-                                                  _vrnController.text);
+                                                  _vrnController.text,
+                                                  contraventionProvider);
                                             },
                                           ))
                                     ],
@@ -1300,32 +1301,32 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                       ),
                                       items: arrColor,
                                       // ignore: prefer_if_null_operators
-                                      selectedItem: colorNull != null
-                                          ? colorNull
-                                          : contraventionProvider
-                                                      .contravention !=
+                                      selectedItem: contraventionProvider
+                                                  .contravention !=
+                                              null
+                                          ? contraventionProvider
+                                                      .contravention!.colour !=
                                                   null
-                                              ? contraventionProvider
+                                              ? arrColor.firstWhereOrNull((e) =>
+                                                      e.toUpperCase() ==
+                                                      contraventionProvider
                                                           .contravention!
-                                                          .colour !=
-                                                      null
-                                                  ? arrColor.firstWhereOrNull(
-                                                      (e) =>
-                                                          e.toUpperCase() ==
-                                                          contraventionProvider
-                                                              .contravention!
-                                                              .colour!
-                                                              .toUpperCase())
-                                                  : null
-                                              : _vehicleColorController
-                                                      .text.isNotEmpty
-                                                  ? arrColor.firstWhereOrNull(
-                                                      (e) =>
-                                                          e.toUpperCase() ==
-                                                          _vehicleColorController
-                                                              .text
-                                                              .toUpperCase())
-                                                  : null,
+                                                          .colour!
+                                                          .toUpperCase()) ??
+                                                  contraventionProvider
+                                                      .getColorNullProvider
+                                              : null
+                                          : _vehicleColorController
+                                                  .text.isNotEmpty
+                                              ? arrColor.firstWhereOrNull(
+                                                    (e) =>
+                                                        e.toUpperCase() ==
+                                                        _vehicleColorController
+                                                            .text
+                                                            .toUpperCase(),
+                                                  ) ??
+                                                  colourNull
+                                              : null,
                                       popupProps: PopupProps.menu(
                                           showSearchBox: true,
                                           fit: FlexFit.loose,
@@ -1346,8 +1347,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         setState(() {
                                           _vehicleColorController.text = value!;
                                         });
-                                        contraventionProvider
-                                            .setColorNullProvider(value);
                                       },
                                       validator: ((value) {
                                         if (value == null) {
