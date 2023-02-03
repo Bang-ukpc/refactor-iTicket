@@ -51,8 +51,8 @@ class _PrintPCNState extends State<PrintPCN> {
       ZoneId: args?.zoneId ?? 0,
       ContraventionReference: args?.reference ?? '$randomReference',
       Plate: args?.plate ?? "",
-      VehicleMake: args?.make ?? "",
-      VehicleColour: args?.colour ?? "",
+      VehicleMake: contraventionProvider.getMakeNullProvider ?? "",
+      VehicleColour: contraventionProvider.getColorNullProvider ?? "",
       ContraventionReasonCode: args?.reason?.code ?? "",
       EventDateTime: DateTime.now(),
       FirstObservedDateTime:

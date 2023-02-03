@@ -896,18 +896,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           });
     }
 
-    // String? getValueColor() {
-    //   if (contraventionProvider.contravention != null) {
-    //     if (contraventionProvider.contravention!.colour != null) {
-    //       return contraventionProvider.contravention!.colour;
-    //     } else {
-    //       return _vehicleColorController.text;
-    //     }
-    //   } else {
-    //     return null;
-    //   }
-    // }
-
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
@@ -1188,11 +1176,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               return null;
                                             }
                                           }),
-                                          // onChanged: (value) {
-                                          //   _debouncer.run(() {
-                                          //     onSearchVehicleInfoByPlate(value);
-                                          //   });
-                                          // },
                                           autovalidateMode: AutovalidateMode
                                               .onUserInteraction,
                                         ),
