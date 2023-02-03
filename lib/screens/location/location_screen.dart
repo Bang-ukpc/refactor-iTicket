@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +22,6 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
 
 import '../../common/my_dialog.dart';
 
@@ -239,21 +237,27 @@ class _LocationScreenState extends State<LocationScreen> {
 
     Future<void> goToDestination(
         {required double latitude, required double longitude}) async {
-      // final GoogleMapController controller = await _controller.future;
-      // controller.animateCamera(CameraUpdate.newCameraPosition(initialPosition));
       final GoogleMapController controller = await _controller.future;
-      controller.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: sourceLocation,
-            northeast: LatLng(
-              latitude,
-              longitude,
-            ),
-          ),
-          38,
+      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: LatLng(
+          latitude,
+          longitude,
         ),
-      );
+        zoom: 16,
+      )));
+      // final GoogleMapController controller = await _controller.future;
+      // controller.animateCamera(
+      //   CameraUpdate.newLatLngBounds(
+      //     LatLngBounds(
+      //       southwest: sourceLocation,
+      //       northeast: LatLng(
+      //         latitude,
+      //         longitude,
+      //       ),
+      //     ),
+      //     38,
+      //   ),
+      // );
     }
 
     print(
@@ -520,7 +524,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
                                               operationalPeriodsList:
-                                                  item.OperationalPeriods ?? [],
+                                                  item.operationalPeriodHistories ??
+                                                      [],
                                             );
                                           },
                                         ),
@@ -755,7 +760,7 @@ class DropDownItem2 extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
-  final List<OperationalPeriod> operationalPeriodsList;
+  final List<OperationalPeriodHistories> operationalPeriodsList;
   const DropDownItem2({
     required this.title,
     this.subTitle,
@@ -832,10 +837,12 @@ class DropDownItem2 extends StatelessWidget {
                   return Column(
                     children: [
                       Text(
-                        'Op ${formatOperationalPeriods(startDay.add(Duration(minutes: e.TimeFrom)))} - ${formatOperationalPeriods(startDay.add(Duration(minutes: e.TimeTo)))}',
+                        'Op ${formatOperationalPeriods(e.TimeFrom)} - ${formatOperationalPeriods(e.TimeTo)}',
                         style: CustomTextStyle.body2.copyWith(
                           color: getStatusColor(
-                              timeFrom: e.TimeFrom, timeTo: e.TimeTo),
+                              timeFrom:
+                                  e.TimeFrom.hour * 60 + e.TimeFrom.minute,
+                              timeTo: e.TimeTo.hour * 60 + e.TimeTo.minute),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

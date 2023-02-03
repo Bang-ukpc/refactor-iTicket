@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
-import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -52,21 +50,23 @@ class _PrintPCNState extends State<PrintPCN> {
     final contraventionCreate = ContraventionCreateWardenCommand(
       ZoneId: args?.zoneId ?? 0,
       ContraventionReference: args?.reference ?? '$randomReference',
-      Plate: args?.plate as String,
-      VehicleMake: args?.make as String,
-      VehicleColour: args?.colour as String,
-      ContraventionReasonCode: args?.reason?.code as String,
+      Plate: args?.plate ?? "",
+      VehicleMake: args?.make ?? "",
+      VehicleColour: args?.colour ?? "",
+      ContraventionReasonCode: args?.reason?.code ?? "",
       EventDateTime: DateTime.now(),
       FirstObservedDateTime:
           args?.contraventionDetailsWarden?.FirstObserved ?? DateTime.now(),
       WardenId: args?.contraventionDetailsWarden?.WardenId ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      WardenComments: args!.contraventionEvents!
-          .map((item) => item.detail)
-          .toString()
-          .replaceAll('(', '')
-          .replaceAll(')', ''),
+      WardenComments: args!.contraventionEvents!.isNotEmpty
+          ? args.contraventionEvents!
+              .map((item) => item.detail)
+              .toString()
+              .replaceAll('(', '')
+              .replaceAll(')', '')
+          : '',
       BadgeNumber: 'test',
       LocationAccuracy: 0, // missing
       TypePCN: args.type,
@@ -101,44 +101,7 @@ class _PrintPCNState extends State<PrintPCN> {
               .then((value) {
             contravention = value;
           });
-          if (contravention != null) {
-            for (int i = 0; i < args.contraventionPhotos!.length; i++) {
-              await contraventionController.uploadContraventionImage(
-                ContraventionCreatePhoto(
-                  contraventionReference: contravention?.reference ?? '',
-                  originalFileName:
-                      args.contraventionPhotos![i].blobName!.split('/').last,
-                  capturedDateTime: DateTime.now(),
-                  filePath: args.contraventionPhotos![i].blobName as String,
-                ),
-              );
-              if (i == args.contraventionPhotos!.length - 1) {
-                check = true;
-              }
-            }
-          }
-          if (contravention != null && check == true) {
-            await userController
-                .createWardenEvent(wardenEventIssuePCN)
-                .then((value) {
-              contraventionProvider.clearContraventionData();
-              printIssue.resetData();
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
-                  arguments: contravention);
-              CherryToast.success(
-                displayCloseButton: false,
-                title: Text(
-                  'The PCN has been created successfully',
-                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-                ),
-                toastPosition: Position.bottom,
-                borderRadius: 5,
-              ).show(context);
-            });
-          }
         } on DioError catch (error) {
-          log("log ${error.type.toString()}");
           if (!mounted) return;
           if (error.type == DioErrorType.other) {
             Navigator.of(context).pop();
@@ -170,6 +133,86 @@ class _PrintPCNState extends State<PrintPCN> {
             borderRadius: 5,
           ).show(context);
           return;
+        }
+
+        if (contravention != null) {
+          for (int i = 0; i < args.contraventionPhotos!.length; i++) {
+            try {
+              await contraventionController.uploadContraventionImage(
+                ContraventionCreatePhoto(
+                  contraventionReference: contravention?.reference ?? '',
+                  originalFileName:
+                      args.contraventionPhotos![i].blobName!.split('/').last,
+                  capturedDateTime: DateTime.now(),
+                  filePath: args.contraventionPhotos![i].blobName as String,
+                ),
+              );
+            } on DioError catch (error) {
+              if (error.type == DioErrorType.other) {
+                throw Exception("Something went wrong");
+              }
+              throw Exception(error.message);
+            }
+
+            if (i == args.contraventionPhotos!.length - 1) {
+              check = true;
+            }
+          }
+        }
+
+        if (contravention != null && check == true) {
+          try {
+            await userController
+                .createWardenEvent(wardenEventIssuePCN)
+                .then((value) {
+              contraventionProvider.clearContraventionData();
+              printIssue.resetData();
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
+                  arguments: contravention);
+              CherryToast.success(
+                displayCloseButton: false,
+                title: Text(
+                  'The PCN has been created successfully',
+                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
+            });
+          } on DioError catch (error) {
+            if (!mounted) return;
+            if (error.type == DioErrorType.other) {
+              Navigator.of(context).pop();
+              CherryToast.error(
+                toastDuration: const Duration(seconds: 3),
+                title: Text(
+                  error.message.length > Constant.errorTypeOther
+                      ? 'Something went wrong, please try again'
+                      : error.message,
+                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
+              return;
+            }
+            Navigator.of(context).pop();
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 3),
+              displayCloseButton: true,
+              title: Text(
+                (error.response?.data['message'].toString().length ?? 0) >
+                        Constant.errorMaxLength
+                    ? 'Internal server error'
+                    : error.response?.data['message'],
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            return;
+          }
         }
       } else {
         int randomNumber =

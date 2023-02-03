@@ -22,12 +22,13 @@ class LocationController {
           data: listLocationOfTheDayByWardenIdProps.toJson(),
         );
         List<dynamic> temp = response.data;
-        print(temp);
+        log(temp.toString());
         List<RotaWithLocation> rotaWithLocations =
             temp.map((model) => RotaWithLocation.fromJson(model)).toList();
         final String encodedData = RotaWithLocation.encode(rotaWithLocations);
         SharedPreferencesHelper.setStringValue(
             'rotaWithLocationDataLocal', encodedData);
+        log('456');
         return rotaWithLocations;
       } on DioError catch (error) {
         print(error.response);

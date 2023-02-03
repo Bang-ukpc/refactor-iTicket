@@ -60,6 +60,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       for (int i = 0; i < value.length; i++) {
         for (int j = 0; j < value.length; j++) {
           if (value[i].locations![j].Id == locations.location!.Id) {
+            locations.onSelectedLocation(value[i].locations![j]);
             var zoneSelected = value[i]
                 .locations![j]
                 .Zones!
