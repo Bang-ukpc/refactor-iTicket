@@ -39,7 +39,6 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
-import '../../controllers/car_info.dart';
 import '../../models/location.dart';
 import '../../providers/print_issue_providers.dart' as prefix;
 import '../../widgets/parking-charge/step_issue_pcn.dart';
