@@ -503,10 +503,12 @@ class CameraPicker extends HookWidget {
                                                                     await File(
                                                                             '${tempDir.path}/$fileName')
                                                                         .create();
-                                                                var decodeImg =
+                                                                var capturedImage =
                                                                     img.decodeImage(
                                                                         await file
                                                                             .readAsBytes());
+                                                                final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+
                                                                 // img.Image
                                                                 //     fixed =
                                                                 //     img.copyRotate(
@@ -514,7 +516,7 @@ class CameraPicker extends HookWidget {
                                                                 //         90);
                                                                 var encodeImage =
                                                                     img.encodeJpg(
-                                                                        decodeImg!,
+                                                                        orientedImage!,
                                                                         quality:
                                                                             100);
                                                                 var finalImage = files
@@ -687,13 +689,16 @@ class CameraPicker extends HookWidget {
                                               File files = await File(
                                                       '${tempDir.path}/$fileName')
                                                   .create();
-                                              var decodeImg = img.decodeImage(
+                                              var capturedImage = img.decodeImage(
                                                   await file.readAsBytes());
+
+                                              final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+                                             
                                               // img.Image fixed =
                                               //     img.copyRotate(
                                               //         decodeImg!, -90);
                                               var encodeImage = img.encodeJpg(
-                                                  decodeImg!,
+                                                  orientedImage!,
                                                   quality: 100);
                                               var finalImage = files
                                                 ..writeAsBytesSync(encodeImage);
