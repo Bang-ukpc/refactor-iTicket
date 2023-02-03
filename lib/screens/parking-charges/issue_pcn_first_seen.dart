@@ -246,17 +246,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
       final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
-      var contraventionData = contraventionProvider.contravention;
-      await getLocationList(locationProvider, wardersProvider.wardens?.Id ?? 0)
-          .then((value) {
-        setSelectedTypeOfPCN(locationProvider, contraventionData);
-      });
       getContraventionReasonList(zoneId: locationProvider.zone?.Id);
+      var contraventionData = contraventionProvider.contravention;
       _vrnController.text = args != null ? args.Plate : '';
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
-        _vehicleMakeController.text = contraventionData.make ?? '';
-        // _vehicleColorController.text = contraventionData.colour
+        _vehicleMakeController.text =
+            contraventionProvider.getMakeNullProvider ?? '';
+        _vehicleColorController.text =
+            contraventionProvider.getColorNullProvider ?? '';
         _contraventionReasonController.text =
             contraventionData.reason?.code ?? '';
         _commentController.text = contraventionData.contraventionEvents!
@@ -280,6 +278,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         }
       }
       setSelectedTypeOfPCN(locationProvider, contraventionData);
+      await getLocationList(locationProvider, wardersProvider.wardens?.Id ?? 0)
+          .then((value) {
+        setSelectedTypeOfPCN(locationProvider, contraventionData);
+      });
     });
   }
 
