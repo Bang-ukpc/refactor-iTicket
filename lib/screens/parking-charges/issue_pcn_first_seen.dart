@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +15,7 @@ import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/show_loading.dart';
+import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
@@ -117,6 +120,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       for (int i = 0; i < value.length; i++) {
         for (int j = 0; j < value.length; j++) {
           if (value[i].locations![j].Id == locations.location!.Id) {
+            locations.onSelectedLocation(value[i].locations![j]);
             var zoneSelected = value[i]
                 .locations![j]
                 .Zones!
@@ -131,20 +135,34 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     });
   }
 
-  void getContraventionReasonList() async {
-    final Pagination list =
-        await contraventionController.getContraventionReasonServiceList();
-    setState(() {
-      contraventionReasonList = list.rows
-          .map((item) => ContraventionReasonTranslations.fromJson(item))
-          .toList();
-    });
+  void getContraventionReasonList({int? zoneId}) async {
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+
+    if (connectionStatus == ConnectivityResult.wifi ||
+        connectionStatus == ConnectivityResult.mobile) {
+      final Pagination list = await contraventionController
+          .getContraventionReasonServiceList(zoneId: zoneId);
+      setState(() {
+        contraventionReasonList = list.rows
+            .map((item) => ContraventionReasonTranslations.fromJson(item))
+            .toList();
+      });
+    } else {
+      final Pagination list =
+          await contraventionController.getContraventionReasonServiceList();
+      setState(() {
+        contraventionReasonList = list.rows
+            .map((item) => ContraventionReasonTranslations.fromJson(item))
+            .toList();
+      });
+    }
   }
 
   void getContraventionReasonListOffline() async {
     final String? reasonDataLocal =
         await SharedPreferencesHelper.getStringValue(
-            'contraventionReasonDataLocal');
+            'contraventionReasonDataLocalWithNotHaveZoneId');
     final contraventionReason =
         json.decode(reasonDataLocal as String) as Map<String, dynamic>;
     Pagination fromJsonContraventionReason =
@@ -158,10 +176,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     await contraventionController
         .getVehicleDetailByPlate(plate: plate)
         .then((value) {
-      setState(() {
-        _vehicleMakeController.text = value?.Make ?? '';
-        _vehicleColorController.text = value?.Colour ?? '';
-      });
+      if (value?.Make != null) {
+        setState(() {
+          _vehicleMakeController.text = value?.Make ?? '';
+        });
+      }
+      if (value?.Colour != null) {
+        setState(() {
+          _vehicleColorController.text = value?.Colour ?? '';
+        });
+      }
     }).catchError(((e) {
       setState(() {
         _vehicleMakeController.text = '';
@@ -173,7 +197,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   void initState() {
     super.initState();
-    getContraventionReasonList();
     getContraventionReasonListOffline();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final args = ModalRoute.of(context)!.settings.arguments as dynamic;
@@ -186,6 +209,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           .then((value) {
         setSelectedTypeOfPCN(locationProvider, contraventionData);
       });
+      getContraventionReasonList(zoneId: locationProvider.zone?.Id);
 
       _vrnController.text = args != null ? args.Plate : '';
       if (contraventionData != null) {
@@ -242,34 +266,37 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
     final argsFromExpired =
         ModalRoute.of(context)!.settings.arguments as dynamic;
+    int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
 
     log('Issue PCN screen');
 
+    int randomReference =
+        (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
+    final physicalPCN = ContraventionCreateWardenCommand(
+      ZoneId: locationProvider.zone?.Id ?? 0,
+      ContraventionReference: '2$randomReference',
+      Plate: _vrnController.text,
+      VehicleMake: _vehicleMakeController.text,
+      VehicleColour: _vehicleColorController.text,
+      ContraventionReasonCode: _contraventionReasonController.text,
+      EventDateTime: DateTime.now(),
+      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+      WardenId: wardensProvider.wardens?.Id ?? 0,
+      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      WardenComments: _commentController.text,
+      BadgeNumber: 'test',
+      LocationAccuracy: 0, // missing
+      TypePCN: TypePCN.Physical.index,
+      Id: randomNumber,
+    );
+
     Future<void> createPhysicalPCN(
         {bool? step2, bool? step3, required bool isPrinter}) async {
+      physicalPCN.Plate = _vrnController.text;
+      physicalPCN.WardenComments = _commentController.text;
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
-      int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-      int randomReference =
-          (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
-      final physicalPCN = ContraventionCreateWardenCommand(
-        ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '2$randomReference',
-        Plate: _vrnController.text,
-        VehicleMake: _vehicleMakeController.text,
-        VehicleColour: _vehicleColorController.text,
-        ContraventionReasonCode: _contraventionReasonController.text,
-        EventDateTime: DateTime.now(),
-        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-        WardenId: wardensProvider.wardens?.Id ?? 0,
-        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        WardenComments: _commentController.text,
-        BadgeNumber: 'test',
-        LocationAccuracy: 0, // missing
-        TypePCN: TypePCN.Physical.index,
-        Id: randomNumber,
-      );
 
       final isValid = _formKey.currentState!.validate();
 
@@ -388,31 +415,34 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       _formKey.currentState!.save();
     }
 
+    int randomNumber2 = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+    int randomReference2 =
+        (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
+    final virtualTicket = ContraventionCreateWardenCommand(
+      ZoneId: locationProvider.zone?.Id ?? 0,
+      ContraventionReference: '3$randomReference2',
+      Plate: _vrnController.text,
+      VehicleMake: _vehicleMakeController.text,
+      VehicleColour: _vehicleColorController.text,
+      ContraventionReasonCode: _contraventionReasonController.text,
+      EventDateTime: DateTime.now(),
+      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+      WardenId: wardensProvider.wardens?.Id ?? 0,
+      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      WardenComments: _commentController.text,
+      BadgeNumber: 'test',
+      LocationAccuracy: 0, // missing
+      TypePCN: TypePCN.Virtual.index,
+      Id: randomNumber2,
+    );
+
     Future<void> createVirtualTicket({bool? step2, bool? step3}) async {
+      virtualTicket.Plate = _vrnController.text;
+      virtualTicket.WardenComments = _commentController.text;
+
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
-      int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-      int randomReference =
-          (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
-      final virtualTicket = ContraventionCreateWardenCommand(
-        ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '3$randomReference',
-        Plate: _vrnController.text,
-        VehicleMake: _vehicleMakeController.text,
-        VehicleColour: _vehicleColorController.text,
-        ContraventionReasonCode: _contraventionReasonController.text,
-        EventDateTime: DateTime.now(),
-        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-        WardenId: wardensProvider.wardens?.Id ?? 0,
-        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        WardenComments: _commentController.text,
-        BadgeNumber: 'test',
-        LocationAccuracy: 0, // missing
-        TypePCN: TypePCN.Virtual.index,
-        Id: randomNumber,
-      );
-
       final isValid = _formKey.currentState!.validate();
 
       if (!isValid) {
@@ -523,6 +553,163 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       }
 
       _formKey.currentState!.save();
+    }
+
+    Future<void> showDialogPermitExists(CheckPermit? value) async {
+      return showDialog<void>(
+        context: context,
+        barrierColor: ColorTheme.backdrop,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+            child: AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    5.0,
+                  ),
+                ),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 0),
+              contentPadding: EdgeInsets.zero,
+              title: Center(
+                  child: Column(
+                children: [
+                  Text(
+                    "Permit exists with in this location",
+                    style: CustomTextStyle.h4.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: ColorTheme.danger,
+                    ),
+                  ),
+                  const Divider(),
+                ],
+              )),
+              content: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'VRN: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.VRN ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Bay information: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.bayNumber ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Source: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.source ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Tenant: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.tenant ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.danger,
+                              ),
+                              child: Text(
+                                "Abort",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.white),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pushNamed(
+                                  AbortScreen.routeName,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 16,
+                          ),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.primary,
+                              ),
+                              child: Text(
+                                "Issue PCN",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.white),
+                              ),
+                              onPressed: () {
+                                createPhysicalPCN(isPrinter: true);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 24,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
     }
 
     List<SelectModel> getSelectedTypeOfPCN() {
@@ -648,6 +835,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         setSelectedTypeOfPCN(
             locationProvider, contraventionProvider.contravention);
       });
+      getContraventionReasonList(zoneId: locationProvider.zone?.Id);
     }
 
     List<String> arrMake = DataInfoCar().make;
@@ -676,8 +864,62 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               ),
               if (_selectedItemTypePCN?.value == 1)
                 BottomNavyBarItem(
-                  onPressed: () {
-                    createVirtualTicket();
+                  onPressed: () async {
+                    ConnectivityResult connectionStatus =
+                        await (Connectivity().checkConnectivity());
+                    if (connectionStatus == ConnectivityResult.wifi ||
+                        connectionStatus == ConnectivityResult.mobile) {
+                      try {
+                        if (!mounted) return;
+                        showCircularProgressIndicator(context: context);
+                        await contraventionController
+                            .checkHasPermit(virtualTicket)
+                            .then((value) {
+                          Navigator.of(context).pop();
+                          if (value?.hasPermit == true) {
+                            showDialogPermitExists(value);
+                          } else {
+                            createVirtualTicket();
+                          }
+                        });
+                      } on DioError catch (error) {
+                        if (error.type == DioErrorType.other) {
+                          if (!mounted) return;
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            toastDuration: const Duration(seconds: 3),
+                            title: Text(
+                              error.message.length > Constant.errorTypeOther
+                                  ? 'Something went wrong, please try again'
+                                  : error.message,
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        }
+                        if (!mounted) return;
+                        Navigator.of(context).pop();
+                        CherryToast.error(
+                          displayCloseButton: false,
+                          title: Text(
+                            error.response!.data['message'].toString().length >
+                                    Constant.errorMaxLength
+                                ? 'Internal server error'
+                                : error.response!.data['message'],
+                            style: CustomTextStyle.h4
+                                .copyWith(color: ColorTheme.danger),
+                          ),
+                          toastPosition: Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                        return;
+                      }
+                    } else {
+                      createVirtualTicket();
+                    }
                   },
                   icon: SvgPicture.asset(
                     'assets/svg/IconNext.svg',
@@ -687,8 +929,62 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                 ),
               if (_selectedItemTypePCN?.value == 0)
                 BottomNavyBarItem(
-                  onPressed: () {
-                    createPhysicalPCN(isPrinter: true);
+                  onPressed: () async {
+                    ConnectivityResult connectionStatus =
+                        await (Connectivity().checkConnectivity());
+                    if (connectionStatus == ConnectivityResult.wifi ||
+                        connectionStatus == ConnectivityResult.mobile) {
+                      try {
+                        if (!mounted) return;
+                        showCircularProgressIndicator(context: context);
+                        await contraventionController
+                            .checkHasPermit(physicalPCN)
+                            .then((value) {
+                          Navigator.of(context).pop();
+                          if (value?.hasPermit == true) {
+                            showDialogPermitExists(value);
+                          } else {
+                            createPhysicalPCN(isPrinter: true);
+                          }
+                        });
+                      } on DioError catch (error) {
+                        if (error.type == DioErrorType.other) {
+                          if (!mounted) return;
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            toastDuration: const Duration(seconds: 3),
+                            title: Text(
+                              error.message.length > Constant.errorTypeOther
+                                  ? 'Something went wrong, please try again'
+                                  : error.message,
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        }
+                        if (!mounted) return;
+                        Navigator.of(context).pop();
+                        CherryToast.error(
+                          displayCloseButton: false,
+                          title: Text(
+                            error.response!.data['message'].toString().length >
+                                    Constant.errorMaxLength
+                                ? 'Internal server error'
+                                : error.response!.data['message'],
+                            style: CustomTextStyle.h4
+                                .copyWith(color: ColorTheme.danger),
+                          ),
+                          toastPosition: Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                        return;
+                      }
+                    } else {
+                      createPhysicalPCN(isPrinter: true);
+                    }
                   },
                   icon: SvgPicture.asset(
                     'assets/svg/IconNext.svg',
@@ -825,10 +1121,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               return null;
                                             }
                                           }),
-                                          onSaved: (value) {
-                                            _vrnController.text =
-                                                value as String;
-                                          },
                                           onChanged: (value) {
                                             _debouncer.run(() {
                                               onSearchVehicleInfoByPlate(value);
@@ -1160,9 +1452,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         color: ColorTheme.grey400,
                                       ),
                                     ),
-                                    onSaved: (value) {
-                                      _commentController.text = value as String;
-                                    },
                                   ),
                                 ],
                               ),

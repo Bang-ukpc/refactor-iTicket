@@ -6,13 +6,15 @@ import 'package:iWarden/models/directions.dart';
 
 class MapScreen extends StatefulWidget {
   final double screenHeight;
-  final LatLng destination;
+  final CameraPosition initialPosition;
   final Directions? info;
+  final Completer<GoogleMapController> mapController;
 
   const MapScreen({
     required this.screenHeight,
-    required this.destination,
+    required this.initialPosition,
     this.info,
+    required this.mapController,
     super.key,
   });
 
@@ -22,7 +24,6 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   // static LatLng? _initialPosition;
-  final Completer<GoogleMapController> _controller = Completer();
 
   // @override
   // void initState() {
@@ -45,14 +46,11 @@ class _MapScreenState extends State<MapScreen> {
       width: MediaQuery.of(context).size.width,
       child: GoogleMap(
         onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
+          widget.mapController.complete(controller);
         },
         minMaxZoomPreference: const MinMaxZoomPreference(0, 16),
         myLocationEnabled: true,
-        initialCameraPosition: CameraPosition(
-          target: widget.destination,
-          zoom: 16,
-        ),
+        initialCameraPosition: widget.initialPosition,
         markers: {
           // Marker(
           //   icon: BitmapDescriptor.defaultMarkerWithHue(
@@ -63,7 +61,7 @@ class _MapScreenState extends State<MapScreen> {
           // ),
           Marker(
             markerId: const MarkerId("destination"),
-            position: widget.destination,
+            position: widget.initialPosition.target,
           ),
         },
         // polylines: {

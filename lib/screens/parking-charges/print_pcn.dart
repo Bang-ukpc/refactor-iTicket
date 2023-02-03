@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
-import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -52,21 +50,23 @@ class _PrintPCNState extends State<PrintPCN> {
     final contraventionCreate = ContraventionCreateWardenCommand(
       ZoneId: args?.zoneId ?? 0,
       ContraventionReference: args?.reference ?? '$randomReference',
-      Plate: args?.plate as String,
-      VehicleMake: args?.make as String,
-      VehicleColour: args?.colour as String,
-      ContraventionReasonCode: args?.reason?.code as String,
+      Plate: args?.plate ?? "",
+      VehicleMake: args?.make ?? "",
+      VehicleColour: args?.colour ?? "",
+      ContraventionReasonCode: args?.reason?.code ?? "",
       EventDateTime: DateTime.now(),
       FirstObservedDateTime:
           args?.contraventionDetailsWarden?.FirstObserved ?? DateTime.now(),
       WardenId: args?.contraventionDetailsWarden?.WardenId ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      WardenComments: args!.contraventionEvents!
-          .map((item) => item.detail)
-          .toString()
-          .replaceAll('(', '')
-          .replaceAll(')', ''),
+      WardenComments: args!.contraventionEvents!.isNotEmpty
+          ? args.contraventionEvents!
+              .map((item) => item.detail)
+              .toString()
+              .replaceAll('(', '')
+              .replaceAll(')', '')
+          : '',
       BadgeNumber: 'test',
       LocationAccuracy: 0, // missing
       TypePCN: args.type,
@@ -101,44 +101,7 @@ class _PrintPCNState extends State<PrintPCN> {
               .then((value) {
             contravention = value;
           });
-          if (contravention != null) {
-            for (int i = 0; i < args.contraventionPhotos!.length; i++) {
-              await contraventionController.uploadContraventionImage(
-                ContraventionCreatePhoto(
-                  contraventionReference: contravention?.reference ?? '',
-                  originalFileName:
-                      args.contraventionPhotos![i].blobName!.split('/').last,
-                  capturedDateTime: DateTime.now(),
-                  filePath: args.contraventionPhotos![i].blobName as String,
-                ),
-              );
-              if (i == args.contraventionPhotos!.length - 1) {
-                check = true;
-              }
-            }
-          }
-          if (contravention != null && check == true) {
-            await userController
-                .createWardenEvent(wardenEventIssuePCN)
-                .then((value) {
-              contraventionProvider.clearContraventionData();
-              printIssue.resetData();
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
-                  arguments: contravention);
-              CherryToast.success(
-                displayCloseButton: false,
-                title: Text(
-                  'The PCN has been created successfully',
-                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-                ),
-                toastPosition: Position.bottom,
-                borderRadius: 5,
-              ).show(context);
-            });
-          }
         } on DioError catch (error) {
-          log("log ${error.type.toString()}");
           if (!mounted) return;
           if (error.type == DioErrorType.other) {
             Navigator.of(context).pop();
@@ -170,6 +133,86 @@ class _PrintPCNState extends State<PrintPCN> {
             borderRadius: 5,
           ).show(context);
           return;
+        }
+
+        if (contravention != null) {
+          for (int i = 0; i < args.contraventionPhotos!.length; i++) {
+            try {
+              await contraventionController.uploadContraventionImage(
+                ContraventionCreatePhoto(
+                  contraventionReference: contravention?.reference ?? '',
+                  originalFileName:
+                      args.contraventionPhotos![i].blobName!.split('/').last,
+                  capturedDateTime: DateTime.now(),
+                  filePath: args.contraventionPhotos![i].blobName as String,
+                ),
+              );
+            } on DioError catch (error) {
+              if (error.type == DioErrorType.other) {
+                throw Exception("Something went wrong");
+              }
+              throw Exception(error.message);
+            }
+
+            if (i == args.contraventionPhotos!.length - 1) {
+              check = true;
+            }
+          }
+        }
+
+        if (contravention != null && check == true) {
+          try {
+            await userController
+                .createWardenEvent(wardenEventIssuePCN)
+                .then((value) {
+              contraventionProvider.clearContraventionData();
+              printIssue.resetData();
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
+                  arguments: contravention);
+              CherryToast.success(
+                displayCloseButton: false,
+                title: Text(
+                  'The PCN has been created successfully',
+                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
+            });
+          } on DioError catch (error) {
+            if (!mounted) return;
+            if (error.type == DioErrorType.other) {
+              Navigator.of(context).pop();
+              CherryToast.error(
+                toastDuration: const Duration(seconds: 3),
+                title: Text(
+                  error.message.length > Constant.errorTypeOther
+                      ? 'Something went wrong, please try again'
+                      : error.message,
+                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
+              return;
+            }
+            Navigator.of(context).pop();
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 3),
+              displayCloseButton: true,
+              title: Text(
+                (error.response?.data['message'].toString().length ?? 0) >
+                        Constant.errorMaxLength
+                    ? 'Internal server error'
+                    : error.response?.data['message'],
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            return;
+          }
         }
       } else {
         int randomNumber =
@@ -283,164 +326,6 @@ class _PrintPCNState extends State<PrintPCN> {
       }
     }
 
-    Future<void> showDialogPermitExists(CheckPermit? value) async {
-      return showDialog<void>(
-        context: context,
-        barrierColor: ColorTheme.backdrop,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-            child: AlertDialog(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(
-                    5.0,
-                  ),
-                ),
-              ),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 0),
-              contentPadding: EdgeInsets.zero,
-              title: Center(
-                  child: Column(
-                children: [
-                  Text(
-                    "Permit exists with in this location",
-                    style: CustomTextStyle.h4.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: ColorTheme.danger,
-                    ),
-                  ),
-                  const Divider(),
-                ],
-              )),
-              content: SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: <Widget>[
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      Row(
-                        children: [
-                          const Text(
-                            'VRN: ',
-                            style: CustomTextStyle.h5,
-                          ),
-                          Text(
-                            value?.permitInfo?.VRN ?? 'No data',
-                            style: CustomTextStyle.h5
-                                .copyWith(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: [
-                          const Text(
-                            'Bay information: ',
-                            style: CustomTextStyle.h5,
-                          ),
-                          Text(
-                            value?.permitInfo?.bayNumber ?? 'No data',
-                            style: CustomTextStyle.h5
-                                .copyWith(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: [
-                          const Text(
-                            'Source: ',
-                            style: CustomTextStyle.h5,
-                          ),
-                          Text(
-                            value?.permitInfo?.source ?? 'No data',
-                            style: CustomTextStyle.h5
-                                .copyWith(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: [
-                          const Text(
-                            'Tenant: ',
-                            style: CustomTextStyle.h5,
-                          ),
-                          Text(
-                            value?.permitInfo?.tenant ?? 'No data',
-                            style: CustomTextStyle.h5
-                                .copyWith(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor: ColorTheme.danger,
-                              ),
-                              child: Text(
-                                "Abort",
-                                style: CustomTextStyle.h4
-                                    .copyWith(color: ColorTheme.white),
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).pushNamed(
-                                  AbortScreen.routeName,
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 16,
-                          ),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor: ColorTheme.primary,
-                              ),
-                              child: Text(
-                                "Issue PCN",
-                                style: CustomTextStyle.h4
-                                    .copyWith(color: ColorTheme.white),
-                              ),
-                              onPressed: () {
-                                showCircularProgressIndicator(context: context);
-                                issuePCN();
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 24,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -462,64 +347,8 @@ class _PrintPCNState extends State<PrintPCN> {
               ),
               BottomNavyBarItem(
                 onPressed: () async {
-                  ConnectivityResult connectionStatus =
-                      await (Connectivity().checkConnectivity());
-                  if (connectionStatus == ConnectivityResult.wifi ||
-                      connectionStatus == ConnectivityResult.mobile) {
-                    try {
-                      if (!mounted) return;
-                      showCircularProgressIndicator(context: context);
-                      await contraventionController
-                          .checkHasPermit(contraventionCreate)
-                          .then((value) {
-                        Navigator.of(context).pop();
-                        if (value?.hasPermit == true) {
-                          showDialogPermitExists(value);
-                        } else {
-                          showCircularProgressIndicator(context: context);
-                          issuePCN();
-                        }
-                      });
-                    } on DioError catch (error) {
-                      if (error.type == DioErrorType.other) {
-                        if (!mounted) return;
-                        Navigator.of(context).pop();
-                        CherryToast.error(
-                          toastDuration: const Duration(seconds: 3),
-                          title: Text(
-                            error.message.length > Constant.errorTypeOther
-                                ? 'Something went wrong, please try again'
-                                : error.message,
-                            style: CustomTextStyle.h4
-                                .copyWith(color: ColorTheme.danger),
-                          ),
-                          toastPosition: Position.bottom,
-                          borderRadius: 5,
-                        ).show(context);
-                        return;
-                      }
-                      if (!mounted) return;
-                      Navigator.of(context).pop();
-                      CherryToast.error(
-                        displayCloseButton: false,
-                        title: Text(
-                          error.response!.data['message'].toString().length >
-                                  Constant.errorMaxLength
-                              ? 'Internal server error'
-                              : error.response!.data['message'],
-                          style: CustomTextStyle.h4
-                              .copyWith(color: ColorTheme.danger),
-                        ),
-                        toastPosition: Position.bottom,
-                        borderRadius: 5,
-                      ).show(context);
-                      return;
-                    }
-                  } else {
-                    if (!mounted) return;
-                    showCircularProgressIndicator(context: context);
-                    issuePCN();
-                  }
+                  showCircularProgressIndicator(context: context);
+                  issuePCN();
                 },
                 icon: SvgPicture.asset(
                   'assets/svg/IconComplete2.svg',

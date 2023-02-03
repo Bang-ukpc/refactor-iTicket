@@ -106,8 +106,8 @@ class CameraPicker extends HookWidget {
           pageBuilder: (BuildContext buildContext, Animation animation,
               Animation secondaryAnimation) {
             return Scaffold(
-                appBar: const MyAppBar(
-                  title: "UKPC take picture",
+                appBar: MyAppBar(
+                  title: printIssue.findIssueNoImage(typePCN: typePCN).title,
                   automaticallyImplyLeading: true,
                   isOpenDrawer: false,
                 ),
@@ -176,19 +176,19 @@ class CameraPicker extends HookWidget {
                   ),
                 ));
           }).then((value) {
-        if (isCamera == false) {
-          SystemChrome.setPreferredOrientations([
-            DeviceOrientation.portraitUp,
-            DeviceOrientation.portraitDown,
-            DeviceOrientation.landscapeLeft,
-            DeviceOrientation.landscapeRight
-          ]);
-        } else {
-          SystemChrome.setPreferredOrientations([
-            DeviceOrientation.portraitUp,
-            DeviceOrientation.portraitDown,
-          ]);
-        }
+        // if (isCamera == false) {
+        //   SystemChrome.setPreferredOrientations([
+        //     DeviceOrientation.portraitUp,
+        //     DeviceOrientation.portraitDown,
+        //     DeviceOrientation.landscapeLeft,
+        //     DeviceOrientation.landscapeRight
+        //   ]);
+        // } else {
+        //   SystemChrome.setPreferredOrientations([
+        //     DeviceOrientation.portraitUp,
+        //     DeviceOrientation.portraitDown,
+        //   ]);
+        // }
       });
     }
 
@@ -265,12 +265,12 @@ class CameraPicker extends HookWidget {
                 return WillPopScope(
                   onWillPop: () async {
                     cameraController.dispose();
-                    SystemChrome.setPreferredOrientations([
-                      DeviceOrientation.portraitUp,
-                      DeviceOrientation.portraitDown,
-                      DeviceOrientation.landscapeLeft,
-                      DeviceOrientation.landscapeRight
-                    ]);
+                    // SystemChrome.setPreferredOrientations([
+                    //   DeviceOrientation.portraitUp,
+                    //   DeviceOrientation.portraitDown,
+                    //   DeviceOrientation.landscapeLeft,
+                    //   DeviceOrientation.landscapeRight
+                    // ]);
                     return true;
                   },
                   child: FutureBuilder(
@@ -463,17 +463,17 @@ class CameraPicker extends HookWidget {
                                                                   onTap: () {
                                                                     cameraController
                                                                         .dispose();
-                                                                    SystemChrome
-                                                                        .setPreferredOrientations([
-                                                                      DeviceOrientation
-                                                                          .portraitUp,
-                                                                      DeviceOrientation
-                                                                          .portraitDown,
-                                                                      DeviceOrientation
-                                                                          .landscapeLeft,
-                                                                      DeviceOrientation
-                                                                          .landscapeRight
-                                                                    ]);
+                                                                    // SystemChrome
+                                                                    //     .setPreferredOrientations([
+                                                                    //   DeviceOrientation
+                                                                    //       .portraitUp,
+                                                                    //   DeviceOrientation
+                                                                    //       .portraitDown,
+                                                                    //   DeviceOrientation
+                                                                    //       .landscapeLeft,
+                                                                    //   DeviceOrientation
+                                                                    //       .landscapeRight
+                                                                    // ]);
                                                                     Navigator.of(
                                                                             context)
                                                                         .pop();
@@ -493,8 +493,6 @@ class CameraPicker extends HookWidget {
                                                                 final file =
                                                                     await cameraController
                                                                         .takePicture();
-                                                                log(file.path
-                                                                    .toString());
                                                                 final tempDir =
                                                                     await syspaths
                                                                         .getTemporaryDirectory();
@@ -509,9 +507,11 @@ class CameraPicker extends HookWidget {
                                                                     img.decodeImage(
                                                                         await file
                                                                             .readAsBytes());
-                                                                // img.Image fixed =
+                                                                // img.Image
+                                                                //     fixed =
                                                                 //     img.copyRotate(
-                                                                //         decodeImg!, -90);
+                                                                //         decodeImg!,
+                                                                //         90);
                                                                 var encodeImage =
                                                                     img.encodeJpg(
                                                                         decodeImg!,
@@ -521,26 +521,26 @@ class CameraPicker extends HookWidget {
                                                                   ..writeAsBytesSync(
                                                                       encodeImage);
                                                                 store.addFile(
-                                                                    finalImage);
+                                                                    files);
                                                                 filesDataImage
                                                                         .value =
                                                                     filesDataImage
                                                                             .value +
                                                                         1;
-                                                                previewImage ==
-                                                                        true
-                                                                    ? SystemChrome
-                                                                        .setPreferredOrientations([
-                                                                        DeviceOrientation
-                                                                            .portraitUp,
-                                                                        DeviceOrientation
-                                                                            .portraitDown,
-                                                                        DeviceOrientation
-                                                                            .landscapeLeft,
-                                                                        DeviceOrientation
-                                                                            .landscapeRight
-                                                                      ])
-                                                                    : null;
+                                                                // previewImage ==
+                                                                //         true
+                                                                //     ? SystemChrome
+                                                                //         .setPreferredOrientations([
+                                                                //         DeviceOrientation
+                                                                //             .portraitUp,
+                                                                //         DeviceOrientation
+                                                                //             .portraitDown,
+                                                                //         DeviceOrientation
+                                                                //             .landscapeLeft,
+                                                                //         DeviceOrientation
+                                                                //             .landscapeRight
+                                                                //       ])
+                                                                //     : null;
                                                                 previewImage ==
                                                                         true
                                                                     // ignore: use_build_context_synchronously
@@ -583,12 +583,12 @@ class CameraPicker extends HookWidget {
                                                                           ? () {
                                                                               cameraController.dispose();
                                                                               Navigator.of(context).pop(store.filesData);
-                                                                              SystemChrome.setPreferredOrientations([
-                                                                                DeviceOrientation.portraitUp,
-                                                                                DeviceOrientation.portraitDown,
-                                                                                DeviceOrientation.landscapeLeft,
-                                                                                DeviceOrientation.landscapeRight
-                                                                              ]);
+                                                                              // SystemChrome.setPreferredOrientations([
+                                                                              //   DeviceOrientation.portraitUp,
+                                                                              //   DeviceOrientation.portraitDown,
+                                                                              //   DeviceOrientation.landscapeLeft,
+                                                                              //   DeviceOrientation.landscapeRight
+                                                                              // ]);
                                                                             }
                                                                           : null,
                                                                       enableFeedback:
@@ -653,17 +653,17 @@ class CameraPicker extends HookWidget {
                                             ? InkWell(
                                                 onTap: () {
                                                   cameraController.dispose();
-                                                  SystemChrome
-                                                      .setPreferredOrientations([
-                                                    DeviceOrientation
-                                                        .portraitUp,
-                                                    DeviceOrientation
-                                                        .portraitDown,
-                                                    DeviceOrientation
-                                                        .landscapeLeft,
-                                                    DeviceOrientation
-                                                        .landscapeRight
-                                                  ]);
+                                                  // SystemChrome
+                                                  //     .setPreferredOrientations([
+                                                  //   DeviceOrientation
+                                                  //       .portraitUp,
+                                                  //   DeviceOrientation
+                                                  //       .portraitDown,
+                                                  //   DeviceOrientation
+                                                  //       .landscapeLeft,
+                                                  //   DeviceOrientation
+                                                  //       .landscapeRight
+                                                  // ]);
                                                   Navigator.of(context).pop();
                                                 },
                                                 child: const BuildIcon(
@@ -701,19 +701,19 @@ class CameraPicker extends HookWidget {
                                               store.addFile(finalImage);
                                               filesDataImage.value =
                                                   filesDataImage.value + 1;
-                                              previewImage == true
-                                                  ? SystemChrome
-                                                      .setPreferredOrientations([
-                                                      DeviceOrientation
-                                                          .portraitUp,
-                                                      DeviceOrientation
-                                                          .portraitDown,
-                                                      DeviceOrientation
-                                                          .landscapeLeft,
-                                                      DeviceOrientation
-                                                          .landscapeRight
-                                                    ])
-                                                  : null;
+                                              // previewImage == true
+                                              //     ? SystemChrome
+                                              //         .setPreferredOrientations([
+                                              //         DeviceOrientation
+                                              //             .portraitUp,
+                                              //         DeviceOrientation
+                                              //             .portraitDown,
+                                              //         DeviceOrientation
+                                              //             .landscapeLeft,
+                                              //         DeviceOrientation
+                                              //             .landscapeRight
+                                              //       ])
+                                              //     : null;
                                               previewImage == true
                                                   // ignore: use_build_context_synchronously
                                                   ? showDiaLog(
@@ -747,17 +747,17 @@ class CameraPicker extends HookWidget {
                                                           Navigator.of(context)
                                                               .pop(store
                                                                   .filesData);
-                                                          SystemChrome
-                                                              .setPreferredOrientations([
-                                                            DeviceOrientation
-                                                                .portraitUp,
-                                                            DeviceOrientation
-                                                                .portraitDown,
-                                                            DeviceOrientation
-                                                                .landscapeLeft,
-                                                            DeviceOrientation
-                                                                .landscapeRight
-                                                          ]);
+                                                          // SystemChrome
+                                                          //     .setPreferredOrientations([
+                                                          //   DeviceOrientation
+                                                          //       .portraitUp,
+                                                          //   DeviceOrientation
+                                                          //       .portraitDown,
+                                                          //   DeviceOrientation
+                                                          //       .landscapeLeft,
+                                                          //   DeviceOrientation
+                                                          //       .landscapeRight
+                                                          // ]);
                                                         }
                                                       : null,
                                                   enableFeedback: true,

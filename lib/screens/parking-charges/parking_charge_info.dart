@@ -70,7 +70,8 @@ class _ParkingChargeInfoState extends State<ParkingChargeInfo> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.of(context)
+                            .pushReplacementNamed(ParkingChargeList.routeName);
                       },
                       child: const Text(
                         'Go back!',

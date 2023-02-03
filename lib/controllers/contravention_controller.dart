@@ -18,7 +18,6 @@ class ContraventionController {
         '/contravention/create-pcn',
         data: ContraventionCreateWardenCommand.toJson(pcn),
       );
-      print(123);
       print(response.data.toString());
       Contravention contraventionResult = Contravention.fromJson(response.data);
       print('Api create PCN: ${response.data}');
@@ -110,41 +109,91 @@ class ContraventionController {
     }
   }
 
-  Future<Pagination> getContraventionReasonServiceList() async {
+  Future<Pagination> getContraventionReasonServiceList({int? zoneId}) async {
     ConnectivityResult connectionStatus =
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
-      try {
-        final response = await dio.post(
-          '/contravention-reason-translation/filter',
-          data: {
-            "page": 1,
-            "pageSize": 1000,
-          },
-        );
-        Pagination contraventionReasonPagination =
-            Pagination.fromJson(response.data);
-        final String encodedData =
-            json.encode(Pagination.toJson(contraventionReasonPagination));
-        SharedPreferencesHelper.setStringValue(
-            'contraventionReasonDataLocal', encodedData);
-        return contraventionReasonPagination;
-      } on DioError catch (error) {
-        print(error.response);
-        rethrow;
+      if (zoneId != null) {
+        try {
+          final response = await dio.post(
+            '/contravention-reason-translation/filter',
+            data: {
+              "page": 1,
+              "pageSize": 1000,
+              "ZoneId": zoneId,
+              "filter": {},
+            },
+          );
+          print(response.data);
+          Pagination contraventionReasonPagination =
+              Pagination.fromJson(response.data);
+          final String encodedData =
+              json.encode(Pagination.toJson(contraventionReasonPagination));
+          SharedPreferencesHelper.setStringValue(
+              'contraventionReasonDataLocalWithHaveZoneId', encodedData);
+          return contraventionReasonPagination;
+        } on DioError catch (error) {
+          print(error.response);
+          rethrow;
+        }
+      } else {
+        try {
+          final response = await dio.post(
+            '/contravention-reason-translation/filter',
+            data: {
+              "page": 1,
+              "pageSize": 1000,
+              "ZoneId": zoneId,
+              "filter": {},
+            },
+          );
+          print(response.data);
+          Pagination contraventionReasonPagination =
+              Pagination.fromJson(response.data);
+          final String encodedData =
+              json.encode(Pagination.toJson(contraventionReasonPagination));
+          SharedPreferencesHelper.setStringValue(
+              'contraventionReasonDataLocalWithNotHaveZoneId', encodedData);
+          return contraventionReasonPagination;
+        } on DioError catch (error) {
+          print(error.response);
+          rethrow;
+        }
       }
     } else {
-      final String? data = await SharedPreferencesHelper.getStringValue(
-          'contraventionReasonDataLocal');
-      if (data != null) {
-        final contraventionReason = json.decode(data) as Map<String, dynamic>;
-        Pagination fromJsonContraventionReason =
-            Pagination.fromJson(contraventionReason);
-        return fromJsonContraventionReason;
+      final String? dataHaveZoneId =
+          await SharedPreferencesHelper.getStringValue(
+              'contraventionReasonDataLocalWithHaveZoneId');
+      final String? dataNotHaveZoneId =
+          await SharedPreferencesHelper.getStringValue(
+              'contraventionReasonDataLocalWithNotHaveZoneId');
+
+      if (zoneId != null) {
+        if (dataHaveZoneId != null) {
+          final contraventionReason =
+              json.decode(dataHaveZoneId) as Map<String, dynamic>;
+          Pagination fromJsonContraventionReason =
+              Pagination.fromJson(contraventionReason);
+          return fromJsonContraventionReason;
+        }
+      } else {
+        if (dataNotHaveZoneId != null) {
+          final contraventionReason =
+              json.decode(dataNotHaveZoneId) as Map<String, dynamic>;
+          Pagination fromJsonContraventionReason =
+              Pagination.fromJson(contraventionReason);
+          return fromJsonContraventionReason;
+        }
       }
+
       return Pagination(
-          page: 1, pageSize: 1000, total: 0, totalPages: 1, rows: []);
+        page: 1,
+        pageSize: 1000,
+        total: 0,
+        totalPages: 1,
+        rows: [],
+      );
     }
   }
 
@@ -166,6 +215,8 @@ class ContraventionController {
 
   Future<CheckPermit?> checkHasPermit(
       ContraventionCreateWardenCommand pcn) async {
+    print('data: ${pcn.Plate}');
+    print('data: ${pcn.WardenComments}');
     try {
       final response = await dio.post(
         '/contravention/check-has-permit',

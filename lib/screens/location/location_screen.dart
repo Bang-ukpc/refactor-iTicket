@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -22,6 +23,8 @@ import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../common/my_dialog.dart';
+
 class LocationScreen extends StatefulWidget {
   static const routeName = '/location';
   const LocationScreen({super.key});
@@ -37,6 +40,9 @@ class _LocationScreenState extends State<LocationScreen> {
   List<RotaWithLocation> listFilterByRota = [];
   Directions? _info;
   bool isLoading = true;
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
+  Position? currentLocation;
 
   String formatRotaShift(DateTime date) {
     return DateFormat('HH:mm').format(date);
@@ -112,6 +118,20 @@ class _LocationScreenState extends State<LocationScreen> {
     return listFilterByRota;
   }
 
+//   _getLocation() async {
+//    currentLocation = await Geolocator()
+//        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+
+//    var newPosition = CameraPosition(
+//        target: LatLng(currentLocation.latitude, currentLocation.longitude),
+//        zoom: 16);
+
+//    CameraUpdate update =CameraUpdate.newCameraPosition(newPosition);
+//    CameraUpdate zoom = CameraUpdate.zoomTo(16);
+
+//    _mapController.moveCamera(update);
+//  }
+
   @override
   void initState() {
     super.initState();
@@ -139,20 +159,74 @@ class _LocationScreenState extends State<LocationScreen> {
     super.dispose();
   }
 
+  double? distanceValue = 0.0;
+
+  // double distanceInMeters =
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-    // final sourceLocation = LatLng(
-    //   currentLocationPosition.currentLocation?.latitude ?? 0,
-    //   currentLocationPosition.currentLocation?.longitude ?? 0,
-    // );
+    final sourceLocation = LatLng(
+      currentLocationPosition.currentLocation?.latitude ?? 0,
+      currentLocationPosition.currentLocation?.longitude ?? 0,
+    );
 
     final destination = LatLng(
       locations.location?.Latitude ?? 0,
       locations.location?.Longitude ?? 0,
+    );
+    double handelDistanceInMeters() {
+      return Geolocator.distanceBetween(
+          currentLocationPosition.currentLocation?.latitude ?? 0,
+          currentLocationPosition.currentLocation?.longitude ?? 0,
+          destination.latitude,
+          destination.longitude);
+    }
+
+    Future<void> showMyDialog() async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: true,
+        barrierColor: ColorTheme.backdrop,
+        builder: (BuildContext context) {
+          return MyDialog(
+            buttonCancel: false,
+            title: Text(
+              "Warning",
+              style: CustomTextStyle.h4.copyWith(
+                  color: ColorTheme.danger, fontWeight: FontWeight.w600),
+            ),
+            subTitle: const Text(
+              "Your current location is too far from the check-in location, please move to the nearest location.",
+              style: CustomTextStyle.h5,
+              textAlign: TextAlign.center,
+            ),
+            func: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: ColorTheme.danger,
+              ),
+              child: Text("Accept",
+                  style: CustomTextStyle.h5.copyWith(
+                    color: Colors.white,
+                  )),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          );
+        },
+      );
+    }
+
+    CameraPosition initialPosition = CameraPosition(
+      target: LatLng(
+        locations.location?.Latitude ?? 0,
+        locations.location?.Longitude ?? 0,
+      ),
+      zoom: 16,
     );
 
     void setZoneWhenSelectedLocation(LocationWithZones locationSelected) {
@@ -161,21 +235,30 @@ class _LocationScreenState extends State<LocationScreen> {
       );
     }
 
-    // Future<void> goToDestination() async {
-    //   final GoogleMapController controller = await _mapController.future;
-    //   controller.animateCamera(
-    //     CameraUpdate.newLatLngBounds(
-    //       LatLngBounds(
-    //         southwest: sourceLocation,
-    //         northeast: destination,
-    //       ),
-    //       48,
-    //     ),
-    //   );
-    //   final directions = await directionsRepository.getDirections(
-    //       origin: sourceLocation, destination: destination);
-    //   setState(() => _info = directions);
-    // }
+    Future<void> goToDestination(
+        {required double latitude, required double longitude}) async {
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: LatLng(
+          latitude,
+          longitude,
+        ),
+        zoom: 16,
+      )));
+      // final GoogleMapController controller = await _controller.future;
+      // controller.animateCamera(
+      //   CameraUpdate.newLatLngBounds(
+      //     LatLngBounds(
+      //       southwest: sourceLocation,
+      //       northeast: LatLng(
+      //         latitude,
+      //         longitude,
+      //       ),
+      //     ),
+      //     38,
+      //   ),
+      // );
+    }
 
     print(
         'from: ${locations.rotaShift?.timeFrom}, to: ${locations.rotaShift?.timeTo}');
@@ -247,8 +330,12 @@ class _LocationScreenState extends State<LocationScreen> {
                 if (!isValid) {
                   return;
                 } else {
-                  Navigator.of(context)
-                      .pushNamed(ReadRegulationScreen.routeName);
+                  if (handelDistanceInMeters() <= 1609.344) {
+                    Navigator.of(context)
+                        .pushNamed(ReadRegulationScreen.routeName);
+                  } else {
+                    showMyDialog();
+                  }
                 }
 
                 _formKey.currentState!.save();
@@ -437,11 +524,12 @@ class _LocationScreenState extends State<LocationScreen> {
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
                                               operationalPeriodsList:
-                                                  item.OperationalPeriods ?? [],
+                                                  item.operationalPeriodHistories ??
+                                                      [],
                                             );
                                           },
                                         ),
-                                        onChanged: (value) {
+                                        onChanged: (value) async {
                                           LocationWithZones locationSelected =
                                               locations.rotaShift!.locations!
                                                   .firstWhere(
@@ -452,6 +540,12 @@ class _LocationScreenState extends State<LocationScreen> {
                                           setZoneWhenSelectedLocation(
                                             locationSelected,
                                           );
+                                          setState(() {
+                                            distanceValue = value!.Distance;
+                                          });
+                                          await goToDestination(
+                                              latitude: value?.Latitude ?? 0,
+                                              longitude: value?.Longitude ?? 0);
                                         },
                                         validator: ((value) {
                                           if (value == null) {
@@ -586,7 +680,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                                           400
                                                       ? screenHeight / 3
                                                       : screenHeight / 1.5,
-                                              destination: destination,
+                                              mapController: _controller,
+                                              initialPosition: initialPosition,
                                               info: _info,
                                             )
                                           : const SizedBox(),
@@ -665,7 +760,7 @@ class DropDownItem2 extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
-  final List<OperationalPeriod> operationalPeriodsList;
+  final List<OperationalPeriodHistories> operationalPeriodsList;
   const DropDownItem2({
     required this.title,
     this.subTitle,
@@ -742,10 +837,12 @@ class DropDownItem2 extends StatelessWidget {
                   return Column(
                     children: [
                       Text(
-                        'Op ${formatOperationalPeriods(startDay.add(Duration(minutes: e.TimeFrom)))} - ${formatOperationalPeriods(startDay.add(Duration(minutes: e.TimeTo)))}',
+                        'Op ${formatOperationalPeriods(e.TimeFrom)} - ${formatOperationalPeriods(e.TimeTo)}',
                         style: CustomTextStyle.body2.copyWith(
                           color: getStatusColor(
-                              timeFrom: e.TimeFrom, timeTo: e.TimeTo),
+                              timeFrom:
+                                  e.TimeFrom.hour * 60 + e.TimeFrom.minute,
+                              timeTo: e.TimeTo.hour * 60 + e.TimeTo.minute),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

@@ -74,7 +74,7 @@ class _PrintIssueState extends State<PrintIssue> {
             locations.location!,
             locations.location?.LowerAmount ?? 0,
             locations.location?.UpperAmount ?? 0,
-            wardensProvider.wardens!.Id as int,
+            wardensProvider.wardens?.ExternalId ?? "",
           );
         }
       }
@@ -96,6 +96,8 @@ class _PrintIssueState extends State<PrintIssue> {
     final printIssue = Provider.of<PrintIssueProviders>(context);
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
+
+    print(wardensProvider.wardens?.ExternalId);
 
     log('Print issue');
 
@@ -257,7 +259,7 @@ class _PrintIssueState extends State<PrintIssue> {
                         locations.location!,
                         locations.location?.LowerAmount ?? 0,
                         locations.location?.UpperAmount ?? 0,
-                        wardensProvider.wardens!.Id as int,
+                        wardensProvider.wardens?.ExternalId ?? "",
                       );
                     }
                   },
