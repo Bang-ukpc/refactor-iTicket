@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:ui';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:iWarden/configs/configs.dart';
@@ -23,10 +24,11 @@ void main() async {
   await dotenv.load(fileName: ".env").then((value) => {});
   WidgetsFlutterBinding.ensureInitialized();
   //firebase Crashlytics config
-  if (ConfigEnvironmentVariable.environment.toString() != 'local') {
+  if (ConfigEnvironmentVariable.environment.toString() == 'local') {
     //test err
     // FirebaseCrashlytics.instance.crash();
     await Firebase.initializeApp();
+    FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     FlutterError.onError = (errorDetails) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
     };
