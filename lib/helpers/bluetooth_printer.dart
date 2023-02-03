@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter_pos_printer_platform/flutter_pos_printer_platform.dart';
-import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:intl/intl.dart';
@@ -19,7 +18,6 @@ class BluetoothPrinterHelper {
   BTStatus currentStatus = BTStatus.none;
   List<int> pendingTask = [];
   BluetoothPrinter? selectedPrinter;
-  int count = 0;
 
   void scan() {
     devices.clear();
@@ -44,7 +42,7 @@ class BluetoothPrinterHelper {
     );
   }
 
-  void initConnect({required bool isLoading}) {
+  void initConnect() {
     subscriptionBtStatus = PrinterManager.instance.stateBluetooth.listen(
       (status) {
         log(' ----------------- status bt $status ------------------ ');
@@ -54,9 +52,6 @@ class BluetoothPrinterHelper {
         }
         if (status == BTStatus.none) {
           isConnected = false;
-          if (count == 1 && isLoading == true) {
-            NavigationService.navigatorKey.currentState!.pop();
-          }
         }
         if (status == BTStatus.connected && pendingTask.isNotEmpty) {
           if (Platform.isAndroid) {
@@ -71,11 +66,7 @@ class BluetoothPrinterHelper {
                 .send(type: PrinterType.bluetooth, bytes: pendingTask);
             pendingTask = [];
           }
-          if (isLoading == true) {
-            NavigationService.navigatorKey.currentState!.pop();
-          }
         }
-        count++;
       },
     );
   }
@@ -207,7 +198,6 @@ class BluetoothPrinterHelper {
 
   /// print ticket
   void printEscPos(List<int> bytes, Generator generator) async {
-    count = 0;
     if (selectedPrinter == null) return;
     var bluetoothPrinter = selectedPrinter!;
     log("_printEscPos: ${bluetoothPrinter.typePrinter.toString()}");
@@ -240,7 +230,6 @@ class BluetoothPrinterHelper {
   }
 
   void disposePrinter() {
-    count = 0;
     subscription?.cancel();
     subscriptionBtStatus?.cancel();
   }

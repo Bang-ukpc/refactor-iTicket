@@ -40,12 +40,13 @@ class MyDrawer extends StatefulWidget {
 class _MyDrawerState extends State<MyDrawer> {
   bool check = false;
   final _debouncer = Debouncer(milliseconds: 3000);
+  final _debouncer2 = Debouncer(milliseconds: 4000);
 
   @override
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect(isLoading: true);
+    bluetoothPrinterHelper.initConnect();
   }
 
   @override
@@ -53,6 +54,9 @@ class _MyDrawerState extends State<MyDrawer> {
     bluetoothPrinterHelper.disposePrinter();
     if (_debouncer.timer != null) {
       _debouncer.timer!.cancel();
+    }
+    if (_debouncer2.timer != null) {
+      _debouncer2.timer!.cancel();
     }
     super.dispose();
   }
@@ -246,6 +250,24 @@ class _MyDrawerState extends State<MyDrawer> {
                                   context: context,
                                   text: 'Connecting to printer');
                               bluetoothPrinterHelper.printReceiveTest();
+                              _debouncer2.run(() {
+                                if (bluetoothPrinterHelper.isConnected ==
+                                    false) {
+                                  Navigator.of(context).pop();
+                                  CherryToast.error(
+                                    toastDuration: const Duration(seconds: 5),
+                                    title: Text(
+                                      "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                                      style: CustomTextStyle.h4
+                                          .copyWith(color: ColorTheme.danger),
+                                    ),
+                                    toastPosition: Position.bottom,
+                                    borderRadius: 5,
+                                  ).show(context);
+                                } else {
+                                  Navigator.of(context).pop();
+                                }
+                              });
                             }
                           }
                         : () => Navigator.of(context).pushReplacementNamed(

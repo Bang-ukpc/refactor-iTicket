@@ -41,7 +41,7 @@ class _PrintIssueState extends State<PrintIssue> {
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect(isLoading: false);
+    bluetoothPrinterHelper.initConnect();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
       final contraventionProvider =
@@ -96,8 +96,6 @@ class _PrintIssueState extends State<PrintIssue> {
     final printIssue = Provider.of<PrintIssueProviders>(context);
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-
-    print(wardensProvider.wardens?.ExternalId);
 
     log('Print issue');
 

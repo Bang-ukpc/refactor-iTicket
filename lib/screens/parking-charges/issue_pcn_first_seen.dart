@@ -159,17 +159,35 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
-  void getContraventionReasonListOffline() async {
+  Future<void> getContraventionReasonListOffline() async {
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+
+    final String? dataHaveZoneId = await SharedPreferencesHelper.getStringValue(
+        'contraventionReasonDataLocalWithNotHaveZoneId');
+
     final String? reasonDataLocal =
         await SharedPreferencesHelper.getStringValue(
-            'contraventionReasonDataLocalWithNotHaveZoneId');
-    final contraventionReason =
-        json.decode(reasonDataLocal as String) as Map<String, dynamic>;
-    Pagination fromJsonContraventionReason =
-        Pagination.fromJson(contraventionReason);
-    fromJsonContraventionList = fromJsonContraventionReason.rows
-        .map((item) => ContraventionReasonTranslations.fromJson(item))
-        .toList();
+            'contraventionReasonDataLocalWithHaveZoneId');
+
+    if (connectionStatus == ConnectivityResult.wifi ||
+        connectionStatus == ConnectivityResult.mobile) {
+      final contraventionReason =
+          json.decode(reasonDataLocal as String) as Map<String, dynamic>;
+      Pagination fromJsonContraventionReason =
+          Pagination.fromJson(contraventionReason);
+      fromJsonContraventionList = fromJsonContraventionReason.rows
+          .map((item) => ContraventionReasonTranslations.fromJson(item))
+          .toList();
+    } else {
+      final contraventionReason =
+          json.decode(dataHaveZoneId as String) as Map<String, dynamic>;
+      Pagination fromJsonContraventionReason =
+          Pagination.fromJson(contraventionReason);
+      fromJsonContraventionList = fromJsonContraventionReason.rows
+          .map((item) => ContraventionReasonTranslations.fromJson(item))
+          .toList();
+    }
   }
 
   void onSearchVehicleInfoByPlate(String plate) async {
@@ -693,7 +711,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                     .copyWith(color: ColorTheme.white),
                               ),
                               onPressed: () {
-                                createPhysicalPCN(isPrinter: true);
+                                if (_selectedItemTypePCN!.value == 0) {
+                                  createPhysicalPCN(isPrinter: true);
+                                } else {
+                                  createVirtualTicket();
+                                }
                               },
                             ),
                           ),
@@ -836,10 +858,21 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             locationProvider, contraventionProvider.contravention);
       });
       getContraventionReasonList(zoneId: locationProvider.zone?.Id);
+      getContraventionReasonListOffline().then((value) => {
+            _contraventionReasonController.text = fromJsonContraventionList
+                    .firstWhereOrNull((e) =>
+                        e.contraventionReason!.code ==
+                        _contraventionReasonController.text)!
+                    .contraventionReason!
+                    .code ??
+                ''
+          });
     }
 
     List<String> arrMake = DataInfoCar().make;
     List<String> arrColor = DataInfoCar().color;
+
+    print(_contraventionReasonController.text);
 
     return WillPopScope(
       onWillPop: () async => false,
