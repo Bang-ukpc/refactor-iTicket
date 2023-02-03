@@ -195,7 +195,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           }
         }
         if (flag) {
-          // mau ton tai trong mang
           setState(() {
             _vehicleColorController.text = value?.Colour ?? '';
           });
@@ -231,12 +230,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         setSelectedTypeOfPCN(locationProvider, contraventionData);
       });
       getContraventionReasonList(zoneId: locationProvider.zone?.Id);
-
+      setState(() {
+        colorNull = contraventionProvider.getColorNullProvider;
+      });
       _vrnController.text = args != null ? args.Plate : '';
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
         _vehicleMakeController.text = contraventionData.make ?? '';
-        _vehicleColorController.text = contraventionData.colour ?? '';
+        _vehicleColorController.text = colorNull != null
+            ? colorNull.toString()
+            : contraventionData.colour ?? '';
         _contraventionReasonController.text =
             contraventionData.reason?.code ?? '';
         _commentController.text = contraventionData.contraventionEvents!
@@ -291,6 +294,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
     log('Issue PCN screen');
     // print(carInfoController.listMakeCar());
+    print(_vehicleColorController.text);
     int randomReference =
         (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
     final physicalPCN = ContraventionCreateWardenCommand(
@@ -444,9 +448,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       ContraventionReference: '3$randomReference2',
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
-      VehicleColour: colorNull != null
-          ? colorNull as String
-          : _vehicleColorController.text,
+      VehicleColour: _vehicleColorController.text,
       ContraventionReasonCode: _contraventionReasonController.text,
       EventDateTime: DateTime.now(),
       FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
@@ -522,6 +524,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         );
         if (!mounted) return;
         contraventionProvider.upDateContravention(contravention);
+        contraventionProvider.setColorNullProvider(virtualTicket.VehicleColour);
         Navigator.of(context).pop();
         step2 == true
             ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName)
@@ -1312,6 +1315,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         setState(() {
                                           _vehicleColorController.text = value!;
                                         });
+                                        contraventionProvider
+                                            .setColorNullProvider(value);
                                       },
                                       validator: ((value) {
                                         if (value == null) {
