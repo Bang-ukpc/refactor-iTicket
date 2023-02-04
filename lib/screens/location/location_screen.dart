@@ -199,7 +199,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   color: ColorTheme.danger, fontWeight: FontWeight.w600),
             ),
             subTitle: const Text(
-              "Your current location is too far from the check-in location, please move to the nearest location.",
+              "You are out of the check in zone, please go to the location.",
               style: CustomTextStyle.h5,
               textAlign: TextAlign.center,
             ),
