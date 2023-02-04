@@ -18,7 +18,11 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
-Future<void> showLoading() async {
+Future<void> showLoading({
+  required int firstSeenLength,
+  required gracePeriodLength,
+  required pcnLength,
+}) async {
   await showDialog(
     context: NavigationService.navigatorKey.currentContext as BuildContext,
     barrierDismissible: false,
@@ -26,42 +30,97 @@ Future<void> showLoading() async {
     builder: (_) {
       return WillPopScope(
         onWillPop: () async => false,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            width: MediaQuery.of(NavigationService.navigatorKey.currentContext
-                        as BuildContext)
-                    .size
-                    .width *
-                0.8,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                const SizedBox(height: 250),
-                const Center(
-                  child: SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: CircularProgressIndicator(
-                      color: ColorTheme.white,
-                    ),
+        child: SizedBox(
+          width: MediaQuery.of(NavigationService.navigatorKey.currentContext
+                      as BuildContext)
+                  .size
+                  .width *
+              0.8,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Center(
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    color: ColorTheme.white,
                   ),
                 ),
-                const SizedBox(height: 30),
-                Expanded(
-                  child: Text(
-                    'Synchronizing data to the server',
-                    style: CustomTextStyle.h4.copyWith(
-                      decoration: TextDecoration.none,
-                      color: ColorTheme.white,
-                      overflow: TextOverflow.clip,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+              ),
+              const SizedBox(height: 30),
+              Text(
+                'Synchronizing data with the server:',
+                style: CustomTextStyle.h4.copyWith(
+                  fontFamily: 'Lato',
+                  decoration: TextDecoration.none,
+                  color: ColorTheme.white,
+                  overflow: TextOverflow.clip,
                 ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              if (firstSeenLength > 0)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      '$firstSeenLength first seen sent to the server',
+                      style: CustomTextStyle.h4.copyWith(
+                        fontFamily: 'Lato',
+                        decoration: TextDecoration.none,
+                        color: ColorTheme.white,
+                        overflow: TextOverflow.clip,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              if (gracePeriodLength > 0)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      '$gracePeriodLength grace period sent to the server',
+                      style: CustomTextStyle.h4.copyWith(
+                        fontFamily: 'Lato',
+                        decoration: TextDecoration.none,
+                        color: ColorTheme.white,
+                        overflow: TextOverflow.clip,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              if (pcnLength > 0)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      '$pcnLength PCN(s) sent to the server',
+                      style: CustomTextStyle.h4.copyWith(
+                        fontFamily: 'Lato',
+                        decoration: TextDecoration.none,
+                        color: ColorTheme.white,
+                        overflow: TextOverflow.clip,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+            ],
           ),
         ),
       );
@@ -162,7 +221,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           await contraventionController
               .createPCN(physicalPCNList[i])
               .then((contravention) async {
-            print(contravention.id);
             for (int j = 0; j < abortPCN.length; j++) {
               if (physicalPCNList[i].Id == abortPCN[j].contraventionId) {
                 abortPCN[j].contraventionId = contravention.id ?? 0;
@@ -263,25 +321,28 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   }
 
   void dataSynch() async {
-    bool vehicleInfoSynchStatus = false;
-    bool issuePCNSynchStatus = false;
-    bool wardenEventSyncStatus = false;
-    await vehicleInfoDataSynch().then((value) {
-      vehicleInfoSynchStatus = value;
-    });
-    await parkingChargeDataSynch().then((value) {
-      issuePCNSynchStatus = value;
-    });
-    await wardenEventDataSync().then((value) {
-      wardenEventSyncStatus = value;
-    });
-    if (vehicleInfoSynchStatus == true &&
-        issuePCNSynchStatus == true &&
-        wardenEventSyncStatus == true) {
-      await Future.delayed(const Duration(seconds: 1), () {
-        NavigationService.navigatorKey.currentState!.pop();
-      });
-    }
+    // bool vehicleInfoSynchStatus = false;
+    // bool issuePCNSynchStatus = false;
+    // bool wardenEventSyncStatus = false;
+    // await vehicleInfoDataSynch().then((value) {
+    //   vehicleInfoSynchStatus = value;
+    // });
+    // await parkingChargeDataSynch().then((value) {
+    //   issuePCNSynchStatus = value;
+    // });
+    // await wardenEventDataSync().then((value) {
+    //   wardenEventSyncStatus = value;
+    // });
+    // if (vehicleInfoSynchStatus == true &&
+    //     issuePCNSynchStatus == true &&
+    //     wardenEventSyncStatus == true) {
+    //   await Future.delayed(const Duration(seconds: 1), () {
+    //     NavigationService.navigatorKey.currentState!.pop();
+    //   });
+    // }
+    await vehicleInfoDataSynch();
+    await parkingChargeDataSynch();
+    await wardenEventDataSync();
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
@@ -289,8 +350,47 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         result == ConnectivityResult.mobile) {
       bool checkIsAuth = await isAuth();
       if (checkIsAuth == true) {
-        showLoading();
+        var firstSeenLength = 0;
+        var gracePeriodLength = 0;
+        var pcnLength = 0;
+
+        final String? dataUpsert = await SharedPreferencesHelper.getStringValue(
+            'vehicleInfoUpsertDataLocal');
+        final String? issuePCNData =
+            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
+
+        if (dataUpsert != null) {
+          final vehicleInfoUpsertData =
+              json.decode(dataUpsert) as List<dynamic>;
+          List<VehicleInformation> vehicleInfoList = vehicleInfoUpsertData
+              .map((i) => VehicleInformation.fromJson(json.decode(i)))
+              .toList();
+
+          var firstSeenList = vehicleInfoList
+              .where((e) => e.Type == VehicleInformationType.FIRST_SEEN.index)
+              .toList();
+          var gracePeriodList = vehicleInfoList
+              .where((e) => e.Type == VehicleInformationType.GRACE_PERIOD.index)
+              .toList();
+
+          firstSeenLength = firstSeenList.length;
+          gracePeriodLength = gracePeriodList.length;
+        }
+
+        if (issuePCNData != null) {
+          var decodedData = json.decode(issuePCNData) as List<dynamic>;
+          pcnLength = decodedData.length;
+        }
+
+        showLoading(
+            firstSeenLength: firstSeenLength,
+            gracePeriodLength: gracePeriodLength,
+            pcnLength: pcnLength);
         dataSynch();
+
+        await Future.delayed(const Duration(seconds: 3), () {
+          NavigationService.navigatorKey.currentState!.pop();
+        });
       }
     }
   }

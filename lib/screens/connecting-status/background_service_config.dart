@@ -69,8 +69,8 @@ void onStart(ServiceInstance service) async {
   final accessToken = await SharedPreferencesHelper.getStringValue(
     PreferencesKeys.accessToken,
   );
-  const serviceUrl = 'https://api-warden-prod-ukpc.azurewebsites.net';
-  // const serviceUrl = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
+  // const serviceUrl = 'https://api-warden-prod-ukpc.azurewebsites.net';
+  const serviceUrl = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
   // const serviceUrl = 'http://192.168.1.200:7003';
   final dio = Dio();
   dio.options.headers['content-Type'] = 'application/json';
