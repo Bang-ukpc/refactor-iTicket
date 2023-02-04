@@ -136,7 +136,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     });
   }
 
-  void getContraventionReasonList({int? zoneId}) async {
+  Future<void> getContraventionReasonList({int? zoneId}) async {
     ConnectivityResult connectionStatus =
         await (Connectivity().checkConnectivity());
 
@@ -239,16 +239,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   @override
   void initState() {
     super.initState();
-    getContraventionReasonListOffline();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final args = ModalRoute.of(context)!.settings.arguments as dynamic;
       final locationProvider = Provider.of<Locations>(context, listen: false);
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
       final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
-      getContraventionReasonList(zoneId: locationProvider.zone?.Id);
+      await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
+      await getContraventionReasonListOffline();
       var contraventionData = contraventionProvider.contravention;
-      _vrnController.text = args != null ? args.Plate : '';
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
         _vehicleMakeController.text =
@@ -311,11 +310,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         ModalRoute.of(context)!.settings.arguments as dynamic;
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
 
-    // log('Issue PCN screen');
-    // print(carInfoController.listMakeCar());
     log(_vehicleMakeController.text);
     log(_vehicleColorController.text);
-    // log('color null: ${colorNull.toString()}');
 
     int randomReference =
         (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
@@ -601,6 +597,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       _formKey.currentState!.save();
     }
+
+    log('reason code: ${_contraventionReasonController.text}');
 
     Future<void> showDialogPermitExists(CheckPermit? value) async {
       return showDialog<void>(
