@@ -423,6 +423,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                                       return true;
                                     },
                                     editImage: true,
+                                    isReduceSizeImage: true,
                                   )));
                       if (results != null) {
                         setState(() {

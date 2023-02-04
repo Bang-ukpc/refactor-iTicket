@@ -7,7 +7,6 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,7 +17,6 @@ import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
-import 'package:image/image.dart' as img;
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as syspaths;
@@ -54,6 +52,8 @@ class CameraPicker extends HookWidget {
 
   final int? typePCN;
 
+  final bool? isReduceSizeImage;
+
   final WidgetBuilder? noCameraBuilder;
   final String titleCamera;
   final bool? previewImage;
@@ -79,6 +79,7 @@ class CameraPicker extends HookWidget {
     this.editImage = false,
     required this.titleCamera,
     this.typePCN,
+    this.isReduceSizeImage = false,
   }) : super(key: key);
 
   @override
@@ -208,7 +209,7 @@ class CameraPicker extends HookWidget {
         var result = await FlutterImageCompress.compressAndGetFile(
           imageFile.absolute.path,
           targetPath,
-          quality: 80,
+          quality: isReduceSizeImage == true ? 10 : 95,
         );
 
         log('file original: ${imageFile.lengthSync().toString()}');
