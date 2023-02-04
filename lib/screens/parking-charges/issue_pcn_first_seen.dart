@@ -316,8 +316,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
     final physicalPCN = ContraventionCreateWardenCommand(
       ZoneId: locationProvider.zone?.Id ?? 0,
-      ContraventionReference: contraventionReferenceHelper
-          .getContraventionReference(wardensProvider.wardens?.Id ?? 0),
+      ContraventionReference:
+          contraventionReferenceHelper.getContraventionReference(
+              prefixNumber: 2, wardenID: wardensProvider.wardens?.Id ?? 0),
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
       VehicleColour: _vehicleColorController.text,
@@ -461,8 +462,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     int randomNumber2 = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
     final virtualTicket = ContraventionCreateWardenCommand(
       ZoneId: locationProvider.zone?.Id ?? 0,
-      ContraventionReference: contraventionReferenceHelper
-          .getContraventionReference(wardensProvider.wardens?.Id ?? 0),
+      ContraventionReference:
+          contraventionReferenceHelper.getContraventionReference(
+              prefixNumber: 3, wardenID: wardensProvider.wardens?.Id ?? 0),
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
       VehicleColour: _vehicleColorController.text,
@@ -925,6 +927,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                         await (Connectivity().checkConnectivity());
                     if (connectionStatus == ConnectivityResult.wifi ||
                         connectionStatus == ConnectivityResult.mobile) {
+                      virtualTicket.Plate = _vrnController.text;
+                      virtualTicket.WardenComments = _commentController.text;
                       try {
                         if (!mounted) return;
                         showCircularProgressIndicator(context: context);
@@ -990,6 +994,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                         await (Connectivity().checkConnectivity());
                     if (connectionStatus == ConnectivityResult.wifi ||
                         connectionStatus == ConnectivityResult.mobile) {
+                      physicalPCN.Plate = _vrnController.text;
+                      physicalPCN.WardenComments = _commentController.text;
                       try {
                         if (!mounted) return;
                         showCircularProgressIndicator(context: context);

@@ -26,46 +26,43 @@ Future<void> showLoading() async {
     builder: (_) {
       return WillPopScope(
         onWillPop: () async => false,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              width: MediaQuery.of(NavigationService.navigatorKey.currentContext
-                          as BuildContext)
-                      .size
-                      .width *
-                  0.8,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  const Center(
-                    child: SizedBox(
-                      width: 50,
-                      height: 50,
-                      child: CircularProgressIndicator(
-                        color: ColorTheme.white,
-                      ),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: MediaQuery.of(NavigationService.navigatorKey.currentContext
+                        as BuildContext)
+                    .size
+                    .width *
+                0.8,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(height: 250),
+                const Center(
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: CircularProgressIndicator(
+                      color: ColorTheme.white,
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  Expanded(
-                    child: Text(
-                      'Synchronizing data to the server',
-                      style: CustomTextStyle.h4.copyWith(
-                        decoration: TextDecoration.none,
-                        color: ColorTheme.white,
-                        overflow: TextOverflow.clip,
-                      ),
-                      textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+                Expanded(
+                  child: Text(
+                    'Synchronizing data to the server',
+                    style: CustomTextStyle.h4.copyWith(
+                      decoration: TextDecoration.none,
+                      color: ColorTheme.white,
+                      overflow: TextOverflow.clip,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       );
     },
