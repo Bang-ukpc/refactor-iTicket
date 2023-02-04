@@ -9,6 +9,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/picker_store.dart';
 import 'package:iWarden/common/IconButtonCamera/build_icon.dart';
@@ -199,7 +200,21 @@ class CameraPicker extends HookWidget {
       try {
         final file = await cameraController.takePicture();
         final tempDir = await syspaths.getTemporaryDirectory();
-        final fileName = path.basename(file.path);
+
+        var imageFile = File(file.path);
+
+        final targetPath = '${tempDir.absolute.path}/temp.jpg';
+
+        var result = await FlutterImageCompress.compressAndGetFile(
+          imageFile.absolute.path,
+          targetPath,
+          quality: 80,
+        );
+
+        log('file original: ${imageFile.lengthSync().toString()}');
+        log('file compress: ${result!.lengthSync().toString()}');
+
+        final fileName = path.basename(result.path);
         File files = await File('${tempDir.path}/$fileName').create();
         // var capturedImage = img.decodeImage(await file.readAsBytes());
         // final img.Image orientedImage = img.bakeOrientation(capturedImage!);
