@@ -21,6 +21,7 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/location_controller.dart';
+import 'package:iWarden/helpers/contravention_reference_helper.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
@@ -308,16 +309,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
     final argsFromExpired =
         ModalRoute.of(context)!.settings.arguments as dynamic;
-    int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
 
     log(_vehicleMakeController.text);
     log(_vehicleColorController.text);
 
-    int randomReference =
-        (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
+    int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
     final physicalPCN = ContraventionCreateWardenCommand(
       ZoneId: locationProvider.zone?.Id ?? 0,
-      ContraventionReference: '2$randomReference',
+      ContraventionReference: contraventionReferenceHelper
+          .getContraventionReference(wardensProvider.wardens?.Id ?? 0),
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
       VehicleColour: _vehicleColorController.text,
@@ -459,11 +459,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
 
     int randomNumber2 = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-    int randomReference2 =
-        (DateTime.now().microsecondsSinceEpoch / 10000).ceil();
     final virtualTicket = ContraventionCreateWardenCommand(
       ZoneId: locationProvider.zone?.Id ?? 0,
-      ContraventionReference: '3$randomReference2',
+      ContraventionReference: contraventionReferenceHelper
+          .getContraventionReference(wardensProvider.wardens?.Id ?? 0),
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
       VehicleColour: _vehicleColorController.text,
@@ -885,15 +884,17 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             locationProvider, contraventionProvider.contravention);
       });
       getContraventionReasonList(zoneId: locationProvider.zone?.Id);
-      getContraventionReasonListOffline().then((value) => {
-            _contraventionReasonController.text = fromJsonContraventionList
-                    .firstWhereOrNull((e) =>
-                        e.contraventionReason!.code ==
-                        _contraventionReasonController.text)!
-                    .contraventionReason!
-                    .code ??
-                ''
-          });
+      getContraventionReasonListOffline().then((value) {
+        setState(() {
+          _contraventionReasonController.text = fromJsonContraventionList
+                  .firstWhereOrNull((e) =>
+                      e.contraventionReason!.code ==
+                      _contraventionReasonController.text)!
+                  .contraventionReason!
+                  .code ??
+              '';
+        });
+      });
     }
 
     return WillPopScope(
