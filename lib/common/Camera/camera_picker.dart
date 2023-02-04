@@ -195,7 +195,26 @@ class CameraPicker extends HookWidget {
     var isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    print(filesDataImage.value);
+    void actionCamera(CameraController cameraController) async {
+      try {
+        final file = await cameraController.takePicture();
+        final tempDir = await syspaths.getTemporaryDirectory();
+        final fileName = path.basename(file.path);
+        File files = await File('${tempDir.path}/$fileName').create();
+        // var capturedImage = img.decodeImage(await file.readAsBytes());
+        // final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+
+        store.addFile(files);
+        filesDataImage.value = filesDataImage.value + 1;
+        previewImage == true
+            // ignore: use_build_context_synchronously
+            ? showDiaLog(widthScreen, padding, context, files)
+            : null;
+      } catch (ex, stack) {
+        onError?.call(ex, stack);
+      }
+    }
+
     return Material(
       child: SizedBox(
         width: double.infinity,
@@ -488,74 +507,9 @@ class CameraPicker extends HookWidget {
                                                                 )
                                                               : const SizedBox(),
                                                           InkWell(
-                                                            onTap: () async {
-                                                              try {
-                                                                final file =
-                                                                    await cameraController
-                                                                        .takePicture();
-                                                                final tempDir =
-                                                                    await syspaths
-                                                                        .getTemporaryDirectory();
-                                                                final fileName =
-                                                                    path.basename(
-                                                                        file.path);
-                                                                File files =
-                                                                    await File(
-                                                                            '${tempDir.path}/$fileName')
-                                                                        .create();
-                                                                var capturedImage =
-                                                                    img.decodeImage(
-                                                                        await file
-                                                                            .readAsBytes());
-                                                                final img.Image orientedImage = img.bakeOrientation(capturedImage!);
-
-                                                                // img.Image
-                                                                //     fixed =
-                                                                //     img.copyRotate(
-                                                                //         decodeImg!,
-                                                                //         90);
-                                                                var encodeImage =
-                                                                    img.encodeJpg(
-                                                                        orientedImage!,
-                                                                        quality:
-                                                                            100);
-                                                                var finalImage = files
-                                                                  ..writeAsBytesSync(
-                                                                      encodeImage);
-                                                                store.addFile(
-                                                                    files);
-                                                                filesDataImage
-                                                                        .value =
-                                                                    filesDataImage
-                                                                            .value +
-                                                                        1;
-                                                                // previewImage ==
-                                                                //         true
-                                                                //     ? SystemChrome
-                                                                //         .setPreferredOrientations([
-                                                                //         DeviceOrientation
-                                                                //             .portraitUp,
-                                                                //         DeviceOrientation
-                                                                //             .portraitDown,
-                                                                //         DeviceOrientation
-                                                                //             .landscapeLeft,
-                                                                //         DeviceOrientation
-                                                                //             .landscapeRight
-                                                                //       ])
-                                                                //     : null;
-                                                                previewImage ==
-                                                                        true
-                                                                    // ignore: use_build_context_synchronously
-                                                                    ? showDiaLog(
-                                                                        widthScreen,
-                                                                        padding,
-                                                                        context,
-                                                                        finalImage)
-                                                                    : null;
-                                                              } catch (ex, stack) {
-                                                                onError?.call(
-                                                                    ex, stack);
-                                                              }
+                                                            onTap: () {
+                                                              actionCamera(
+                                                                  cameraController);
                                                             },
                                                             child:
                                                                 const BuildIcon(
@@ -678,57 +632,7 @@ class CameraPicker extends HookWidget {
                                             : const SizedBox(),
                                         InkWell(
                                           onTap: () async {
-                                            try {
-                                              final file =
-                                                  await cameraController
-                                                      .takePicture();
-                                              final tempDir = await syspaths
-                                                  .getTemporaryDirectory();
-                                              final fileName =
-                                                  path.basename(file.path);
-                                              File files = await File(
-                                                      '${tempDir.path}/$fileName')
-                                                  .create();
-                                              var capturedImage = img.decodeImage(
-                                                  await file.readAsBytes());
-
-                                              final img.Image orientedImage = img.bakeOrientation(capturedImage!);
-                                             
-                                              // img.Image fixed =
-                                              //     img.copyRotate(
-                                              //         decodeImg!, -90);
-                                              var encodeImage = img.encodeJpg(
-                                                  orientedImage!,
-                                                  quality: 100);
-                                              var finalImage = files
-                                                ..writeAsBytesSync(encodeImage);
-                                              store.addFile(finalImage);
-                                              filesDataImage.value =
-                                                  filesDataImage.value + 1;
-                                              // previewImage == true
-                                              //     ? SystemChrome
-                                              //         .setPreferredOrientations([
-                                              //         DeviceOrientation
-                                              //             .portraitUp,
-                                              //         DeviceOrientation
-                                              //             .portraitDown,
-                                              //         DeviceOrientation
-                                              //             .landscapeLeft,
-                                              //         DeviceOrientation
-                                              //             .landscapeRight
-                                              //       ])
-                                              //     : null;
-                                              previewImage == true
-                                                  // ignore: use_build_context_synchronously
-                                                  ? showDiaLog(
-                                                      widthScreen,
-                                                      padding,
-                                                      context,
-                                                      finalImage)
-                                                  : null;
-                                            } catch (ex, stack) {
-                                              onError?.call(ex, stack);
-                                            }
+                                            actionCamera(cameraController);
                                           },
                                           child: const BuildIcon(
                                             width: 68,
