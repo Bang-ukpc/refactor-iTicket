@@ -9,6 +9,7 @@ class ConfigEnvironmentVariable {
   static final azureContainerImageUrl = dotenv.get('AZURE_CONTAINER_IMAGE_URL');
   static final serviceURL = dotenv.get('SERVICE_URL');
   static final environment = dotenv.get('ENVIRONMENT');
+  static final version = dotenv.get('VERSION', fallback: null);
 }
 
 class NavigationService {

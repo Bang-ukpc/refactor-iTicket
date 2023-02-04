@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
@@ -146,7 +147,10 @@ class _LocationScreenState extends State<LocationScreen> {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
         locations.onSelectedRotaShift(listFilter[0]);
         locations.onSelectedLocation(listFilterByRota[0].locations![0]);
-        locations.onSelectedZone(listFilterByRota[0].locations![0].Zones![0]);
+        locations.onSelectedZone(
+            listFilterByRota[0].locations![0].Zones!.isNotEmpty
+                ? listFilterByRota[0].locations![0].Zones![0]
+                : null);
       }
     });
   }
