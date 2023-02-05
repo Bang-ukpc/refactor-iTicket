@@ -111,7 +111,6 @@ class CameraPicker extends HookWidget {
                   automaticallyImplyLeading: true,
                   isOpenDrawer: false,
                 ),
-                // drawer: const MyDrawer(),
                 bottomNavigationBar: BottomSheet2(buttonList: [
                   BottomNavyBarItem(
                       onPressed: () {
@@ -204,7 +203,7 @@ class CameraPicker extends HookWidget {
         File files = await File('${tempDir.path}/$fileName').create();
         var capturedImage = img.decodeImage(await file.readAsBytes());
         final img.Image orientedImage = img.bakeOrientation(capturedImage!);
-        var encodeImage = img.encodeJpg(orientedImage, quality: 30);
+        var encodeImage = img.encodeJpg(orientedImage, quality: 60);
         var finalImage = files..writeAsBytesSync(encodeImage);
 
         log('file original: ${imageFile.lengthSync().toString()}');

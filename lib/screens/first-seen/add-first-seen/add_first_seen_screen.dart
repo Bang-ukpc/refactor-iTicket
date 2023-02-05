@@ -319,7 +319,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
               height: 20,
               color: Colors.white,
             ),
-            label: 'Save & add',
+            label: 'Complete & add',
           ),
         ]),
         body: GestureDetector(

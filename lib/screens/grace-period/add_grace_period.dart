@@ -318,7 +318,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
               height: 20,
               color: Colors.white,
             ),
-            label: 'Save & add',
+            label: 'Complete & add',
           ),
         ]),
         body: GestureDetector(

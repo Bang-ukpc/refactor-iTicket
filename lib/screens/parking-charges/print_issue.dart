@@ -40,8 +40,6 @@ class _PrintIssueState extends State<PrintIssue> {
   @override
   void initState() {
     super.initState();
-    bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
       final contraventionProvider =
@@ -51,6 +49,8 @@ class _PrintIssueState extends State<PrintIssue> {
 
       if (contraventionProvider.contravention!.type == TypePCN.Physical.index &&
           args['isPrinter'] == true) {
+        bluetoothPrinterHelper.scan();
+        bluetoothPrinterHelper.initConnect();
         if (bluetoothPrinterHelper.selectedPrinter == null) {
           showCircularProgressIndicator(
             context: context,
