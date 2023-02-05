@@ -310,8 +310,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final argsFromExpired =
         ModalRoute.of(context)!.settings.arguments as dynamic;
 
-    log(_vehicleMakeController.text);
-    log(_vehicleColorController.text);
+    log('issue pcn screen');
 
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
     final physicalPCN = ContraventionCreateWardenCommand(
@@ -598,8 +597,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       _formKey.currentState!.save();
     }
-
-    log('reason code: ${_contraventionReasonController.text}');
 
     Future<void> showDialogPermitExists(CheckPermit? value) async {
       return showDialog<void>(
@@ -1468,11 +1465,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                     height: 20,
                                   ),
                                   TextFormField(
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'[^\s]+\b\s?'),
-                                      ),
-                                    ],
                                     controller: _commentController,
                                     style: CustomTextStyle.h5.copyWith(
                                       fontSize: 16,

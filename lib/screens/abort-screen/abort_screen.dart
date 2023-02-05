@@ -270,11 +270,6 @@ class _AbortScreenState extends State<AbortScreen> {
                                       height: 20,
                                     ),
                                     TextFormField(
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(
-                                          RegExp(r'[^\s]+\b\s?'),
-                                        ),
-                                      ],
                                       style: CustomTextStyle.h5
                                           .copyWith(fontSize: 16),
                                       controller: _commentController,
@@ -290,10 +285,6 @@ class _AbortScreenState extends State<AbortScreen> {
                                         ),
                                       ),
                                       maxLines: 3,
-                                      onSaved: (value) {
-                                        _commentController.text =
-                                            value as String;
-                                      },
                                     ),
                                   ],
                                 ),
