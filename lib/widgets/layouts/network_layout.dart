@@ -157,7 +157,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         for (int j = 0; j < vehicleInfoList[i].EvidencePhotos!.length; j++) {
           try {
             await evidencePhotoController
-                .uploadImage(vehicleInfoList[i].EvidencePhotos![j].BlobName)
+                .uploadImage(
+                    filePath: vehicleInfoList[i].EvidencePhotos![j].BlobName,
+                    capturedDateTime: vehicleInfoList[i].Created)
                 .then((value) {
               vehicleInfoList[i].EvidencePhotos![j] =
                   EvidencePhoto(BlobName: value['blobName']);

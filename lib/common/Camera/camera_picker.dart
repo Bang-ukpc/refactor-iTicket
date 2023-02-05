@@ -53,8 +53,6 @@ class CameraPicker extends HookWidget {
 
   final int? typePCN;
 
-  final bool? isReduceSizeImage;
-
   final WidgetBuilder? noCameraBuilder;
   final String titleCamera;
   final bool? previewImage;
@@ -80,7 +78,6 @@ class CameraPicker extends HookWidget {
     this.editImage = false,
     required this.titleCamera,
     this.typePCN,
-    this.isReduceSizeImage = false,
   }) : super(key: key);
 
   @override
@@ -207,8 +204,7 @@ class CameraPicker extends HookWidget {
         File files = await File('${tempDir.path}/$fileName').create();
         var capturedImage = img.decodeImage(await file.readAsBytes());
         final img.Image orientedImage = img.bakeOrientation(capturedImage!);
-        var encodeImage = img.encodeJpg(orientedImage,
-            quality: isReduceSizeImage == true ? 10 : 100);
+        var encodeImage = img.encodeJpg(orientedImage, quality: 30);
         var finalImage = files..writeAsBytesSync(encodeImage);
 
         log('file original: ${imageFile.lengthSync().toString()}');
