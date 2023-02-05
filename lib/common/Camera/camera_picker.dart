@@ -8,7 +8,6 @@ import 'package:camera/camera.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/picker_store.dart';
 import 'package:iWarden/common/IconButtonCamera/build_icon.dart';
@@ -17,11 +16,11 @@ import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
+import 'package:image/image.dart' as img;
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as syspaths;
 import 'package:provider/provider.dart';
-import 'package:image/image.dart' as img;
 
 const _defaultPreviewHeight = 60.0;
 const _defaultPreviewWidth = 80.0;
@@ -87,12 +86,14 @@ class CameraPicker extends HookWidget {
         minPicture: minPicture,
         maxPicture: maxPicture));
     var filesDataImage = useState<int>(store.filesData.length);
+    var cameraOn = useState<bool>(true);
     final availableCamerasFuture = useMemoized(() => availableCameras());
     final cameras = useState<List<CameraDescription>?>(null);
     final printIssue = Provider.of<PrintIssueProviders>(context);
     final widthScreen = MediaQuery.of(context).size.width;
     const padding = 30.0;
-    bool isCamera = true;
+
+    final appLifecycleState = useAppLifecycleState();
 
     Future<void> showDiaLog(double widthScreen, double padding,
         BuildContext context, File img) async {
@@ -306,17 +307,22 @@ class CameraPicker extends HookWidget {
                   enableAudio: false,
                 ));
 
-                // useEffect(() {
-                //   SystemChrome.setPreferredOrientations([
-                //     DeviceOrientation.portraitUp,
-                //     DeviceOrientation.portraitDown,
-                //   ]);
-                //   return null;
-                // }, []);
-
                 final cameraController = cameraControllerState.value;
                 final initializeCamera = useMemoized(
                     () => cameraController.initialize(), [cameraController]);
+
+                useEffect(() {
+                  if (appLifecycleState == AppLifecycleState.paused ||
+                      appLifecycleState == AppLifecycleState.inactive) {
+                    cameraController.dispose();
+                    cameraOn.value = false;
+                  } else if (appLifecycleState == AppLifecycleState.resumed) {
+                    if (cameraOn.value == false) {
+                      Navigator.of(context).pop();
+                    }
+                  }
+                  return null;
+                }, [appLifecycleState]);
 
                 return WillPopScope(
                   onWillPop: () async {
