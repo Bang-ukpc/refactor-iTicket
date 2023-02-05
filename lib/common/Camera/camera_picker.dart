@@ -20,6 +20,7 @@ import 'package:image/image.dart' as img;
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as syspaths;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 const _defaultPreviewHeight = 60.0;
@@ -94,6 +95,10 @@ class CameraPicker extends HookWidget {
     const padding = 30.0;
 
     final appLifecycleState = useAppLifecycleState();
+
+    Future<bool> checkCameraPermission() async {
+      return await Permission.camera.isGranted;
+    }
 
     Future<void> showDiaLog(double widthScreen, double padding,
         BuildContext context, File img) async {
@@ -312,15 +317,20 @@ class CameraPicker extends HookWidget {
                     () => cameraController.initialize(), [cameraController]);
 
                 useEffect(() {
-                  if (appLifecycleState == AppLifecycleState.paused ||
-                      appLifecycleState == AppLifecycleState.inactive) {
-                    cameraController.dispose();
-                    cameraOn.value = false;
-                  } else if (appLifecycleState == AppLifecycleState.resumed) {
-                    if (cameraOn.value == false) {
-                      Navigator.of(context).pop();
+                  checkCameraPermission().then((value) {
+                    if (value == true) {
+                      if (appLifecycleState == AppLifecycleState.paused ||
+                          appLifecycleState == AppLifecycleState.inactive) {
+                        cameraController.dispose();
+                        cameraOn.value = false;
+                      } else if (appLifecycleState ==
+                          AppLifecycleState.resumed) {
+                        if (cameraOn.value == false) {
+                          Navigator.of(context).pop();
+                        }
+                      }
                     }
-                  }
+                  });
                   return null;
                 }, [appLifecycleState]);
 
