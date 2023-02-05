@@ -203,7 +203,7 @@ class CameraPicker extends HookWidget {
         File files = await File('${tempDir.path}/$fileName').create();
         var capturedImage = img.decodeImage(await file.readAsBytes());
         final img.Image orientedImage = img.bakeOrientation(capturedImage!);
-        var encodeImage = img.encodeJpg(orientedImage, quality: 60);
+        var encodeImage = img.encodeJpg(orientedImage, quality: 40);
         var finalImage = files..writeAsBytesSync(encodeImage);
 
         log('file original: ${imageFile.lengthSync().toString()}');
