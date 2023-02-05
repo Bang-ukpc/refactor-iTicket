@@ -196,7 +196,7 @@ class _DetailScreenState extends State<DetailScreen> {
                             ),
                             args.ExpiredAt,
                           )))}"
-                        : "Expired in: ${calculateTime.getDurationExpiredIn(Duration(minutes: calculateTime.daysBetween(
+                        : "Expired: ${calculateTime.getDurationExpiredIn(Duration(minutes: calculateTime.daysBetween(
                             args.ExpiredAt,
                             DateTime.now(),
                           )))}",

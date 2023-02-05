@@ -55,7 +55,7 @@ class CardItem extends StatelessWidget {
                 ),
                 if (type == TypeFirstSeen.Expired)
                   Text(
-                    "Expired in: ${calculateTime.getDurationExpiredIn(Duration(minutes: expiring))} ago",
+                    "Expired: ${calculateTime.getDurationExpiredIn(Duration(minutes: expiring))} ago",
                     style: CustomTextStyle.h6.copyWith(
                       color: ColorTheme.danger,
                       fontSize: 14,

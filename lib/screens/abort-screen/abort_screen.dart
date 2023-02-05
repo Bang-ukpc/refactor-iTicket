@@ -214,7 +214,7 @@ class _AbortScreenState extends State<AbortScreen> {
                                             (context, selectedItem) {
                                           return Text(
                                               selectedItem == null
-                                                  ? "Enter vehicle color"
+                                                  ? "Select vehicle reason"
                                                   : selectedItem.reason,
                                               style: TextStyle(
                                                   fontSize: 16,

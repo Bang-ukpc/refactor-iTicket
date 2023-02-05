@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 60,
                   ),
                   Text(
-                    "Parking operative",
+                    "Parking Operatives",
                     style: CustomTextStyle.h5.copyWith(
                       color: ColorTheme.grey600,
                     ),
