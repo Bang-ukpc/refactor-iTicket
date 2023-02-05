@@ -21,6 +21,7 @@ import 'package:iWarden/widgets/app_bar.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as syspaths;
 import 'package:provider/provider.dart';
+import 'package:image/image.dart' as img;
 
 const _defaultPreviewHeight = 60.0;
 const _defaultPreviewWidth = 80.0;
@@ -200,35 +201,60 @@ class CameraPicker extends HookWidget {
     void actionCamera(CameraController cameraController) async {
       try {
         final file = await cameraController.takePicture();
-        final tempDir = await syspaths.getTemporaryDirectory();
-
         var imageFile = File(file.path);
-
-        final targetPath = '${tempDir.absolute.path}/temp.jpg';
-
-        var result = await FlutterImageCompress.compressAndGetFile(
-          imageFile.absolute.path,
-          targetPath,
-          quality: isReduceSizeImage == true ? 10 : 95,
-        );
+        final tempDir = await syspaths.getTemporaryDirectory();
+        final fileName = path.basename(file.path);
+        File files = await File('${tempDir.path}/$fileName').create();
+        var capturedImage = img.decodeImage(await file.readAsBytes());
+        final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+        var encodeImage = img.encodeJpg(orientedImage,
+            quality: isReduceSizeImage == true ? 10 : 100);
+        var finalImage = files..writeAsBytesSync(encodeImage);
 
         log('file original: ${imageFile.lengthSync().toString()}');
-        log('file compress: ${result!.lengthSync().toString()}');
-
-        final fileName = path.basename(result.path);
-        File files = await File('${tempDir.path}/$fileName').create();
-        // var capturedImage = img.decodeImage(await file.readAsBytes());
-        // final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+        log('file compress: ${finalImage.lengthSync().toString()}');
 
         store.addFile(files);
         filesDataImage.value = filesDataImage.value + 1;
         previewImage == true
             // ignore: use_build_context_synchronously
-            ? showDiaLog(widthScreen, padding, context, files)
+            ? showDiaLog(widthScreen, padding, context, finalImage)
             : null;
       } catch (ex, stack) {
         onError?.call(ex, stack);
       }
+
+      // try {
+      //   final file = await cameraController.takePicture();
+      //   final tempDir = await syspaths.getTemporaryDirectory();
+
+      //   var imageFile = File(file.path);
+
+      //   final targetPath = '${tempDir.absolute.path}/temp.jpg';
+
+      //   var result = await FlutterImageCompress.compressAndGetFile(
+      //     imageFile.absolute.path,
+      //     targetPath,
+      //     quality: isReduceSizeImage == true ? 10 : 95,
+      //   );
+
+      //   log('file original: ${imageFile.lengthSync().toString()}');
+      //   log('file compress: ${result!.lengthSync().toString()}');
+
+      //   final fileName = path.basename(result.path);
+      //   File files = await File('${tempDir.path}/$fileName').create();
+      //   // var capturedImage = img.decodeImage(await file.readAsBytes());
+      //   // final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+
+      //   store.addFile(files);
+      //   filesDataImage.value = filesDataImage.value + 1;
+      //   previewImage == true
+      //       // ignore: use_build_context_synchronously
+      //       ? showDiaLog(widthScreen, padding, context, files)
+      //       : null;
+      // } catch (ex, stack) {
+      //   onError?.call(ex, stack);
+      // }
     }
 
     return Material(
