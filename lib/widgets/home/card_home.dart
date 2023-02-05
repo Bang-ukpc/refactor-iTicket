@@ -53,7 +53,7 @@ class CardHome extends StatelessWidget {
                             color: backgroundIcon,
                             borderRadius: BorderRadius.circular(3)),
                         child: Container(
-                          padding: const EdgeInsets.all(17),
+                          padding: const EdgeInsets.all(14),
                           child: SvgPicture.asset(
                             assetIcon,
                           ),
