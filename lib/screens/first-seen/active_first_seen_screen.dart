@@ -117,7 +117,6 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     final locations = Provider.of<Locations>(context, listen: false);
 
     log('Active first seen screen');
-    print('time first seen ${locations.expiringTimeFirstSeen / 60}');
 
     void onCarLeft(VehicleInformation vehicleInfo) {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(

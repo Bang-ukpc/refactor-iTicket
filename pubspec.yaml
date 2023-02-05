@@ -101,6 +101,7 @@ flutter:
     - assets/images/userAvatar.png
     - assets/images/empty-list.png
     - assets/images/noPhoto.jpg
+    - assets/images/No-Image-Icon.png
     - assets/svg/IconNext.svg
     - assets/svg/IconCar.svg
     - assets/svg/IconForm.svg
