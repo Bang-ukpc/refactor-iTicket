@@ -149,9 +149,11 @@ class _PrintPCNState extends State<PrintPCN> {
               );
             } on DioError catch (error) {
               if (error.type == DioErrorType.other) {
-                throw Exception("Something went wrong");
+                // throw Exception("Something went wrong");
+                print("Something went wrong");
               }
-              throw Exception(error.message);
+              print(error);
+              // throw Exception(error.message);
             }
 
             if (i == args.contraventionPhotos!.length - 1) {
