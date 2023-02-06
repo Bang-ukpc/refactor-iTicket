@@ -458,6 +458,10 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                   backgroundColor: ColorTheme.grey300,
                                 ),
                                 onPressed: () {
+                                  eventAnalytics.clickButton(
+                                    button: "Log out",
+                                    user: wardensProvider.wardens!.Email,
+                                  );
                                   onLogout(auth);
                                 },
                                 label: Text(
@@ -486,6 +490,10 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                           ),
                           onPressed: () {
                             if (checkGps == true) {
+                              eventAnalytics.clickButton(
+                                button: "Start shift",
+                                user: wardensProvider.wardens!.Email,
+                              );
                               onStartShift();
                             } else {
                               toast.CherryToast.error(

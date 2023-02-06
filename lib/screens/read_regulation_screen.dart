@@ -10,6 +10,7 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/configs/google_analytics.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
@@ -74,6 +75,10 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
     );
 
     void checkNextPage() async {
+      eventAnalytics.clickButton(
+        button: "Check in",
+        user: wardersProvider.wardens!.Email,
+      );
       if (locations.location?.Notes?.isEmpty == true ||
           locations.location?.Notes == null) {
         try {

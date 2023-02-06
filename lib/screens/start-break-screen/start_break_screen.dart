@@ -5,6 +5,7 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/configs/google_analytics.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -44,6 +45,10 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
 
     void onEndBreak() async {
       try {
+        eventAnalytics.clickButton(
+          button: "End break",
+          user: wardersProvider.wardens!.Email,
+        );
         showCircularProgressIndicator(context: context);
         await userController
             .createWardenEvent(wardenEventEndBreak)

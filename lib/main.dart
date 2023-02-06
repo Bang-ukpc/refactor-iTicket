@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -20,14 +21,14 @@ import 'package:provider/provider.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env").then((value) => {});
-  WidgetsFlutterBinding.ensureInitialized();
   //firebase Crashlytics config
   if (ConfigEnvironmentVariable.environment.toString() != 'local') {
     //test err
     // FirebaseCrashlytics.instance.crash();
-    await Firebase.initializeApp();
     //Action Check
-    // FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+    await Firebase.initializeApp();
+    WidgetsFlutterBinding.ensureInitialized();
+    FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     FlutterError.onError = (errorDetails) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
     };

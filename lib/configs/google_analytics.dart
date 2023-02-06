@@ -1,14 +1,16 @@
+import 'dart:developer';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
 
 class EventAnalytics {
   FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
-  Future<void> setEvent() async {
+  Future<void> clickButton({user = String, button = String}) async {
     await analytics.logEvent(
       name: "click_button",
       parameters: {
-        "button": "Start shift",
-        "test": "test",
+        "button": button,
+        "user": user,
       },
     );
   }
@@ -26,5 +28,7 @@ class EventAnalytics {
     print('logEvent succeeded');
   }
 }
+
+enum Event { startShift, Banana, Mango }
 
 final eventAnalytics = EventAnalytics();
