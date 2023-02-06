@@ -199,28 +199,47 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   void onSearchVehicleInfoByPlate(
       String plate, ContraventionProvider contraventionProvider) async {
     showCircularProgressIndicator(context: context);
-    await contraventionController
-        .getVehicleDetailByPlate(plate: plate)
-        .then((value) {
-      if (value?.Make != null) {
-        contraventionProvider.setMakeNullProvider(value?.Make);
-        setState(() {
-          _vehicleMakeController.text = value?.Make ?? '';
-        });
-      }
-      if (value?.Colour != null) {
-        contraventionProvider.setColorNullProvider(value?.Colour);
-        setState(() {
-          _vehicleColorController.text = value?.Colour ?? '';
-          colourNull = value?.Colour ?? '';
-        });
-      }
-      Navigator.of(context).pop();
-      if (value?.Colour == null && value?.Make == null) {
+    try {
+      await contraventionController
+          .getVehicleDetailByPlate(plate: plate)
+          .then((value) {
+        if (value?.Make != null) {
+          contraventionProvider.setMakeNullProvider(value?.Make);
+          setState(() {
+            _vehicleMakeController.text = value?.Make ?? '';
+          });
+        }
+        if (value?.Colour != null) {
+          contraventionProvider.setColorNullProvider(value?.Colour);
+          setState(() {
+            _vehicleColorController.text = value?.Colour ?? '';
+            colourNull = value?.Colour ?? '';
+          });
+        }
+        Navigator.of(context).pop();
+        if (value?.Colour == null && value?.Make == null) {
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 3),
+            title: Text(
+              "Couldn't find vehicle info",
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
+      });
+    } on DioError catch (error) {
+      if (!mounted) return;
+      if (error.type == DioErrorType.other) {
+        Navigator.of(context).pop();
         CherryToast.error(
           toastDuration: const Duration(seconds: 3),
           title: Text(
-            "Couldn't find vehicle info",
+            error.message.length > Constant.errorTypeOther
+                ? 'Something went wrong, please try again'
+                : error.message,
             style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -228,13 +247,22 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         ).show(context);
         return;
       }
-    }).catchError(((e) {
-      setState(() {
-        _vehicleMakeController.text = '';
-        _vehicleColorController.text = '';
-      });
       Navigator.of(context).pop();
-    }));
+      CherryToast.error(
+        toastDuration: const Duration(seconds: 3),
+        displayCloseButton: true,
+        title: Text(
+          (error.response?.data['message'].toString().length ?? 0) >
+                  Constant.errorMaxLength
+              ? 'Internal server error'
+              : error.response?.data['message'],
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
   }
 
   @override

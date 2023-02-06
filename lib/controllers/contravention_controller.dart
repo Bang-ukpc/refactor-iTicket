@@ -95,9 +95,7 @@ class ContraventionController {
         final contraventions = json.decode(data) as Map<String, dynamic>;
         Pagination fromJsonContravention = Pagination.fromJson(contraventions);
         fromJsonContravention.rows = fromJsonContravention.rows
-            .where((i) =>
-                i['ZoneId'] == zoneId &&
-                i['Status'] == ContraventionStatus.Open.index)
+            .where((i) => i['ZoneId'] == zoneId)
             .toList();
         fromJsonContravention.rows
             .sort((i1, i2) => i2['Created'].compareTo(i1['Created']));

@@ -1,19 +1,15 @@
 import 'dart:developer';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/configs/google_analytics.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
-import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -75,10 +71,10 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
     );
 
     void checkNextPage() async {
-      eventAnalytics.clickButton(
-        button: "Check in",
-        user: wardersProvider.wardens!.Email,
-      );
+      // eventAnalytics.clickButton(
+      //   button: "Check in",
+      //   user: wardersProvider.wardens!.Email,
+      // );
       if (locations.location?.Notes?.isEmpty == true ||
           locations.location?.Notes == null) {
         try {

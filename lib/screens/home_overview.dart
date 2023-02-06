@@ -1,16 +1,13 @@
 import 'dart:developer';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/configs/google_analytics.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
@@ -269,10 +266,10 @@ class _HomeOverviewState extends State<HomeOverview> {
     void onCheckOut() async {
       try {
         showCircularProgressIndicator(context: context, text: 'Checking out');
-        eventAnalytics.clickButton(
-          button: "Check out",
-          user: wardensProvider.wardens!.Email,
-        );
+        // eventAnalytics.clickButton(
+        //   button: "Check out",
+        //   user: wardensProvider.wardens!.Email,
+        // );
         await userController.createWardenEvent(wardenEvent).then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
@@ -311,10 +308,10 @@ class _HomeOverviewState extends State<HomeOverview> {
     }
 
     void onStartBreak() async {
-      eventAnalytics.clickButton(
-        button: "Start break",
-        user: wardensProvider.wardens!.Email,
-      );
+      // eventAnalytics.clickButton(
+      //   button: "Start break",
+      //   user: wardensProvider.wardens!.Email,
+      // );
       try {
         showCircularProgressIndicator(context: context, text: 'Processing');
         await userController

@@ -83,10 +83,16 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
                   cacheHeight: 80,
                   width: 72,
                   height: 72,
-                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                    'assets/images/No-Image-Icon.png',
-                    width: 40,
-                    height: 40,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 72,
+                    height: 72,
+                    alignment: Alignment.center,
+                    color: ColorTheme.grey200,
+                    child: Image.asset(
+                      'assets/images/No-Image-Icon.png',
+                      width: 40,
+                      height: 40,
+                    ),
                   ),
                 ),
         ),

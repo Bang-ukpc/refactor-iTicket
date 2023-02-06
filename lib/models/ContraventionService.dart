@@ -16,7 +16,7 @@ class ContraventionCreateWardenCommand {
   num Longitude;
   num Latitude;
   int LocationAccuracy;
-  String WardenComments;
+  String? WardenComments;
   int? TypePCN;
   int ZoneId;
   int? Id;
@@ -34,7 +34,7 @@ class ContraventionCreateWardenCommand {
     required this.Longitude,
     required this.Latitude,
     required this.LocationAccuracy,
-    required this.WardenComments,
+    this.WardenComments,
     this.TypePCN,
     required this.ZoneId,
     this.Id,

@@ -107,6 +107,7 @@ class _PrintIssueState extends State<PrintIssue> {
       await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => CameraPicker(
+            isDisplayFunctionKey: false,
             typePCN: contraventionProvider.contravention!.type,
             titleCamera: printIssue
                 .findIssueNoImage(
@@ -453,6 +454,7 @@ class _PrintIssueState extends State<PrintIssue> {
                                                 MaterialPageRoute(
                                                   builder: (context) =>
                                                       CameraPicker(
+                                                    isDisplayFunctionKey: false,
                                                     typePCN:
                                                         contraventionProvider
                                                             .contravention!
