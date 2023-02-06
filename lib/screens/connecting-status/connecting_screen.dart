@@ -139,6 +139,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
 
   // Get current location
   void getCurrentLocationOfWarden() async {
+    if (!mounted) return;
     await currentLocationPosition.getCurrentLocation().then((value) {
       setState(() {
         pendingGetCurrentLocation = false;
@@ -178,6 +179,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   void getCancellationReasonList() async {
+    if (!mounted) return;
     await abortController.getCancellationReasonList().then((value) {
       setState(() {
         cancellationReasonList = value;
