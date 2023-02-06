@@ -364,7 +364,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   children: [
                     if (pendingGetCurrentLocation == true)
                       Text(
-                        "Connecting pair devices",
+                        "Connecting paired devices",
                         style: CustomTextStyle.h3
                             .copyWith(color: ColorTheme.primary),
                       ),
