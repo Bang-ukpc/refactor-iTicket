@@ -3,16 +3,15 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/configs/configs.dart';
-import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
-import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/theme/color.dart';
@@ -164,9 +163,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
               vehicleInfoList[i].EvidencePhotos![j] =
                   EvidencePhoto(BlobName: value['blobName']);
             });
-          } catch (e) {
+          } on DioError catch (e) {
             print('evidencePhotoController: $e');
-            return true;
+            throw Exception(e.message);
           }
         }
         try {
@@ -174,9 +173,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             vehicleInfoList[i].Id = null;
           }
           await vehicleInfoController.upsertVehicleInfo(vehicleInfoList[i]);
-        } catch (e) {
+        } on DioError catch (e) {
           print('upsertVehicleInfo: $e');
-          return true;
+          throw Exception(e.message);
         }
       }
       SharedPreferencesHelper.removeStringValue('vehicleInfoUpsertDataLocal');
@@ -192,8 +191,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     final String? contraventionPhotoData =
         await SharedPreferencesHelper.getStringValue(
             'contraventionPhotoDataLocal');
-    final String? dataAbortPCN =
-        await SharedPreferencesHelper.getStringValue('abortPCNDataLocal');
 
     if (issuePCNData != null) {
       var decodedData = json.decode(issuePCNData) as List<dynamic>;
@@ -201,7 +198,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           .map((e) => ContraventionCreateWardenCommand.fromJson(json.decode(e)))
           .toList();
       List<ContraventionCreatePhoto> contraventionCreatePhoto = [];
-      List<AbortPCN> abortPCN = [];
 
       if (contraventionPhotoData != null) {
         var contraventionPhotoDecoded =
@@ -211,48 +207,26 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             .toList();
       }
 
-      if (dataAbortPCN != null) {
-        var abortDataDecoded = json.decode(dataAbortPCN) as List<dynamic>;
-        abortPCN = abortDataDecoded
-            .map((e) => AbortPCN.fromJson(json.decode(e)))
-            .toList();
-      }
-
       for (int i = 0; i < physicalPCNList.length; i++) {
         try {
-          await contraventionController
-              .createPCN(physicalPCNList[i])
-              .then((contravention) async {
-            for (int j = 0; j < abortPCN.length; j++) {
-              if (physicalPCNList[i].Id == abortPCN[j].contraventionId) {
-                abortPCN[j].contraventionId = contravention.id ?? 0;
-                try {
-                  await abortController.abortPCN(abortPCN[j]);
-                } catch (e) {
-                  print('abortPCN: $e');
-                  break;
-                }
-              }
-            }
-          });
-        } catch (e) {
+          await contraventionController.createPCN(physicalPCNList[i]);
+        } on DioError catch (e) {
           print('createPCN: $e');
-          return true;
+          throw Exception(e.message);
         }
       }
       for (int i = 0; i < contraventionCreatePhoto.length; i++) {
         try {
           await contraventionController
               .uploadContraventionImage(contraventionCreatePhoto[i]);
-        } catch (e) {
+        } on DioError catch (e) {
           print('uploadContraventionImage: $e');
-          return true;
+          throw Exception(e.message);
         }
       }
 
       SharedPreferencesHelper.removeStringValue('issuePCNDataLocal');
       SharedPreferencesHelper.removeStringValue('contraventionPhotoDataLocal');
-      SharedPreferencesHelper.removeStringValue('abortPCNDataLocal');
       return true;
     } else {
       return true;
@@ -291,9 +265,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         wardenEventList[i].Id = 0;
         try {
           await userController.createWardenEvent(wardenEventList[i]);
-        } catch (e) {
+        } on DioError catch (e) {
           print('createWardenEvent: $e');
-          return true;
+          throw Exception(e.message);
         }
       }
       SharedPreferencesHelper.removeStringValue('wardenEventDataLocal');
@@ -310,9 +284,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           wardenEventList[i].Id = 0;
           try {
             await userController.createWardenEvent(wardenEventList[i]);
-          } catch (e) {
+          } on DioError catch (e) {
             print('createWardenEvent: $e');
-            return true;
+            throw Exception(e.message);
           }
         }
         SharedPreferencesHelper.removeStringValue(

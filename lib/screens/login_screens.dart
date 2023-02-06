@@ -2,10 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:iWarden/common/dot.dart';
-import 'package:iWarden/configs/google_analytics.dart';
 import 'package:iWarden/providers/auth.dart';
-import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
@@ -73,10 +70,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   OutlinedButton.icon(
                     onPressed: () async {
-                      eventAnalytics.clickButton(
-                        button: "Sign in",
-                        user: "",
-                      );
+                      // eventAnalytics.clickButton(
+                      //   button: "Sign in",
+                      //   user: "",
+                      // );
                       authProvider.loginWithMicrosoft(context);
                     },
                     style: OutlinedButton.styleFrom(

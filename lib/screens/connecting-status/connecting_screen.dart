@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:developer' as developer;
-import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -17,7 +15,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/configs/google_analytics.dart';
 import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
@@ -34,7 +31,6 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
 
-import '../../providers/locations.dart';
 import '../login_screens.dart';
 
 enum StateDevice { connected, pending, disconnect }
@@ -458,10 +454,10 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                   backgroundColor: ColorTheme.grey300,
                                 ),
                                 onPressed: () {
-                                  eventAnalytics.clickButton(
-                                    button: "Log out",
-                                    user: wardensProvider.wardens!.Email,
-                                  );
+                                  // eventAnalytics.clickButton(
+                                  //   button: "Log out",
+                                  //   user: wardensProvider.wardens!.Email,
+                                  // );
                                   onLogout(auth);
                                 },
                                 label: Text(
@@ -488,12 +484,12 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                             shadowColor: Colors.transparent,
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             if (checkGps == true) {
-                              eventAnalytics.clickButton(
-                                button: "Start shift",
-                                user: wardensProvider.wardens!.Email,
-                              );
+                              // await eventAnalytics.clickButton(
+                              //   button: "Start shift",
+                              //   user: wardensProvider.wardens!.Email,
+                              // );
                               onStartShift();
                             } else {
                               toast.CherryToast.error(

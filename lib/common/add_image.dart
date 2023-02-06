@@ -118,8 +118,8 @@ class _AddImageState extends State<AddImage> {
                             ),
                             errorWidget: (context, url, error) => Image.asset(
                               'assets/images/No-Image-Icon.png',
-                              width: 30,
-                              height: 30,
+                              width: 40,
+                              height: 40,
                             ),
                           );
                         }).toList()
@@ -129,32 +129,31 @@ class _AddImageState extends State<AddImage> {
                             errorBuilder: (context, error, stackTrace) =>
                                 Image.asset(
                               'assets/images/No-Image-Icon.png',
-                              width: 30,
-                              height: 30,
+                              width: 40,
+                              height: 40,
                             ),
                           );
                         }).toList()
                   : widget.listImageFile!.map((item) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.file(
-                            File(item),
-                            errorBuilder: (context, error, stackTrace) =>
-                                SizedBox(
+                      return Image.file(
+                        File(item),
+                        errorBuilder: (context, error, stackTrace) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
                               child: Image.asset(
                                 'assets/images/No-Image-Icon.png',
                                 width: 40,
                                 height: 40,
                               ),
                             ),
-                          ),
-                          const Text(
-                            'No photo in offline mode',
-                            style: CustomTextStyle.caption,
-                          ),
-                        ],
+                            const Text(
+                              'No photo in offline mode',
+                              style: CustomTextStyle.caption,
+                            ),
+                          ],
+                        ),
                       );
                     }).toList(),
               options: CarouselOptions(
@@ -254,22 +253,32 @@ class _AddImageState extends State<AddImage> {
                                                               (context, url,
                                                                       downloadProgress) =>
                                                                   Center(
-                                                                    child:
-                                                                        SizedBox(
-                                                                      width: 25,
-                                                                      height:
-                                                                          25,
-                                                                      child:
-                                                                          CircularProgressIndicator(
-                                                                        color: ColorTheme
-                                                                            .primary,
-                                                                      ),
-                                                                    ),
-                                                                  ),
+                                                            child: SizedBox(
+                                                              width: 25,
+                                                              height: 25,
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                color: ColorTheme
+                                                                    .primary,
+                                                              ),
+                                                            ),
+                                                          ),
                                                           errorWidget: (context,
                                                                   url, error) =>
-                                                              const Icon(
-                                                                  Icons.error))
+                                                              Container(
+                                                            width: 56,
+                                                            height: 56,
+                                                            color: ColorTheme
+                                                                .grey200,
+                                                            alignment: Alignment
+                                                                .center,
+                                                            child: Image.asset(
+                                                              'assets/images/No-Image-Icon.png',
+                                                              width: 30,
+                                                              height: 30,
+                                                            ),
+                                                          ),
+                                                        )
                                                       : Image.file(
                                                           fit: BoxFit.cover,
                                                           File(
@@ -279,25 +288,37 @@ class _AddImageState extends State<AddImage> {
                                                           errorBuilder: (context,
                                                                   error,
                                                                   stackTrace) =>
-                                                              const Icon(
-                                                                  Icons.error),
+                                                              Container(
+                                                            width: 56,
+                                                            height: 56,
+                                                            color: ColorTheme
+                                                                .grey200,
+                                                            alignment: Alignment
+                                                                .center,
+                                                            child: Image.asset(
+                                                              'assets/images/No-Image-Icon.png',
+                                                              width: 30,
+                                                              height: 30,
+                                                            ),
+                                                          ),
                                                         )
-                                                  : Container(
-                                                      width: 56,
-                                                      height: 56,
-                                                      alignment:
-                                                          Alignment.center,
-                                                      color: ColorTheme.grey200,
-                                                      child: Image.file(
-                                                        fit: BoxFit.cover,
-                                                        File(
-                                                          widget.listImageFile![
-                                                              index],
-                                                        ),
-                                                        errorBuilder: (context,
-                                                                error,
-                                                                stackTrace) =>
-                                                            Image.asset(
+                                                  : Image.file(
+                                                      fit: BoxFit.cover,
+                                                      File(
+                                                        widget.listImageFile![
+                                                            index],
+                                                      ),
+                                                      errorBuilder: (context,
+                                                              error,
+                                                              stackTrace) =>
+                                                          Container(
+                                                        width: 56,
+                                                        height: 56,
+                                                        alignment:
+                                                            Alignment.center,
+                                                        color:
+                                                            ColorTheme.grey200,
+                                                        child: Image.asset(
                                                           'assets/images/No-Image-Icon.png',
                                                           width: 30,
                                                           height: 30,

@@ -6,7 +6,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/configs/google_analytics.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
@@ -341,10 +340,10 @@ class InfoDrawer extends StatelessWidget {
               builder: (context, auth, _) {
                 return ElevatedButton(
                   onPressed: () {
-                    eventAnalytics.clickButton(
-                      button: "Start shift",
-                      user: wardersProvider.wardens!.Email,
-                    );
+                    // eventAnalytics.clickButton(
+                    //   button: "Log out",
+                    //   user: wardersProvider.wardens!.Email,
+                    // );
                     onLogout(auth);
                   },
                   style: ElevatedButton.styleFrom(
