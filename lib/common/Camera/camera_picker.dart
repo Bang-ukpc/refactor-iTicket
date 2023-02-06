@@ -211,18 +211,12 @@ class CameraPicker extends HookWidget {
         final fileName = path.basename(file.path);
         File files = await File('${tempDir.path}/$fileName').create();
         var capturedImage = img.decodeImage(await file.readAsBytes());
-        final img.Image orientedImage = img.bakeOrientation(capturedImage!);
-        var encodeImage = img.encodeJpg(orientedImage, quality: 40);
-        var finalImage = files..writeAsBytesSync(encodeImage);
-
-        log('file original: ${imageFile.lengthSync().toString()}');
-        log('file compress: ${finalImage.lengthSync().toString()}');
-
+        img.encodeJpg(capturedImage!, quality: 40);
         store.addFile(files);
         filesDataImage.value = filesDataImage.value + 1;
         previewImage == true
             // ignore: use_build_context_synchronously
-            ? showDiaLog(widthScreen, padding, context, finalImage)
+            ? showDiaLog(widthScreen, padding, context, files)
             : null;
       } catch (ex, stack) {
         onError?.call(ex, stack);
