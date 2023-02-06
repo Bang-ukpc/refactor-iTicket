@@ -53,7 +53,9 @@ class _PrintPCNState extends State<PrintPCN> {
       Plate: args?.plate ?? "",
       VehicleMake: contraventionProvider.getMakeNullProvider ?? "",
       VehicleColour: contraventionProvider.getColorNullProvider ?? "",
-      ContraventionReasonCode: args?.reason?.code ?? "",
+      ContraventionReasonCode: contraventionProvider
+              .getContraventionCode?.contraventionReason?.code ??
+          "",
       EventDateTime: DateTime.now(),
       FirstObservedDateTime:
           args?.contraventionDetailsWarden?.FirstObserved ?? DateTime.now(),

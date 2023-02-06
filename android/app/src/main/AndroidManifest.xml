@@ -53,7 +53,8 @@
                     note that the leading "/" is required for android:path
                 -->
                 <data
-                    android:host="com.example.iwarden"
+                    android:host="com.example.iWarden"
+                    android:path="/VzSiQcXRmi2kyjzcA+mYLEtbGVs="
                     android:scheme="msauth" />
             </intent-filter>
         </activity>
@@ -61,7 +62,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <uses-permission android:name="android.permission.CAMERA"  />
+    <uses-permission android:name="android.permission.CAMERA" />
     <!-- Provide required visibility configuration for API level 30 and above -->
 
 </manifest>

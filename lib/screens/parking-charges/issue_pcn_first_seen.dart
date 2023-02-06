@@ -194,7 +194,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
   List<String> arrMake = DataInfoCar().make;
   List<String> arrColor = DataInfoCar().color;
-  String? colourNull;
 
   void onSearchVehicleInfoByPlate(
       String plate, ContraventionProvider contraventionProvider) async {
@@ -213,7 +212,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           contraventionProvider.setColorNullProvider(value?.Colour);
           setState(() {
             _vehicleColorController.text = value?.Colour ?? '';
-            colourNull = value?.Colour ?? '';
           });
         }
         Navigator.of(context).pop();
@@ -279,12 +277,17 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       var contraventionData = contraventionProvider.contravention;
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
+
         _vehicleMakeController.text =
             contraventionProvider.getMakeNullProvider ?? '';
+
         _vehicleColorController.text =
             contraventionProvider.getColorNullProvider ?? '';
-        _contraventionReasonController.text =
-            contraventionData.reason?.code ?? '';
+
+        _contraventionReasonController.text = contraventionProvider
+                .getContraventionCode?.contraventionReason?.code ??
+            '';
+
         _commentController.text = contraventionData.contraventionEvents!
             .map((item) => item.detail)
             .toString()
@@ -301,8 +304,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           _contraventionReasonController.text = argsOverstayingTime != null
               ? argsOverstayingTime.contraventionReason!.code.toString()
               : '';
+          contraventionProvider.setContraventionCode(argsOverstayingTime);
         } else {
           _contraventionReasonController.text = '';
+          contraventionProvider.setContraventionCode(null);
         }
       }
       setSelectedTypeOfPCN(locationProvider, contraventionData);
@@ -335,8 +340,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
     final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
-    final argsFromExpired =
-        ModalRoute.of(context)!.settings.arguments as dynamic;
 
     log('issue pcn screen');
 
@@ -910,18 +913,20 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         setSelectedTypeOfPCN(
             locationProvider, contraventionProvider.contravention);
       });
-      getContraventionReasonList(zoneId: locationProvider.zone?.Id);
-      getContraventionReasonListOffline().then((value) {
-        setState(() {
-          _contraventionReasonController.text = fromJsonContraventionList
-                  .firstWhereOrNull((e) =>
-                      e.contraventionReason!.code ==
-                      _contraventionReasonController.text)!
-                  .contraventionReason!
-                  .code ??
-              '';
-        });
+      await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
+      await getContraventionReasonListOffline();
+      print(contraventionReasonList.length);
+      print(fromJsonContraventionList.length);
+      var contraventionCodeFind = fromJsonContraventionList.firstWhereOrNull(
+          (e) =>
+              e.contraventionReason!.code ==
+              contraventionProvider
+                  .getContraventionCode!.contraventionReason!.code);
+      setState(() {
+        _contraventionReasonController.text =
+            contraventionCodeFind?.contraventionReason?.code ?? "";
       });
+      contraventionProvider.setContraventionCode(contraventionCodeFind);
     }
 
     return WillPopScope(
@@ -1379,30 +1384,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         ),
                                       ),
                                       items: contraventionReasonList,
-                                      selectedItem: fromJsonContraventionList
-                                              .isNotEmpty
-                                          ? argsFromExpired == null
-                                              ? contraventionProvider
-                                                          .contravention !=
-                                                      null
-                                                  ? fromJsonContraventionList
-                                                      .firstWhereOrNull((e) =>
-                                                          e.contraventionReason
-                                                              ?.code ==
-                                                          _contraventionReasonController
-                                                              .text)
-                                                  : null
-                                              : argsFromExpired.Type ==
-                                                      VehicleInformationType
-                                                          .FIRST_SEEN.index
-                                                  ? fromJsonContraventionList
-                                                      .firstWhereOrNull((e) => e
-                                                          .summary!
-                                                          .toUpperCase()
-                                                          .contains('Overstaying'
-                                                              .toUpperCase()))
-                                                  : null
-                                          : null,
+                                      selectedItem: contraventionProvider
+                                          .getContraventionCode,
                                       itemAsString: (item) =>
                                           item.summary as String,
                                       popupProps: PopupProps.menu(
@@ -1428,6 +1411,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               value!.contraventionReason!.code
                                                   .toString();
                                         });
+                                        contraventionProvider
+                                            .setContraventionCode(value);
                                       },
                                       validator: ((value) {
                                         if (value == null) {

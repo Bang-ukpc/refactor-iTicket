@@ -27,6 +27,7 @@ class OAuthConfig {
     scope: "openid profile offline_access",
     redirectUri: ConfigEnvironmentVariable.redirectUri,
     navigatorKey: NavigationService.navigatorKey,
+    webUseRedirect: true,
     loader: const Center(child: CircularProgressIndicator()),
   );
 }

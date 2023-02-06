@@ -5,6 +5,7 @@ class ContraventionProvider with ChangeNotifier {
   static Contravention? contraventionData;
   static String? colorNullProvider;
   static String? makeNullProvider;
+  static ContraventionReasonTranslations? contraventionCode;
 
   Contravention? get contravention {
     return contraventionData;
@@ -18,6 +19,10 @@ class ContraventionProvider with ChangeNotifier {
     return makeNullProvider;
   }
 
+  ContraventionReasonTranslations? get getContraventionCode {
+    return contraventionCode;
+  }
+
   void setColorNullProvider(String? data) {
     colorNullProvider = data;
     notifyListeners();
@@ -25,6 +30,11 @@ class ContraventionProvider with ChangeNotifier {
 
   void setMakeNullProvider(String? data) {
     makeNullProvider = data;
+    notifyListeners();
+  }
+
+  void setContraventionCode(ContraventionReasonTranslations? data) {
+    contraventionCode = data;
     notifyListeners();
   }
 
@@ -37,6 +47,7 @@ class ContraventionProvider with ChangeNotifier {
     contraventionData = null;
     colorNullProvider = null;
     makeNullProvider = null;
+    contraventionCode = null;
     notifyListeners();
   }
 }
