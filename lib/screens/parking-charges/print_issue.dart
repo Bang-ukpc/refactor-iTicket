@@ -70,11 +70,11 @@ class _PrintIssueState extends State<PrintIssue> {
           });
         } else {
           bluetoothPrinterHelper.printPhysicalPCN(
-            contraventionProvider.contravention as Contravention,
-            locations.location!,
-            locations.location?.LowerAmount ?? 0,
-            locations.location?.UpperAmount ?? 0,
-            wardensProvider.wardens?.ExternalId ?? "",
+            physicalPCN: contraventionProvider.contravention as Contravention,
+            locationName: locations.location!,
+            lowerAmount: locations.location?.LowerAmount ?? 0,
+            upperAmount: locations.location?.UpperAmount ?? 0,
+            externalId: wardensProvider.wardens?.ExternalId ?? "",
           );
         }
       }
@@ -254,11 +254,12 @@ class _PrintIssueState extends State<PrintIssue> {
                       });
                     } else {
                       bluetoothPrinterHelper.printPhysicalPCN(
-                        contraventionProvider.contravention as Contravention,
-                        locations.location!,
-                        locations.location?.LowerAmount ?? 0,
-                        locations.location?.UpperAmount ?? 0,
-                        wardensProvider.wardens?.ExternalId ?? "",
+                        physicalPCN: contraventionProvider.contravention
+                            as Contravention,
+                        locationName: locations.location!,
+                        lowerAmount: locations.location?.LowerAmount ?? 0,
+                        upperAmount: locations.location?.UpperAmount ?? 0,
+                        externalId: wardensProvider.wardens?.ExternalId ?? "",
                       );
                     }
                   },

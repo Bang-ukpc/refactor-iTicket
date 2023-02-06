@@ -135,8 +135,12 @@ class BluetoothPrinterHelper {
     return text == null || text.isEmpty;
   }
 
-  Future printPhysicalPCN(Contravention physicalPCN, Location locationName,
-      double lowerAmount, double upperAmount, String externalId) async {
+  Future printPhysicalPCN(
+      {required Contravention physicalPCN,
+      required Location locationName,
+      required double lowerAmount,
+      required double upperAmount,
+      required String externalId}) async {
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 135;
