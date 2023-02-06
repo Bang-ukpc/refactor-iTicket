@@ -334,7 +334,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 if (!isValid) {
                   return;
                 } else {
-                  if (handelDistanceInMeters() <= 1609.344 * 100000) {
+                  if (handelDistanceInMeters() <= 1609.344) {
                     Navigator.of(context)
                         .pushNamed(ReadRegulationScreen.routeName);
                   } else {
