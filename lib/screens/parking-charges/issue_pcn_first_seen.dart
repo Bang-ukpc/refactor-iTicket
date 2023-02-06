@@ -915,8 +915,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       });
       await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
       await getContraventionReasonListOffline();
-      print(contraventionReasonList.length);
-      print(fromJsonContraventionList.length);
       var contraventionCodeFind = fromJsonContraventionList.firstWhereOrNull(
           (e) =>
               e.contraventionReason!.code ==
