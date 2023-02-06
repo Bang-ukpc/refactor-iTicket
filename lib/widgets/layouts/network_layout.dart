@@ -165,7 +165,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             });
           } on DioError catch (e) {
             print('evidencePhotoController: $e');
-            throw Exception(e.message);
+            // throw Exception(e.message);
           }
         }
         try {
@@ -175,7 +175,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           await vehicleInfoController.upsertVehicleInfo(vehicleInfoList[i]);
         } on DioError catch (e) {
           print('upsertVehicleInfo: $e');
-          throw Exception(e.message);
+          // throw Exception(e.message);
         }
       }
       SharedPreferencesHelper.removeStringValue('vehicleInfoUpsertDataLocal');
@@ -212,7 +212,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           await contraventionController.createPCN(physicalPCNList[i]);
         } on DioError catch (e) {
           print('createPCN: $e');
-          throw Exception(e.message);
+          // throw Exception(e.message);
         }
       }
       for (int i = 0; i < contraventionCreatePhoto.length; i++) {
@@ -221,7 +221,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
               .uploadContraventionImage(contraventionCreatePhoto[i]);
         } on DioError catch (e) {
           print('uploadContraventionImage: $e');
-          throw Exception(e.message);
+          // throw Exception(e.message);
         }
       }
 
@@ -267,7 +267,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           await userController.createWardenEvent(wardenEventList[i]);
         } on DioError catch (e) {
           print('createWardenEvent: $e');
-          throw Exception(e.message);
+          // throw Exception(e.message);
         }
       }
       SharedPreferencesHelper.removeStringValue('wardenEventDataLocal');
@@ -286,7 +286,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             await userController.createWardenEvent(wardenEventList[i]);
           } on DioError catch (e) {
             print('createWardenEvent: $e');
-            throw Exception(e.message);
+            // throw Exception(e.message);
           }
         }
         SharedPreferencesHelper.removeStringValue(
