@@ -21,13 +21,13 @@ import 'package:provider/provider.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env").then((value) => {});
+  WidgetsFlutterBinding.ensureInitialized();
   //firebase Crashlytics config
   if (ConfigEnvironmentVariable.environment.toString() != 'local') {
     //test err
     // FirebaseCrashlytics.instance.crash();
     //Action Check
     await Firebase.initializeApp();
-    WidgetsFlutterBinding.ensureInitialized();
     FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     FlutterError.onError = (errorDetails) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);

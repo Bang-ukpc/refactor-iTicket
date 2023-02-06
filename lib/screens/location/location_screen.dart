@@ -334,7 +334,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 if (!isValid) {
                   return;
                 } else {
-                  if (handelDistanceInMeters() <= 1609.344) {
+                  if (handelDistanceInMeters() <= 1609.344 * 100000) {
                     Navigator.of(context)
                         .pushNamed(ReadRegulationScreen.routeName);
                   } else {
@@ -505,15 +505,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                     as List<LocationWithZones>
                                                 : []
                                             : [],
-                                        selectedItem:
-                                            listFilterByRota.isNotEmpty
-                                                ? listFilterByRota[0]
-                                                        .locations!
-                                                        .isNotEmpty
-                                                    ? listFilterByRota[0]
-                                                        .locations![0]
-                                                    : null
-                                                : null,
+                                        selectedItem: locations.location,
                                         itemAsString: (item) => item.Name,
                                         popupProps: PopupProps.menu(
                                           fit: FlexFit.loose,
