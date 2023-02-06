@@ -116,22 +116,45 @@ class _AddImageState extends State<AddImage> {
                                 ),
                               ),
                             ),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.error),
+                            errorWidget: (context, url, error) => Image.asset(
+                              'assets/images/No-Image-Icon.png',
+                              width: 30,
+                              height: 30,
+                            ),
                           );
                         }).toList()
                       : widget.listImageFile!.map((item) {
                           return Image.file(
                             File(item),
                             errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.error),
+                                Image.asset(
+                              'assets/images/No-Image-Icon.png',
+                              width: 30,
+                              height: 30,
+                            ),
                           );
                         }).toList()
                   : widget.listImageFile!.map((item) {
-                      return Image.file(
-                        File(item),
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.error),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.file(
+                            File(item),
+                            errorBuilder: (context, error, stackTrace) =>
+                                SizedBox(
+                              child: Image.asset(
+                                'assets/images/No-Image-Icon.png',
+                                width: 40,
+                                height: 40,
+                              ),
+                            ),
+                          ),
+                          const Text(
+                            'No photo in offline mode',
+                            style: CustomTextStyle.caption,
+                          ),
+                        ],
                       );
                     }).toList(),
               options: CarouselOptions(
@@ -164,9 +187,6 @@ class _AddImageState extends State<AddImage> {
                     const SizedBox(
                       height: 16,
                     ),
-                  const SizedBox(
-                    height: 5,
-                  ),
                   Row(
                     children: <Widget>[
                       if (widget.isCamera)
@@ -178,7 +198,7 @@ class _AddImageState extends State<AddImage> {
                                 ? MediaQuery.of(context).size.width - (24)
                                 : 56.0,
                             margin: EdgeInsets.only(
-                                right: widget.listImage.isEmpty ? 0 : 15),
+                                right: widget.listImage.isEmpty ? 0 : 16),
                             padding: const EdgeInsets.all(18),
                             decoration: BoxDecoration(
                               color: ColorTheme.grey200,
@@ -207,14 +227,15 @@ class _AddImageState extends State<AddImage> {
                                         _controller.animateToPage(index),
                                     child: Container(
                                       margin: EdgeInsets.only(
-                                          right: widget.isCamera ? 15 : 8,
-                                          top: widget.isCamera ? 7 : 0),
+                                        right: widget.isCamera ? 15 : 8,
+                                        top: widget.isCamera ? 7 : 0,
+                                      ),
                                       child: ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(5.0),
                                         child: SizedBox(
-                                          width: 56.0,
-                                          height: 56.0,
+                                          width: 56,
+                                          height: 56,
                                           child: widget.listImage[index]
                                                       .runtimeType ==
                                                   String
@@ -261,17 +282,27 @@ class _AddImageState extends State<AddImage> {
                                                               const Icon(
                                                                   Icons.error),
                                                         )
-                                                  : Image.file(
-                                                      fit: BoxFit.cover,
-                                                      File(
-                                                        widget.listImageFile![
-                                                            index],
+                                                  : Container(
+                                                      width: 56,
+                                                      height: 56,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      color: ColorTheme.grey200,
+                                                      child: Image.file(
+                                                        fit: BoxFit.cover,
+                                                        File(
+                                                          widget.listImageFile![
+                                                              index],
+                                                        ),
+                                                        errorBuilder: (context,
+                                                                error,
+                                                                stackTrace) =>
+                                                            Image.asset(
+                                                          'assets/images/No-Image-Icon.png',
+                                                          width: 30,
+                                                          height: 30,
+                                                        ),
                                                       ),
-                                                      errorBuilder: (context,
-                                                              error,
-                                                              stackTrace) =>
-                                                          const Icon(
-                                                              Icons.error),
                                                     )
                                               : Image.file(
                                                   widget.listImage[index],

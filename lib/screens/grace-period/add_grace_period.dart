@@ -140,7 +140,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               await evidencePhotoController
-                  .uploadImage(arrayImage[i].path)
+                  .uploadImage(filePath: arrayImage[i].path)
                   .then((value) {
                 evidencePhotoList
                     .add(EvidencePhoto(BlobName: value['blobName']));
@@ -318,7 +318,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
               height: 20,
               color: Colors.white,
             ),
-            label: 'Save & add',
+            label: 'Complete & add',
           ),
         ]),
         body: GestureDetector(

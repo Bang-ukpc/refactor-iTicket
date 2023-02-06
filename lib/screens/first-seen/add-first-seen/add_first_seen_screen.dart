@@ -140,7 +140,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               await evidencePhotoController
-                  .uploadImage(arrayImage[i].path)
+                  .uploadImage(filePath: arrayImage[i].path)
                   .then((value) {
                 evidencePhotoList
                     .add(EvidencePhoto(BlobName: value['blobName']));
@@ -319,7 +319,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
               height: 20,
               color: Colors.white,
             ),
-            label: 'Save & add',
+            label: 'Complete & add',
           ),
         ]),
         body: GestureDetector(
@@ -423,7 +423,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                                       return true;
                                     },
                                     editImage: true,
-                                    isReduceSizeImage: true,
                                   )));
                       if (results != null) {
                         setState(() {

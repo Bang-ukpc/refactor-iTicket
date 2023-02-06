@@ -8,7 +8,6 @@ import 'package:camera/camera.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/picker_store.dart';
 import 'package:iWarden/common/IconButtonCamera/build_icon.dart';
@@ -17,11 +16,12 @@ import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
+import 'package:image/image.dart' as img;
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as syspaths;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:image/image.dart' as img;
 
 const _defaultPreviewHeight = 60.0;
 const _defaultPreviewWidth = 80.0;
@@ -53,8 +53,6 @@ class CameraPicker extends HookWidget {
 
   final int? typePCN;
 
-  final bool? isReduceSizeImage;
-
   final WidgetBuilder? noCameraBuilder;
   final String titleCamera;
   final bool? previewImage;
@@ -80,7 +78,6 @@ class CameraPicker extends HookWidget {
     this.editImage = false,
     required this.titleCamera,
     this.typePCN,
-    this.isReduceSizeImage = false,
   }) : super(key: key);
 
   @override
@@ -90,12 +87,18 @@ class CameraPicker extends HookWidget {
         minPicture: minPicture,
         maxPicture: maxPicture));
     var filesDataImage = useState<int>(store.filesData.length);
+    var cameraOn = useState<bool>(true);
     final availableCamerasFuture = useMemoized(() => availableCameras());
     final cameras = useState<List<CameraDescription>?>(null);
     final printIssue = Provider.of<PrintIssueProviders>(context);
     final widthScreen = MediaQuery.of(context).size.width;
     const padding = 30.0;
-    bool isCamera = true;
+
+    final appLifecycleState = useAppLifecycleState();
+
+    Future<bool> checkCameraPermission() async {
+      return await Permission.camera.isGranted;
+    }
 
     Future<void> showDiaLog(double widthScreen, double padding,
         BuildContext context, File img) async {
@@ -114,7 +117,6 @@ class CameraPicker extends HookWidget {
                   automaticallyImplyLeading: true,
                   isOpenDrawer: false,
                 ),
-                // drawer: const MyDrawer(),
                 bottomNavigationBar: BottomSheet2(buttonList: [
                   BottomNavyBarItem(
                       onPressed: () {
@@ -207,8 +209,7 @@ class CameraPicker extends HookWidget {
         File files = await File('${tempDir.path}/$fileName').create();
         var capturedImage = img.decodeImage(await file.readAsBytes());
         final img.Image orientedImage = img.bakeOrientation(capturedImage!);
-        var encodeImage = img.encodeJpg(orientedImage,
-            quality: isReduceSizeImage == true ? 10 : 100);
+        var encodeImage = img.encodeJpg(orientedImage, quality: 40);
         var finalImage = files..writeAsBytesSync(encodeImage);
 
         log('file original: ${imageFile.lengthSync().toString()}');
@@ -311,17 +312,27 @@ class CameraPicker extends HookWidget {
                   enableAudio: false,
                 ));
 
-                // useEffect(() {
-                //   SystemChrome.setPreferredOrientations([
-                //     DeviceOrientation.portraitUp,
-                //     DeviceOrientation.portraitDown,
-                //   ]);
-                //   return null;
-                // }, []);
-
                 final cameraController = cameraControllerState.value;
                 final initializeCamera = useMemoized(
                     () => cameraController.initialize(), [cameraController]);
+
+                useEffect(() {
+                  checkCameraPermission().then((value) {
+                    if (value == true) {
+                      if (appLifecycleState == AppLifecycleState.paused ||
+                          appLifecycleState == AppLifecycleState.inactive) {
+                        cameraController.dispose();
+                        cameraOn.value = false;
+                      } else if (appLifecycleState ==
+                          AppLifecycleState.resumed) {
+                        if (cameraOn.value == false) {
+                          Navigator.of(context).pop();
+                        }
+                      }
+                    }
+                  });
+                  return null;
+                }, [appLifecycleState]);
 
                 return WillPopScope(
                   onWillPop: () async {
@@ -490,129 +501,123 @@ class CameraPicker extends HookWidget {
                                         // if (previewImage == false)
                                         Container(
                                           color: ColorTheme.backdrop2,
-                                          child: Flexible(
-                                            flex: 5,
-                                            child: Row(
-                                              children: [
-                                                // Column(
-                                                //   children: [
-                                                //     Container(
-                                                //       width: 70,
-                                                //       height: 70,
-                                                //       color: ColorTheme.danger,
-                                                //     )
-                                                //   ],
-                                                // ),
-                                                Row(
-                                                  children: [
-                                                    Container(
-                                                      padding: const EdgeInsets
-                                                              .symmetric(
-                                                          horizontal: 10.9,
-                                                          vertical: 55),
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          filesDataImage.value >
-                                                                  0
-                                                              ? InkWell(
-                                                                  onTap: () {
-                                                                    cameraController
-                                                                        .dispose();
-                                                                    // SystemChrome
-                                                                    //     .setPreferredOrientations([
-                                                                    //   DeviceOrientation
-                                                                    //       .portraitUp,
-                                                                    //   DeviceOrientation
-                                                                    //       .portraitDown,
-                                                                    //   DeviceOrientation
-                                                                    //       .landscapeLeft,
-                                                                    //   DeviceOrientation
-                                                                    //       .landscapeRight
-                                                                    // ]);
-                                                                    Navigator.of(
-                                                                            context)
-                                                                        .pop();
-                                                                  },
-                                                                  child:
-                                                                      const BuildIcon(
-                                                                    width: 34,
-                                                                    height: 34,
-                                                                    assetIcon:
-                                                                        "assets/svg/IconCloseCamera.svg",
-                                                                  ),
-                                                                )
-                                                              : const SizedBox(),
-                                                          InkWell(
-                                                            onTap: () {
-                                                              actionCamera(
-                                                                  cameraController);
-                                                            },
-                                                            child:
-                                                                const BuildIcon(
-                                                              width: 68,
-                                                              height: 68,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      255,
-                                                                      255,
-                                                                      255,
-                                                                      0.2),
-                                                              assetIcon:
-                                                                  "assets/svg/IconCamera2.svg",
-                                                            ),
+                                          child: Row(
+                                            children: [
+                                              // Column(
+                                              //   children: [
+                                              //     Container(
+                                              //       width: 70,
+                                              //       height: 70,
+                                              //       color: ColorTheme.danger,
+                                              //     )
+                                              //   ],
+                                              // ),
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets
+                                                            .symmetric(
+                                                        horizontal: 10.9,
+                                                        vertical: 55),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        filesDataImage.value > 0
+                                                            ? InkWell(
+                                                                onTap: () {
+                                                                  cameraController
+                                                                      .dispose();
+                                                                  // SystemChrome
+                                                                  //     .setPreferredOrientations([
+                                                                  //   DeviceOrientation
+                                                                  //       .portraitUp,
+                                                                  //   DeviceOrientation
+                                                                  //       .portraitDown,
+                                                                  //   DeviceOrientation
+                                                                  //       .landscapeLeft,
+                                                                  //   DeviceOrientation
+                                                                  //       .landscapeRight
+                                                                  // ]);
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop();
+                                                                },
+                                                                child:
+                                                                    const BuildIcon(
+                                                                  width: 34,
+                                                                  height: 34,
+                                                                  assetIcon:
+                                                                      "assets/svg/IconCloseCamera.svg",
+                                                                ),
+                                                              )
+                                                            : const SizedBox(),
+                                                        InkWell(
+                                                          onTap: () {
+                                                            actionCamera(
+                                                                cameraController);
+                                                          },
+                                                          child:
+                                                              const BuildIcon(
+                                                            width: 68,
+                                                            height: 68,
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    255,
+                                                                    255,
+                                                                    255,
+                                                                    0.2),
+                                                            assetIcon:
+                                                                "assets/svg/IconCamera2.svg",
                                                           ),
-                                                          filesDataImage.value >
-                                                                  0
-                                                              ? HookBuilder(
-                                                                  builder:
-                                                                      (context) {
-                                                                    useListenable(
-                                                                        store);
+                                                        ),
+                                                        filesDataImage.value > 0
+                                                            ? HookBuilder(
+                                                                builder:
+                                                                    (context) {
+                                                                  useListenable(
+                                                                      store);
 
-                                                                    return InkWell(
-                                                                      onTap: store
-                                                                              .canContinue
-                                                                          ? () {
-                                                                              cameraController.dispose();
-                                                                              Navigator.of(context).pop(store.filesData);
-                                                                              // SystemChrome.setPreferredOrientations([
-                                                                              //   DeviceOrientation.portraitUp,
-                                                                              //   DeviceOrientation.portraitDown,
-                                                                              //   DeviceOrientation.landscapeLeft,
-                                                                              //   DeviceOrientation.landscapeRight
-                                                                              // ]);
-                                                                            }
-                                                                          : null,
-                                                                      enableFeedback:
-                                                                          true,
-                                                                      child:
-                                                                          const BuildIcon(
-                                                                        width:
-                                                                            34,
-                                                                        height:
-                                                                            34,
-                                                                        assetIcon:
-                                                                            "assets/svg/IconCom.svg",
-                                                                      ),
-                                                                    );
-                                                                  },
-                                                                )
-                                                              : const SizedBox(),
-                                                        ],
-                                                      ),
+                                                                  return InkWell(
+                                                                    onTap: store
+                                                                            .canContinue
+                                                                        ? () {
+                                                                            cameraController.dispose();
+                                                                            Navigator.of(context).pop(store.filesData);
+                                                                            // SystemChrome.setPreferredOrientations([
+                                                                            //   DeviceOrientation.portraitUp,
+                                                                            //   DeviceOrientation.portraitDown,
+                                                                            //   DeviceOrientation.landscapeLeft,
+                                                                            //   DeviceOrientation.landscapeRight
+                                                                            // ]);
+                                                                          }
+                                                                        : null,
+                                                                    enableFeedback:
+                                                                        true,
+                                                                    child:
+                                                                        const BuildIcon(
+                                                                      width: 34,
+                                                                      height:
+                                                                          34,
+                                                                      assetIcon:
+                                                                          "assets/svg/IconCom.svg",
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              )
+                                                            : const SizedBox(),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
-                                        )
+                                        ),
                                     ],
                                   ),
                                 ),
