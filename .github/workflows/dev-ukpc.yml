@@ -5,8 +5,8 @@ on:
 
 env:
   MAKE_BUILD_ENV: make build-dev
-  FLUTTER_APP_NAME: "iTicket_v1.0.18_dev.apk"
-  FLUTTER_APP_SOURCE: "build/app/outputs/flutter-apk/iTicket_v1.0.18_dev.apk"
+  FLUTTER_APP_NAME: "iTicket_v1.0.19_dev.apk"
+  FLUTTER_APP_SOURCE: "build/app/outputs/flutter-apk/iTicket_v1.0.19_dev.apk"
   FLUTTER_VERSION: "3.7.1"
   BLOB_STORAGE_CONTAINER_NAME: "${{ secrets.DEV_BLOB_STORAGE_CONTAINER_NAME }}"
   BLOB_STORAGE_ACCOUNT_NAME: "${{ secrets.DEV_BLOB_STORAGE_ACCOUNT_NAME }}"
