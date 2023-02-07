@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
@@ -65,14 +66,13 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
+  await dotenv.load(fileName: ".env");
   DartPluginRegistrant.ensureInitialized();
   final accessToken = await SharedPreferencesHelper.getStringValue(
     PreferencesKeys.accessToken,
   );
 
-  // const serviceUrl = 'https://api-warden-prod-ukpc.azurewebsites.net';
-  const serviceUrl = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
-  // const serviceUrl = 'http://192.168.1.200:7003';
+  final serviceUrl = ConfigEnvironmentVariable.serviceURL;
 
   final dio = Dio();
   dio.options.headers['content-Type'] = 'application/json';
