@@ -17,6 +17,9 @@ import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/auth.dart';
 
 Future<void> showLoading({
   required int firstSeenLength,
@@ -376,8 +379,14 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   void initState() {
     super.initState();
     _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    Timer.periodic(const Duration(seconds: 30), (timer) async {
-      await currentLocationPosition.getCurrentLocation();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final authProvider = Provider.of<Auth>(context, listen: false);
+      bool checkIsAuth = await authProvider.isAuth();
+      if (checkIsAuth == true) {
+        Timer.periodic(const Duration(seconds: 30), (timer) async {
+          await currentLocationPosition.getCurrentLocation();
+        });
+      }
     });
   }
 
