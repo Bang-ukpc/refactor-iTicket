@@ -1,0 +1,41 @@
+on:
+  push:
+    branches:
+      - dev/1.0.0
+
+env:
+  MAKE_BUILD_ENV: make build-dev
+  FLUTTER_APP_NAME: "iTicket_v1.0.18_dev.apk"
+  FLUTTER_APP_SOURCE: "build/app/outputs/flutter-apk/iTicket_v1.0.18_dev.apk"
+  FLUTTER_VERSION: "3.7.1"
+  BLOB_STORAGE_CONTAINER_NAME: "${{ secrets.DEV_BLOB_STORAGE_CONTAINER_NAME }}"
+  BLOB_STORAGE_ACCOUNT_NAME: "${{ secrets.DEV_BLOB_STORAGE_ACCOUNT_NAME }}"
+  BLOB_STORAGE_ACCOUNT_KEY: "${{ secrets.DEV_BLOB_STORAGE_ACCOUNT_KEY }}"
+  AZURE_TENANT_ID: "${{ secrets.DEV_AZURE_TENANT_ID }}"
+  AZURE_CLIENT_ID: "${{ secrets.DEV_AZURE_CLIENT_ID }}"
+  AZURE_CLIENT_SECRET: "${{ secrets.DEV_AZURE_CLIENT_SECRET }}"
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v1
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Build APK
+        run: ${{ env.MAKE_BUILD_ENV }}
+
+      - name: Upload APK to Azure Blob Storage
+        uses: azure/CLI@v1
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az login --service-principal -u ${{ env.AZURE_CLIENT_ID }} -p ${{ env.AZURE_CLIENT_SECRET }} --tenant ${{ env.AZURE_TENANT_ID }}
+            az storage blob upload -f ${{ env.FLUTTER_APP_SOURCE }} -c ${{ env.BLOB_STORAGE_CONTAINER_NAME }} -n {{ env.FLUTTER_APP_NAME }} --account-name ${{ env.BLOB_STORAGE_ACCOUNT_NAME }} --account-key ${{ env.BLOB_STORAGE_ACCOUNT_KEY }}
