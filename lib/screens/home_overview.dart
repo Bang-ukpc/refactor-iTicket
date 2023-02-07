@@ -463,7 +463,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                         width: width,
                         assetIcon: "assets/svg/IconParkingChargesHome.svg",
                         backgroundIcon: ColorTheme.lighterSecondary,
-                        title: "Parking changes",
+                        title: "Parking charges",
                         infoRight: "Issued: ${contraventionList.length}",
                         infoLeft: null,
                         route: IssuePCNFirstSeenScreen.routeName,
