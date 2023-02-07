@@ -37,6 +37,7 @@ class UserController {
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
+      wardenEvent.Created = DateTime.now();
       try {
         final response =
             await dio.post('/wardenEvent', data: wardenEvent.toJson());
