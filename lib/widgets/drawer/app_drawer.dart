@@ -148,17 +148,17 @@ class _MyDrawerState extends State<MyDrawer> {
     void onEndShift(Auth auth) async {
       try {
         showCircularProgressIndicator(context: context);
+        final service = FlutterBackgroundService();
+        var isRunning = await service.isRunning();
+        if (isRunning) {
+          service.invoke("stopService");
+        }
         await userController
             .createWardenEvent(wardenEventCheckOut)
             .then((value) async {
           await userController
               .createWardenEvent(wardenEventEndShift)
               .then((value) async {
-            final service = FlutterBackgroundService();
-            var isRunning = await service.isRunning();
-            if (isRunning) {
-              service.invoke("stopService");
-            }
             SharedPreferencesHelper.removeStringValue(
                 'rotaShiftSelectedByWarden');
             SharedPreferencesHelper.removeStringValue(

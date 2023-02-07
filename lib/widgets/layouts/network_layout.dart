@@ -18,6 +18,7 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/auth.dart';
 
@@ -238,6 +239,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   }
 
   Future<bool> wardenEventDataSync() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+
     final String? dataWardenEvent =
         await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
     final String? dataWardenEventTrackGPS =
@@ -247,10 +251,8 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     if (dataWardenEvent != null) {
       var decodedWardenEventData =
           json.decode(dataWardenEvent) as List<dynamic>;
-      print(dataWardenEventTrackGPS);
 
       if (dataWardenEventTrackGPS != null) {
-        log('dataWardenEventTrackGPS != null');
         var decodedWardenEventTrackGPSData =
             json.decode(dataWardenEventTrackGPS) as List<dynamic>;
         decodedWardenEventData = List.from(decodedWardenEventData)
