@@ -105,6 +105,7 @@ class CameraPicker extends HookWidget {
 
     Future<void> showDiaLog(double widthScreen, double padding,
         BuildContext context, File img) async {
+      print("titleCamera $titleCamera");
       showGeneralDialog(
           context: context,
           barrierDismissible: true,
@@ -116,7 +117,9 @@ class CameraPicker extends HookWidget {
               Animation secondaryAnimation) {
             return Scaffold(
                 appBar: MyAppBar(
-                  title: printIssue.findIssueNoImage(typePCN: typePCN).title,
+                  title: !editImage
+                      ? printIssue.findIssueNoImage(typePCN: typePCN).title
+                      : titleCamera,
                   automaticallyImplyLeading: true,
                   isOpenDrawer: false,
                 ),
