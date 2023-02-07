@@ -376,10 +376,8 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   void initState() {
     super.initState();
     _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
+    Timer.periodic(const Duration(seconds: 30), (timer) async {
       await currentLocationPosition.getCurrentLocation();
-      print('latitude: ${currentLocationPosition.currentLocation?.latitude}');
-      print('longitude: ${currentLocationPosition.currentLocation?.longitude}');
     });
   }
 
