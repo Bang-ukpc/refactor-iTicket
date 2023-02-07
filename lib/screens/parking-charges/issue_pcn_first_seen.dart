@@ -1223,11 +1223,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                           flex: 2,
                                           child: ButtonScan(
                                             color:
-                                                _vrnController.text.length < 3
+                                                _vrnController.text.length < 2
                                                     ? ColorTheme.grey300
                                                     : ColorTheme.primary,
                                             onTap: () {
-                                              _vrnController.text.length < 3
+                                              _vrnController.text.length < 2
                                                   ? () {}
                                                   : onSearchVehicleInfoByPlate(
                                                       _vrnController.text,
