@@ -4,7 +4,8 @@ import 'package:iWarden/theme/color.dart';
 
 class ButtonScan extends StatelessWidget {
   final VoidCallback onTap;
-  const ButtonScan({super.key, required this.onTap});
+  final Color color;
+  const ButtonScan({super.key, required this.onTap, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,7 @@ class ButtonScan extends StatelessWidget {
       child: Container(
         width: 65,
         decoration: BoxDecoration(
-          color: ColorTheme.primary,
+          color: color,
           borderRadius: BorderRadius.circular(5),
         ),
         padding: const EdgeInsets.all(12.5),
