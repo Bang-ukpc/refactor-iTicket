@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
-import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_background_service_android/flutter_background_service_an
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
-import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -71,12 +69,11 @@ void onStart(ServiceInstance service) async {
     PreferencesKeys.accessToken,
   );
   // const serviceUrl = 'https://api-warden-prod-ukpc.azurewebsites.net';
-  const serviceUrl = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
-  // const serviceUrl = 'http://192.168.1.200:7003';
+  // const serviceUrl = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
+  const serviceUrl = 'http://192.168.1.200:7003';
   final dio = Dio();
   dio.options.headers['content-Type'] = 'application/json';
   dio.options.headers["authorization"] = accessToken;
-  Position? position = await currentLocationPosition.getCurrentLocation();
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -115,6 +112,10 @@ void onStart(ServiceInstance service) async {
         );
       }
     }
+    Position position = await Geolocator.getCurrentPosition();
+
+    print('latitude: ${position.latitude}');
+    print('longitude: ${position.longitude}');
 
     Wardens? wardenFromJson;
     final String? warden =
@@ -149,8 +150,8 @@ void onStart(ServiceInstance service) async {
     final wardenEventSendCurrentLocation = WardenEvent(
       type: TypeWardenEvent.TrackGPS.index,
       detail: "Warden's current location",
-      latitude: position?.latitude,
-      longitude: position?.longitude,
+      latitude: position.latitude,
+      longitude: position.longitude,
       wardenId: wardenFromJson?.Id ?? 0,
       rotaTimeFrom: rotaShiftSelected?.timeFrom,
       rotaTimeTo: rotaShiftSelected?.timeTo,
