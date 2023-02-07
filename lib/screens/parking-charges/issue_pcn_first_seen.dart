@@ -263,6 +263,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
+  String validate = '';
   @override
   void initState() {
     super.initState();
@@ -1193,6 +1194,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                           style: CustomTextStyle.h5.copyWith(
                                             fontSize: 16,
                                           ),
+                                          onChanged: (value) {
+                                            setState(() {});
+                                          },
                                           decoration: const InputDecoration(
                                               label: LabelRequire(
                                                   labelText: "VRN"),
@@ -1218,10 +1222,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                       Flexible(
                                           flex: 2,
                                           child: ButtonScan(
+                                            color:
+                                                _vrnController.text.length < 2
+                                                    ? ColorTheme.grey300
+                                                    : ColorTheme.primary,
                                             onTap: () {
-                                              onSearchVehicleInfoByPlate(
-                                                  _vrnController.text,
-                                                  contraventionProvider);
+                                              _vrnController.text.length < 2
+                                                  ? () {}
+                                                  : onSearchVehicleInfoByPlate(
+                                                      _vrnController.text,
+                                                      contraventionProvider);
                                             },
                                           ))
                                     ],
