@@ -26,6 +26,7 @@ class Auth with ChangeNotifier {
     await oauth.login();
     final accessToken = await oauth.getIdToken();
     if (accessToken != null) {
+      // ignore: use_build_context_synchronously
       showCircularProgressIndicator(context: context, text: 'Signing in');
       SharedPreferencesHelper.setStringValue(
           PreferencesKeys.accessToken, 'Bearer $accessToken');
@@ -50,7 +51,7 @@ class Auth with ChangeNotifier {
             error.message.length > Constant.errorTypeOther
                 ? 'Something went wrong, please try again'
                 : error.message,
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -66,7 +67,7 @@ class Auth with ChangeNotifier {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,

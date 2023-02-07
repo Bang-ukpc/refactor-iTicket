@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
@@ -11,19 +8,20 @@ import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
-import 'package:iWarden/configs/const.dart';
-import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/helpers/bluetooth_printer.dart';
+import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/models/pagination.dart';
+import 'package:iWarden/providers/contravention_provider.dart';
+import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
-import 'package:iWarden/screens/parking-charges/preview_photo.dart';
+import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
+import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:iWarden/widgets/drawer/app_drawer.dart';
+import 'package:iWarden/widgets/parking-charge/step_issue_pcn.dart';
 import 'package:iWarden/widgets/parking-charge/take_photo_item.dart';
 import 'package:provider/provider.dart';
 
@@ -36,25 +34,85 @@ class PrintIssue extends StatefulWidget {
 }
 
 class _PrintIssueState extends State<PrintIssue> {
+  final _debouncer = Debouncer(milliseconds: 3000);
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final locations = Provider.of<Locations>(context, listen: false);
+      final contraventionProvider =
+          Provider.of<ContraventionProvider>(context, listen: false);
+      final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
+      final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+
+      if (contraventionProvider.contravention!.type == TypePCN.Physical.index &&
+          args['isPrinter'] == true) {
+        bluetoothPrinterHelper.scan();
+        bluetoothPrinterHelper.initConnect();
+        if (bluetoothPrinterHelper.selectedPrinter == null) {
+          showCircularProgressIndicator(
+            context: context,
+            text: 'Connecting to printer',
+          );
+          _debouncer.run(() {
+            Navigator.of(context).pop();
+            CherryToast.error(
+              toastDuration: const Duration(seconds: 5),
+              title: Text(
+                "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+          });
+        } else {
+          bluetoothPrinterHelper.printPhysicalPCN(
+            physicalPCN: contraventionProvider.contravention as Contravention,
+            locationName: locations.location!,
+            lowerAmount: locations.location?.LowerAmount ?? 0,
+            upperAmount: locations.location?.UpperAmount ?? 0,
+            externalId: wardensProvider.wardens?.ExternalId ?? "",
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    print('disposed');
+    bluetoothPrinterHelper.disposePrinter();
+    if (_debouncer.timer != null) {
+      _debouncer.timer!.cancel();
+    }
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final printIssue = Provider.of<PrintIssueProviders>(context);
-    final contravention =
-        ModalRoute.of(context)!.settings.arguments as Contravention;
+    final contraventionProvider = Provider.of<ContraventionProvider>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
 
     log('Print issue');
 
     void takeAPhoto() async {
-      await printIssue.getIdIssue(printIssue.findIssueNoImage().id);
+      await printIssue.getIdIssue(printIssue
+          .findIssueNoImage(typePCN: contraventionProvider.contravention!.type)
+          .id);
+      if (!mounted) return;
       await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => CameraPicker(
-            titleCamera: printIssue.findIssueNoImage().title,
+            isDisplayFunctionKey: false,
+            typePCN: contraventionProvider.contravention!.type,
+            titleCamera: printIssue
+                .findIssueNoImage(
+                    typePCN: contraventionProvider.contravention!.type)
+                .title,
             previewImage: true,
             onDelete: (file) {
               return true;
@@ -90,175 +148,61 @@ class _PrintIssueState extends State<PrintIssue> {
     }
 
     void onCompleteTakePhotos() async {
+      Contravention contraventionData =
+          contraventionProvider.contravention as Contravention;
       bool check = false;
+      List<ContraventionPhotos> contraventionImageList = [];
       showCircularProgressIndicator(context: context);
-      ConnectivityResult connectionStatus =
-          await (Connectivity().checkConnectivity());
-      if (connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile) {
-        try {
-          if (printIssue.data.isNotEmpty) {
-            for (int i = 0; i < printIssue.data.length; i++) {
-              if (printIssue.data[i].image != null) {
-                await contraventionController.uploadContraventionImage(
-                  ContraventionCreatePhoto(
-                    contraventionReference: contravention.reference ?? '',
-                    originalFileName:
-                        printIssue.data[i].image!.path.split('/').last,
-                    capturedDateTime: DateTime.now(),
-                    filePath: printIssue.data[i].image!.path,
-                  ),
-                );
-              }
-              if (i == printIssue.data.length - 1) {
-                check = true;
-              }
-            }
-          }
-          if (check == true) {
-            printIssue.resetData();
-            if (!mounted) return;
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamed(ParkingChargeList.routeName);
-          }
-        } on DioError catch (error) {
-          if (!mounted) return;
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
-      } else {
-        final String? contraventionPhotoData =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionPhotoDataLocal');
-        final String? contraventionList =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionDataLocal');
 
-        if (contraventionPhotoData == null) {
-          List<String> newPhotoData = [];
-          List<ContraventionPhotos> contraventionImageList = [];
-          if (printIssue.data.isNotEmpty) {
-            for (int i = 0; i < printIssue.data.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: contravention.reference ?? '',
-                originalFileName:
-                    printIssue.data[i].image!.path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: printIssue.data[i].image!.path,
-              ).toJson());
-              newPhotoData.add(encodedData);
-
+      if (printIssue.data.isNotEmpty) {
+        for (int i = 0; i < printIssue.data.length; i++) {
+          if (contraventionProvider.contravention!.type ==
+              TypePCN.Virtual.index) {
+            if (printIssue.data[i].image != null &&
+                printIssue.data[i].id != 2) {
               contraventionImageList.add(ContraventionPhotos(
                 blobName: printIssue.data[i].image!.path,
-                contraventionId: contravention.id,
+                contraventionId: contraventionProvider.contravention?.id ?? 0,
               ));
             }
-
-            if (contraventionList != null) {
-              final contraventions =
-                  json.decode(contraventionList) as Map<String, dynamic>;
-              Pagination fromJsonContravention =
-                  Pagination.fromJson(contraventions);
-              var position = fromJsonContravention.rows
-                  .indexWhere((i) => i['Id'] == contravention.id);
-              if (position != -1) {
-                var encodedListImage =
-                    contraventionImageList.map((e) => e.toJson());
-                fromJsonContravention.rows[position]['ContraventionPhotos'] =
-                    List.from(fromJsonContravention.rows[position]
-                        ['ContraventionPhotos'])
-                      ..addAll(encodedListImage);
-              }
-              final String encodedDataList =
-                  json.encode(Pagination.toJson(fromJsonContravention));
-              SharedPreferencesHelper.setStringValue(
-                  'contraventionDataLocal', encodedDataList);
+          } else {
+            if (printIssue.data[i].image != null) {
+              contraventionImageList.add(ContraventionPhotos(
+                blobName: printIssue.data[i].image!.path,
+                contraventionId: contraventionProvider.contravention?.id ?? 0,
+              ));
             }
           }
-          final encodedNewData = json.encode(newPhotoData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionPhotoData) as List<dynamic>;
-          List<ContraventionPhotos> contraventionImageList = [];
-          if (printIssue.data.isNotEmpty) {
-            for (int i = 0; i < printIssue.data.length; i++) {
-              if (printIssue.data[i].image != null) {
-                final String encodedData = json.encode(ContraventionCreatePhoto(
-                  contraventionReference: contravention.reference ?? '',
-                  originalFileName:
-                      printIssue.data[i].image!.path.split('/').last,
-                  capturedDateTime: DateTime.now(),
-                  filePath: printIssue.data[i].image!.path,
-                ).toJson());
-                createdData.add(encodedData);
-
-                contraventionImageList.add(ContraventionPhotos(
-                  blobName: printIssue.data[i].image!.path,
-                  contraventionId: contravention.id,
-                ));
-              }
-            }
-
-            if (contraventionList != null) {
-              final contraventions =
-                  json.decode(contraventionList) as Map<String, dynamic>;
-              Pagination fromJsonContravention =
-                  Pagination.fromJson(contraventions);
-              var position = fromJsonContravention.rows
-                  .indexWhere((i) => i['Id'] == contravention.id);
-              if (position != -1) {
-                var encodedListImage =
-                    contraventionImageList.map((e) => e.toJson());
-                fromJsonContravention.rows[position]['ContraventionPhotos'] =
-                    List.from(fromJsonContravention.rows[position]
-                        ['ContraventionPhotos'])
-                      ..addAll(encodedListImage);
-              }
-              final String encodedDataList =
-                  json.encode(Pagination.toJson(fromJsonContravention));
-              SharedPreferencesHelper.setStringValue(
-                  'contraventionDataLocal', encodedDataList);
-            }
+          if (i == printIssue.data.length - 1) {
+            check = true;
           }
-          final encodedNewData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
         }
-        printIssue.resetData();
+      }
+      if (check == true) {
+        contraventionData.contraventionPhotos = contraventionImageList;
+        contraventionProvider.upDateContravention(contraventionData);
         if (!mounted) return;
         Navigator.of(context).pop();
-        Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+        Navigator.of(context).pushReplacementNamed(PrintPCN.routeName);
       }
     }
+
+    void setLoading(bool value) {
+      setState(() {
+        isLoading = value;
+      });
+    }
+
+    void setLoadingEnd() async {
+      await Future.delayed(const Duration(seconds: 3), () {
+        // Code to be executed after timeout
+        setState(() {
+          isLoading = false;
+        });
+      });
+    }
+
+    log(isLoading.toString());
 
     return WillPopScope(
       onWillPop: () async => false,
@@ -267,62 +211,131 @@ class _PrintIssueState extends State<PrintIssue> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Scaffold(
-          drawer: const MyDrawer(),
-          bottomNavigationBar: BottomSheet2(padding: 5, buttonList: [
-            BottomNavyBarItem(
-              onPressed: () {
-                Navigator.of(context).pushNamed(
-                  AbortScreen.routeName,
-                  arguments: contravention,
-                );
-              },
-              icon: SvgPicture.asset('assets/svg/IconAbort.svg'),
-              label: const Text(
-                'Abort',
-                style: CustomTextStyle.h6,
-              ),
-            ),
-            if (!(printIssue.findIssueNoImage().id ==
-                printIssue.data.length + 1))
+          bottomNavigationBar: Consumer<Locations>(
+            builder: (context, locations, child) =>
+                BottomSheet2(padding: 5, buttonList: [
               BottomNavyBarItem(
-                onPressed: takeAPhoto,
+                onPressed: () {
+                  Navigator.of(context).pushNamed(
+                    AbortScreen.routeName,
+                  );
+                },
                 icon: SvgPicture.asset(
-                  'assets/svg/IconCamera.svg',
-                  width: 17,
+                  'assets/svg/IconAbort.svg',
+                  color: ColorTheme.textPrimary,
                 ),
-                label: const Text(
-                  'Take a photo',
-                  style: CustomTextStyle.h6,
-                ),
+                label: "Abort",
               ),
-            if (printIssue.findIssueNoImage().id == printIssue.data.length + 1)
+              if (contraventionProvider.contravention?.type ==
+                  TypePCN.Physical.index)
+                BottomNavyBarItem(
+                  onPressed: () {
+                    //set disable button on 3s
+                    setLoading(true);
+                    setLoadingEnd();
+                    //
+                    if (bluetoothPrinterHelper.selectedPrinter == null) {
+                      showCircularProgressIndicator(
+                        context: context,
+                        text: 'Connecting to printer',
+                      );
+                      _debouncer.run(() {
+                        Navigator.of(context).pop();
+                        CherryToast.error(
+                          toastDuration: const Duration(seconds: 5),
+                          title: Text(
+                            "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                            style: CustomTextStyle.h4
+                                .copyWith(color: ColorTheme.danger),
+                          ),
+                          toastPosition: Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                      });
+                    } else {
+                      bluetoothPrinterHelper.printPhysicalPCN(
+                        physicalPCN: contraventionProvider.contravention
+                            as Contravention,
+                        locationName: locations.location!,
+                        lowerAmount: locations.location?.LowerAmount ?? 0,
+                        upperAmount: locations.location?.UpperAmount ?? 0,
+                        externalId: wardensProvider.wardens?.ExternalId ?? "",
+                      );
+                    }
+                  },
+                  isDisabled: isLoading,
+                  icon: isLoading
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Center(
+                              child: Container(
+                                height: 13,
+                                width: 13,
+                                margin: const EdgeInsets.all(5),
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2.0,
+                                  valueColor: AlwaysStoppedAnimation(
+                                      ColorTheme.textPrimary),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : SvgPicture.asset(
+                          'assets/svg/IconPrinter.svg',
+                          color: Colors.white,
+                        ),
+                  label: "Re-print",
+                ),
               BottomNavyBarItem(
-                onPressed: () =>
-                    Navigator.of(context).pushNamed(PreviewPhoto.routeName),
+                onPressed: () {
+                  // if (printIssue
+                  //             .findIssueNoImage(
+                  //                 typePCN:
+                  //                     contraventionProvider.contravention!.type)
+                  //             .title !=
+                  //         'null' &&
+                  //     printIssue.checkIssueHasPhotoRequirePhysical() == false) {
+                  //   showMyDialog();
+                  // } else {
+                  //   onCompleteTakePhotos();
+                  // }
+                  if (printIssue
+                          .findIssueNoImage(
+                              typePCN:
+                                  contraventionProvider.contravention!.type)
+                          .title !=
+                      'null') {
+                    if (contraventionProvider.contravention!.type ==
+                        TypePCN.Physical.index) {
+                      if (printIssue.checkIssueHasPhotoRequirePhysical() ==
+                          false) {
+                        showMyDialog();
+                      } else {
+                        onCompleteTakePhotos();
+                      }
+                    } else {
+                      if (printIssue.checkIssueHasPhotoRequireVirtual() ==
+                          false) {
+                        showMyDialog();
+                      } else {
+                        onCompleteTakePhotos();
+                      }
+                    }
+                  } else {
+                    onCompleteTakePhotos();
+                  }
+                },
                 icon: SvgPicture.asset(
-                  'assets/svg/IconPreview.svg',
+                  'assets/svg/IconNext.svg',
+                  color: Colors.white,
                 ),
-                label: const Text(
-                  'Preview all',
-                  style: CustomTextStyle.h6,
-                ),
+                label: "Next",
               ),
-            BottomNavyBarItem(
-              onPressed: () {
-                if (printIssue.findIssueNoImage().title != 'null' &&
-                    printIssue.checkIssueHasPhotoRequire() == false) {
-                  showMyDialog();
-                } else {
-                  onCompleteTakePhotos();
-                }
-              },
-              icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-              label: const Text(
-                'Complete',
-                style: CustomTextStyle.h6,
-              ),
-            ),
-          ]),
+            ]),
+          ),
           body: SingleChildScrollView(
             child: SafeArea(
               child: Container(
@@ -332,70 +345,150 @@ class _PrintIssueState extends State<PrintIssue> {
                   children: [
                     Container(
                       width: double.infinity,
-                      color: ColorTheme.darkPrimary,
-                      padding: const EdgeInsets.all(10),
+                      color: ColorTheme.white,
+                      padding: const EdgeInsets.all(12),
                       child: Center(
-                          child: Text(
-                        "Take photos",
-                        style: CustomTextStyle.h4.copyWith(color: Colors.white),
-                      )),
+                        child: Text(
+                          "Issue PCN",
+                          style: CustomTextStyle.h4
+                              .copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
                     ),
                     const SizedBox(
-                      height: 8,
+                      height: 10,
                     ),
                     Container(
                       color: Colors.white,
                       child: Column(
                         children: [
                           Container(
-                            margin: const EdgeInsets.only(top: 8),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
+                                StepIssuePCN(
+                                  isActiveStep1: false,
+                                  onTap1: contraventionProvider.contravention !=
+                                          null
+                                      ? () {
+                                          Navigator.of(context)
+                                              .pushReplacementNamed(
+                                                  IssuePCNFirstSeenScreen
+                                                      .routeName);
+                                        }
+                                      : null,
+                                  isActiveStep2: true,
+                                  isActiveStep3: false,
+                                  isEnableStep3: contraventionProvider
+                                              .contravention !=
+                                          null
+                                      ? contraventionProvider
+                                                  .contravention!.type ==
+                                              TypePCN.Physical.index
+                                          ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                                  true
+                                              ? true
+                                              : false
+                                          : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                                  true
+                                              ? true
+                                              : false
+                                      : false,
+                                  onTap3: contraventionProvider.contravention !=
+                                          null
+                                      ? contraventionProvider
+                                                  .contravention!.type ==
+                                              TypePCN.Physical.index
+                                          ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                                  true
+                                              ? () {
+                                                  onCompleteTakePhotos();
+                                                }
+                                              : null
+                                          : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                                  true
+                                              ? () {
+                                                  onCompleteTakePhotos();
+                                                }
+                                              : null
+                                      : null,
+                                ),
+                                const SizedBox(
+                                  height: 20,
+                                ),
                                 Text(
                                   "Please take required photos as below:",
                                   style: CustomTextStyle.h5.copyWith(
-                                    color: ColorTheme.grey600,
+                                    color: ColorTheme.textPrimary,
                                   ),
                                 ),
-                                const SizedBox(height: 5),
+                                const SizedBox(
+                                  height: 20,
+                                ),
                                 Consumer<PrintIssueProviders>(
                                     builder: (_, value, __) {
+                                  var filterImageByTypePCN =
+                                      value.data.where((e) {
+                                    if (contraventionProvider
+                                            .contravention?.type ==
+                                        TypePCN.Virtual.index) {
+                                      return e.id != 2;
+                                    }
+                                    return true;
+                                  }).toList();
                                   return Column(
-                                    children: value.data
-                                        .map((e) => TakePhotoItem(
-                                              func: () async {
-                                                await printIssue.getIdIssue(
-                                                    printIssue
-                                                        .findIssueNoImage()
-                                                        .id);
-                                                await Navigator.of(context)
-                                                    .push(
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        CameraPicker(
-                                                      titleCamera: printIssue
-                                                          .findIssueNoImage()
-                                                          .title,
-                                                      previewImage: true,
-                                                      onDelete: (file) {
-                                                        return true;
-                                                      },
-                                                    ),
+                                    children: filterImageByTypePCN
+                                        .map(
+                                          (e) => TakePhotoItem(
+                                            id: e.id,
+                                            func: () async {
+                                              await printIssue.getIdIssue(printIssue
+                                                  .findIssueNoImage(
+                                                      typePCN:
+                                                          contraventionProvider
+                                                              .contravention!
+                                                              .type)
+                                                  .id);
+                                              await Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      CameraPicker(
+                                                    isDisplayFunctionKey: false,
+                                                    typePCN:
+                                                        contraventionProvider
+                                                            .contravention!
+                                                            .type,
+                                                    titleCamera: printIssue
+                                                        .findIssueNoImage(
+                                                            typePCN:
+                                                                contraventionProvider
+                                                                    .contravention!
+                                                                    .type)
+                                                        .title,
+                                                    previewImage: true,
+                                                    onDelete: (file) {
+                                                      return true;
+                                                    },
                                                   ),
-                                                );
-                                              },
-                                              title: e.title,
-                                              image: e.image != null
-                                                  ? File(e.image!.path)
-                                                  : null,
-                                              state: e.id ==
-                                                  printIssue
-                                                      .findIssueNoImage()
-                                                      .id,
-                                            ))
+                                                ),
+                                              );
+                                            },
+                                            title: e.title,
+                                            image: e.image != null
+                                                ? File(e.image!.path)
+                                                : null,
+                                            state: e.id ==
+                                                printIssue
+                                                    .findIssueNoImage(
+                                                        typePCN:
+                                                            contraventionProvider
+                                                                .contravention!
+                                                                .type)
+                                                    .id,
+                                          ),
+                                        )
                                         .toList(),
                                   );
                                 }),

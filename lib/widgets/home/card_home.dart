@@ -53,7 +53,7 @@ class CardHome extends StatelessWidget {
                             color: backgroundIcon,
                             borderRadius: BorderRadius.circular(3)),
                         child: Container(
-                          padding: const EdgeInsets.all(17),
+                          padding: const EdgeInsets.all(14),
                           child: SvgPicture.asset(
                             assetIcon,
                           ),
@@ -82,6 +82,7 @@ class CardHome extends StatelessWidget {
                                   infoRight,
                                   style: CustomTextStyle.h5.copyWith(
                                     color: ColorTheme.success,
+                                    fontSize: 14,
                                   ),
                                 ),
                                 if (infoLeft != null)
@@ -93,6 +94,7 @@ class CardHome extends StatelessWidget {
                                     infoLeft!,
                                     style: CustomTextStyle.h5.copyWith(
                                       color: ColorTheme.danger,
+                                      fontSize: 14,
                                     ),
                                   ),
                               ],

@@ -11,6 +11,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool? isOpenDrawer;
   final VoidCallback? onRedirect;
   final SystemUiOverlayStyle? systemUiSettings;
+  final bool? isOnlyTitle;
 
   const MyAppBar({
     Key? key,
@@ -18,6 +19,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.automaticallyImplyLeading = false,
     this.onRedirect,
     this.isOpenDrawer = true,
+    this.isOnlyTitle = false,
     this.systemUiSettings = const SystemUiOverlayStyle(
       statusBarColor: ColorTheme.textPrimary,
       statusBarIconBrightness: Brightness.light,
@@ -39,22 +41,36 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       systemOverlayStyle: systemUiSettings,
       automaticallyImplyLeading: automaticallyImplyLeading,
       titleSpacing: !automaticallyImplyLeading ? 16 : 0,
-      title: SizedBox(
-        child: Row(
-          children: <Widget>[
-            if (!automaticallyImplyLeading)
-              SvgPicture.asset("assets/svg/LogoHome.svg"),
-            if (!automaticallyImplyLeading)
-              const SizedBox(
-                width: 10,
+      title: isOnlyTitle == false
+          ? SizedBox(
+              child: Row(
+                children: <Widget>[
+                  if (!automaticallyImplyLeading)
+                    SvgPicture.asset("assets/svg/LogoHome.svg"),
+                  if (!automaticallyImplyLeading)
+                    const SizedBox(
+                      width: 10,
+                    ),
+                  Text(
+                    title,
+                    style: CustomTextStyle.h4
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
-            Text(
-              title,
-              style: CustomTextStyle.h4.copyWith(fontWeight: FontWeight.w600),
+            )
+          : SizedBox(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: CustomTextStyle.h4
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
       leading: automaticallyImplyLeading
           ? IconButton(
               icon: SvgPicture.asset("assets/svg/IconBack.svg"),

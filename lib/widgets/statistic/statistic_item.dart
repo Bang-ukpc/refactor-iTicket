@@ -38,7 +38,11 @@ class StatisticItem extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 13),
               color: background,
-              child: SvgPicture.asset(assetIcon),
+              child: SvgPicture.asset(
+                assetIcon,
+                width: 24,
+                height: 24,
+              ),
             ),
             const SizedBox(
               height: 20,
@@ -52,6 +56,7 @@ class StatisticItem extends StatelessWidget {
                     style:
                         CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     quantity.toString(),
                     style: CustomTextStyle.h2.copyWith(

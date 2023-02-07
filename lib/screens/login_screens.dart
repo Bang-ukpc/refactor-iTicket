@@ -2,9 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/providers/auth.dart';
-import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
@@ -47,10 +45,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 60,
                   ),
                   Text(
-                    "Parking operative",
-                    style: CustomTextStyle.h6.copyWith(
+                    "Parking Operatives",
+                    style: CustomTextStyle.h5.copyWith(
                       color: ColorTheme.grey600,
                     ),
+                  ),
+                  const SizedBox(
+                    height: 5,
                   ),
                   Text(
                     "iTicket",
@@ -61,14 +62,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 24,
                   ),
                   const Text(
-                    "Welcome to iWarden! We’re glad you’re here!",
-                    style: CustomTextStyle.h6,
+                    "Welcome to iTicket! We’re glad you’re here!",
+                    style: CustomTextStyle.h5,
                   ),
                   const SizedBox(
                     height: 24,
                   ),
                   OutlinedButton.icon(
                     onPressed: () async {
+                      // eventAnalytics.clickButton(
+                      //   button: "Sign in",
+                      //   user: "",
+                      // );
                       authProvider.loginWithMicrosoft(context);
                     },
                     style: OutlinedButton.styleFrom(
@@ -81,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: SvgPicture.asset("assets/svg/IconMicrosoft.svg"),
                     label: const Text(
                       "Sign in with Microsoft",
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ],

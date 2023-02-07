@@ -40,21 +40,22 @@ Map<String, dynamic> _$EvidencePhotoToJson(EvidencePhoto instance) {
 }
 
 class VehicleInformation extends BaseModel {
-  final DateTime ExpiredAt;
+  DateTime ExpiredAt;
   String Plate;
-  final int ZoneId;
-  final int LocationId;
-  final String BayNumber;
-  final int Type;
-  final double Latitude;
-  final double Longitude;
-  final bool CarLeft;
+  int ZoneId;
+  int LocationId;
+  String BayNumber;
+  int Type;
+  double Latitude;
+  double Longitude;
+  bool CarLeft;
   List<EvidencePhoto>? EvidencePhotos;
 
   VehicleInformation({
     Id,
     Created,
     Deleted,
+    CreatedBy,
     required this.ExpiredAt,
     required this.Plate,
     required this.ZoneId,
@@ -65,7 +66,7 @@ class VehicleInformation extends BaseModel {
     required this.Longitude,
     required this.CarLeft,
     this.EvidencePhotos,
-  }) : super(Id: Id, Created: Created, Deleted: Deleted);
+  }) : super(Id: Id, Created: Created, Deleted: Deleted, CreatedBy: CreatedBy);
 
   factory VehicleInformation.fromJson(Map<String, dynamic> json) =>
       _$VehicleInformationFromJson(json);
@@ -104,6 +105,7 @@ Map<String, dynamic> _$VehicleInformationToJson(VehicleInformation instance) {
     'Id': instance.Id ?? 0,
     'Created':
         instance.Created != null ? instance.Created!.toIso8601String() : null,
+    'CreatedBy': instance.CreatedBy,
     'ExpiredAt': instance.ExpiredAt.toIso8601String(),
     'Plate': instance.Plate,
     'ZoneId': instance.ZoneId,

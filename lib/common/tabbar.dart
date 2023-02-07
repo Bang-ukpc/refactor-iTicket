@@ -54,11 +54,9 @@ class _MyTabBarState extends State<MyTabBar> {
               'assets/svg/IconPlus.svg',
               width: 18,
               height: 18,
+              color: Colors.white,
             ),
-            label: Text(
-              widget.labelFuncAdd,
-              style: CustomTextStyle.h6,
-            ),
+            label: widget.labelFuncAdd,
           ),
         ]),
         drawer: const MyDrawer(),

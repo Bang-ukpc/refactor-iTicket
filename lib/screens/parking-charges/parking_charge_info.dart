@@ -30,8 +30,9 @@ class _ParkingChargeInfoState extends State<ParkingChargeInfo> {
         appBar: MyAppBar(
           title: "View PCN",
           automaticallyImplyLeading: true,
+          isOpenDrawer: true,
           onRedirect: () {
-            Navigator.of(context).popAndPushNamed(ParkingChargeList.routeName);
+            Navigator.of(context).pushNamed(ParkingChargeList.routeName);
           },
         ),
         drawer: const MyDrawer(),
@@ -69,7 +70,8 @@ class _ParkingChargeInfoState extends State<ParkingChargeInfo> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.of(context)
+                            .pushReplacementNamed(ParkingChargeList.routeName);
                       },
                       child: const Text(
                         'Go back!',

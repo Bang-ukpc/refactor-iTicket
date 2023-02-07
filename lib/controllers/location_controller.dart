@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -36,6 +37,7 @@ class LocationController {
           'rotaWithLocationDataLocal');
       if (data != null) {
         final List<RotaWithLocation> locations = RotaWithLocation.decode(data);
+
         return locations;
       }
       return [];

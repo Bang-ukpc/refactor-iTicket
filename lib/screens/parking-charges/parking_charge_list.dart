@@ -90,7 +90,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
       onWillPop: () async => false,
       child: Scaffold(
         appBar: MyAppBar(
-          title: 'Parking Charges',
+          title: 'Parking changes',
           automaticallyImplyLeading: true,
           onRedirect: () {
             Navigator.of(context).pushNamed(HomeOverview.routeName);
@@ -106,11 +106,9 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
             icon: SvgPicture.asset(
               "assets/svg/IconCharges2.svg",
               width: 16,
+              color: Colors.white,
             ),
-            label: const Text(
-              'Issue PCN',
-              style: CustomTextStyle.h6,
-            ),
+            label: 'Issue PCN',
           ),
         ]),
         body: RefreshIndicator(
@@ -160,7 +158,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
                             ),
                           ),
                           Text(
-                            'Your parking charges list is empty',
+                            'Your Parking changes list is empty',
                             style: CustomTextStyle.body1.copyWith(
                               color: ColorTheme.grey600,
                             ),

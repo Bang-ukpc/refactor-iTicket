@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -11,20 +10,20 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/button_scan.dart';
+import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
+import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
-import 'package:iWarden/configs/scan-plate/anyline_service.dart';
-import 'package:iWarden/configs/scan-plate/result.dart';
-import 'package:iWarden/configs/scan-plate/scan_modes.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -41,53 +40,39 @@ class AddGracePeriod extends StatefulWidget {
 }
 
 class _AddGracePeriodState extends State<AddGracePeriod> {
-  late AnylineService _anylineService;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _vrnController = TextEditingController();
   final _bayNumberController = TextEditingController();
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _anylineService = AnylineServiceImpl();
-  }
+  Future<void> getLocationList(Locations locations, int wardenId) async {
+    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
+        ListLocationOfTheDayByWardenIdProps(
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardenId,
+    );
 
-  Future<void> scan(ScanMode mode) async {
-    try {
-      Result? result = await _anylineService.scan(mode);
-      if (result != null) {
-        String resultText = result.jsonMap!.values
-            .take(2)
-            .toString()
-            .split(',')[1]
-            .replaceAll(RegExp('[^A-Za-z0-9]'), '')
-            .replaceAll(' ', '');
-        setState(() {
-          _vrnController.text = resultText.substring(0, resultText.length);
-        });
+    await locationController
+        .getAll(listLocationOfTheDayByWardenIdProps)
+        .then((value) {
+      for (int i = 0; i < value.length; i++) {
+        for (int j = 0; j < value.length; j++) {
+          if (value[i].locations![j].Id == locations.location!.Id) {
+            locations.onSelectedLocation(value[i].locations![j]);
+            var zoneSelected = value[i]
+                .locations![j]
+                .Zones!
+                .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
+            locations.onSelectedZone(zoneSelected);
+            return;
+          }
+        }
       }
-    } catch (e, s) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          elevation: 0,
-          title: const FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              'Error',
-            ),
-          ),
-          content: FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              '$e, $s',
-            ),
-          ),
-        ),
-      );
-    }
+    }).catchError((err) {
+      print(err);
+    });
   }
 
   @override
@@ -102,6 +87,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
 
     Future<bool> saveForm() async {
       ConnectivityResult connectionStatus =
@@ -123,6 +109,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
         CarLeft: false,
         EvidencePhotos: evidencePhotoList,
         Created: DateTime.now(),
+        CreatedBy: wardensProvider.wardens?.Id ?? 0,
       );
       final isValid = _formKey.currentState!.validate();
       bool check = false;
@@ -135,7 +122,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
           displayCloseButton: false,
           title: Text(
             'Please take at least 1 picture',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -153,7 +140,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
           if (arrayImage.isNotEmpty) {
             for (int i = 0; i < arrayImage.length; i++) {
               await evidencePhotoController
-                  .uploadImage(arrayImage[i].path)
+                  .uploadImage(filePath: arrayImage[i].path)
                   .then((value) {
                 evidencePhotoList
                     .add(EvidencePhoto(BlobName: value['blobName']));
@@ -161,12 +148,21 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
             }
           }
 
-          await vehicleInfoController
-              .upsertVehicleInfo(vehicleInfo)
-              .then((value) {
-            if (value != null) {
-              check = true;
-            }
+          await getLocationList(
+                  locationProvider, wardensProvider.wardens?.Id ?? 0)
+              .then((value) async {
+            vehicleInfo.ExpiredAt = DateTime.now().add(
+              Duration(
+                seconds: locationProvider.expiringTimeGracePeriod,
+              ),
+            );
+            await vehicleInfoController
+                .upsertVehicleInfo(vehicleInfo)
+                .then((value) {
+              if (value != null) {
+                check = true;
+              }
+            });
           });
 
           if (check == true) {
@@ -176,7 +172,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
               displayCloseButton: false,
               title: Text(
                 'Grace period added successfully',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -199,7 +195,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                 error.message.length > Constant.errorTypeOther
                     ? 'Something went wrong, please try again'
                     : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -214,7 +210,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                       Constant.errorMaxLength
                   ? 'Internal server error'
                   : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -260,7 +256,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
           displayCloseButton: false,
           title: Text(
             'Grace period added successfully',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -300,7 +296,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                     displayCloseButton: false,
                     title: Text(
                       'Grace period added successfully',
-                      style: CustomTextStyle.h5
+                      style: CustomTextStyle.h4
                           .copyWith(color: ColorTheme.success),
                     ),
                     toastPosition: Position.bottom,
@@ -309,11 +305,10 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                 }
               });
             },
-            icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-            label: const Text(
-              'Complete',
-              style: CustomTextStyle.h6,
+            icon: SvgPicture.asset(
+              'assets/svg/IconComplete2.svg',
             ),
+            label: 'Complete',
           ),
           BottomNavyBarItem(
             onPressed: saveForm,
@@ -321,11 +316,9 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
               'assets/svg/IconSave2.svg',
               width: 20,
               height: 20,
+              color: Colors.white,
             ),
-            label: const Text(
-              'Save & add',
-              style: CustomTextStyle.h6,
-            ),
+            label: 'Complete & add',
           ),
         ]),
         body: GestureDetector(
@@ -363,16 +356,25 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                                   textCapitalization:
                                       TextCapitalization.characters,
                                   controller: _vrnController,
-                                  style: CustomTextStyle.h5,
+                                  style:
+                                      CustomTextStyle.h5.copyWith(fontSize: 16),
                                   decoration: const InputDecoration(
                                     label: LabelRequire(labelText: "VRN"),
                                     hintText: "Enter VRN",
+                                    hintStyle: TextStyle(
+                                      fontSize: 16,
+                                      color: ColorTheme.grey400,
+                                    ),
                                   ),
                                   validator: ((value) {
                                     if (value!.isEmpty) {
                                       return 'Please enter VRN';
+                                    } else {
+                                      if (value.length < 2) {
+                                        return 'Please enter at least 2 characters';
+                                      }
+                                      return null;
                                     }
-                                    return null;
                                   }),
                                   onSaved: (value) {
                                     _vrnController.text = value as String;
@@ -381,14 +383,6 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                                       AutovalidateMode.onUserInteraction,
                                 ),
                               ),
-                              Flexible(
-                                flex: 2,
-                                child: ButtonScan(
-                                  onTap: () {
-                                    scan(ScanMode.LicensePlate);
-                                  },
-                                ),
-                              )
                             ],
                           ),
                           const SizedBox(
@@ -400,10 +394,14 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                                 RegExp(r'[^\s]+\b\s?'),
                               ),
                             ],
-                            style: CustomTextStyle.h5,
+                            style: CustomTextStyle.h5.copyWith(fontSize: 16),
                             decoration: const InputDecoration(
                               labelText: 'Bay number',
                               hintText: "Enter bay number",
+                              hintStyle: TextStyle(
+                                fontSize: 16,
+                                color: ColorTheme.grey400,
+                              ),
                             ),
                             controller: _bayNumberController,
                           ),
@@ -422,7 +420,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
                           await Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => CameraPicker(
                                     initialFiles: arrayImage,
-                                    titleCamera: "Take photo of vehicle",
+                                    titleCamera: "Take evidence photo",
                                     onDelete: (file) {
                                       return true;
                                     },

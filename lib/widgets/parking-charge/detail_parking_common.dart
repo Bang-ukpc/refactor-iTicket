@@ -12,12 +12,12 @@ import 'package:iWarden/widgets/parking-charge/detail_car.dart';
 
 class DetailParkingCommon extends StatefulWidget {
   final Contravention? contravention;
-  final bool? isDisplayPrintPCN;
   final bool? isDisplayBottomNavigate;
+  final bool? imagePreviewStatus;
   const DetailParkingCommon({
     this.contravention,
-    this.isDisplayPrintPCN = false,
     this.isDisplayBottomNavigate = false,
+    this.imagePreviewStatus = false,
     super.key,
   });
 
@@ -49,33 +49,19 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
                 icon: SvgPicture.asset(
                   "assets/svg/IconCharges2.svg",
                   width: 16,
+                  color: Colors.white,
                 ),
-                label: const Text(
-                  'Issue another PCN',
-                  style: CustomTextStyle.h6,
-                ),
+                label: 'Issue another PCN',
               ),
             ])
           : null,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            if (widget.isDisplayPrintPCN == true)
-              Container(
-                width: double.infinity,
-                color: ColorTheme.darkPrimary,
-                padding: const EdgeInsets.all(10),
-                child: Center(
-                    child: Text(
-                  "Print PCN",
-                  style: CustomTextStyle.h4.copyWith(color: Colors.white),
-                )),
-              ),
             DetailCar(
               plate: widget.contravention!.plate as String,
               make: widget.contravention?.make,
               color: widget.contravention?.colour,
-              model: widget.contravention?.model,
             ),
             const SizedBox(
               height: 8,
@@ -100,28 +86,28 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
                       Text(
                           "Issued at: ${FormatDate().getLocalDate(widget.contravention?.eventDateTime as DateTime)}",
                           style: CustomTextStyle.body2.copyWith(
-                            color: ColorTheme.grey600,
+                            color: ColorTheme.success,
                           )),
                     ],
                   ),
                   const SizedBox(
-                    height: 4,
+                    height: 6,
                   ),
                   Text(
                     "Type: ${widget.contravention?.reason?.contraventionReasonTranslations?.map((item) => item.detail).toString().replaceAll('(', '').replaceAll(')', '')}",
                     style:
-                        CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
+                        CustomTextStyle.h5.copyWith(color: ColorTheme.grey600),
                   ),
                   const SizedBox(
-                    height: 4,
+                    height: 6,
                   ),
                   Text(
                     "Comment: ${widget.contravention?.contraventionEvents?.map((item) => item.detail).toString().replaceAll('(', '').replaceAll(')', '')}",
                     style:
-                        CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
+                        CustomTextStyle.h5.copyWith(color: ColorTheme.grey600),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 6,
                   )
                 ],
               ),
@@ -133,6 +119,7 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
               onAddImage: () {},
               isSlideImage: true,
               displayTitle: false,
+              imagePreview: widget.imagePreviewStatus,
             )
           ],
         ),

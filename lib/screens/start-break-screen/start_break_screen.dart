@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -43,26 +44,34 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
 
     void onEndBreak() async {
       try {
+        // eventAnalytics.clickButton(
+        //   button: "End break",
+        //   user: wardersProvider.wardens!.Email,
+        // );
+        showCircularProgressIndicator(context: context);
         await userController
             .createWardenEvent(wardenEventEndBreak)
             .then((value) {
+          Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(HomeOverview.routeName);
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -70,7 +79,7 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -82,40 +91,76 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
       onWillPop: () async => false,
       child: Scaffold(
         body: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           width: screenWidth,
           height: screenHeight,
-          color: ColorTheme.primary,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'You are on break',
-                  style: CustomTextStyle.h3.copyWith(
-                    color: ColorTheme.white,
-                  ),
+          color: ColorTheme.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                    color: ColorTheme.lighterSecondary,
+                    borderRadius: BorderRadius.circular(40)),
+                child: SvgPicture.asset(
+                  "assets/svg/IconStartBreak.svg",
+                  height: 32,
+                  width: 32,
+                  color: ColorTheme.secondary,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                ElevatedButton.icon(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
-                      ColorTheme.grey300,
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              Column(
+                children: [
+                  Text(
+                    'You are on break. \nPlease click End break to start again.',
+                    style: CustomTextStyle.h4.copyWith(
+                      color: ColorTheme.textPrimary,
+                      fontWeight: FontWeight.w400,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  onPressed: onEndBreak,
-                  icon: SvgPicture.asset(
-                    "assets/svg/IconEndBreak.svg",
-                    color: ColorTheme.textPrimary,
+                ],
+              ),
+              const SizedBox(
+                height: 24,
+              ),
+              InkWell(
+                onTap: onEndBreak,
+                child: Container(
+                  height: 40,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: ColorTheme.secondary,
+                    borderRadius: const BorderRadius.all(Radius.circular(5)),
                   ),
-                  label: const Text(
-                    'End break',
-                    style: CustomTextStyle.body1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const Text(
+                        "End break",
+                        style: TextStyle(
+                          color: ColorTheme.textPrimary,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SvgPicture.asset(
+                        "assets/svg/IconEndBreak.svg",
+                        height: 18,
+                        width: 18,
+                        color: ColorTheme.textPrimary,
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              )
+            ],
           ),
         ),
       ),

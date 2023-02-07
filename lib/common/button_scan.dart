@@ -12,12 +12,16 @@ class ButtonScan extends StatelessWidget {
       onTap: onTap,
       splashColor: ColorTheme.primary,
       child: Container(
+        width: 65,
         decoration: BoxDecoration(
-          color: ColorTheme.grey200,
+          color: ColorTheme.primary,
           borderRadius: BorderRadius.circular(5),
         ),
-        padding: const EdgeInsets.all(14),
-        child: SvgPicture.asset("assets/svg/IconScan.svg"),
+        padding: const EdgeInsets.all(12.5),
+        child: SvgPicture.asset(
+          "assets/svg/IconSearch.svg",
+          color: Colors.white,
+        ),
       ),
     );
   }

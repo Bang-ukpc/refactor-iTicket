@@ -8,6 +8,8 @@ class ConfigEnvironmentVariable {
   static final redirectUri = dotenv.get('AZURE_REDIRECT_URI');
   static final azureContainerImageUrl = dotenv.get('AZURE_CONTAINER_IMAGE_URL');
   static final serviceURL = dotenv.get('SERVICE_URL');
+  static final environment = dotenv.get('ENVIRONMENT');
+  static final version = dotenv.get('VERSION', fallback: null);
 }
 
 class NavigationService {
@@ -25,6 +27,7 @@ class OAuthConfig {
     scope: "openid profile offline_access",
     redirectUri: ConfigEnvironmentVariable.redirectUri,
     navigatorKey: NavigationService.navigatorKey,
+    webUseRedirect: true,
     loader: const Center(child: CircularProgressIndicator()),
   );
 }

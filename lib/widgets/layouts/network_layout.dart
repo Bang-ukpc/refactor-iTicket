@@ -3,23 +3,26 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/configs/configs.dart';
-import 'package:iWarden/controllers/abort_controller.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
-import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-Future<void> showLoading() async {
+Future<void> showLoading({
+  required int firstSeenLength,
+  required gracePeriodLength,
+  required pcnLength,
+}) async {
   await showDialog(
     context: NavigationService.navigatorKey.currentContext as BuildContext,
     barrierDismissible: false,
@@ -27,42 +30,97 @@ Future<void> showLoading() async {
     builder: (_) {
       return WillPopScope(
         onWillPop: () async => false,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            width: MediaQuery.of(NavigationService.navigatorKey.currentContext
-                        as BuildContext)
-                    .size
-                    .width *
-                0.8,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                const SizedBox(height: 250),
-                const Center(
-                  child: SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: CircularProgressIndicator(
-                      color: ColorTheme.white,
-                    ),
+        child: SizedBox(
+          width: MediaQuery.of(NavigationService.navigatorKey.currentContext
+                      as BuildContext)
+                  .size
+                  .width *
+              0.8,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Center(
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    color: ColorTheme.white,
                   ),
                 ),
-                const SizedBox(height: 30),
-                Expanded(
-                  child: Text(
-                    'Synchronizing data to the server',
-                    style: CustomTextStyle.h4.copyWith(
-                      decoration: TextDecoration.none,
-                      color: ColorTheme.white,
-                      overflow: TextOverflow.clip,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+              ),
+              const SizedBox(height: 30),
+              Text(
+                'Synchronizing data with the server:',
+                style: CustomTextStyle.h4.copyWith(
+                  fontFamily: 'Lato',
+                  decoration: TextDecoration.none,
+                  color: ColorTheme.white,
+                  overflow: TextOverflow.clip,
                 ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+              if (firstSeenLength > 0)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      '$firstSeenLength first seen sent to the server',
+                      style: CustomTextStyle.h4.copyWith(
+                        fontFamily: 'Lato',
+                        decoration: TextDecoration.none,
+                        color: ColorTheme.white,
+                        overflow: TextOverflow.clip,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              if (gracePeriodLength > 0)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      '$gracePeriodLength grace period sent to the server',
+                      style: CustomTextStyle.h4.copyWith(
+                        fontFamily: 'Lato',
+                        decoration: TextDecoration.none,
+                        color: ColorTheme.white,
+                        overflow: TextOverflow.clip,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              if (pcnLength > 0)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      '$pcnLength PCN(s) sent to the server',
+                      style: CustomTextStyle.h4.copyWith(
+                        fontFamily: 'Lato',
+                        decoration: TextDecoration.none,
+                        color: ColorTheme.white,
+                        overflow: TextOverflow.clip,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+            ],
           ),
         ),
       );
@@ -99,14 +157,16 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         for (int j = 0; j < vehicleInfoList[i].EvidencePhotos!.length; j++) {
           try {
             await evidencePhotoController
-                .uploadImage(vehicleInfoList[i].EvidencePhotos![j].BlobName)
+                .uploadImage(
+                    filePath: vehicleInfoList[i].EvidencePhotos![j].BlobName,
+                    capturedDateTime: vehicleInfoList[i].Created)
                 .then((value) {
               vehicleInfoList[i].EvidencePhotos![j] =
                   EvidencePhoto(BlobName: value['blobName']);
             });
-          } catch (e) {
+          } on DioError catch (e) {
             print('evidencePhotoController: $e');
-            return true;
+            // throw Exception(e.message);
           }
         }
         try {
@@ -114,9 +174,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             vehicleInfoList[i].Id = null;
           }
           await vehicleInfoController.upsertVehicleInfo(vehicleInfoList[i]);
-        } catch (e) {
+        } on DioError catch (e) {
           print('upsertVehicleInfo: $e');
-          return true;
+          // throw Exception(e.message);
         }
       }
       SharedPreferencesHelper.removeStringValue('vehicleInfoUpsertDataLocal');
@@ -132,8 +192,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     final String? contraventionPhotoData =
         await SharedPreferencesHelper.getStringValue(
             'contraventionPhotoDataLocal');
-    final String? dataAbortPCN =
-        await SharedPreferencesHelper.getStringValue('abortPCNDataLocal');
 
     if (issuePCNData != null) {
       var decodedData = json.decode(issuePCNData) as List<dynamic>;
@@ -141,7 +199,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           .map((e) => ContraventionCreateWardenCommand.fromJson(json.decode(e)))
           .toList();
       List<ContraventionCreatePhoto> contraventionCreatePhoto = [];
-      List<AbortPCN> abortPCN = [];
 
       if (contraventionPhotoData != null) {
         var contraventionPhotoDecoded =
@@ -151,49 +208,26 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             .toList();
       }
 
-      if (dataAbortPCN != null) {
-        var abortDataDecoded = json.decode(dataAbortPCN) as List<dynamic>;
-        abortPCN = abortDataDecoded
-            .map((e) => AbortPCN.fromJson(json.decode(e)))
-            .toList();
-      }
-
       for (int i = 0; i < physicalPCNList.length; i++) {
         try {
-          await contraventionController
-              .createPCN(physicalPCNList[i])
-              .then((contravention) async {
-            print(contravention.id);
-            for (int j = 0; j < abortPCN.length; j++) {
-              if (physicalPCNList[i].Id == abortPCN[j].contraventionId) {
-                abortPCN[j].contraventionId = contravention.id ?? 0;
-                try {
-                  await abortController.abortPCN(abortPCN[j]);
-                } catch (e) {
-                  print('abortPCN: $e');
-                  break;
-                }
-              }
-            }
-          });
-        } catch (e) {
+          await contraventionController.createPCN(physicalPCNList[i]);
+        } on DioError catch (e) {
           print('createPCN: $e');
-          return true;
+          // throw Exception(e.message);
         }
       }
       for (int i = 0; i < contraventionCreatePhoto.length; i++) {
         try {
           await contraventionController
               .uploadContraventionImage(contraventionCreatePhoto[i]);
-        } catch (e) {
+        } on DioError catch (e) {
           print('uploadContraventionImage: $e');
-          return true;
+          // throw Exception(e.message);
         }
       }
 
       SharedPreferencesHelper.removeStringValue('issuePCNDataLocal');
       SharedPreferencesHelper.removeStringValue('contraventionPhotoDataLocal');
-      SharedPreferencesHelper.removeStringValue('abortPCNDataLocal');
       return true;
     } else {
       return true;
@@ -232,9 +266,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         wardenEventList[i].Id = 0;
         try {
           await userController.createWardenEvent(wardenEventList[i]);
-        } catch (e) {
+        } on DioError catch (e) {
           print('createWardenEvent: $e');
-          return true;
+          // throw Exception(e.message);
         }
       }
       SharedPreferencesHelper.removeStringValue('wardenEventDataLocal');
@@ -251,9 +285,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
           wardenEventList[i].Id = 0;
           try {
             await userController.createWardenEvent(wardenEventList[i]);
-          } catch (e) {
+          } on DioError catch (e) {
             print('createWardenEvent: $e');
-            return true;
+            // throw Exception(e.message);
           }
         }
         SharedPreferencesHelper.removeStringValue(
@@ -264,25 +298,28 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   }
 
   void dataSynch() async {
-    bool vehicleInfoSynchStatus = false;
-    bool issuePCNSynchStatus = false;
-    bool wardenEventSyncStatus = false;
-    await vehicleInfoDataSynch().then((value) {
-      vehicleInfoSynchStatus = value;
-    });
-    await parkingChargeDataSynch().then((value) {
-      issuePCNSynchStatus = value;
-    });
-    await wardenEventDataSync().then((value) {
-      wardenEventSyncStatus = value;
-    });
-    if (vehicleInfoSynchStatus == true &&
-        issuePCNSynchStatus == true &&
-        wardenEventSyncStatus == true) {
-      await Future.delayed(const Duration(seconds: 1), () {
-        NavigationService.navigatorKey.currentState!.pop();
-      });
-    }
+    // bool vehicleInfoSynchStatus = false;
+    // bool issuePCNSynchStatus = false;
+    // bool wardenEventSyncStatus = false;
+    // await vehicleInfoDataSynch().then((value) {
+    //   vehicleInfoSynchStatus = value;
+    // });
+    // await parkingChargeDataSynch().then((value) {
+    //   issuePCNSynchStatus = value;
+    // });
+    // await wardenEventDataSync().then((value) {
+    //   wardenEventSyncStatus = value;
+    // });
+    // if (vehicleInfoSynchStatus == true &&
+    //     issuePCNSynchStatus == true &&
+    //     wardenEventSyncStatus == true) {
+    //   await Future.delayed(const Duration(seconds: 1), () {
+    //     NavigationService.navigatorKey.currentState!.pop();
+    //   });
+    // }
+    await vehicleInfoDataSynch();
+    await parkingChargeDataSynch();
+    await wardenEventDataSync();
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
@@ -290,8 +327,47 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         result == ConnectivityResult.mobile) {
       bool checkIsAuth = await isAuth();
       if (checkIsAuth == true) {
-        showLoading();
+        var firstSeenLength = 0;
+        var gracePeriodLength = 0;
+        var pcnLength = 0;
+
+        final String? dataUpsert = await SharedPreferencesHelper.getStringValue(
+            'vehicleInfoUpsertDataLocal');
+        final String? issuePCNData =
+            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
+
+        if (dataUpsert != null) {
+          final vehicleInfoUpsertData =
+              json.decode(dataUpsert) as List<dynamic>;
+          List<VehicleInformation> vehicleInfoList = vehicleInfoUpsertData
+              .map((i) => VehicleInformation.fromJson(json.decode(i)))
+              .toList();
+
+          var firstSeenList = vehicleInfoList
+              .where((e) => e.Type == VehicleInformationType.FIRST_SEEN.index)
+              .toList();
+          var gracePeriodList = vehicleInfoList
+              .where((e) => e.Type == VehicleInformationType.GRACE_PERIOD.index)
+              .toList();
+
+          firstSeenLength = firstSeenList.length;
+          gracePeriodLength = gracePeriodList.length;
+        }
+
+        if (issuePCNData != null) {
+          var decodedData = json.decode(issuePCNData) as List<dynamic>;
+          pcnLength = decodedData.length;
+        }
+
+        showLoading(
+            firstSeenLength: firstSeenLength,
+            gracePeriodLength: gracePeriodLength,
+            pcnLength: pcnLength);
         dataSynch();
+
+        await Future.delayed(const Duration(seconds: 3), () {
+          NavigationService.navigatorKey.currentState!.pop();
+        });
       }
     }
   }
@@ -300,6 +376,11 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   void initState() {
     super.initState();
     _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    Timer.periodic(const Duration(seconds: 5), (timer) async {
+      await currentLocationPosition.getCurrentLocation();
+      print('latitude: ${currentLocationPosition.currentLocation?.latitude}');
+      print('longitude: ${currentLocationPosition.currentLocation?.longitude}');
+    });
   }
 
   @override

@@ -1,16 +1,17 @@
 import 'dart:developer';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -29,6 +30,26 @@ class ReadRegulationScreen extends StatefulWidget {
 
 class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
   bool checkbox = false;
+  List<ContraventionReasonTranslations> contraventionReasonList = [];
+
+  void getContraventionReasonList({int? zoneId}) async {
+    final Pagination list = await contraventionController
+        .getContraventionReasonServiceList(zoneId: zoneId);
+    setState(() {
+      contraventionReasonList = list.rows
+          .map((item) => ContraventionReasonTranslations.fromJson(item))
+          .toList();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final locations = Provider.of<Locations>(context, listen: false);
+      getContraventionReasonList(zoneId: locations.zone?.Id);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +71,10 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
     );
 
     void checkNextPage() async {
+      // eventAnalytics.clickButton(
+      //   button: "Check in",
+      //   user: wardersProvider.wardens!.Email,
+      // );
       if (locations.location?.Notes?.isEmpty == true ||
           locations.location?.Notes == null) {
         try {
@@ -69,7 +94,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                 error.message.length > Constant.errorTypeOther
                     ? 'Something went wrong, please try again'
                     : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -84,7 +109,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                       Constant.errorMaxLength
                   ? 'Internal server error'
                   : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -97,7 +122,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
             displayCloseButton: false,
             title: Text(
               'Please tick to confirm and go next',
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -120,7 +145,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                   error.message.length > Constant.errorTypeOther
                       ? 'Something went wrong, please try again'
                       : error.message,
-                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
                 ),
                 toastPosition: Position.bottom,
                 borderRadius: 5,
@@ -135,7 +160,7 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                         Constant.errorMaxLength
                     ? 'Internal server error'
                     : error.response!.data['message'],
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -182,9 +207,8 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           icon: SvgPicture.asset('assets/svg/IconNextBottom.svg'),
           label: Text(
             'Check in',
-            style: CustomTextStyle.h6.copyWith(
-              color: Colors.white,
-            ),
+            style:
+                CustomTextStyle.h6.copyWith(color: Colors.white, fontSize: 14),
           ),
         ),
       ),
@@ -205,8 +229,9 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                       children: [
                         Text(
                           "Please read below and confirm that you understand all regulations of this location.",
-                          style: CustomTextStyle.h4
-                              .copyWith(color: ColorTheme.primary),
+                          style: CustomTextStyle.h4.copyWith(
+                              color: ColorTheme.primary,
+                              fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(
                           height: 24,
@@ -215,7 +240,8 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
                           locations.location?.Notes?.isEmpty ?? true
                               ? "This location does not currently have any regulations!"
                               : locations.location?.Notes as String,
-                          style: CustomTextStyle.h4,
+                          style: CustomTextStyle.h4
+                              .copyWith(fontWeight: FontWeight.w400),
                         ),
                       ],
                     ),

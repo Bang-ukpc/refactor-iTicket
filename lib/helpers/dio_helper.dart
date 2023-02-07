@@ -13,7 +13,7 @@ class DioHelper {
 }
 
 class ApiClientBuilder {
-  static const int defaultTimeout = 15000;
+  static const int defaultTimeout = 60 * 1000;
 
   Dio dio = Dio(
     BaseOptions(

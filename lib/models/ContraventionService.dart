@@ -5,20 +5,20 @@ enum TypePCN {
 
 class ContraventionCreateWardenCommand {
   String ContraventionReference;
-  final String Plate;
-  final String VehicleMake;
-  final String VehicleColour;
-  final String ContraventionReasonCode;
-  final DateTime EventDateTime;
-  final DateTime FirstObservedDateTime;
-  final int WardenId;
-  final String BadgeNumber;
-  final num Longitude;
-  final num Latitude;
-  final int LocationAccuracy;
-  final String WardenComments;
-  final int? TypePCN;
-  final int ZoneId;
+  String Plate;
+  String VehicleMake;
+  String VehicleColour;
+  String ContraventionReasonCode;
+  DateTime EventDateTime;
+  DateTime FirstObservedDateTime;
+  int WardenId;
+  String BadgeNumber;
+  num Longitude;
+  num Latitude;
+  int LocationAccuracy;
+  String WardenComments;
+  int? TypePCN;
+  int ZoneId;
   int? Id;
 
   ContraventionCreateWardenCommand({
@@ -197,4 +197,39 @@ Map<String, dynamic> _$ContraventionCreatePhotoToJson(
     'capturedDateTime': instance.capturedDateTime.toIso8601String(),
     'file': instance.filePath,
   };
+}
+
+class PermitInfo {
+  final String? bayNumber;
+  final String? source;
+  final String? tenant;
+  final String? VRN;
+
+  PermitInfo({
+    this.bayNumber,
+    this.source,
+    this.tenant,
+    this.VRN,
+  });
+
+  factory PermitInfo.fromJson(Map<String, dynamic> json) => PermitInfo(
+        VRN: json['VRN'],
+        bayNumber: json['bayNumber'],
+        source: json['source'],
+        tenant: json['tenant'],
+      );
+}
+
+class CheckPermit {
+  final bool? hasPermit;
+  final PermitInfo? permitInfo;
+
+  CheckPermit({this.hasPermit, this.permitInfo});
+
+  factory CheckPermit.fromJson(Map<String, dynamic> json) => CheckPermit(
+        hasPermit: json['hasPermit'],
+        permitInfo: PermitInfo.fromJson(
+          json['permitInfo'],
+        ),
+      );
 }

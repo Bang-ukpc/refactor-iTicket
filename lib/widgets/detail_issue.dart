@@ -41,20 +41,24 @@ class DetailIssue extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(
+            height: 3,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Text(
                 "Created at: ${FormatDate().getLocalDate(createdAt)}",
-                style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
+                style: CustomTextStyle.h5.copyWith(color: ColorTheme.grey600),
               ),
-              Text(
-                "Bay: $bayNumber",
-                style: CustomTextStyle.h6.copyWith(
-                  color: ColorTheme.grey600,
+              if (bayNumber.isNotEmpty)
+                Text(
+                  "Bay: $bayNumber",
+                  style: CustomTextStyle.h5.copyWith(
+                    color: ColorTheme.grey600,
+                  ),
                 ),
-              ),
             ],
           ),
         ],

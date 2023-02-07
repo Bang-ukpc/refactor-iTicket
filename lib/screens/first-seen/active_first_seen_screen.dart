@@ -7,7 +7,6 @@ import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';

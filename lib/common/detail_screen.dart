@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
+import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/locate_car_screen.dart';
 import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/configs/configs.dart';
@@ -32,10 +33,6 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
-    final widthScreen = MediaQuery.of(context).size.width;
-    final padding = widget.type == TypeFirstSeen.Expired ? 30.0 : 05.0;
-    final divisor = widget.type == TypeFirstSeen.Expired ? 3 : 2;
-    final divisor2 = widget.type == TypeFirstSeen.Expired ? 0.00 : 12;
     final args =
         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
     final calculateTime = CalculateTime();
@@ -123,100 +120,48 @@ class _DetailScreenState extends State<DetailScreen> {
           },
         ),
         drawer: const MyDrawer(),
-        bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            color: ColorTheme.white,
-            boxShadow: [
-              BoxShadow(
-                color: ColorTheme.grey300,
-                offset: Offset(0, 0.75),
-                blurRadius: 10,
-                spreadRadius: 4,
+        bottomNavigationBar: BottomSheet2(
+          buttonList: [
+            BottomNavyBarItem(
+              onPressed: onCarLeft,
+              icon: SvgPicture.asset(
+                'assets/svg/IconCar.svg',
+                color: ColorTheme.white,
               ),
-            ],
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: padding),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                SizedBox(
-                  width: ((widthScreen / divisor) - padding) - divisor2,
-                  child: TextButton.icon(
-                      onPressed: onCarLeft,
-                      icon: SvgPicture.asset(
-                        "assets/svg/IconCar.svg",
-                        width: 16,
-                      ),
-                      label: const Text(
-                        "Car left",
-                        style: CustomTextStyle.h6,
-                      )),
-                ),
-                if (widget.type == TypeFirstSeen.Expired)
-                  Container(
-                    height: 25,
-                    decoration: const BoxDecoration(
-                      border: Border.symmetric(
-                        vertical: BorderSide(
-                          width: 0.5,
-                          color: ColorTheme.grey300,
-                        ),
-                      ),
-                    ),
-                  ),
-                if (widget.type == TypeFirstSeen.Expired)
-                  SizedBox(
-                    width: ((widthScreen / divisor) - padding) - divisor2,
-                    child: TextButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(
-                            IssuePCNFirstSeenScreen.routeName,
-                            arguments: args,
-                          );
-                        },
-                        icon: SvgPicture.asset(
-                          "assets/svg/IconCharges2.svg",
-                          width: 16,
-                        ),
-                        label: const Text(
-                          "Issue PCN",
-                          style: CustomTextStyle.h6,
-                        )),
-                  ),
-                Container(
-                  height: 25,
-                  decoration: const BoxDecoration(
-                    border: Border.symmetric(
-                      vertical: BorderSide(
-                        width: 0.5,
-                        color: ColorTheme.grey300,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: ((widthScreen / divisor) - padding) - divisor2,
-                  child: TextButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(
-                          LocateCarScreen.routeName,
-                          arguments: args,
-                        );
-                      },
-                      icon: SvgPicture.asset(
-                        "assets/svg/IconLocation.svg",
-                        width: 16,
-                      ),
-                      label: const Text(
-                        "Located",
-                        style: CustomTextStyle.h6,
-                      )),
-                ),
-              ],
+              label: 'Car left',
             ),
-          ),
+            if (widget.type == TypeFirstSeen.Expired)
+              BottomNavyBarItem(
+                onPressed: () {
+                  Navigator.of(context).pushNamed(
+                    IssuePCNFirstSeenScreen.routeName,
+                    arguments: args,
+                  );
+                },
+                icon: SvgPicture.asset(
+                  'assets/svg/IconCharges2.svg',
+                  width: 20,
+                  height: 20,
+                  color: Colors.white,
+                ),
+                label: 'Issue PCN',
+              ),
+            BottomNavyBarItem(
+              onPressed: () {
+                Navigator.of(context).pushNamed(
+                  LocateCarScreen.routeName,
+                  arguments: args,
+                );
+              },
+              icon: SvgPicture.asset(
+                'assets/svg/IconLocation.svg',
+                width: 20,
+                height: 20,
+                color: Colors.white,
+              ),
+              label: 'Locate car',
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           child: Container(
@@ -251,7 +196,7 @@ class _DetailScreenState extends State<DetailScreen> {
                             ),
                             args.ExpiredAt,
                           )))}"
-                        : "Expired in: ${calculateTime.getDurationExpiredIn(Duration(minutes: calculateTime.daysBetween(
+                        : "Expired: ${calculateTime.getDurationExpiredIn(Duration(minutes: calculateTime.daysBetween(
                             args.ExpiredAt,
                             DateTime.now(),
                           )))}",
@@ -264,6 +209,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   ),
                 ),
                 AddImage(
+                  displayTitle: false,
                   isSlideImage: true,
                   listImage: imgList,
                   listImageFile: imgListFile,

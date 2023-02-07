@@ -1,11 +1,9 @@
 import 'dart:developer';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
@@ -268,6 +266,10 @@ class _HomeOverviewState extends State<HomeOverview> {
     void onCheckOut() async {
       try {
         showCircularProgressIndicator(context: context, text: 'Checking out');
+        // eventAnalytics.clickButton(
+        //   button: "Check out",
+        //   user: wardensProvider.wardens!.Email,
+        // );
         await userController.createWardenEvent(wardenEvent).then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
@@ -282,7 +284,7 @@ class _HomeOverviewState extends State<HomeOverview> {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -297,7 +299,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -306,6 +308,10 @@ class _HomeOverviewState extends State<HomeOverview> {
     }
 
     void onStartBreak() async {
+      // eventAnalytics.clickButton(
+      //   button: "Start break",
+      //   user: wardensProvider.wardens!.Email,
+      // );
       try {
         showCircularProgressIndicator(context: context, text: 'Processing');
         await userController
@@ -323,7 +329,7 @@ class _HomeOverviewState extends State<HomeOverview> {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -338,12 +344,35 @@ class _HomeOverviewState extends State<HomeOverview> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
         ).show(context);
       }
+    }
+
+    Future<void> refresh() async {
+      setState(() {
+        firstSeenLoading = true;
+        gracePeriodLoading = true;
+        contraventionLoading = true;
+      });
+      getFirstSeenList(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locations.zone!.Id as int,
+      );
+      getGracePeriodList(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locations.zone!.Id as int,
+      );
+      getContraventionList(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locations.zone!.Id as int,
+      );
     }
 
     return WillPopScope(
@@ -356,97 +385,98 @@ class _HomeOverviewState extends State<HomeOverview> {
             onPressed: onStartBreak,
             icon: SvgPicture.asset(
               'assets/svg/IconStartBreak.svg',
-              color: ColorTheme.grey600,
+              color: Colors.white,
             ),
-            label: const Text(
-              "Start break",
-              style: CustomTextStyle.h6,
-            ),
+            label: "Start break",
           ),
           BottomNavyBarItem(
             onPressed: onCheckOut,
-            icon: SvgPicture.asset("assets/svg/CheckOut.svg"),
-            label: Text(
-              "Check out",
-              style: CustomTextStyle.h6.copyWith(color: ColorTheme.danger),
+            icon: SvgPicture.asset(
+              "assets/svg/CheckOut.svg",
+              color: ColorTheme.textPrimary,
             ),
+            label: "Check out",
           ),
         ]),
-        body: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              const SizedBox(
-                height: 10,
-              ),
-              InfoDrawer(
-                isDrawer: false,
-                assetImage: wardensProvider.wardens?.Picture ??
-                    "assets/images/userAvatar.png",
-                name: "Hi ${wardensProvider.wardens?.FullName ?? ""}",
-                location: locations.location?.Name ?? 'Empty name',
-                zone: locations.zone?.Name ?? 'Empty name',
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              firstSeenLoading == false
-                  ? CardHome(
-                      width: width,
-                      assetIcon: "assets/svg/IconFirstSeen.svg",
-                      backgroundIcon: ColorTheme.lighterPrimary,
-                      title: "First seen",
-                      infoRight: "Active: ${firstSeenActive.length}",
-                      infoLeft: "Expired: ${firstSeenExpired.length}",
-                      route: AddFirstSeenScreen.routeName,
-                      routeView: ActiveFirstSeenScreen.routeName,
-                    )
-                  : SkeletonAvatar(
-                      style: SkeletonAvatarStyle(
+        body: RefreshIndicator(
+          onRefresh: refresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: <Widget>[
+                const SizedBox(
+                  height: 10,
+                ),
+                InfoDrawer(
+                  isDrawer: false,
+                  assetImage: wardensProvider.wardens?.Picture ??
+                      "assets/images/userAvatar.png",
+                  name: "Hi ${wardensProvider.wardens?.FullName ?? ""}",
+                  location: locations.location?.Name ?? 'Empty name',
+                  zone: locations.zone?.Name ?? 'Empty name',
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                firstSeenLoading == false
+                    ? CardHome(
                         width: width,
-                        height: 100,
+                        assetIcon: "assets/svg/IconFirstSeen.svg",
+                        backgroundIcon: ColorTheme.lighterPrimary,
+                        title: "First seen",
+                        infoRight: "Active: ${firstSeenActive.length}",
+                        infoLeft: "Expired: ${firstSeenExpired.length}",
+                        route: AddFirstSeenScreen.routeName,
+                        routeView: ActiveFirstSeenScreen.routeName,
+                      )
+                    : SkeletonAvatar(
+                        style: SkeletonAvatarStyle(
+                          width: width,
+                          height: 100,
+                        ),
                       ),
-                    ),
-              const SizedBox(
-                height: 10,
-              ),
-              gracePeriodLoading == false
-                  ? CardHome(
-                      width: width,
-                      assetIcon: "assets/svg/IconGrace.svg",
-                      backgroundIcon: ColorTheme.lightDanger,
-                      title: "Consideration period",
-                      infoRight: "Active: ${gracePeriodActive.length}",
-                      infoLeft: "Expired: ${gracePeriodExpired.length}",
-                      route: AddGracePeriod.routeName,
-                      routeView: GracePeriodList.routeName,
-                    )
-                  : SkeletonAvatar(
-                      style: SkeletonAvatarStyle(
+                const SizedBox(
+                  height: 10,
+                ),
+                gracePeriodLoading == false
+                    ? CardHome(
                         width: width,
-                        height: 100,
+                        assetIcon: "assets/svg/IconGrace.svg",
+                        backgroundIcon: ColorTheme.lightDanger,
+                        title: "Consideration period",
+                        infoRight: "Active: ${gracePeriodActive.length}",
+                        infoLeft: "Expired: ${gracePeriodExpired.length}",
+                        route: AddGracePeriod.routeName,
+                        routeView: GracePeriodList.routeName,
+                      )
+                    : SkeletonAvatar(
+                        style: SkeletonAvatarStyle(
+                          width: width,
+                          height: 100,
+                        ),
                       ),
-                    ),
-              const SizedBox(
-                height: 10,
-              ),
-              contraventionLoading == false
-                  ? CardHome(
-                      width: width,
-                      assetIcon: "assets/svg/IconParkingChargesHome.svg",
-                      backgroundIcon: ColorTheme.lighterSecondary,
-                      title: "Parking Charges",
-                      infoRight: "Issued: ${contraventionList.length}",
-                      infoLeft: null,
-                      route: IssuePCNFirstSeenScreen.routeName,
-                      routeView: ParkingChargeList.routeName,
-                    )
-                  : SkeletonAvatar(
-                      style: SkeletonAvatarStyle(
+                const SizedBox(
+                  height: 10,
+                ),
+                contraventionLoading == false
+                    ? CardHome(
                         width: width,
-                        height: 100,
+                        assetIcon: "assets/svg/IconParkingChargesHome.svg",
+                        backgroundIcon: ColorTheme.lighterSecondary,
+                        title: "Parking changes",
+                        infoRight: "Issued: ${contraventionList.length}",
+                        infoLeft: null,
+                        route: IssuePCNFirstSeenScreen.routeName,
+                        routeView: ParkingChargeList.routeName,
+                      )
+                    : SkeletonAvatar(
+                        style: SkeletonAvatarStyle(
+                          width: width,
+                          height: 100,
+                        ),
                       ),
-                    ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

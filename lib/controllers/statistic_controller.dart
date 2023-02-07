@@ -18,6 +18,7 @@ class StatisticController {
         "ZoneId": filter.zoneId,
         "timeStart": filter.timeStart.toString(),
         "timeEnd": filter.timeEnd.toString(),
+        'WardenId': filter.WardenId,
       });
       try {
         final response = await DioHelper.defaultApiClient
@@ -41,7 +42,11 @@ class StatisticController {
         return StatisticWardenPropsData.fromJson(statisticData);
       }
       return StatisticWardenPropsData(
-          abortedPCN: 0, firstSeen: 0, gracePeriod: 0, issuedPCN: 0);
+        abortedPCN: 0,
+        firstSeen: 0,
+        gracePeriod: 0,
+        issuedPCN: 0,
+      );
     }
   }
 }

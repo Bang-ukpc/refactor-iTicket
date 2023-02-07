@@ -4,6 +4,7 @@ import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
 import 'package:iWarden/models/send_form.dart';
+import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
@@ -34,18 +35,17 @@ class _SendFormScreenState extends State<SendFormScreen> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            icon: SvgPicture.asset("assets/svg/IconCancel2.svg"),
-            label: const Text(
-              "Cancel",
-              style: CustomTextStyle.h6,
-            )),
+            icon: SvgPicture.asset(
+              "assets/svg/IconCancel2.svg",
+              color: Colors.white,
+            ),
+            label: "Cancel"),
         BottomNavyBarItem(
             onPressed: () {},
-            icon: SvgPicture.asset("assets/svg/IconComplete2.svg"),
-            label: const Text(
-              "Complete",
-              style: CustomTextStyle.h6,
-            ))
+            icon: SvgPicture.asset(
+              "assets/svg/IconComplete2.svg",
+            ),
+            label: "Complete")
       ]),
       drawer: const MyDrawer(),
       body: SingleChildScrollView(
@@ -81,13 +81,17 @@ class _SendFormScreenState extends State<SendFormScreen> {
                     height: 24,
                   ),
                   TextFormField(
-                      style: CustomTextStyle.h6,
+                      style: CustomTextStyle.h6.copyWith(fontSize: 16),
                       keyboardType: TextInputType.multiline,
                       minLines: 3,
                       maxLines: 5,
                       decoration: const InputDecoration(
                         labelText: "Description",
                         hintText: "Please enter description",
+                        hintStyle: TextStyle(
+                          fontSize: 16,
+                          color: ColorTheme.grey400,
+                        ),
                       )),
                   const SizedBox(
                     height: 24,
