@@ -6,6 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
@@ -375,6 +376,11 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   void initState() {
     super.initState();
     _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    Timer.periodic(const Duration(seconds: 5), (timer) async {
+      await currentLocationPosition.getCurrentLocation();
+      print('latitude: ${currentLocationPosition.currentLocation?.latitude}');
+      print('longitude: ${currentLocationPosition.currentLocation?.longitude}');
+    });
   }
 
   @override
