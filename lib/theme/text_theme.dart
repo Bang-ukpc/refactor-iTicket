@@ -44,4 +44,9 @@ class CustomTextStyle {
     color: ColorTheme.textPrimary,
     fontWeight: FontWeight.w400,
   );
+  static const TextStyle caption = TextStyle(
+    fontSize: 10,
+    color: ColorTheme.textPrimary,
+    fontWeight: FontWeight.w400,
+  );
 }

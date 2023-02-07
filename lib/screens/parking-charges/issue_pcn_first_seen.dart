@@ -1,16 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
+import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:iWarden/common/Camera/camera_picker.dart';
-import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
@@ -21,31 +20,33 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/controllers/location_controller.dart';
+import 'package:iWarden/helpers/contravention_reference_helper.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
-import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/car_info_data.dart';
+import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
+import 'package:iWarden/screens/abort-screen/abort_screen.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
+import 'package:iWarden/screens/parking-charges/print_issue.dart';
 import 'package:iWarden/screens/parking-charges/print_pcn.dart';
-import 'package:iWarden/configs/scan-plate/anyline_service.dart';
-import 'package:iWarden/configs/scan-plate/result.dart';
-import 'package:iWarden/configs/scan-plate/scan_modes.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:iWarden/widgets/app_bar.dart';
-import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/location.dart';
+import '../../providers/print_issue_providers.dart' as prefix;
+import '../../widgets/parking-charge/step_issue_pcn.dart';
+
 List<SelectModel> typeOfPCN = [
-  SelectModel(label: 'Virtual ticket (Highly recommended)', value: 0),
-  SelectModel(label: 'Physical PCN', value: 1),
+  SelectModel(label: 'Virtual ticket (Highly recommended)', value: 1),
+  SelectModel(label: 'Physical PCN', value: 0),
 ];
 
 class IssuePCNFirstSeenScreen extends StatefulWidget {
@@ -60,41 +61,20 @@ class IssuePCNFirstSeenScreen extends StatefulWidget {
 
 class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late AnylineService _anylineService;
   final _vrnController = TextEditingController();
   final _vehicleMakeController = TextEditingController();
   final _vehicleColorController = TextEditingController();
   final _contraventionReasonController = TextEditingController();
-  final _typeOfPcnController = TextEditingController();
   final _commentController = TextEditingController();
   List<ContraventionReasonTranslations> contraventionReasonList = [];
-  int selectedButton = 0;
-  List<File> arrayImage = [];
+  List<ContraventionReasonTranslations> fromJsonContraventionList = [];
   List<EvidencePhoto> evidencePhotoList = [];
   final _debouncer = Debouncer(milliseconds: 300);
+  SelectModel? _selectedItemTypePCN;
+  List<RotaWithLocation> locationWithRotaList = [];
 
-  void getContraventionReasonList() async {
-    final Pagination list =
-        await contraventionController.getContraventionReasonServiceList();
-    setState(() {
-      contraventionReasonList = list.rows
-          .map((item) => ContraventionReasonTranslations.fromJson(item))
-          .toList();
-    });
-  }
-
-  void onSearchVehicleInfoByPlate(String plate) async {
-    await contraventionController
-        .getVehicleDetailByPlate(plate: plate)
-        .then((value) {
-      setState(() {
-        _vehicleMakeController.text = value?.make ?? '';
-        _vehicleColorController.text = value?.colour ?? '';
-      });
-    });
-  }
-
-  void getSelectedTypeOfPCN(Locations locationProvider) {
+  void setSelectedTypeOfPCN(
+      Locations locationProvider, Contravention? contraventionValue) {
     var typeOfPCNFilter = typeOfPCN.where((e) {
       if (locationProvider
                   .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
@@ -106,66 +86,236 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       } else if (locationProvider
               .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
           true) {
+        return e.value == 0;
+      } else if (locationProvider
+              .zone!.Services![0].ServiceConfig.IssuePCNType.Virtual ==
+          true) {
         return e.value == 1;
       } else {
-        return e.value == 0;
+        return false;
       }
     }).toList();
-    setState(() {
-      _typeOfPcnController.text = typeOfPCNFilter[0].value.toString();
+    if (contraventionValue != null) {
+      setState(() {
+        _selectedItemTypePCN = typeOfPCNFilter
+            .firstWhere((e) => e.value == contraventionValue.type);
+      });
+    } else {
+      setState(() {
+        _selectedItemTypePCN =
+            typeOfPCNFilter.isNotEmpty ? typeOfPCNFilter[0] : null;
+      });
+    }
+  }
+
+  Future<void> getLocationList(Locations locations, int wardenId) async {
+    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
+        ListLocationOfTheDayByWardenIdProps(
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardenId,
+    );
+
+    await locationController
+        .getAll(listLocationOfTheDayByWardenIdProps)
+        .then((value) {
+      for (int i = 0; i < value.length; i++) {
+        for (int j = 0; j < value.length; j++) {
+          if (value[i].locations![j].Id == locations.location!.Id) {
+            locations.onSelectedLocation(value[i].locations![j]);
+            var zoneSelected = value[i]
+                .locations![j]
+                .Zones!
+                .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
+            locations.onSelectedZone(zoneSelected);
+            return;
+          }
+        }
+      }
+    }).catchError((err) {
+      print(err);
     });
+  }
+
+  Future<void> getContraventionReasonList({int? zoneId}) async {
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+
+    if (connectionStatus == ConnectivityResult.wifi ||
+        connectionStatus == ConnectivityResult.mobile) {
+      final Pagination list = await contraventionController
+          .getContraventionReasonServiceList(zoneId: zoneId);
+      setState(() {
+        contraventionReasonList = list.rows
+            .map((item) => ContraventionReasonTranslations.fromJson(item))
+            .toList();
+      });
+    } else {
+      final Pagination list =
+          await contraventionController.getContraventionReasonServiceList();
+      setState(() {
+        contraventionReasonList = list.rows
+            .map((item) => ContraventionReasonTranslations.fromJson(item))
+            .toList();
+      });
+    }
+  }
+
+  Future<void> getContraventionReasonListOffline() async {
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+
+    final String? dataHaveZoneId = await SharedPreferencesHelper.getStringValue(
+        'contraventionReasonDataLocalWithNotHaveZoneId');
+
+    final String? reasonDataLocal =
+        await SharedPreferencesHelper.getStringValue(
+            'contraventionReasonDataLocalWithHaveZoneId');
+
+    if (connectionStatus == ConnectivityResult.wifi ||
+        connectionStatus == ConnectivityResult.mobile) {
+      final contraventionReason =
+          json.decode(reasonDataLocal as String) as Map<String, dynamic>;
+      Pagination fromJsonContraventionReason =
+          Pagination.fromJson(contraventionReason);
+      fromJsonContraventionList = fromJsonContraventionReason.rows
+          .map((item) => ContraventionReasonTranslations.fromJson(item))
+          .toList();
+    } else {
+      final contraventionReason =
+          json.decode(dataHaveZoneId as String) as Map<String, dynamic>;
+      Pagination fromJsonContraventionReason =
+          Pagination.fromJson(contraventionReason);
+      fromJsonContraventionList = fromJsonContraventionReason.rows
+          .map((item) => ContraventionReasonTranslations.fromJson(item))
+          .toList();
+    }
+  }
+
+  List<String> arrMake = DataInfoCar().make;
+  List<String> arrColor = DataInfoCar().color;
+
+  void onSearchVehicleInfoByPlate(
+      String plate, ContraventionProvider contraventionProvider) async {
+    showCircularProgressIndicator(context: context);
+    try {
+      await contraventionController
+          .getVehicleDetailByPlate(plate: plate)
+          .then((value) {
+        if (value?.Make != null) {
+          contraventionProvider.setMakeNullProvider(value?.Make);
+          setState(() {
+            _vehicleMakeController.text = value?.Make ?? '';
+          });
+        }
+        if (value?.Colour != null) {
+          contraventionProvider.setColorNullProvider(value?.Colour);
+          setState(() {
+            _vehicleColorController.text = value?.Colour ?? '';
+          });
+        }
+        Navigator.of(context).pop();
+        if (value?.Colour == null && value?.Make == null) {
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 3),
+            title: Text(
+              "Couldn't find vehicle info",
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+          return;
+        }
+      });
+    } on DioError catch (error) {
+      if (!mounted) return;
+      if (error.type == DioErrorType.other) {
+        Navigator.of(context).pop();
+        CherryToast.error(
+          toastDuration: const Duration(seconds: 3),
+          title: Text(
+            error.message.length > Constant.errorTypeOther
+                ? 'Something went wrong, please try again'
+                : error.message,
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+        return;
+      }
+      Navigator.of(context).pop();
+      CherryToast.error(
+        toastDuration: const Duration(seconds: 3),
+        displayCloseButton: true,
+        title: Text(
+          (error.response?.data['message'].toString().length ?? 0) >
+                  Constant.errorMaxLength
+              ? 'Internal server error'
+              : error.response?.data['message'],
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    _anylineService = AnylineServiceImpl();
-    getContraventionReasonList();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final args = ModalRoute.of(context)!.settings.arguments as dynamic;
       final locationProvider = Provider.of<Locations>(context, listen: false);
-      _vrnController.text = args != null ? args.Plate : '';
-      if (args != null) {
-        onSearchVehicleInfoByPlate(args.Plate);
-      }
-      getSelectedTypeOfPCN(locationProvider);
-    });
-  }
+      final contraventionProvider =
+          Provider.of<ContraventionProvider>(context, listen: false);
+      final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
+      await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
+      await getContraventionReasonListOffline();
+      var contraventionData = contraventionProvider.contravention;
+      if (contraventionData != null) {
+        _vrnController.text = contraventionData.plate ?? '';
 
-  Future<void> scan(ScanMode mode) async {
-    try {
-      Result? result = await _anylineService.scan(mode);
-      if (result != null) {
-        String resultText = result.jsonMap!.values
-            .take(2)
+        _vehicleMakeController.text =
+            contraventionProvider.getMakeNullProvider ?? '';
+
+        _vehicleColorController.text =
+            contraventionProvider.getColorNullProvider ?? '';
+
+        _contraventionReasonController.text = contraventionProvider
+                .getContraventionCode?.contraventionReason?.code ??
+            '';
+
+        _commentController.text = contraventionData.contraventionEvents!
+            .map((item) => item.detail)
             .toString()
-            .split(',')[1]
-            .replaceAll(RegExp('[^A-Za-z0-9]'), '')
-            .replaceAll(' ', '');
-        setState(() {
-          _vrnController.text = resultText.substring(0, resultText.length);
-        });
+            .replaceAll('(', '')
+            .replaceAll(')', '');
       }
-    } catch (e, s) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          elevation: 0,
-          title: const FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              'Error',
-            ),
-          ),
-          content: FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              '$e, $s',
-            ),
-          ),
-        ),
-      );
-    }
+      if (args != null) {
+        _vrnController.text = args.Plate;
+        if (args.Type == VehicleInformationType.FIRST_SEEN.index) {
+          ContraventionReasonTranslations? argsOverstayingTime =
+              fromJsonContraventionList.firstWhereOrNull((e) => e.summary!
+                  .toUpperCase()
+                  .contains('Overstaying'.toUpperCase()));
+          _contraventionReasonController.text = argsOverstayingTime != null
+              ? argsOverstayingTime.contraventionReason!.code.toString()
+              : '';
+          contraventionProvider.setContraventionCode(argsOverstayingTime);
+        } else {
+          _contraventionReasonController.text = '';
+          contraventionProvider.setContraventionCode(null);
+        }
+      }
+      setSelectedTypeOfPCN(locationProvider, contraventionData);
+      await getLocationList(locationProvider, wardersProvider.wardens?.Id ?? 0)
+          .then((value) {
+        setSelectedTypeOfPCN(locationProvider, contraventionData);
+      });
+    });
   }
 
   @override
@@ -173,14 +323,12 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     _vrnController.dispose();
     _vehicleMakeController.dispose();
     _vehicleColorController.dispose();
-    _typeOfPcnController.dispose();
     _commentController.dispose();
     _contraventionReasonController.dispose();
     if (_debouncer.timer != null) {
       _debouncer.timer!.cancel();
     }
     contraventionReasonList.clear();
-    arrayImage.clear();
     evidencePhotoList.clear();
     super.dispose();
   }
@@ -189,213 +337,108 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
+    final contraventionProvider = Provider.of<ContraventionProvider>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+    final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
 
-    log('Issue PCN screen');
+    log('issue pcn screen');
 
-    Future<void> createPhysicalPCN() async {
+    int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+    final physicalPCN = ContraventionCreateWardenCommand(
+      ZoneId: locationProvider.zone?.Id ?? 0,
+      ContraventionReference:
+          contraventionReferenceHelper.getContraventionReference(
+              prefixNumber: 2, wardenID: wardensProvider.wardens?.Id ?? 0),
+      Plate: _vrnController.text,
+      VehicleMake: _vehicleMakeController.text,
+      VehicleColour: _vehicleColorController.text,
+      ContraventionReasonCode: _contraventionReasonController.text,
+      EventDateTime: DateTime.now(),
+      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+      WardenId: wardensProvider.wardens?.Id ?? 0,
+      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      WardenComments: _commentController.text,
+      BadgeNumber: 'test',
+      LocationAccuracy: 0, // missing
+      TypePCN: TypePCN.Physical.index,
+      Id: randomNumber,
+    );
+
+    Future<void> createPhysicalPCN(
+        {bool? step2, bool? step3, required bool isPrinter}) async {
+      physicalPCN.Plate = _vrnController.text;
+      physicalPCN.WardenComments = _commentController.text;
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
-      int randomReference =
-          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
-      final physicalPCN = ContraventionCreateWardenCommand(
-        ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '$randomReference',
-        Plate: _vrnController.text,
-        VehicleMake: _vehicleMakeController.text,
-        VehicleColour: _vehicleColorController.text,
-        ContraventionReasonCode: _contraventionReasonController.text,
-        EventDateTime: DateTime.now(),
-        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-        WardenId: wardensProvider.wardens?.Id ?? 0,
-        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        WardenComments: _commentController.text,
-        BadgeNumber: 'test',
-        LocationAccuracy: 0, // missing
-        TypePCN: TypePCN.Physical.index,
-      );
-
-      final wardenEventIssuePCN = WardenEvent(
-        type: TypeWardenEvent.IssuePCN.index,
-        detail: '{"TicketNumber": "${physicalPCN.ContraventionReference}"}',
-        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        wardenId: wardensProvider.wardens?.Id ?? 0,
-        zoneId: locationProvider.zone?.Id ?? 0,
-        locationId: locationProvider.location?.Id ?? 0,
-        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
-        rotaTimeTo: locationProvider.rotaShift?.timeTo,
-      );
 
       final isValid = _formKey.currentState!.validate();
-      Contravention? contravention;
-      bool check = false;
 
-      if (arrayImage.length < 4) {
-        if (!mounted) return;
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            'Please take at least 4 picture',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-        return;
-      }
       if (!isValid) {
         return;
       } else {
+        if (!mounted) return;
         showCircularProgressIndicator(context: context);
       }
-      if (connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile) {
-        try {
-          await contraventionController.createPCN(physicalPCN).then((value) {
-            contravention = value;
-          });
-          if (arrayImage.isNotEmpty && contravention != null) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              await contraventionController.uploadContraventionImage(
-                ContraventionCreatePhoto(
-                  contraventionReference: contravention?.reference ?? '',
-                  originalFileName: arrayImage[i].path.split('/').last,
-                  capturedDateTime: DateTime.now(),
-                  filePath: arrayImage[i].path,
-                ),
-              );
-              if (i == arrayImage.length - 1) {
-                check = true;
-              }
-            }
-          }
-          if (contravention != null && check == true) {
-            await userController
-                .createWardenEvent(wardenEventIssuePCN)
-                .then((value) {
-              Navigator.of(context).pop();
-              Navigator.of(context)
-                  .pushNamed(PrintPCN.routeName, arguments: contravention);
-            });
-          }
-        } on DioError catch (error) {
-          log("log ${error.type.toString()}");
-          if (!mounted) return;
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            displayCloseButton: true,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
-      } else {
-        int randomNumber =
-            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-        physicalPCN.Id = randomNumber;
-        final String encodedPhysicalPCNData =
-            json.encode(ContraventionCreateWardenCommand.toJson(physicalPCN));
-        final String? issuePCNData =
-            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
-        if (issuePCNData == null) {
-          List<String> newData = [];
-          newData.add(encodedPhysicalPCNData);
-          final encodedNewData = json.encode(newData);
-          SharedPreferencesHelper.setStringValue(
-              'issuePCNDataLocal', encodedNewData);
-        } else {
-          final createdData = json.decode(issuePCNData) as List<dynamic>;
-          createdData.add(encodedPhysicalPCNData);
-          final encodedCreatedData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'issuePCNDataLocal', encodedCreatedData);
-        }
-
-        final String? contraventionPhotoData =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionPhotoDataLocal');
-        if (contraventionPhotoData == null) {
-          List<String> newPhotoData = [];
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: physicalPCN.ContraventionReference,
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: arrayImage[i].path,
-              ).toJson());
-              newPhotoData.add(encodedData);
-            }
-          }
-          final encodedNewData = json.encode(newPhotoData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionPhotoData) as List<dynamic>;
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: randomNumber.toString(),
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: arrayImage[i].path,
-              ).toJson());
-              createdData.add(encodedData);
-            }
-          }
-          final encodedNewData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        }
-
-        final String? reasonDataLocal =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionReasonDataLocal');
-        final contraventionReason =
-            json.decode(reasonDataLocal as String) as Map<String, dynamic>;
-        Pagination fromJsonContraventionReason =
-            Pagination.fromJson(contraventionReason);
-        List<ContraventionReasonTranslations> fromJsonContraventionList =
-            fromJsonContraventionReason.rows
-                .map((item) => ContraventionReasonTranslations.fromJson(item))
-                .toList();
-
-        List<ContraventionPhotos> contraventionImageList = [];
-        if (arrayImage.isNotEmpty) {
-          for (int i = 0; i < arrayImage.length; i++) {
+      List<ContraventionPhotos> contraventionImageList = [];
+      if (printIssue.data.isNotEmpty) {
+        for (int i = 0; i < printIssue.data.length; i++) {
+          if (printIssue.data[i].image != null) {
             contraventionImageList.add(ContraventionPhotos(
-              blobName: arrayImage[i].path,
-              contraventionId: physicalPCN.Id,
+              blobName: printIssue.data[i].image!.path,
+              contraventionId: contraventionProvider.contravention?.id ?? 0,
             ));
           }
         }
+      }
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        Contravention contravention = Contravention(
+          reference: physicalPCN.ContraventionReference,
+          created: DateTime.now(),
+          id: physicalPCN.Id,
+          plate: physicalPCN.Plate,
+          colour: physicalPCN.VehicleColour,
+          make: physicalPCN.VehicleMake,
+          eventDateTime: physicalPCN.EventDateTime,
+          zoneId: locationProvider.zone?.Id ?? 0,
+          reason: Reason(
+            code: physicalPCN.ContraventionReasonCode,
+            contraventionReasonTranslations: contraventionReasonList
+                .where((e) =>
+                    e.contraventionReason!.code ==
+                    physicalPCN.ContraventionReasonCode)
+                .toList(),
+          ),
+          contraventionEvents: [
+            ContraventionEvents(
+              contraventionId: physicalPCN.Id,
+              detail: physicalPCN.WardenComments,
+            )
+          ],
+          contraventionDetailsWarden: ContraventionDetailsWarden(
+            FirstObserved: physicalPCN.FirstObservedDateTime,
+            ContraventionId: physicalPCN.Id,
+            WardenId: physicalPCN.WardenId,
+            IssuedAt: physicalPCN.EventDateTime,
+          ),
+          status: ContraventionStatus.Open.index,
+          type: physicalPCN.TypePCN,
+          contraventionPhotos: contraventionImageList,
+        );
 
+        if (!mounted) return;
+        contraventionProvider.upDateContravention(contravention);
+        Navigator.of(context).pop();
+        step2 == true
+            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName,
+                arguments: {'isPrinter': isPrinter})
+            : step3 == true
+                ? Navigator.of(context).pushReplacementNamed(PrintPCN.routeName)
+                : Navigator.of(context).pushReplacementNamed(
+                    PrintIssue.routeName,
+                    arguments: {'isPrinter': isPrinter});
+      } else {
         Contravention contraventionDataFake = Contravention(
           reference: physicalPCN.ContraventionReference,
           created: DateTime.now(),
@@ -426,256 +469,118 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             IssuedAt: physicalPCN.EventDateTime,
           ),
           status: ContraventionStatus.Open.index,
+          type: physicalPCN.TypePCN,
           contraventionPhotos: contraventionImageList,
         );
 
-        final String? contraventionList =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionDataLocal');
-
-        if (contraventionList == null) {
-          List<dynamic> newData = [];
-          newData.add(Contravention.toJson(contraventionDataFake));
-          var dataFormat = Pagination(
-            page: 1,
-            pageSize: 1000,
-            total: newData.length,
-            totalPages: 1,
-            rows: newData,
-          );
-          final String encodedNewData =
-              json.encode(Pagination.toJson(dataFormat));
-          SharedPreferencesHelper.setStringValue(
-              'contraventionDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionList) as Map<String, dynamic>;
-          Pagination fromJsonContravention = Pagination.fromJson(createdData);
-          fromJsonContravention.rows
-              .add(Contravention.toJson(contraventionDataFake));
-          final String encodedCreatedData =
-              json.encode(Pagination.toJson(fromJsonContravention));
-          SharedPreferencesHelper.setStringValue(
-              'contraventionDataLocal', encodedCreatedData);
-        }
-
-        await userController
-            .createWardenEvent(wardenEventIssuePCN)
-            .then((value) {
-          Navigator.of(context).pop();
-          Navigator.of(context)
-              .pushNamed(PrintPCN.routeName, arguments: contraventionDataFake);
-        });
+        if (!mounted) return;
+        contraventionProvider.upDateContravention(contraventionDataFake);
+        Navigator.of(context).pop();
+        step2 == true
+            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName,
+                arguments: {'isPrinter': isPrinter})
+            : step3 == true
+                ? Navigator.of(context).pushReplacementNamed(PrintPCN.routeName)
+                : Navigator.of(context).pushReplacementNamed(
+                    PrintIssue.routeName,
+                    arguments: {'isPrinter': isPrinter});
       }
 
       _formKey.currentState!.save();
     }
 
-    Future<void> createVirtualTicket() async {
+    int randomNumber2 = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+    final virtualTicket = ContraventionCreateWardenCommand(
+      ZoneId: locationProvider.zone?.Id ?? 0,
+      ContraventionReference:
+          contraventionReferenceHelper.getContraventionReference(
+              prefixNumber: 3, wardenID: wardensProvider.wardens?.Id ?? 0),
+      Plate: _vrnController.text,
+      VehicleMake: _vehicleMakeController.text,
+      VehicleColour: _vehicleColorController.text,
+      ContraventionReasonCode: _contraventionReasonController.text,
+      EventDateTime: DateTime.now(),
+      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+      WardenId: wardensProvider.wardens?.Id ?? 0,
+      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      WardenComments: _commentController.text,
+      BadgeNumber: 'test',
+      LocationAccuracy: 0, // missing
+      TypePCN: TypePCN.Virtual.index,
+      Id: randomNumber2,
+    );
+
+    Future<void> createVirtualTicket({bool? step2, bool? step3}) async {
+      virtualTicket.Plate = _vrnController.text;
+      virtualTicket.WardenComments = _commentController.text;
+
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
-      int randomReference =
-          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
-      final virtualTicket = ContraventionCreateWardenCommand(
-        ZoneId: locationProvider.zone?.Id ?? 0,
-        ContraventionReference: '$randomReference',
-        Plate: _vrnController.text,
-        VehicleMake: _vehicleMakeController.text,
-        VehicleColour: _vehicleColorController.text,
-        ContraventionReasonCode: _contraventionReasonController.text,
-        EventDateTime: DateTime.now(),
-        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
-        WardenId: wardensProvider.wardens?.Id ?? 0,
-        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        WardenComments: _commentController.text,
-        BadgeNumber: 'test',
-        LocationAccuracy: 0, // missing
-        TypePCN: TypePCN.Virtual.index,
-      );
-
-      final wardenEventIssuePCN = WardenEvent(
-        type: TypeWardenEvent.IssuePCN.index,
-        detail: '{"TicketNumber": "${virtualTicket.ContraventionReference}"}',
-        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        wardenId: wardensProvider.wardens?.Id ?? 0,
-        zoneId: locationProvider.zone?.Id ?? 0,
-        locationId: locationProvider.location?.Id ?? 0,
-        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
-        rotaTimeTo: locationProvider.rotaShift?.timeTo,
-      );
-
       final isValid = _formKey.currentState!.validate();
-      Contravention? contravention;
-      bool check = false;
 
-      if (arrayImage.length < 4) {
-        if (!mounted) return;
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            'Please take at least 4 picture',
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-        return;
-      }
       if (!isValid) {
         return;
       } else {
+        if (!mounted) return;
         showCircularProgressIndicator(context: context);
       }
-      if (connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile) {
-        try {
-          await contraventionController.createPCN(virtualTicket).then((value) {
-            contravention = value;
-          });
-          if (arrayImage.isNotEmpty && contravention != null) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              await contraventionController.uploadContraventionImage(
-                ContraventionCreatePhoto(
-                  contraventionReference: contravention?.reference ?? '',
-                  originalFileName: arrayImage[i].path.split('/').last,
-                  capturedDateTime: DateTime.now(),
-                  filePath: arrayImage[i].path,
-                ),
-              );
-              if (i == arrayImage.length - 1) {
-                check = true;
-              }
-            }
-          }
-          if (contravention != null && check == true) {
-            await userController
-                .createWardenEvent(wardenEventIssuePCN)
-                .then((value) {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(
-                ParkingChargeInfo.routeName,
-                arguments: contravention,
-              );
-            });
-          }
-        } on DioError catch (error) {
-          if (!mounted) return;
-          log("log ${error.type.toString()}");
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            displayCloseButton: true,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
-      } else {
-        int randomNumber =
-            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-        virtualTicket.Id = randomNumber;
-        final String encodedPhysicalPCNData =
-            json.encode(ContraventionCreateWardenCommand.toJson(virtualTicket));
-        final String? issuePCNData =
-            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
-        if (issuePCNData == null) {
-          List<String> newData = [];
-          newData.add(encodedPhysicalPCNData);
-          final encodedNewData = json.encode(newData);
-          SharedPreferencesHelper.setStringValue(
-              'issuePCNDataLocal', encodedNewData);
-        } else {
-          final createdData = json.decode(issuePCNData) as List<dynamic>;
-          createdData.add(encodedPhysicalPCNData);
-          final encodedCreatedData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'issuePCNDataLocal', encodedCreatedData);
-        }
-
-        final String? contraventionPhotoData =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionPhotoDataLocal');
-        if (contraventionPhotoData == null) {
-          List<String> newPhotoData = [];
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: virtualTicket.ContraventionReference,
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: arrayImage[i].path,
-              ).toJson());
-              newPhotoData.add(encodedData);
-            }
-          }
-          final encodedNewData = json.encode(newPhotoData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionPhotoData) as List<dynamic>;
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              final String encodedData = json.encode(ContraventionCreatePhoto(
-                contraventionReference: randomNumber.toString(),
-                originalFileName: arrayImage[i].path.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: arrayImage[i].path,
-              ).toJson());
-              createdData.add(encodedData);
-            }
-          }
-          final encodedNewData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'contraventionPhotoDataLocal', encodedNewData);
-        }
-
-        final String? reasonDataLocal =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionReasonDataLocal');
-        final contraventionReason =
-            json.decode(reasonDataLocal as String) as Map<String, dynamic>;
-        Pagination fromJsonContraventionReason =
-            Pagination.fromJson(contraventionReason);
-        List<ContraventionReasonTranslations> fromJsonContraventionList =
-            fromJsonContraventionReason.rows
-                .map((item) => ContraventionReasonTranslations.fromJson(item))
-                .toList();
-
-        List<ContraventionPhotos> contraventionImageList = [];
-        if (arrayImage.isNotEmpty) {
-          for (int i = 0; i < arrayImage.length; i++) {
+      List<ContraventionPhotos> contraventionImageList = [];
+      if (printIssue.data.isNotEmpty) {
+        for (int i = 0; i < printIssue.data.length; i++) {
+          if (printIssue.data[i].image != null && printIssue.data[i].id != 2) {
             contraventionImageList.add(ContraventionPhotos(
-              blobName: arrayImage[i].path,
-              contraventionId: virtualTicket.Id,
+              blobName: printIssue.data[i].image!.path,
+              contraventionId: contraventionProvider.contravention?.id ?? 0,
             ));
           }
         }
-
+      }
+      if (connectionStatus == ConnectivityResult.wifi ||
+          connectionStatus == ConnectivityResult.mobile) {
+        Contravention contravention = Contravention(
+          reference: virtualTicket.ContraventionReference,
+          created: DateTime.now(),
+          id: virtualTicket.Id,
+          plate: virtualTicket.Plate,
+          colour: virtualTicket.VehicleColour,
+          make: virtualTicket.VehicleMake,
+          eventDateTime: virtualTicket.EventDateTime,
+          zoneId: locationProvider.zone?.Id ?? 0,
+          reason: Reason(
+            code: virtualTicket.ContraventionReasonCode,
+            contraventionReasonTranslations: contraventionReasonList
+                .where((e) =>
+                    e.contraventionReason!.code ==
+                    virtualTicket.ContraventionReasonCode)
+                .toList(),
+          ),
+          contraventionEvents: [
+            ContraventionEvents(
+              contraventionId: virtualTicket.Id,
+              detail: virtualTicket.WardenComments,
+            )
+          ],
+          contraventionDetailsWarden: ContraventionDetailsWarden(
+            FirstObserved: virtualTicket.FirstObservedDateTime,
+            ContraventionId: virtualTicket.Id,
+            WardenId: virtualTicket.WardenId,
+            IssuedAt: virtualTicket.EventDateTime,
+          ),
+          status: ContraventionStatus.Open.index,
+          type: virtualTicket.TypePCN,
+          contraventionPhotos: contraventionImageList,
+        );
+        if (!mounted) return;
+        contraventionProvider.upDateContravention(contravention);
+        Navigator.of(context).pop();
+        step2 == true
+            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName)
+            : step3 == true
+                ? Navigator.of(context).pushReplacementNamed(PrintPCN.routeName)
+                : Navigator.of(context)
+                    .pushReplacementNamed(PrintIssue.routeName);
+      } else {
         Contravention contraventionDataFake = Contravention(
           reference: virtualTicket.ContraventionReference,
           created: DateTime.now(),
@@ -706,51 +611,183 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             IssuedAt: virtualTicket.EventDateTime,
           ),
           status: ContraventionStatus.Open.index,
+          type: virtualTicket.TypePCN,
           contraventionPhotos: contraventionImageList,
         );
 
-        final String? contraventionList =
-            await SharedPreferencesHelper.getStringValue(
-                'contraventionDataLocal');
-
-        if (contraventionList == null) {
-          List<dynamic> newData = [];
-          newData.add(Contravention.toJson(contraventionDataFake));
-          var dataFormat = Pagination(
-            page: 1,
-            pageSize: 1000,
-            total: newData.length,
-            totalPages: 1,
-            rows: newData,
-          );
-          final String encodedNewData =
-              json.encode(Pagination.toJson(dataFormat));
-          SharedPreferencesHelper.setStringValue(
-              'contraventionDataLocal', encodedNewData);
-        } else {
-          final createdData =
-              json.decode(contraventionList) as Map<String, dynamic>;
-          Pagination fromJsonContravention = Pagination.fromJson(createdData);
-          fromJsonContravention.rows
-              .add(Contravention.toJson(contraventionDataFake));
-          final String encodedCreatedData =
-              json.encode(Pagination.toJson(fromJsonContravention));
-          SharedPreferencesHelper.setStringValue(
-              'contraventionDataLocal', encodedCreatedData);
-        }
-
-        await userController
-            .createWardenEvent(wardenEventIssuePCN)
-            .then((value) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(
-            ParkingChargeInfo.routeName,
-            arguments: contraventionDataFake,
-          );
-        });
+        if (!mounted) return;
+        contraventionProvider.upDateContravention(contraventionDataFake);
+        Navigator.of(context).pop();
+        step2 == true
+            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName)
+            : step3 == true
+                ? Navigator.of(context).pushReplacementNamed(PrintPCN.routeName)
+                : Navigator.of(context)
+                    .pushReplacementNamed(PrintIssue.routeName);
       }
 
       _formKey.currentState!.save();
+    }
+
+    Future<void> showDialogPermitExists(CheckPermit? value) async {
+      return showDialog<void>(
+        context: context,
+        barrierColor: ColorTheme.backdrop,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+            child: AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    5.0,
+                  ),
+                ),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 0),
+              contentPadding: EdgeInsets.zero,
+              title: Center(
+                  child: Column(
+                children: [
+                  Text(
+                    "Permit exists with in this location",
+                    style: CustomTextStyle.h4.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: ColorTheme.danger,
+                    ),
+                  ),
+                  const Divider(),
+                ],
+              )),
+              content: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'VRN: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.VRN ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Bay information: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.bayNumber ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Source: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.source ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Tenant: ',
+                            style: CustomTextStyle.h5,
+                          ),
+                          Text(
+                            value?.permitInfo?.tenant ?? 'No data',
+                            style: CustomTextStyle.h5
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.danger,
+                              ),
+                              child: Text(
+                                "Abort",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.white),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pushNamed(
+                                  AbortScreen.routeName,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 16,
+                          ),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.primary,
+                              ),
+                              child: Text(
+                                "Issue PCN",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.white),
+                              ),
+                              onPressed: () {
+                                if (_selectedItemTypePCN!.value == 0) {
+                                  createPhysicalPCN(isPrinter: true);
+                                } else {
+                                  createVirtualTicket();
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 24,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
     }
 
     List<SelectModel> getSelectedTypeOfPCN() {
@@ -765,9 +802,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         } else if (locationProvider
                 .zone!.Services![0].ServiceConfig.IssuePCNType.Physical ==
             true) {
+          return e.value == 0;
+        } else if (locationProvider
+                .zone!.Services![0].ServiceConfig.IssuePCNType.Virtual ==
+            true) {
           return e.value == 1;
         } else {
-          return e.value == 0;
+          return false;
         }
       }).toList();
     }
@@ -776,17 +817,22 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       return showDialog<void>(
         context: context,
         barrierColor: ColorTheme.backdrop,
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return MyDialog(
             buttonCancel: false,
             title: const Text(
               "Suggestion for you",
-              style: TextStyle(color: ColorTheme.success),
+              style: TextStyle(
+                color: ColorTheme.success,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             subTitle: const Text(
               "Virtual ticketing is enabled for this site, we would encourage you to use virtual ticketing.",
               textAlign: TextAlign.center,
-              style: CustomTextStyle.body2,
+              style: CustomTextStyle.h5,
             ),
             func: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -797,10 +843,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                     style: ButtonStyle(
                       elevation: MaterialStateProperty.all(0),
                     ),
-                    child: const Text("Switch to virtual ticketing"),
+                    child: const Text(
+                      "Switch to virtual ticketing",
+                      style: TextStyle(fontSize: 16),
+                    ),
                     onPressed: () async {
                       Navigator.of(context).pop();
-                      createVirtualTicket();
+                      setState(() {
+                        _selectedItemTypePCN = getSelectedTypeOfPCN()
+                            .firstWhere((e) => e.value == 1);
+                      });
                     },
                   ),
                 ),
@@ -819,10 +871,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                         ColorTheme.textPrimary,
                       ),
                     ),
-                    child: const Text("Proceed with physical ticketing"),
+                    child: const Text(
+                      "Proceed with physical ticketing",
+                      style: TextStyle(fontSize: 16),
+                    ),
                     onPressed: () async {
                       Navigator.of(context).pop();
-                      createPhysicalPCN();
+                      setState(() {
+                        _selectedItemTypePCN = getSelectedTypeOfPCN()
+                            .firstWhere((e) => e.value == 0);
+                      });
                     },
                   ),
                 ),
@@ -833,6 +891,42 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       );
     }
 
+    void suggestion(SelectModel? value) {
+      if (getSelectedTypeOfPCN().length > 1) {
+        if (value?.value == 0) {
+          showMyDialog();
+        } else {
+          setState(() {
+            _selectedItemTypePCN = value;
+          });
+        }
+      } else {
+        setState(() {
+          _selectedItemTypePCN = value;
+        });
+      }
+    }
+
+    Future<void> refresh() async {
+      await getLocationList(locationProvider, wardensProvider.wardens?.Id ?? 0)
+          .then((value) {
+        setSelectedTypeOfPCN(
+            locationProvider, contraventionProvider.contravention);
+      });
+      await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
+      await getContraventionReasonListOffline();
+      var contraventionCodeFind = fromJsonContraventionList.firstWhereOrNull(
+          (e) =>
+              e.contraventionReason!.code ==
+              contraventionProvider
+                  .getContraventionCode!.contraventionReason!.code);
+      setState(() {
+        _contraventionReasonController.text =
+            contraventionCodeFind?.contraventionReason?.code ?? "";
+      });
+      contraventionProvider.setContraventionCode(contraventionCodeFind);
+    }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
@@ -840,310 +934,573 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Scaffold(
-          appBar: MyAppBar(
-            title: "Issue PCN",
-            automaticallyImplyLeading: true,
-            onRedirect: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          drawer: const MyDrawer(),
           bottomNavigationBar: BottomSheet2(
             buttonList: [
-              if (_typeOfPcnController.text == '0')
-                BottomNavyBarItem(
-                  onPressed: () {
-                    createVirtualTicket();
-                  },
-                  icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-                  label: const Text(
-                    'Complete',
-                    style: CustomTextStyle.h6,
-                  ),
+              BottomNavyBarItem(
+                onPressed: () {
+                  Navigator.of(context).pushNamed(
+                    AbortScreen.routeName,
+                  );
+                },
+                icon: SvgPicture.asset(
+                  'assets/svg/IconAbort.svg',
+                  color: ColorTheme.textPrimary,
                 ),
-              if (_typeOfPcnController.text == '1')
+                label: "Abort",
+              ),
+              if (_selectedItemTypePCN?.value == 1)
                 BottomNavyBarItem(
-                  onPressed: () {
-                    final isValid = _formKey.currentState!.validate();
-                    if (arrayImage.length < 4) {
-                      CherryToast.error(
-                        displayCloseButton: false,
-                        title: Text(
-                          'Please take at least 4 picture',
-                          style: CustomTextStyle.h5
-                              .copyWith(color: ColorTheme.danger),
-                        ),
-                        toastPosition: Position.bottom,
-                        borderRadius: 5,
-                      ).show(context);
-                      return;
-                    }
-                    if (!isValid) {
-                      return;
-                    } else {
-                      if (getSelectedTypeOfPCN().length > 1) {
-                        showMyDialog();
-                      } else {
-                        createPhysicalPCN();
+                  onPressed: () async {
+                    ConnectivityResult connectionStatus =
+                        await (Connectivity().checkConnectivity());
+                    if (connectionStatus == ConnectivityResult.wifi ||
+                        connectionStatus == ConnectivityResult.mobile) {
+                      virtualTicket.Plate = _vrnController.text;
+                      virtualTicket.WardenComments = _commentController.text;
+                      try {
+                        if (!mounted) return;
+                        showCircularProgressIndicator(context: context);
+                        await contraventionController
+                            .checkHasPermit(virtualTicket)
+                            .then((value) {
+                          Navigator.of(context).pop();
+                          if (value?.hasPermit == true) {
+                            showDialogPermitExists(value);
+                          } else {
+                            createVirtualTicket();
+                          }
+                        });
+                      } on DioError catch (error) {
+                        if (error.type == DioErrorType.other) {
+                          if (!mounted) return;
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            toastDuration: const Duration(seconds: 3),
+                            title: Text(
+                              error.message.length > Constant.errorTypeOther
+                                  ? 'Something went wrong, please try again'
+                                  : error.message,
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        }
+                        if (!mounted) return;
+                        Navigator.of(context).pop();
+                        CherryToast.error(
+                          displayCloseButton: false,
+                          title: Text(
+                            error.response!.data['message'].toString().length >
+                                    Constant.errorMaxLength
+                                ? 'Internal server error'
+                                : error.response!.data['message'],
+                            style: CustomTextStyle.h4
+                                .copyWith(color: ColorTheme.danger),
+                          ),
+                          toastPosition: Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                        return;
                       }
+                    } else {
+                      createVirtualTicket();
                     }
                   },
-                  icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-                  label: const Text(
-                    'Save & print PCN',
-                    style: CustomTextStyle.h6,
+                  icon: SvgPicture.asset(
+                    'assets/svg/IconNext.svg',
+                    color: Colors.white,
                   ),
+                  label: 'Next',
+                ),
+              if (_selectedItemTypePCN?.value == 0)
+                BottomNavyBarItem(
+                  onPressed: () async {
+                    ConnectivityResult connectionStatus =
+                        await (Connectivity().checkConnectivity());
+                    if (connectionStatus == ConnectivityResult.wifi ||
+                        connectionStatus == ConnectivityResult.mobile) {
+                      physicalPCN.Plate = _vrnController.text;
+                      physicalPCN.WardenComments = _commentController.text;
+                      try {
+                        if (!mounted) return;
+                        showCircularProgressIndicator(context: context);
+                        await contraventionController
+                            .checkHasPermit(physicalPCN)
+                            .then((value) {
+                          Navigator.of(context).pop();
+                          if (value?.hasPermit == true) {
+                            showDialogPermitExists(value);
+                          } else {
+                            createPhysicalPCN(isPrinter: true);
+                          }
+                        });
+                      } on DioError catch (error) {
+                        if (error.type == DioErrorType.other) {
+                          if (!mounted) return;
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            toastDuration: const Duration(seconds: 3),
+                            title: Text(
+                              error.message.length > Constant.errorTypeOther
+                                  ? 'Something went wrong, please try again'
+                                  : error.message,
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        }
+                        if (!mounted) return;
+                        Navigator.of(context).pop();
+                        CherryToast.error(
+                          displayCloseButton: false,
+                          title: Text(
+                            error.response!.data['message'].toString().length >
+                                    Constant.errorMaxLength
+                                ? 'Internal server error'
+                                : error.response!.data['message'],
+                            style: CustomTextStyle.h4
+                                .copyWith(color: ColorTheme.danger),
+                          ),
+                          toastPosition: Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                        return;
+                      }
+                    } else {
+                      createPhysicalPCN(isPrinter: true);
+                    }
+                  },
+                  icon: SvgPicture.asset(
+                    'assets/svg/IconNext.svg',
+                    color: Colors.white,
+                  ),
+                  label: 'Print & Next',
                 ),
             ],
           ),
-          body: SingleChildScrollView(
-            child: Container(
-              margin: const EdgeInsets.only(
-                  bottom: ConstSpacing.bottom + 20, top: 20),
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(12, 24, 12, 10),
-                    color: Colors.white,
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: <Widget>[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Flexible(
-                                flex: 8,
-                                child: TextFormField(
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[a-zA-Z0-9]'),
-                                    ),
-                                  ],
-                                  textCapitalization:
-                                      TextCapitalization.characters,
-                                  controller: _vrnController,
-                                  style: CustomTextStyle.h5,
-                                  decoration: const InputDecoration(
-                                    label: LabelRequire(labelText: "VRN"),
-                                    hintText: "Enter VRN",
-                                  ),
-                                  validator: ((value) {
-                                    if (value!.isEmpty) {
-                                      return 'Please enter VRN';
-                                    }
-                                    return null;
-                                  }),
-                                  onSaved: (value) {
-                                    _vrnController.text = value as String;
-                                  },
-                                  onChanged: (value) {
-                                    _debouncer.run(() {
-                                      onSearchVehicleInfoByPlate(value);
-                                    });
-                                  },
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                ),
-                              ),
-                              Flexible(
-                                flex: 2,
-                                child: ButtonScan(
-                                  onTap: () {
-                                    scan(ScanMode.LicensePlate);
-                                  },
-                                ),
-                              )
-                            ],
+          body: RefreshIndicator(
+            onRefresh: refresh,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SafeArea(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: ConstSpacing.bottom),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        width: double.infinity,
+                        color: ColorTheme.white,
+                        padding: const EdgeInsets.all(12),
+                        child: Center(
+                          child: Text(
+                            "Issue PCN",
+                            style: CustomTextStyle.h4
+                                .copyWith(fontWeight: FontWeight.w600),
                           ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          TextFormField(
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[^\s]+\b\s?'),
-                              ),
-                            ],
-                            style: CustomTextStyle.h5,
-                            controller: _vehicleMakeController,
-                            decoration: const InputDecoration(
-                              label: LabelRequire(labelText: "Vehicle make"),
-                              hintText: "Enter vehicle make",
-                            ),
-                            validator: ((value) {
-                              if (value!.isEmpty) {
-                                return 'Please enter vehicle make';
-                              }
-                              return null;
-                            }),
-                            onSaved: (value) {
-                              _vehicleMakeController.text = value as String;
-                            },
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          TextFormField(
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[^\s]+\b\s?'),
-                              ),
-                            ],
-                            style: CustomTextStyle.h5,
-                            controller: _vehicleColorController,
-                            decoration: const InputDecoration(
-                              label: LabelRequire(labelText: "Vehicle color"),
-                              hintText: "Enter vehicle color",
-                            ),
-                            validator: ((value) {
-                              if (value!.isEmpty) {
-                                return 'Please enter vehicle color';
-                              }
-                              return null;
-                            }),
-                            onSaved: (value) {
-                              _vehicleColorController.text = value as String;
-                            },
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          SizedBox(
-                            child:
-                                DropdownSearch<ContraventionReasonTranslations>(
-                              dropdownDecoratorProps: DropDownDecoratorProps(
-                                dropdownSearchDecoration: dropDownButtonStyle
-                                    .getInputDecorationCustom(
-                                  labelText: const LabelRequire(
-                                    labelText: 'Contravention',
-                                  ),
-                                  hintText: 'Select contravention',
-                                ),
-                              ),
-                              items: contraventionReasonList,
-                              itemAsString: (item) => item.summary as String,
-                              popupProps: PopupProps.menu(
-                                  showSearchBox: true,
-                                  fit: FlexFit.loose,
-                                  constraints: const BoxConstraints(
-                                    maxHeight: 325,
-                                  ),
-                                  itemBuilder: (context, item, isSelected) {
-                                    return DropDownItem(
-                                      isSelected: item
-                                              .contraventionReason!.code ==
-                                          _contraventionReasonController.text,
-                                      title: item.summary as String,
-                                    );
-                                  }),
-                              onChanged: (value) {
-                                setState(() {
-                                  _contraventionReasonController.text = value!
-                                      .contraventionReason!.code
-                                      .toString();
-                                });
-                              },
-                              validator: ((value) {
-                                if (value == null) {
-                                  return 'Please select contravention';
-                                }
-                                return null;
-                              }),
-                              autoValidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          SizedBox(
-                            child: DropdownSearch<SelectModel>(
-                              dropdownDecoratorProps: DropDownDecoratorProps(
-                                dropdownSearchDecoration: dropDownButtonStyle
-                                    .getInputDecorationCustom(
-                                  labelText: const LabelRequire(
-                                    labelText: 'Type of PCN',
-                                  ),
-                                  hintText: 'Select type of PCN',
-                                ),
-                              ),
-                              items: getSelectedTypeOfPCN(),
-                              selectedItem: getSelectedTypeOfPCN()[0],
-                              itemAsString: (item) => item.label,
-                              popupProps: PopupProps.menu(
-                                fit: FlexFit.loose,
-                                constraints: const BoxConstraints(
-                                  maxHeight: 200,
-                                ),
-                                itemBuilder: (context, item, isSelected) =>
-                                    DropDownItem(
-                                  isSelected: item.value.toString() ==
-                                      _typeOfPcnController.text,
-                                  title: item.label,
-                                ),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _typeOfPcnController.text =
-                                      value!.value.toString();
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          TextFormField(
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[^\s]+\b\s?'),
-                              ),
-                            ],
-                            controller: _commentController,
-                            style: CustomTextStyle.h5,
-                            keyboardType: TextInputType.multiline,
-                            minLines: 3,
-                            maxLines: 5,
-                            decoration: const InputDecoration(
-                              labelText: "Comment",
-                              hintText: "Enter comment",
-                            ),
-                            onSaved: (value) {
-                              _commentController.text = value as String;
-                            },
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(15, 16, 15, 30),
+                        color: Colors.white,
+                        child: Column(
+                          children: [
+                            StepIssuePCN(
+                              isActiveStep1: true,
+                              isActiveStep2: false,
+                              onTap2: contraventionProvider.contravention !=
+                                      null
+                                  ? () {
+                                      _selectedItemTypePCN!.value == 0
+                                          ? createPhysicalPCN(
+                                              step2: true, isPrinter: false)
+                                          : createVirtualTicket(step2: true);
+                                    }
+                                  : null,
+                              isActiveStep3: false,
+                              isEnableStep3: _selectedItemTypePCN != null
+                                  ? _selectedItemTypePCN!.value ==
+                                          TypePCN.Physical.index
+                                      ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                              true
+                                          ? true
+                                          : false
+                                      : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                              true
+                                          ? true
+                                          : false
+                                  : false,
+                              onTap3: _selectedItemTypePCN != null
+                                  ? _selectedItemTypePCN!.value ==
+                                          TypePCN.Physical.index
+                                      ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                              true
+                                          ? () {
+                                              _selectedItemTypePCN!.value == 0
+                                                  ? createPhysicalPCN(
+                                                      step3: true,
+                                                      isPrinter: false)
+                                                  : createVirtualTicket(
+                                                      step3: true);
+                                            }
+                                          : null
+                                      : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                              true
+                                          ? () {
+                                              _selectedItemTypePCN!.value == 0
+                                                  ? createPhysicalPCN(
+                                                      step3: true,
+                                                      isPrinter: false)
+                                                  : createVirtualTicket(
+                                                      step3: true);
+                                            }
+                                          : null
+                                  : null,
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Flexible(
+                                        flex: 8,
+                                        child: TextFormField(
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp(r'[a-zA-Z0-9]'),
+                                            ),
+                                          ],
+                                          textCapitalization:
+                                              TextCapitalization.characters,
+                                          controller: _vrnController,
+                                          style: CustomTextStyle.h5.copyWith(
+                                            fontSize: 16,
+                                          ),
+                                          decoration: const InputDecoration(
+                                              label: LabelRequire(
+                                                  labelText: "VRN"),
+                                              hintText: "Enter VRN",
+                                              hintStyle: TextStyle(
+                                                fontSize: 16,
+                                                color: ColorTheme.grey400,
+                                              )),
+                                          validator: ((value) {
+                                            if (value!.isEmpty) {
+                                              return 'Please enter VRN';
+                                            } else {
+                                              if (value.length < 2) {
+                                                return 'Please enter at least 2 characters';
+                                              }
+                                              return null;
+                                            }
+                                          }),
+                                          autovalidateMode: AutovalidateMode
+                                              .onUserInteraction,
+                                        ),
+                                      ),
+                                      Flexible(
+                                          flex: 2,
+                                          child: ButtonScan(
+                                            onTap: () {
+                                              onSearchVehicleInfoByPlate(
+                                                  _vrnController.text,
+                                                  contraventionProvider);
+                                            },
+                                          ))
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<String>(
+                                      dropdownBuilder: (context, selectedItem) {
+                                        return Text(
+                                            selectedItem ??
+                                                "Select vehicle make",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: selectedItem == null
+                                                  ? ColorTheme.grey400
+                                                  : ColorTheme.textPrimary,
+                                            ));
+                                      },
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const LabelRequire(
+                                            labelText: "Vehicle make",
+                                          ),
+                                          hintText: "Select vehicle make",
+                                        ),
+                                      ),
+                                      items: arrMake,
+                                      selectedItem: contraventionProvider
+                                          .getMakeNullProvider,
+                                      popupProps: PopupProps.menu(
+                                          showSearchBox: true,
+                                          fit: FlexFit.loose,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 325,
+                                          ),
+                                          itemBuilder:
+                                              (context, item, isSelected) {
+                                            return DropDownItem(
+                                              isSelected: _vehicleMakeController
+                                                      .text
+                                                      .toUpperCase() ==
+                                                  item.toUpperCase(),
+                                              title: item,
+                                            );
+                                          }),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _vehicleMakeController.text = value!;
+                                        });
+                                        contraventionProvider
+                                            .setMakeNullProvider(value);
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select make';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<String>(
+                                      dropdownBuilder: (context, selectedItem) {
+                                        return Text(
+                                            selectedItem ??
+                                                "Select vehicle color",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: selectedItem == null
+                                                    ? ColorTheme.grey400
+                                                    : ColorTheme.textPrimary));
+                                      },
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const LabelRequire(
+                                            labelText: "Vehicle color",
+                                          ),
+                                          hintText: "Select vehicle color",
+                                        ),
+                                      ),
+                                      items: arrColor,
+                                      selectedItem: contraventionProvider
+                                          .getColorNullProvider,
+                                      popupProps: PopupProps.menu(
+                                          showSearchBox: true,
+                                          fit: FlexFit.loose,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 325,
+                                          ),
+                                          itemBuilder:
+                                              (context, item, isSelected) {
+                                            return DropDownItem(
+                                              isSelected:
+                                                  _vehicleColorController.text
+                                                          .toUpperCase() ==
+                                                      item.toUpperCase(),
+                                              title: item,
+                                            );
+                                          }),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _vehicleColorController.text = value!;
+                                        });
+                                        contraventionProvider
+                                            .setColorNullProvider(value);
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select color';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<
+                                        ContraventionReasonTranslations>(
+                                      dropdownBuilder: (context, selectedItem) {
+                                        return Text(
+                                          selectedItem == null
+                                              ? "Select contravention"
+                                              : selectedItem.summary as String,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: selectedItem == null
+                                                ? ColorTheme.grey400
+                                                : ColorTheme.textPrimary,
+                                          ),
+                                        );
+                                      },
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const LabelRequire(
+                                            labelText: 'Contravention',
+                                          ),
+                                          hintText: 'Select contravention',
+                                        ),
+                                      ),
+                                      items: contraventionReasonList,
+                                      selectedItem: contraventionProvider
+                                          .getContraventionCode,
+                                      itemAsString: (item) =>
+                                          item.summary as String,
+                                      popupProps: PopupProps.menu(
+                                          showSearchBox: true,
+                                          fit: FlexFit.loose,
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 325,
+                                          ),
+                                          itemBuilder:
+                                              (context, item, isSelected) {
+                                            return DropDownItem(
+                                              isSelected: item
+                                                      .contraventionReason!
+                                                      .code ==
+                                                  _contraventionReasonController
+                                                      .text,
+                                              title: item.summary as String,
+                                            );
+                                          }),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _contraventionReasonController.text =
+                                              value!.contraventionReason!.code
+                                                  .toString();
+                                        });
+                                        contraventionProvider
+                                            .setContraventionCode(value);
+                                      },
+                                      validator: ((value) {
+                                        if (value == null) {
+                                          return 'Please select contravention';
+                                        }
+                                        return null;
+                                      }),
+                                      autoValidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  SizedBox(
+                                    child: DropdownSearch<SelectModel>(
+                                      dropdownBuilder: (context, selectedItem) {
+                                        return Text(
+                                            selectedItem == null
+                                                ? "Select zone"
+                                                : selectedItem.label,
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: selectedItem == null
+                                                    ? ColorTheme.grey400
+                                                    : ColorTheme.textPrimary));
+                                      },
+                                      key: Key(
+                                          '${DateTime.now().microsecondsSinceEpoch / 1000}'),
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            dropDownButtonStyle
+                                                .getInputDecorationCustom(
+                                          labelText: const LabelRequire(
+                                            labelText: 'Type of PCN',
+                                          ),
+                                          hintText: 'Select type of PCN',
+                                        ),
+                                      ),
+                                      items: getSelectedTypeOfPCN(),
+                                      selectedItem: _selectedItemTypePCN,
+                                      itemAsString: (item) => item.label,
+                                      popupProps: PopupProps.menu(
+                                        fit: FlexFit.loose,
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 200,
+                                        ),
+                                        itemBuilder:
+                                            (context, item, isSelected) =>
+                                                DropDownItem(
+                                          isSelected:
+                                              item == _selectedItemTypePCN,
+                                          title: item.label,
+                                        ),
+                                      ),
+                                      onChanged: (value) {
+                                        suggestion(value);
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  TextFormField(
+                                    controller: _commentController,
+                                    style: CustomTextStyle.h5.copyWith(
+                                      fontSize: 16,
+                                    ),
+                                    keyboardType: TextInputType.multiline,
+                                    minLines: 3,
+                                    maxLines: 5,
+                                    decoration: const InputDecoration(
+                                      labelText: "Comment",
+                                      hintText: "Enter comment",
+                                      hintStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: ColorTheme.grey400,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  AddImage(
-                    onAddImage: () async {
-                      final results =
-                          await Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => CameraPicker(
-                                    initialFiles: arrayImage,
-                                    titleCamera: "Take photo of vehicle",
-                                    onDelete: (file) {
-                                      return true;
-                                    },
-                                    editImage: true,
-                                  )));
-                      if (results != null) {
-                        setState(() {
-                          arrayImage = List.from(results);
-                        });
-                      }
-                    },
-                    listImage: arrayImage,
-                    isCamera: true,
-                  ),
-                ],
+                ),
               ),
             ),
           ),

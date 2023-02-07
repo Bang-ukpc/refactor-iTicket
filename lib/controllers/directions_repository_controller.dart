@@ -21,7 +21,6 @@ class DirectionsRepository {
       'destination': '${destination.latitude},${destination.longitude}',
       'key': googleAPIKey,
     });
-    log(response.data.toString());
     return Directions.fromJson(response.data);
   }
 }

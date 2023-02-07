@@ -1,4 +1,6 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 
 import '../models/wardens.dart';
@@ -14,6 +16,11 @@ class WardensInfo with ChangeNotifier {
     await userController.getMe().then((value) {
       _wardens = value;
       notifyListeners();
+      FirebaseCrashlytics.instance
+          .setCustomKey('userEmail', value.Email.toString());
+      FirebaseCrashlytics.instance
+          .setCustomKey('version', ConfigEnvironmentVariable.version);
+      FirebaseCrashlytics.instance.setUserIdentifier(value.Email.toString());
     });
   }
 

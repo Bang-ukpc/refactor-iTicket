@@ -22,6 +22,7 @@ class NavItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(40)),
             child: itemMenu.icon,
           ),
+          const SizedBox(height: 4),
           Text(
             itemMenu.title,
             style: CustomTextStyle.h6.copyWith(

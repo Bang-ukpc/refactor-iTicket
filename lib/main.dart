@@ -1,7 +1,13 @@
+import 'dart:ui';
+
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart' as print_issue;
 import 'package:iWarden/providers/wardens_info.dart';
@@ -14,8 +20,24 @@ import 'package:iWarden/widgets/layouts/network_layout.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env").then((value) => {});
   WidgetsFlutterBinding.ensureInitialized();
+  //firebase Crashlytics config
+  if (ConfigEnvironmentVariable.environment.toString() != 'local') {
+    //test err
+    // FirebaseCrashlytics.instance.crash();
+    //Action Check
+    await Firebase.initializeApp();
+    FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
+
   runApp(
     MultiProvider(
       providers: [
@@ -25,6 +47,7 @@ void main() async {
           create: (_) => print_issue.PrintIssueProviders(),
         ),
         ChangeNotifierProvider(create: (_) => Auth()),
+        ChangeNotifierProvider(create: (_) => ContraventionProvider()),
       ],
       child: const MyApp(),
     ),

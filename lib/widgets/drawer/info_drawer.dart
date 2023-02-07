@@ -79,7 +79,7 @@ class InfoDrawer extends StatelessWidget {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -94,7 +94,7 @@ class InfoDrawer extends StatelessWidget {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -104,17 +104,19 @@ class InfoDrawer extends StatelessWidget {
 
     void onLogout(Auth auth) async {
       try {
+        showCircularProgressIndicator(context: context, text: "Logging out");
         await userController
             .createWardenEvent(wardenEventEndShift)
             .then((value) async {
           await auth.logout().then((value) {
+            Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
                 LoginScreen.routeName, (Route<dynamic> route) => false);
             CherryToast.success(
               displayCloseButton: false,
               title: Text(
                 'Log out successfully',
-                style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
               ),
               toastPosition: Position.bottom,
               borderRadius: 5,
@@ -123,19 +125,21 @@ class InfoDrawer extends StatelessWidget {
         });
       } on DioError catch (error) {
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -143,7 +147,7 @@ class InfoDrawer extends StatelessWidget {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -323,7 +327,7 @@ class InfoDrawer extends StatelessWidget {
                       ),
                       label: const Text(
                         "Check out",
-                        style: CustomTextStyle.h6,
+                        style: CustomTextStyle.h5,
                       ),
                       onPressed: onCheckOut,
                     ),
@@ -336,6 +340,10 @@ class InfoDrawer extends StatelessWidget {
               builder: (context, auth, _) {
                 return ElevatedButton(
                   onPressed: () {
+                    // eventAnalytics.clickButton(
+                    //   button: "Log out",
+                    //   user: wardersProvider.wardens!.Email,
+                    // );
                     onLogout(auth);
                   },
                   style: ElevatedButton.styleFrom(
@@ -348,9 +356,9 @@ class InfoDrawer extends StatelessWidget {
                     children: [
                       Text(
                         "Log out",
-                        style: CustomTextStyle.h6.copyWith(
+                        style: CustomTextStyle.h5.copyWith(
                             color: ColorTheme.danger,
-                            fontWeight: FontWeight.w500),
+                            fontWeight: FontWeight.w400),
                       ),
                       const SizedBox(
                         width: 10,

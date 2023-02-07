@@ -40,12 +40,13 @@ class MyDrawer extends StatefulWidget {
 class _MyDrawerState extends State<MyDrawer> {
   bool check = false;
   final _debouncer = Debouncer(milliseconds: 3000);
+  final _debouncer2 = Debouncer(milliseconds: 4000);
 
   @override
   void initState() {
     super.initState();
     bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect(isLoading: true);
+    bluetoothPrinterHelper.initConnect();
   }
 
   @override
@@ -53,6 +54,9 @@ class _MyDrawerState extends State<MyDrawer> {
     bluetoothPrinterHelper.disposePrinter();
     if (_debouncer.timer != null) {
       _debouncer.timer!.cancel();
+    }
+    if (_debouncer2.timer != null) {
+      _debouncer2.timer!.cancel();
     }
     super.dispose();
   }
@@ -118,7 +122,7 @@ class _MyDrawerState extends State<MyDrawer> {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -133,7 +137,7 @@ class _MyDrawerState extends State<MyDrawer> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -163,7 +167,8 @@ class _MyDrawerState extends State<MyDrawer> {
             if (!mounted) return;
             Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
-                ConnectingScreen.routeName, (Route<dynamic> route) => false);
+                ConnectingScreen.routeName, (Route<dynamic> route) => false,
+                arguments: 'check-out');
           });
         });
       } on DioError catch (error) {
@@ -175,7 +180,7 @@ class _MyDrawerState extends State<MyDrawer> {
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
@@ -190,7 +195,7 @@ class _MyDrawerState extends State<MyDrawer> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
@@ -202,52 +207,74 @@ class _MyDrawerState extends State<MyDrawer> {
       return DataMenuItem()
           .data
           .map(
-            (e) => ItemMenuWidget(
-              itemMenu: e,
-              onTap: e.route == 'coming soon'
-                  ? () {
-                      Navigator.of(context).pop();
-                      CherryToast.info(
-                        displayCloseButton: false,
-                        title: Text(
-                          'Coming soon',
-                          style: CustomTextStyle.h5
-                              .copyWith(color: ColorTheme.primary),
-                        ),
-                        toastPosition: Position.bottom,
-                        borderRadius: 5,
-                      ).show(context);
-                    }
-                  : e.route == 'testPrinter'
-                      ? () async {
-                          if (bluetoothPrinterHelper.selectedPrinter == null) {
-                            showCircularProgressIndicator(
-                              context: context,
-                              text: 'Connecting to printer',
-                            );
-                            _debouncer.run(() {
-                              Navigator.of(context).pop();
-                              CherryToast.error(
-                                toastDuration: const Duration(seconds: 5),
-                                title: Text(
-                                  "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
-                                  style: CustomTextStyle.h5
-                                      .copyWith(color: ColorTheme.danger),
-                                ),
-                                toastPosition: Position.bottom,
-                                borderRadius: 5,
-                              ).show(context);
-                            });
-                          } else {
-                            showCircularProgressIndicator(
-                                context: context,
-                                text: 'Connecting to printer');
-                            bluetoothPrinterHelper.printReceiveTest();
-                          }
-                        }
-                      : () => Navigator.of(context).pushReplacementNamed(
-                            e.route!,
+            (e) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: ItemMenuWidget(
+                itemMenu: e,
+                onTap: e.route == 'coming soon'
+                    ? () {
+                        Navigator.of(context).pop();
+                        CherryToast.info(
+                          displayCloseButton: false,
+                          title: Text(
+                            'Coming soon',
+                            style: CustomTextStyle.h4
+                                .copyWith(color: ColorTheme.secondary),
                           ),
+                          toastPosition: Position.bottom,
+                          borderRadius: 5,
+                        ).show(context);
+                      }
+                    : e.route == 'testPrinter'
+                        ? () async {
+                            if (bluetoothPrinterHelper.selectedPrinter ==
+                                null) {
+                              showCircularProgressIndicator(
+                                context: context,
+                                text: 'Connecting to printer',
+                              );
+                              _debouncer.run(() {
+                                Navigator.of(context).pop();
+                                CherryToast.error(
+                                  toastDuration: const Duration(seconds: 5),
+                                  title: Text(
+                                    "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                                    style: CustomTextStyle.h4
+                                        .copyWith(color: ColorTheme.danger),
+                                  ),
+                                  toastPosition: Position.bottom,
+                                  borderRadius: 5,
+                                ).show(context);
+                              });
+                            } else {
+                              showCircularProgressIndicator(
+                                  context: context,
+                                  text: 'Connecting to printer');
+                              bluetoothPrinterHelper.printReceiveTest();
+                              _debouncer2.run(() {
+                                if (bluetoothPrinterHelper.isConnected ==
+                                    false) {
+                                  Navigator.of(context).pop();
+                                  CherryToast.error(
+                                    toastDuration: const Duration(seconds: 5),
+                                    title: Text(
+                                      "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                                      style: CustomTextStyle.h4
+                                          .copyWith(color: ColorTheme.danger),
+                                    ),
+                                    toastPosition: Position.bottom,
+                                    borderRadius: 5,
+                                  ).show(context);
+                                } else {
+                                  Navigator.of(context).pop();
+                                }
+                              });
+                            }
+                          }
+                        : () => Navigator.of(context).pushReplacementNamed(
+                              e.route!,
+                            ),
+              ),
             ),
           )
           .toList();
@@ -273,6 +300,7 @@ class _MyDrawerState extends State<MyDrawer> {
         title: 'Start break',
         icon: SvgPicture.asset('assets/svg/IconStartBreak.svg'),
         route: HomeOverview.routeName,
+        check: true,
         background: ColorTheme.lighterSecondary,
         setCheck: onStartBreak,
       ),
@@ -330,7 +358,7 @@ class _MyDrawerState extends State<MyDrawer> {
                       ),
                     ),
                     const Padding(
-                      padding: EdgeInsets.all(8.0),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                       child: SpotCheck(),
                     ),
                     const SizedBox(

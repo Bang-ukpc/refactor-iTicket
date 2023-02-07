@@ -1,11 +1,12 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -14,6 +15,7 @@ import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -22,7 +24,6 @@ import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class AbortScreen extends StatefulWidget {
@@ -69,15 +70,16 @@ class _AbortScreenState extends State<AbortScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Contravention;
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
     final printIssue = Provider.of<PrintIssueProviders>(context);
+    final contraventionProvider = Provider.of<ContraventionProvider>(context);
 
     Future<void> abortPCN() async {
       final wardenEventAbortPCN = WardenEvent(
         type: TypeWardenEvent.AbortPCN.index,
-        detail: 'Abort PCN: ${args.reference}',
+        detail:
+            'Abort PCN, comment: ${_commentController.text.isNotEmpty ? _commentController.text : "no comment"}',
         latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         wardenId: wardensProvider.wardens?.Id ?? 0,
@@ -85,14 +87,8 @@ class _AbortScreenState extends State<AbortScreen> {
         locationId: locationProvider.location?.Id ?? 0,
         rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
         rotaTimeTo: locationProvider.rotaShift?.timeTo,
-      );
-
-      final abortPcnBody = AbortPCN(
-        contraventionId: args.id as int,
-        cancellationReasonId: _cancellationReasonController.text != ''
-            ? int.tryParse(_cancellationReasonController.text) as int
-            : 0,
-        comment: _commentController.text,
+        cancellationReasonId:
+            int.tryParse(_cancellationReasonController.text) ?? 0,
       );
       final isValid = _formKey.currentState!.validate();
 
@@ -101,29 +97,31 @@ class _AbortScreenState extends State<AbortScreen> {
       }
 
       try {
-        await abortController.abortPCN(abortPcnBody).then((value) async {
-          await userController
-              .createWardenEvent(wardenEventAbortPCN)
-              .then((value) {
-            Navigator.of(context).pushNamed(ParkingChargeList.routeName);
-          });
+        showCircularProgressIndicator(context: context);
+        await userController
+            .createWardenEvent(wardenEventAbortPCN)
+            .then((value) {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
         });
       } on DioError catch (error) {
         if (!mounted) return;
         if (error.type == DioErrorType.other) {
+          Navigator.of(context).pop();
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
               error.message.length > Constant.errorTypeOther
                   ? 'Something went wrong, please try again'
                   : error.message,
-              style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
             borderRadius: 5,
           ).show(context);
           return;
         }
+        Navigator.of(context).pop();
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -131,12 +129,13 @@ class _AbortScreenState extends State<AbortScreen> {
                     Constant.errorMaxLength
                 ? 'Internal server error'
                 : error.response!.data['message'],
-            style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
           borderRadius: 5,
         ).show(context);
       }
+      contraventionProvider.clearContraventionData();
       printIssue.resetData();
       _formKey.currentState!.save();
       return;
@@ -155,21 +154,20 @@ class _AbortScreenState extends State<AbortScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              icon: SvgPicture.asset('assets/svg/IconCancel2.svg'),
-              label: const Text(
-                'Cancel',
-                style: CustomTextStyle.h6,
+              icon: SvgPicture.asset(
+                'assets/svg/IconCancel2.svg',
+                color: ColorTheme.textPrimary,
               ),
+              label: 'Cancel',
             ),
             BottomNavyBarItem(
               onPressed: () {
                 abortPCN();
               },
-              icon: SvgPicture.asset('assets/svg/IconComplete2.svg'),
-              label: const Text(
-                'Finish abort',
-                style: CustomTextStyle.h6,
+              icon: SvgPicture.asset(
+                'assets/svg/IconAbort2.svg',
               ),
+              label: 'Finish abort',
             ),
           ]),
           body: SafeArea(
@@ -188,7 +186,7 @@ class _AbortScreenState extends State<AbortScreen> {
                 Container(
                   color: ColorTheme.white,
                   width: double.infinity,
-                  margin: const EdgeInsets.only(top: 18),
+                  margin: const EdgeInsets.only(top: 8),
                   height: 280,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -199,6 +197,7 @@ class _AbortScreenState extends State<AbortScreen> {
                           'Please select the reasons and submit to abort this parking charge.',
                           style: CustomTextStyle.body1.copyWith(
                             color: ColorTheme.grey600,
+                            fontSize: 16,
                           ),
                         ),
                         isLoading == false
@@ -211,6 +210,19 @@ class _AbortScreenState extends State<AbortScreen> {
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<CancellationReason>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Select vehicle reason"
+                                                  : selectedItem.reason,
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:
@@ -255,15 +267,11 @@ class _AbortScreenState extends State<AbortScreen> {
                                       ),
                                     ),
                                     const SizedBox(
-                                      height: 30,
+                                      height: 20,
                                     ),
                                     TextFormField(
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(
-                                          RegExp(r'[^\s]+\b\s?'),
-                                        ),
-                                      ],
-                                      style: CustomTextStyle.h5,
+                                      style: CustomTextStyle.h5
+                                          .copyWith(fontSize: 16),
                                       controller: _commentController,
                                       decoration: const InputDecoration(
                                         hintText: 'Enter comment',
@@ -271,12 +279,12 @@ class _AbortScreenState extends State<AbortScreen> {
                                           "Comment",
                                         ),
                                         hintMaxLines: 1,
+                                        hintStyle: TextStyle(
+                                          fontSize: 16,
+                                          color: ColorTheme.grey400,
+                                        ),
                                       ),
                                       maxLines: 3,
-                                      onSaved: (value) {
-                                        _commentController.text =
-                                            value as String;
-                                      },
                                     ),
                                   ],
                                 ),

@@ -55,22 +55,26 @@ class CardItem extends StatelessWidget {
                 ),
                 if (type == TypeFirstSeen.Expired)
                   Text(
-                    "Expired in: ${calculateTime.getDurationExpiredIn(Duration(minutes: expiring))} ago",
-                    style:
-                        CustomTextStyle.h6.copyWith(color: ColorTheme.danger),
+                    "Expired: ${calculateTime.getDurationExpiredIn(Duration(minutes: expiring))} ago",
+                    style: CustomTextStyle.h6.copyWith(
+                      color: ColorTheme.danger,
+                      fontSize: 14,
+                    ),
                   ),
                 if (type == TypeFirstSeen.Active)
                   Text(
                     "Expiring in: ${calculateTime.getDuration(Duration(minutes: expiring))}",
-                    style:
-                        CustomTextStyle.h6.copyWith(color: ColorTheme.danger),
+                    style: CustomTextStyle.h6.copyWith(
+                      color: ColorTheme.danger,
+                      fontSize: 14,
+                    ),
                   ),
                 const SizedBox(
                   height: 4,
                 ),
                 Text(
                   "Visited at: ${FormatDate().getLocalDate(vehicleInfo.Created as DateTime)}",
-                  style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
+                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.grey600),
                 )
               ],
             ),

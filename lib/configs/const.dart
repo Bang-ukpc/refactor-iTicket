@@ -3,6 +3,6 @@ class ConstSpacing {
 }
 
 class Constant {
-  static const errorMaxLength = 100;
-  static const errorTypeOther = 150;
+  static const errorMaxLength = 400;
+  static const errorTypeOther = 400;
 }

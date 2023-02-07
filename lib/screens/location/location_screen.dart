@@ -1,17 +1,15 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
-import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/operational_period.dart';
@@ -25,6 +23,8 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../common/my_dialog.dart';
 
 class LocationScreen extends StatefulWidget {
   static const routeName = '/location';
@@ -41,6 +41,9 @@ class _LocationScreenState extends State<LocationScreen> {
   List<RotaWithLocation> listFilterByRota = [];
   Directions? _info;
   bool isLoading = true;
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
+  Position? currentLocation;
 
   String formatRotaShift(DateTime date) {
     return DateFormat('HH:mm').format(date);
@@ -116,6 +119,20 @@ class _LocationScreenState extends State<LocationScreen> {
     return listFilterByRota;
   }
 
+//   _getLocation() async {
+//    currentLocation = await Geolocator()
+//        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+
+//    var newPosition = CameraPosition(
+//        target: LatLng(currentLocation.latitude, currentLocation.longitude),
+//        zoom: 16);
+
+//    CameraUpdate update =CameraUpdate.newCameraPosition(newPosition);
+//    CameraUpdate zoom = CameraUpdate.zoomTo(16);
+
+//    _mapController.moveCamera(update);
+//  }
+
   @override
   void initState() {
     super.initState();
@@ -130,7 +147,10 @@ class _LocationScreenState extends State<LocationScreen> {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
         locations.onSelectedRotaShift(listFilter[0]);
         locations.onSelectedLocation(listFilterByRota[0].locations![0]);
-        locations.onSelectedZone(listFilterByRota[0].locations![0].Zones![0]);
+        locations.onSelectedZone(
+            listFilterByRota[0].locations![0].Zones!.isNotEmpty
+                ? listFilterByRota[0].locations![0].Zones![0]
+                : null);
       }
     });
   }
@@ -143,21 +163,74 @@ class _LocationScreenState extends State<LocationScreen> {
     super.dispose();
   }
 
+  double? distanceValue = 0.0;
+
+  // double distanceInMeters =
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-
-    // final sourceLocation = LatLng(
-    //   currentLocationPosition.currentLocation?.latitude ?? 0,
-    //   currentLocationPosition.currentLocation?.longitude ?? 0,
-    // );
+    final sourceLocation = LatLng(
+      currentLocationPosition.currentLocation?.latitude ?? 0,
+      currentLocationPosition.currentLocation?.longitude ?? 0,
+    );
 
     final destination = LatLng(
       locations.location?.Latitude ?? 0,
       locations.location?.Longitude ?? 0,
+    );
+    double handelDistanceInMeters() {
+      return Geolocator.distanceBetween(
+          currentLocationPosition.currentLocation?.latitude ?? 0,
+          currentLocationPosition.currentLocation?.longitude ?? 0,
+          destination.latitude,
+          destination.longitude);
+    }
+
+    Future<void> showMyDialog() async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: true,
+        barrierColor: ColorTheme.backdrop,
+        builder: (BuildContext context) {
+          return MyDialog(
+            buttonCancel: false,
+            title: Text(
+              "Warning",
+              style: CustomTextStyle.h4.copyWith(
+                  color: ColorTheme.danger, fontWeight: FontWeight.w600),
+            ),
+            subTitle: const Text(
+              "You are out of the check in zone, please go to the location.",
+              style: CustomTextStyle.h5,
+              textAlign: TextAlign.center,
+            ),
+            func: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: ColorTheme.danger,
+              ),
+              child: Text("Accept",
+                  style: CustomTextStyle.h5.copyWith(
+                    color: Colors.white,
+                  )),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          );
+        },
+      );
+    }
+
+    CameraPosition initialPosition = CameraPosition(
+      target: LatLng(
+        locations.location?.Latitude ?? 0,
+        locations.location?.Longitude ?? 0,
+      ),
+      zoom: 16,
     );
 
     void setZoneWhenSelectedLocation(LocationWithZones locationSelected) {
@@ -166,39 +239,29 @@ class _LocationScreenState extends State<LocationScreen> {
       );
     }
 
-    // Future<void> goToDestination() async {
-    //   final GoogleMapController controller = await _mapController.future;
-    //   controller.animateCamera(
-    //     CameraUpdate.newLatLngBounds(
-    //       LatLngBounds(
-    //         southwest: sourceLocation,
-    //         northeast: destination,
-    //       ),
-    //       48,
-    //     ),
-    //   );
-    //   final directions = await directionsRepository.getDirections(
-    //       origin: sourceLocation, destination: destination);
-    //   setState(() => _info = directions);
-    // }
-
-    OperationalPeriod? getOperationalPeriodNearest(
-        List<OperationalPeriod> operationalPeriodList) {
-      var date = DateTime.now();
-      int currentMinutes = date.hour * 60 + date.minute;
-      if (operationalPeriodList.isNotEmpty) {
-        for (int i = 0; i < operationalPeriodList.length; i++) {
-          var item = operationalPeriodList[i];
-          print('time from: ${item.TimeFrom}, time to: ${item.TimeTo}');
-          print('current time: $currentMinutes');
-          if (currentMinutes <= item.TimeFrom ||
-              currentMinutes > item.TimeFrom && currentMinutes <= item.TimeTo) {
-            return item;
-          }
-        }
-        return operationalPeriodList[operationalPeriodList.length - 1];
-      }
-      return null;
+    Future<void> goToDestination(
+        {required double latitude, required double longitude}) async {
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: LatLng(
+          latitude,
+          longitude,
+        ),
+        zoom: 16,
+      )));
+      // final GoogleMapController controller = await _controller.future;
+      // controller.animateCamera(
+      //   CameraUpdate.newLatLngBounds(
+      //     LatLngBounds(
+      //       southwest: sourceLocation,
+      //       northeast: LatLng(
+      //         latitude,
+      //         longitude,
+      //       ),
+      //     ),
+      //     38,
+      //   ),
+      // );
     }
 
     print(
@@ -271,8 +334,12 @@ class _LocationScreenState extends State<LocationScreen> {
                 if (!isValid) {
                   return;
                 } else {
-                  Navigator.of(context)
-                      .pushNamed(ReadRegulationScreen.routeName);
+                  if (handelDistanceInMeters() <= 1609.344) {
+                    Navigator.of(context)
+                        .pushNamed(ReadRegulationScreen.routeName);
+                  } else {
+                    showMyDialog();
+                  }
                 }
 
                 _formKey.currentState!.save();
@@ -282,7 +349,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   color: ColorTheme.white),
               label: Text(
                 'Next',
-                style: CustomTextStyle.h6.copyWith(
+                style: CustomTextStyle.h5.copyWith(
                   color: ColorTheme.white,
                 ),
               ),
@@ -320,21 +387,39 @@ class _LocationScreenState extends State<LocationScreen> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
-                                    const Text(
+                                    Text(
                                         'Please select your location for this shift',
-                                        style: CustomTextStyle.body1),
+                                        style: CustomTextStyle.body1.copyWith(
+                                          fontSize: 16,
+                                        )),
                                     const SizedBox(
                                       height: 20,
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<RotaWithLocation>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Select rota shift"
+                                                  : '${formatRotaShift(selectedItem.timeFrom as DateTime)} - ${formatRotaShift(selectedItem.timeTo as DateTime)}',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:
                                               dropDownButtonStyle
                                                   .getInputDecorationCustom(
-                                            labelText:
-                                                const Text('My rota shift'),
+                                            labelText: Text(
+                                              'My rota shift',
+                                              style: CustomTextStyle.body1
+                                                  .copyWith(fontSize: 18),
+                                            ),
                                             hintText: 'Select rota shift',
                                           ),
                                         ),
@@ -391,6 +476,19 @@ class _LocationScreenState extends State<LocationScreen> {
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<LocationWithZones>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Select location"
+                                                  : selectedItem.Name,
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:
@@ -407,15 +505,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                     as List<LocationWithZones>
                                                 : []
                                             : [],
-                                        selectedItem:
-                                            listFilterByRota.isNotEmpty
-                                                ? listFilterByRota[0]
-                                                        .locations!
-                                                        .isNotEmpty
-                                                    ? listFilterByRota[0]
-                                                        .locations![0]
-                                                    : null
-                                                : null,
+                                        selectedItem: locations.location,
                                         itemAsString: (item) => item.Name,
                                         popupProps: PopupProps.menu(
                                           fit: FlexFit.loose,
@@ -429,19 +519,13 @@ class _LocationScreenState extends State<LocationScreen> {
                                               subTitle: '${item.Distance}km',
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
-                                              operationalPeriods: item
-                                                      .OperationalPeriods!
-                                                      .isNotEmpty
-                                                  ? getOperationalPeriodNearest(
-                                                      locations.location!
-                                                              .OperationalPeriods ??
-                                                          [],
-                                                    )
-                                                  : null,
+                                              operationalPeriodsList:
+                                                  item.operationalPeriodHistories ??
+                                                      [],
                                             );
                                           },
                                         ),
-                                        onChanged: (value) {
+                                        onChanged: (value) async {
                                           LocationWithZones locationSelected =
                                               locations.rotaShift!.locations!
                                                   .firstWhere(
@@ -452,6 +536,12 @@ class _LocationScreenState extends State<LocationScreen> {
                                           setZoneWhenSelectedLocation(
                                             locationSelected,
                                           );
+                                          setState(() {
+                                            distanceValue = value!.Distance;
+                                          });
+                                          await goToDestination(
+                                              latitude: value?.Latitude ?? 0,
+                                              longitude: value?.Longitude ?? 0);
                                         },
                                         validator: ((value) {
                                           if (value == null) {
@@ -468,6 +558,19 @@ class _LocationScreenState extends State<LocationScreen> {
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<Zone>(
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                              selectedItem == null
+                                                  ? "Select zone"
+                                                  : selectedItem.Name,
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: selectedItem == null
+                                                      ? ColorTheme.grey400
+                                                      : ColorTheme
+                                                          .textPrimary));
+                                        },
                                         dropdownDecoratorProps:
                                             DropDownDecoratorProps(
                                           dropdownSearchDecoration:
@@ -573,7 +676,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                                           400
                                                       ? screenHeight / 3
                                                       : screenHeight / 1.5,
-                                              destination: destination,
+                                              mapController: _controller,
+                                              initialPosition: initialPosition,
                                               info: _info,
                                             )
                                           : const SizedBox(),
@@ -633,6 +737,7 @@ class DropDownItem extends StatelessWidget {
                 color: isSelected == false
                     ? ColorTheme.textPrimary
                     : ColorTheme.primary,
+                fontSize: 16,
               ),
             ),
             if (subTitle != null)
@@ -651,12 +756,12 @@ class DropDownItem2 extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
-  final OperationalPeriod? operationalPeriods;
+  final List<OperationalPeriodHistories> operationalPeriodsList;
   const DropDownItem2({
     required this.title,
     this.subTitle,
     this.isSelected = false,
-    required this.operationalPeriods,
+    required this.operationalPeriodsList,
     super.key,
   });
 
@@ -670,10 +775,9 @@ class DropDownItem2 extends StatelessWidget {
       return DateFormat('HH:mm').format(date);
     }
 
-    Color getStatusColor() {
-      if (currentMinutes <= operationalPeriods!.TimeFrom ||
-          currentMinutes > operationalPeriods!.TimeFrom &&
-              currentMinutes <= operationalPeriods!.TimeTo) {
+    Color getStatusColor({required int timeFrom, required int timeTo}) {
+      if (currentMinutes <= timeFrom ||
+          currentMinutes > timeFrom && currentMinutes <= timeTo) {
         return ColorTheme.success;
       }
       return ColorTheme.danger;
@@ -693,38 +797,57 @@ class DropDownItem2 extends StatelessWidget {
           horizontal: 12,
           vertical: subTitle != null ? 10 : 15,
         ),
-        child: Column(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
                     title,
                     style: CustomTextStyle.body1.copyWith(
-                      color: isSelected == false
-                          ? ColorTheme.textPrimary
-                          : ColorTheme.primary,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                        color: isSelected == false
+                            ? ColorTheme.textPrimary
+                            : ColorTheme.primary,
+                        overflow: TextOverflow.ellipsis,
+                        fontSize: 16),
                   ),
                 ),
-                if (operationalPeriods != null)
+                const SizedBox(
+                  height: 2,
+                ),
+                if (subTitle != null)
                   Text(
-                    'Op ${formatOperationalPeriods(startDay.add(Duration(minutes: operationalPeriods!.TimeFrom)))} - ${formatOperationalPeriods(startDay.add(Duration(minutes: operationalPeriods!.TimeTo)))}',
-                    style: CustomTextStyle.body2.copyWith(
-                      color: getStatusColor(),
-                      fontWeight: FontWeight.w600,
-                    ),
+                    subTitle ?? '',
+                    style: CustomTextStyle.body2,
                   ),
               ],
             ),
-            if (subTitle != null)
-              Text(
-                subTitle ?? '',
-                style: CustomTextStyle.body2,
+            if (operationalPeriodsList.isNotEmpty)
+              Column(
+                children: operationalPeriodsList.map((e) {
+                  return Column(
+                    children: [
+                      Text(
+                        'Op ${formatOperationalPeriods(e.TimeFrom)} - ${formatOperationalPeriods(e.TimeTo)}',
+                        style: CustomTextStyle.body2.copyWith(
+                          color: getStatusColor(
+                              timeFrom:
+                                  e.TimeFrom.hour * 60 + e.TimeFrom.minute,
+                              timeTo: e.TimeTo.hour * 60 + e.TimeTo.minute),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                    ],
+                  );
+                }).toList(),
               ),
           ],
         ),
