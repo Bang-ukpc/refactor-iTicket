@@ -21,7 +21,7 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
+import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_info.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
@@ -46,10 +46,9 @@ class _PrintPCNState extends State<PrintPCN> {
     var args = contraventionProvider.contravention;
     final printIssue = Provider.of<PrintIssueProviders>(context);
 
-    int randomReference = (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
     final contraventionCreate = ContraventionCreateWardenCommand(
       ZoneId: args?.zoneId ?? 0,
-      ContraventionReference: args?.reference ?? '$randomReference',
+      ContraventionReference: args?.reference ?? "",
       Plate: args?.plate ?? "",
       VehicleMake: contraventionProvider.getMakeNullProvider ?? "",
       VehicleColour: contraventionProvider.getColorNullProvider ?? "",
@@ -62,16 +61,18 @@ class _PrintPCNState extends State<PrintPCN> {
       WardenId: args?.contraventionDetailsWarden?.WardenId ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      WardenComments: args!.contraventionEvents!.isNotEmpty
-          ? args.contraventionEvents!
-              .map((item) => item.detail)
-              .toString()
-              .replaceAll('(', '')
-              .replaceAll(')', '')
+      WardenComments: args != null
+          ? args.contraventionEvents!.isNotEmpty
+              ? args.contraventionEvents!
+                  .map((item) => item.detail)
+                  .toString()
+                  .replaceAll('(', '')
+                  .replaceAll(')', '')
+              : ''
           : '',
       BadgeNumber: 'test',
       LocationAccuracy: 0, // missing
-      TypePCN: args.type,
+      TypePCN: args != null ? args.type : 1,
     );
 
     Future<void> issuePCN() async {
@@ -138,7 +139,7 @@ class _PrintPCNState extends State<PrintPCN> {
         }
 
         if (contravention != null) {
-          for (int i = 0; i < args.contraventionPhotos!.length; i++) {
+          for (int i = 0; i < args!.contraventionPhotos!.length; i++) {
             try {
               await contraventionController.uploadContraventionImage(
                 ContraventionCreatePhoto(
@@ -245,7 +246,7 @@ class _PrintPCNState extends State<PrintPCN> {
                 'contraventionPhotoDataLocal');
         if (contraventionPhotoData == null) {
           List<String> newPhotoData = [];
-          for (int i = 0; i < args.contraventionPhotos!.length; i++) {
+          for (int i = 0; i < args!.contraventionPhotos!.length; i++) {
             final String encodedData = json.encode(ContraventionCreatePhoto(
               contraventionReference:
                   contraventionCreate.ContraventionReference,
@@ -262,7 +263,7 @@ class _PrintPCNState extends State<PrintPCN> {
         } else {
           final createdData =
               json.decode(contraventionPhotoData) as List<dynamic>;
-          for (int i = 0; i < args.contraventionPhotos!.length; i++) {
+          for (int i = 0; i < args!.contraventionPhotos!.length; i++) {
             final String encodedData = json.encode(ContraventionCreatePhoto(
               contraventionReference:
                   contraventionCreate.ContraventionReference,

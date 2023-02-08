@@ -77,13 +77,13 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> logout() async {
+    final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     final service = FlutterBackgroundService();
     var isRunning = await service.isRunning();
     if (isRunning) {
       service.invoke("stopService");
     }
 
-    final AadOAuth oauth = AadOAuth(OAuthConfig.config);
     await oauth.logout();
 
     SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);

@@ -2,10 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:iWarden/models/contravention.dart';
 
 class ContraventionProvider with ChangeNotifier {
+  static int? firstSeenId;
   static Contravention? contraventionData;
   static String? colorNullProvider;
   static String? makeNullProvider;
   static ContraventionReasonTranslations? contraventionCode;
+
+  int? get getFirstSeenId {
+    return firstSeenId;
+  }
 
   Contravention? get contravention {
     return contraventionData;
@@ -21,6 +26,11 @@ class ContraventionProvider with ChangeNotifier {
 
   ContraventionReasonTranslations? get getContraventionCode {
     return contraventionCode;
+  }
+
+  void setFirstSeenId(int? id) {
+    firstSeenId = id;
+    notifyListeners();
   }
 
   void setColorNullProvider(String? data) {
@@ -44,6 +54,7 @@ class ContraventionProvider with ChangeNotifier {
   }
 
   void clearContraventionData() {
+    firstSeenId = null;
     contraventionData = null;
     colorNullProvider = null;
     makeNullProvider = null;

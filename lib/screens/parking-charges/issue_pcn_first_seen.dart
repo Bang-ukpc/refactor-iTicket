@@ -34,6 +34,7 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
+import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
 import 'package:iWarden/screens/parking-charges/print_issue.dart';
 import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/theme/color.dart';
@@ -72,6 +73,25 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final _debouncer = Debouncer(milliseconds: 300);
   SelectModel? _selectedItemTypePCN;
   List<RotaWithLocation> locationWithRotaList = [];
+  List<Contravention> contraventionList = [];
+
+  Future<List<Contravention>> getParkingCharges(
+      {required int page, required int pageSize, required int zoneId}) async {
+    final Pagination list = await contraventionController
+        .getContraventionServiceList(
+      zoneId: zoneId,
+      page: page,
+      pageSize: pageSize,
+    )
+        .then((value) {
+      return value;
+    }).catchError((err) {
+      throw Error();
+    });
+    contraventionList =
+        list.rows.map((item) => Contravention.fromJson(item)).toList();
+    return contraventionList;
+  }
 
   void setSelectedTypeOfPCN(
       Locations locationProvider, Contravention? contraventionValue) {
@@ -248,6 +268,25 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
+  bool checkVrnExists(
+      {required String vrn,
+      required int zoneId,
+      required String contraventionType}) {
+    var findVRNExits = contraventionList.firstWhereOrNull((e) =>
+        e.plate == vrn &&
+        e.zoneId == zoneId &&
+        e.reason?.code == contraventionType);
+    if (findVRNExits != null) {
+      log('Created At: ${findVRNExits.created}');
+      var date = DateTime.now();
+      var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
+      if (date.isBefore(timeMayIssue)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   void setContraventionReasons({required bool isOverStaying}) async {
     ConnectivityResult connectionStatus =
         await (Connectivity().checkConnectivity());
@@ -274,12 +313,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
-  String validate = '';
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+      final firstSeen = ModalRoute.of(context)!.settings.arguments as dynamic;
       final locationProvider = Provider.of<Locations>(context, listen: false);
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
@@ -287,7 +325,27 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
       await getAllContraventionReasons();
-      setContraventionReasons(isOverStaying: false);
+
+      if (firstSeen != null) {
+        _vrnController.text = firstSeen.Plate;
+        if (firstSeen.Type == VehicleInformationType.FIRST_SEEN.index) {
+          contraventionProvider.setFirstSeenId(firstSeen.Id);
+          ContraventionReasonTranslations? argsOverstayingTime =
+              fromJsonContraventionList
+                  .firstWhereOrNull((e) => e.contraventionReason!.code == '36');
+          _contraventionReasonController.text = argsOverstayingTime != null
+              ? argsOverstayingTime.contraventionReason!.code.toString()
+              : '';
+          contraventionProvider.setContraventionCode(argsOverstayingTime);
+          setContraventionReasons(isOverStaying: true);
+        } else {
+          setContraventionReasons(isOverStaying: false);
+        }
+      }
+
+      setContraventionReasons(
+          isOverStaying: contraventionProvider.getFirstSeenId != null);
+
       var contraventionData = contraventionProvider.contravention;
       if (contraventionData != null) {
         _vrnController.text = contraventionData.plate ?? '';
@@ -301,9 +359,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         _contraventionReasonController.text = contraventionProvider
                 .getContraventionCode?.contraventionReason?.code ??
             '';
-        if (contraventionProvider
-                .getContraventionCode?.contraventionReason?.code ==
-            '36') {
+        if (contraventionProvider.getFirstSeenId != null) {
           setContraventionReasons(isOverStaying: true);
         }
 
@@ -313,26 +369,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             .replaceAll('(', '')
             .replaceAll(')', '');
       }
-      if (args != null) {
-        _vrnController.text = args.Plate;
-        if (args.Type == VehicleInformationType.FIRST_SEEN.index) {
-          ContraventionReasonTranslations? argsOverstayingTime =
-              fromJsonContraventionList
-                  .firstWhereOrNull((e) => e.contraventionReason!.code == '36');
-          _contraventionReasonController.text = argsOverstayingTime != null
-              ? argsOverstayingTime.contraventionReason!.code.toString()
-              : '';
-          contraventionProvider.setContraventionCode(argsOverstayingTime);
-          setContraventionReasons(isOverStaying: true);
-        } else {
-          setContraventionReasons(isOverStaying: false);
-        }
-      }
       setSelectedTypeOfPCN(locationProvider, contraventionData);
       await getLocationList(locationProvider, wardensProvider.wardens?.Id ?? 0)
           .then((value) {
         setSelectedTypeOfPCN(locationProvider, contraventionData);
       });
+      getParkingCharges(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locationProvider.zone!.Id as int,
+      );
     });
   }
 
@@ -396,10 +442,20 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       if (!isValid) {
         return;
-      } else {
-        if (!mounted) return;
-        showCircularProgressIndicator(context: context);
       }
+      if (!mounted) return;
+
+      if (checkVrnExists(
+            vrn: physicalPCN.Plate,
+            zoneId: physicalPCN.ZoneId,
+            contraventionType: physicalPCN.ContraventionReasonCode,
+          ) ==
+          false) {
+        showAlertCheckVrnExits(context: context);
+        return;
+      }
+
+      showCircularProgressIndicator(context: context);
       List<ContraventionPhotos> contraventionImageList = [];
       if (printIssue.data.isNotEmpty) {
         for (int i = 0; i < printIssue.data.length; i++) {
@@ -543,10 +599,20 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       if (!isValid) {
         return;
-      } else {
-        if (!mounted) return;
-        showCircularProgressIndicator(context: context);
       }
+      if (!mounted) return;
+
+      if (checkVrnExists(
+            vrn: virtualTicket.Plate,
+            zoneId: virtualTicket.ZoneId,
+            contraventionType: virtualTicket.ContraventionReasonCode,
+          ) ==
+          false) {
+        showAlertCheckVrnExits(context: context);
+        return;
+      }
+
+      showCircularProgressIndicator(context: context);
       List<ContraventionPhotos> contraventionImageList = [];
       if (printIssue.data.isNotEmpty) {
         for (int i = 0; i < printIssue.data.length; i++) {
@@ -937,11 +1003,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       });
       await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
       await getAllContraventionReasons();
-      if (contraventionProvider
-              .getContraventionCode?.contraventionReason?.code ==
-          '36') {
-        setContraventionReasons(isOverStaying: true);
-      }
+      setContraventionReasons(
+          isOverStaying: contraventionProvider.getFirstSeenId != null);
       var contraventionCodeFind = fromJsonContraventionList.firstWhereOrNull(
           (e) =>
               e.contraventionReason!.code ==
@@ -953,8 +1016,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       });
       contraventionProvider.setContraventionCode(contraventionCodeFind);
     }
-
-    log('contravention reason code: ${contraventionProvider.getContraventionCode?.contraventionReason?.code}');
 
     return WillPopScope(
       onWillPop: () async => false,

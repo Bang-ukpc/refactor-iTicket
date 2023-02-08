@@ -23,7 +23,7 @@ import 'package:iWarden/screens/grace-period/add_grace_period.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
+import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -313,7 +313,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       //   user: wardensProvider.wardens!.Email,
       // );
       try {
-        showCircularProgressIndicator(context: context, text: 'Processing');
+        showCircularProgressIndicator(context: context);
         await userController
             .createWardenEvent(wardenEventStartBreak)
             .then((value) {

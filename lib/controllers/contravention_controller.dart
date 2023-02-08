@@ -193,8 +193,6 @@ class ContraventionController {
 
   Future<CheckPermit?> checkHasPermit(
       ContraventionCreateWardenCommand pcn) async {
-    print('data: ${pcn.Plate}');
-    print('data: ${pcn.WardenComments}');
     try {
       final response = await dio.post(
         '/contravention/check-has-permit',
