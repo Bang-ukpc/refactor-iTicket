@@ -6,6 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
@@ -16,6 +17,10 @@ import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../providers/auth.dart';
 
 Future<void> showLoading({
   required int firstSeenLength,
@@ -234,6 +239,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   }
 
   Future<bool> wardenEventDataSync() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+
     final String? dataWardenEvent =
         await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
     final String? dataWardenEventTrackGPS =
@@ -243,10 +251,8 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     if (dataWardenEvent != null) {
       var decodedWardenEventData =
           json.decode(dataWardenEvent) as List<dynamic>;
-      print(dataWardenEventTrackGPS);
 
       if (dataWardenEventTrackGPS != null) {
-        log('dataWardenEventTrackGPS != null');
         var decodedWardenEventTrackGPSData =
             json.decode(dataWardenEventTrackGPS) as List<dynamic>;
         decodedWardenEventData = List.from(decodedWardenEventData)
@@ -375,6 +381,15 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   void initState() {
     super.initState();
     _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final authProvider = Provider.of<Auth>(context, listen: false);
+      bool checkIsAuth = await authProvider.isAuth();
+      if (checkIsAuth == true) {
+        Timer.periodic(const Duration(seconds: 30), (timer) async {
+          await currentLocationPosition.getCurrentLocation();
+        });
+      }
+    });
   }
 
   @override

@@ -278,11 +278,16 @@ class _LocationScreenState extends State<LocationScreen> {
         locations.onSelectedLocation(listFilterByRota[0].locations!.isNotEmpty
             ? listFilterByRota[0].locations![0]
             : null);
+        goToDestination(
+            latitude: listFilterByRota[0].locations?[0].Latitude ?? 0,
+            longitude: listFilterByRota[0].locations?[0].Longitude ?? 0);
         locations.onSelectedZone(listFilterByRota[0].locations!.isNotEmpty
             ? listFilterByRota[0].locations![0].Zones!.isNotEmpty
                 ? listFilterByRota[0].locations![0].Zones![0]
                 : null
             : null);
+      } else {
+        locations.resetLocationWithZones();
       }
     }
 
@@ -415,10 +420,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                           dropdownSearchDecoration:
                                               dropDownButtonStyle
                                                   .getInputDecorationCustom(
-                                            labelText: Text(
+                                            labelText: const Text(
                                               'My rota shift',
-                                              style: CustomTextStyle.body1
-                                                  .copyWith(fontSize: 18),
                                             ),
                                             hintText: 'Select rota shift',
                                           ),
@@ -458,6 +461,15 @@ class _LocationScreenState extends State<LocationScreen> {
                                           locations.onSelectedLocation(
                                             listFilterByRota[0].locations![0],
                                           );
+                                          goToDestination(
+                                              latitude: listFilterByRota[0]
+                                                      .locations?[0]
+                                                      .Latitude ??
+                                                  0,
+                                              longitude: listFilterByRota[0]
+                                                      .locations?[0]
+                                                      .Longitude ??
+                                                  0);
                                           setZoneWhenSelectedLocation(
                                               rotaShiftSelected.locations![0]);
                                         },

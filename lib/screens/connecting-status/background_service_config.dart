@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
@@ -65,17 +66,17 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
+  await dotenv.load(fileName: ".env");
   DartPluginRegistrant.ensureInitialized();
   final accessToken = await SharedPreferencesHelper.getStringValue(
     PreferencesKeys.accessToken,
   );
-  // const serviceUrl = 'https://api-warden-prod-ukpc.azurewebsites.net';
-  const serviceUrl = 'https://api-warden-admin-dev-ukpc.azurewebsites.net';
-  // const serviceUrl = 'http://192.168.1.200:7003';
+
+  final serviceUrl = ConfigEnvironmentVariable.serviceURL;
+
   final dio = Dio();
   dio.options.headers['content-Type'] = 'application/json';
   dio.options.headers["authorization"] = accessToken;
-  Position position = await Geolocator.getCurrentPosition();
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -114,6 +115,10 @@ void onStart(ServiceInstance service) async {
         );
       }
     }
+    Position position = await Geolocator.getCurrentPosition();
+
+    print('latitude: ${position.latitude}');
+    print('longitude: ${position.longitude}');
 
     Wardens? wardenFromJson;
     final String? warden =
@@ -161,6 +166,7 @@ void onStart(ServiceInstance service) async {
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
+      log('Track GPS online');
       try {
         await dio.post(
           '$serviceUrl/wardenEvent',
@@ -172,6 +178,7 @@ void onStart(ServiceInstance service) async {
         }
       }
     } else {
+      log('Track GPS offline');
       wardenEventSendCurrentLocation.Created = DateTime.now();
       final String? wardenEventDataLocal =
           await SharedPreferencesHelper.getStringValue(
