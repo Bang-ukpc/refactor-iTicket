@@ -317,7 +317,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final firstSeen = ModalRoute.of(context)!.settings.arguments as dynamic;
+      final vehicleInfo = ModalRoute.of(context)!.settings.arguments as dynamic;
       final locationProvider = Provider.of<Locations>(context, listen: false);
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
@@ -326,10 +326,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
       await getAllContraventionReasons();
 
-      if (firstSeen != null) {
-        _vrnController.text = firstSeen.Plate;
-        if (firstSeen.Type == VehicleInformationType.FIRST_SEEN.index) {
-          contraventionProvider.setFirstSeenId(firstSeen.Id);
+      if (vehicleInfo != null) {
+        contraventionProvider.setFirstSeenData(vehicleInfo);
+        _vrnController.text = vehicleInfo.Plate;
+        if (vehicleInfo.Type == VehicleInformationType.FIRST_SEEN.index) {
           ContraventionReasonTranslations? argsOverstayingTime =
               fromJsonContraventionList
                   .firstWhereOrNull((e) => e.contraventionReason!.code == '36');
@@ -344,7 +344,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       }
 
       setContraventionReasons(
-          isOverStaying: contraventionProvider.getFirstSeenId != null);
+          isOverStaying: contraventionProvider.getVehicleInfo?.Type ==
+              VehicleInformationType.FIRST_SEEN.index);
 
       var contraventionData = contraventionProvider.contravention;
       if (contraventionData != null) {
@@ -359,8 +360,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         _contraventionReasonController.text = contraventionProvider
                 .getContraventionCode?.contraventionReason?.code ??
             '';
-        if (contraventionProvider.getFirstSeenId != null) {
-          setContraventionReasons(isOverStaying: true);
+        if (contraventionProvider.getVehicleInfo != null) {
+          if (contraventionProvider.getVehicleInfo?.Type ==
+              VehicleInformationType.FIRST_SEEN.index) {
+            setContraventionReasons(isOverStaying: true);
+          }
         }
 
         _commentController.text = contraventionData.contraventionEvents!
@@ -402,7 +406,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
-    final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+    final vehicleInfo = ModalRoute.of(context)!.settings.arguments as dynamic;
     final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
 
     log('issue pcn screen');
@@ -420,7 +424,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               .getContraventionCode?.contraventionReason?.code ??
           '',
       EventDateTime: DateTime.now(),
-      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+      FirstObservedDateTime:
+          vehicleInfo != null ? vehicleInfo.Created : DateTime.now(),
       WardenId: wardensProvider.wardens?.Id ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -578,7 +583,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               .getContraventionCode?.contraventionReason?.code ??
           '',
       EventDateTime: DateTime.now(),
-      FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+      FirstObservedDateTime:
+          vehicleInfo != null ? vehicleInfo.Created : DateTime.now(),
       WardenId: wardensProvider.wardens?.Id ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -1004,7 +1010,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
       await getAllContraventionReasons();
       setContraventionReasons(
-          isOverStaying: contraventionProvider.getFirstSeenId != null);
+          isOverStaying: contraventionProvider.getVehicleInfo?.Type ==
+              VehicleInformationType.FIRST_SEEN.index);
       var contraventionCodeFind = fromJsonContraventionList.firstWhereOrNull(
           (e) =>
               e.contraventionReason?.code ==

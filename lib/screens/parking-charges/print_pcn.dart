@@ -11,10 +11,12 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
+import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -74,6 +76,29 @@ class _PrintPCNState extends State<PrintPCN> {
       LocationAccuracy: 0, // missing
       TypePCN: args != null ? args.type : 1,
     );
+
+    Future<void> onRemoveFromVehicleInfo() async {
+      if (contraventionProvider.getVehicleInfo != null) {
+        var vehicleInfo =
+            contraventionProvider.getVehicleInfo as VehicleInformation;
+
+        VehicleInformation vehicleInfoToUpdate = VehicleInformation(
+          ExpiredAt: vehicleInfo.ExpiredAt,
+          Plate: vehicleInfo.Plate,
+          ZoneId: vehicleInfo.ZoneId,
+          LocationId: vehicleInfo.LocationId,
+          BayNumber: vehicleInfo.BayNumber,
+          Type: vehicleInfo.Type,
+          Latitude: vehicleInfo.Latitude,
+          Longitude: vehicleInfo.Longitude,
+          CarLeft: true,
+          EvidencePhotos: [],
+          Id: vehicleInfo.Id,
+        );
+        await vehicleInfoController.upsertVehicleInfo(vehicleInfoToUpdate);
+      }
+      return;
+    }
 
     Future<void> issuePCN() async {
       ConnectivityResult connectionStatus =
@@ -170,20 +195,23 @@ class _PrintPCNState extends State<PrintPCN> {
             await userController
                 .createWardenEvent(wardenEventIssuePCN)
                 .then((value) {
-              contraventionProvider.clearContraventionData();
-              printIssue.resetData();
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
-                  arguments: contravention);
-              CherryToast.success(
-                displayCloseButton: false,
-                title: Text(
-                  'The PCN has been created successfully',
-                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-                ),
-                toastPosition: Position.bottom,
-                borderRadius: 5,
-              ).show(context);
+              onRemoveFromVehicleInfo().then((value) {
+                contraventionProvider.clearContraventionData();
+                printIssue.resetData();
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
+                    arguments: contravention);
+                CherryToast.success(
+                  displayCloseButton: false,
+                  title: Text(
+                    'The PCN has been created successfully',
+                    style:
+                        CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+                  ),
+                  toastPosition: Position.bottom,
+                  borderRadius: 5,
+                ).show(context);
+              });
             });
           } on DioError catch (error) {
             if (!mounted) return;
@@ -313,20 +341,22 @@ class _PrintPCNState extends State<PrintPCN> {
         await userController
             .createWardenEvent(wardenEventIssuePCN)
             .then((value) {
-          contraventionProvider.clearContraventionData();
-          printIssue.resetData();
-          Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
-              arguments: contraventionDataFake);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'The PCN has been created successfully',
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
+          onRemoveFromVehicleInfo().then((value) {
+            contraventionProvider.clearContraventionData();
+            printIssue.resetData();
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
+                arguments: contraventionDataFake);
+            CherryToast.success(
+              displayCloseButton: false,
+              title: Text(
+                'The PCN has been created successfully',
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+          });
         });
       }
     }

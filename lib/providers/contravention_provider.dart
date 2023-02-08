@@ -1,15 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/vehicle_information.dart';
 
 class ContraventionProvider with ChangeNotifier {
-  static int? firstSeenId;
+  static VehicleInformation? vehicleInfoData;
   static Contravention? contraventionData;
   static String? colorNullProvider;
   static String? makeNullProvider;
   static ContraventionReasonTranslations? contraventionCode;
 
-  int? get getFirstSeenId {
-    return firstSeenId;
+  VehicleInformation? get getVehicleInfo {
+    return vehicleInfoData;
   }
 
   Contravention? get contravention {
@@ -28,8 +29,8 @@ class ContraventionProvider with ChangeNotifier {
     return contraventionCode;
   }
 
-  void setFirstSeenId(int? id) {
-    firstSeenId = id;
+  void setFirstSeenData(VehicleInformation? vehicleInformation) {
+    vehicleInfoData = vehicleInformation;
     notifyListeners();
   }
 
@@ -54,7 +55,7 @@ class ContraventionProvider with ChangeNotifier {
   }
 
   void clearContraventionData() {
-    firstSeenId = null;
+    vehicleInfoData = null;
     contraventionData = null;
     colorNullProvider = null;
     makeNullProvider = null;
