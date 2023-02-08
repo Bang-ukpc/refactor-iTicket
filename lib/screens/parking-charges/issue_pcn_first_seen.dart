@@ -1007,9 +1007,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           isOverStaying: contraventionProvider.getFirstSeenId != null);
       var contraventionCodeFind = fromJsonContraventionList.firstWhereOrNull(
           (e) =>
-              e.contraventionReason!.code ==
+              e.contraventionReason?.code ==
               contraventionProvider
-                  .getContraventionCode!.contraventionReason!.code);
+                  .getContraventionCode?.contraventionReason!.code);
       setState(() {
         _contraventionReasonController.text =
             contraventionCodeFind?.contraventionReason?.code ?? "";
