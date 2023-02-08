@@ -158,7 +158,7 @@ VehicleDetails _$VehicleDetailsFromJson(Map<String, dynamic> json) {
   );
 }
 
-class ContraventionCreatePhoto {
+class ContraventionCreatePhoto extends Identifiable {
   final String contraventionReference;
   final int photoType;
   final String originalFileName;

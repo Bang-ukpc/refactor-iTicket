@@ -1,18 +1,12 @@
-import 'dart:convert';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/services/local/local_service.dart';
-
 import '../../controllers/contravention_controller.dart';
-import '../../helpers/shared_preferences_helper.dart';
 import '../../models/ContraventionService.dart';
 
 class IssuedPcnLocalService
-    extends ILocalService<ContraventionCreateWardenCommand> {
+    extends BaseLocalService<ContraventionCreateWardenCommand> {
   late List<ContraventionCreatePhoto> allPcnPhotos;
-  final String LOCAL_KEY = 'issuePCNDataLocal';
-
-  @override
-  create(ContraventionCreateWardenCommand pcn) {}
+  IssuedPcnLocalService(): super('issuePCNDataLocal');
 
   @override
   syncAll() async {
@@ -32,7 +26,7 @@ class IssuedPcnLocalService
     Future.delayed(const Duration(seconds: 1), () async {
       await contraventionController.createPCN(pcn);
       await syncPcnPhotos(pcn);
-      delete(pcn); // Prints after 1 second.
+      delete(pcn.Id!); // Prints after 1 second.
     });
   }
 
@@ -45,28 +39,6 @@ class IssuedPcnLocalService
     for (var pcnPhoto in pcnPhotos) {
       await issuedPcnPhotoLocalService.sync(pcnPhoto);
     }
-  }
-
-  @override
-  getAll() async {
-    final String? jsonPcns =
-        await SharedPreferencesHelper.getStringValue(LOCAL_KEY);
-    var decodedData = json.decode(jsonPcns!) as List<dynamic>;
-    var allPcns = decodedData
-        .map((e) => ContraventionCreateWardenCommand.fromJson(json.decode(e)))
-        .toList();
-    return allPcns;
-  }
-
-  @override
-  delete(ContraventionCreateWardenCommand pcn) async {
-    List<ContraventionCreateWardenCommand> allPcns = await getAll();
-    List<ContraventionCreateWardenCommand> _allPcns = allPcns
-        .where((pcnItem) =>
-            pcnItem.ContraventionReference != pcn.ContraventionReference)
-        .toList();
-    final encodedCreatedData = json.encode(_allPcns);
-    SharedPreferencesHelper.setStringValue(LOCAL_KEY, encodedCreatedData);
   }
 }
 

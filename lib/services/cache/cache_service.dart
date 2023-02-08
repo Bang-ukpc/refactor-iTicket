@@ -74,6 +74,7 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   update(T t) async {
     final items = await getAll();
     items.map((item) => item.Id == t.Id ? t : item);
+    set(items);
   }
 }
 
