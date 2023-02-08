@@ -160,6 +160,7 @@ void onStart(ServiceInstance service) async {
       rotaTimeTo: rotaShiftSelected?.timeTo,
       locationId: locationSelected?.Id,
       zoneId: zoneSelected?.Id,
+      Created: DateTime.now(),
     );
 
     ConnectivityResult connectionStatus =
@@ -179,7 +180,6 @@ void onStart(ServiceInstance service) async {
       }
     } else {
       log('Track GPS offline');
-      wardenEventSendCurrentLocation.Created = DateTime.now();
       final String? wardenEventDataLocal =
           await SharedPreferencesHelper.getStringValue(
               'wardenEventCheckGPSDataLocal');

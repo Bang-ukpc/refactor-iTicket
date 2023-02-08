@@ -85,6 +85,7 @@ ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
     Latitude: json['Latitude'],
     LocationAccuracy: json['LocationAccuracy'],
     WardenComments: json['WardenComments'],
+    TypePCN: json['TypePCN'],
   );
 }
 
