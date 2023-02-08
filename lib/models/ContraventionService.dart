@@ -1,9 +1,11 @@
+import 'package:iWarden/models/base_model.dart';
+
 enum TypePCN {
   Physical,
   Virtual,
 }
 
-class ContraventionCreateWardenCommand {
+class ContraventionCreateWardenCommand extends Identifiable {
   String ContraventionReference;
   String Plate;
   String VehicleMake;

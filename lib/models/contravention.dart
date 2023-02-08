@@ -1,4 +1,6 @@
-class Contravention {
+import 'package:iWarden/models/base_model.dart';
+
+class Contravention extends BaseModel {
   DateTime? created;
   DateTime? deleted;
   int? id;
