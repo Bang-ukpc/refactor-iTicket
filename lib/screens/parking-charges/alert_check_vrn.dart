@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
-void showAlertCheckVrnExits({required BuildContext context}) {
+void showAlertCheckVrnExits(
+    {required BuildContext context, bool? checkAddFirstSeen}) {
   showDialog<void>(
     context: context,
     barrierColor: ColorTheme.backdrop,
@@ -39,8 +40,10 @@ void showAlertCheckVrnExits({required BuildContext context}) {
                   const SizedBox(
                     height: 16,
                   ),
-                  const Text(
-                    'It is not possible to issue a PCN. The vehicle has already been issued the same Contravention type within 24 hours.',
+                  Text(
+                    checkAddFirstSeen == null
+                        ? 'It is not possible to issue a PCN. The vehicle has already been issued the same Contravention type within 24 hours.'
+                        : 'It is not possible to issue a First seen. The vehicle has already been issued an overstay PCN within 24 hours.',
                     style: CustomTextStyle.h4,
                     textAlign: TextAlign.center,
                   ),
