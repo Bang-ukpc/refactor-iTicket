@@ -11,6 +11,8 @@ import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
@@ -25,6 +27,8 @@ import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
+import 'package:iWarden/services/local/issued_pcn_local_service.dart';
+import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -475,6 +479,20 @@ class _HomeOverviewState extends State<HomeOverview> {
                           height: 100,
                         ),
                       ),
+                ElevatedButton(
+                    onPressed: () async {
+                      List<ContraventionCreateWardenCommand> allPcns =
+                          await issuedPcnLocalService.getAll();
+                      List<ContraventionCreatePhoto> allPcnPhotos =
+                          await issuedPcnPhotoLocalService.getAll();
+                      log("hehehe ${allPcns.length}");
+                      log("hehehe ${allPcnPhotos.length}");
+                      //  SharedPreferencesHelper.removeStringValue(
+                      //     'issuePCNDataLocal');
+                      // SharedPreferencesHelper.removeStringValue(
+                      //     'contraventionPhotoDataLocal');
+                    },
+                    child: Text("hehehehe")),
               ],
             ),
           ),

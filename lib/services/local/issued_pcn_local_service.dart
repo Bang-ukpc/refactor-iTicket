@@ -29,9 +29,11 @@ class IssuedPcnLocalService
 
   @override
   sync(ContraventionCreateWardenCommand pcn) async {
-    await contraventionController.createPCN(pcn);
-    await syncPcnPhotos(pcn);
-    delete(pcn);
+    Future.delayed(const Duration(seconds: 1), () async {
+      await contraventionController.createPCN(pcn);
+      await syncPcnPhotos(pcn);
+      delete(pcn); // Prints after 1 second.
+    });
   }
 
   syncPcnPhotos(ContraventionCreateWardenCommand pcn) async {
@@ -57,7 +59,15 @@ class IssuedPcnLocalService
   }
 
   @override
-  delete(ContraventionCreateWardenCommand pcn) {}
+  delete(ContraventionCreateWardenCommand pcn) async {
+    List<ContraventionCreateWardenCommand> allPcns = await getAll();
+    List<ContraventionCreateWardenCommand> _allPcns = allPcns
+        .where((pcnItem) =>
+            pcnItem.ContraventionReference != pcn.ContraventionReference)
+        .toList();
+    final encodedCreatedData = json.encode(_allPcns);
+    SharedPreferencesHelper.setStringValue(LOCAL_KEY, encodedCreatedData);
+  }
 }
 
 final issuedPcnLocalService = IssuedPcnLocalService();

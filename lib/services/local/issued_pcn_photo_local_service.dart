@@ -15,7 +15,7 @@ class IssuedPcnPhotoLocalService
 
   @override
   syncAll() async {
-   List<ContraventionCreatePhoto> allPcnPhotos = await getAll();
+    List<ContraventionCreatePhoto> allPcnPhotos = await getAll();
 
     for (var pcnPhoto in allPcnPhotos) {
       await sync(pcnPhoto);
@@ -32,15 +32,24 @@ class IssuedPcnPhotoLocalService
   getAll() async {
     final String? jsonPcnPhotos =
         await SharedPreferencesHelper.getStringValue(LOCAL_KEY);
-    var decodedData = json.decode(jsonPcnPhotos!) as List<dynamic>;
-    var allPcnPhotos = decodedData
-        .map((e) => ContraventionCreatePhoto.fromJson(json.decode(e)))
-        .toList();
-    return allPcnPhotos;
+    if (jsonPcnPhotos != null) {
+      var decodedData = json.decode(jsonPcnPhotos) as List<dynamic>;
+      var allPcnPhotos = decodedData
+          .map((e) => ContraventionCreatePhoto.fromJson(json.decode(e)))
+          .toList();
+      return allPcnPhotos;
+    }
   }
 
   @override
-  delete(ContraventionCreatePhoto pcnPhoto) {}
+  delete(ContraventionCreatePhoto pcnPhoto) async {
+    List<ContraventionCreatePhoto> allPcnPhotos = await getAll();
+    List<ContraventionCreatePhoto> _allPcnPhotos = allPcnPhotos
+        .where((element) => element.filePath != pcnPhoto.filePath)
+        .toList();
+    final encodedNewData = json.encode(_allPcnPhotos);
+    SharedPreferencesHelper.setStringValue(LOCAL_KEY, encodedNewData);
+  }
 }
 
 final issuedPcnPhotoLocalService = IssuedPcnPhotoLocalService();
