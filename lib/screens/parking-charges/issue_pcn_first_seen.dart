@@ -345,6 +345,43 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     log('issue pcn screen');
 
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+    Future<List<ContraventionCreateWardenCommand>>
+        getDataContraventionCache() async {
+      final String? data =
+          await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
+      if (data != null) {
+        var decodedData = json.decode(data) as List<dynamic>;
+        List<ContraventionCreateWardenCommand> fromJsonContravention =
+            decodedData
+                .map((e) =>
+                    ContraventionCreateWardenCommand.fromJson(json.decode(e)))
+                .toList();
+
+        return fromJsonContravention;
+      } else {
+        return [];
+      }
+    }
+
+    Future<bool> checkDuplicateContravention(
+        String contraventionReferenceID) async {
+      List<ContraventionCreateWardenCommand> dataCache =
+          await getDataContraventionCache();
+
+      bool check = false;
+
+      for (int i = 0; i < dataCache.length; i++) {
+        if (dataCache[i].ContraventionReference == contraventionReferenceID) {
+          print("trueeeeeeeeeeeeee");
+          check = true;
+        } else {
+          print("falseeeeeeeeeee");
+          check = false;
+        }
+      }
+      return check;
+    }
+
     final physicalPCN = ContraventionCreateWardenCommand(
       ZoneId: locationProvider.zone?.Id ?? 0,
       ContraventionReference:
@@ -368,8 +405,26 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
     Future<void> createPhysicalPCN(
         {bool? step2, bool? step3, required bool isPrinter}) async {
-      physicalPCN.Plate = _vrnController.text;
-      physicalPCN.WardenComments = _commentController.text;
+      final physicalPCN2 = ContraventionCreateWardenCommand(
+        ZoneId: locationProvider.zone?.Id ?? 0,
+        ContraventionReference:
+            contraventionReferenceHelper.getContraventionReference(
+                prefixNumber: 2, wardenID: wardensProvider.wardens?.Id ?? 0),
+        Plate: _vrnController.text,
+        VehicleMake: _vehicleMakeController.text,
+        VehicleColour: _vehicleColorController.text,
+        ContraventionReasonCode: _contraventionReasonController.text,
+        EventDateTime: DateTime.now(),
+        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+        WardenId: wardensProvider.wardens?.Id ?? 0,
+        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        WardenComments: _commentController.text,
+        BadgeNumber: 'test',
+        LocationAccuracy: 0, // missing
+        TypePCN: TypePCN.Physical.index,
+        Id: randomNumber,
+      );
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
 
@@ -395,36 +450,36 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         Contravention contravention = Contravention(
-          reference: physicalPCN.ContraventionReference,
+          reference: physicalPCN2.ContraventionReference,
           created: DateTime.now(),
-          id: physicalPCN.Id,
-          plate: physicalPCN.Plate,
-          colour: physicalPCN.VehicleColour,
-          make: physicalPCN.VehicleMake,
-          eventDateTime: physicalPCN.EventDateTime,
+          id: physicalPCN2.Id,
+          plate: physicalPCN2.Plate,
+          colour: physicalPCN2.VehicleColour,
+          make: physicalPCN2.VehicleMake,
+          eventDateTime: physicalPCN2.EventDateTime,
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
-            code: physicalPCN.ContraventionReasonCode,
+            code: physicalPCN2.ContraventionReasonCode,
             contraventionReasonTranslations: contraventionReasonList
                 .where((e) =>
                     e.contraventionReason!.code ==
-                    physicalPCN.ContraventionReasonCode)
+                    physicalPCN2.ContraventionReasonCode)
                 .toList(),
           ),
           contraventionEvents: [
             ContraventionEvents(
-              contraventionId: physicalPCN.Id,
-              detail: physicalPCN.WardenComments,
+              contraventionId: physicalPCN2.Id,
+              detail: physicalPCN2.WardenComments,
             )
           ],
           contraventionDetailsWarden: ContraventionDetailsWarden(
-            FirstObserved: physicalPCN.FirstObservedDateTime,
-            ContraventionId: physicalPCN.Id,
-            WardenId: physicalPCN.WardenId,
-            IssuedAt: physicalPCN.EventDateTime,
+            FirstObserved: physicalPCN2.FirstObservedDateTime,
+            ContraventionId: physicalPCN2.Id,
+            WardenId: physicalPCN2.WardenId,
+            IssuedAt: physicalPCN2.EventDateTime,
           ),
           status: ContraventionStatus.Open.index,
-          type: physicalPCN.TypePCN,
+          type: physicalPCN2.TypePCN,
           contraventionPhotos: contraventionImageList,
         );
 
@@ -441,50 +496,65 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                     arguments: {'isPrinter': isPrinter});
       } else {
         Contravention contraventionDataFake = Contravention(
-          reference: physicalPCN.ContraventionReference,
+          reference: physicalPCN2.ContraventionReference,
           created: DateTime.now(),
-          id: physicalPCN.Id,
-          plate: physicalPCN.Plate,
-          colour: physicalPCN.VehicleColour,
-          make: physicalPCN.VehicleMake,
-          eventDateTime: physicalPCN.EventDateTime,
+          id: physicalPCN2.Id,
+          plate: physicalPCN2.Plate,
+          colour: physicalPCN2.VehicleColour,
+          make: physicalPCN2.VehicleMake,
+          eventDateTime: physicalPCN2.EventDateTime,
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
-            code: physicalPCN.ContraventionReasonCode,
+            code: physicalPCN2.ContraventionReasonCode,
             contraventionReasonTranslations: fromJsonContraventionList
                 .where((e) =>
                     e.contraventionReason!.code ==
-                    physicalPCN.ContraventionReasonCode)
+                    physicalPCN2.ContraventionReasonCode)
                 .toList(),
           ),
           contraventionEvents: [
             ContraventionEvents(
-              contraventionId: physicalPCN.Id,
-              detail: physicalPCN.WardenComments,
+              contraventionId: physicalPCN2.Id,
+              detail: physicalPCN2.WardenComments,
             )
           ],
           contraventionDetailsWarden: ContraventionDetailsWarden(
-            FirstObserved: physicalPCN.FirstObservedDateTime,
-            ContraventionId: physicalPCN.Id,
-            WardenId: physicalPCN.WardenId,
-            IssuedAt: physicalPCN.EventDateTime,
+            FirstObserved: physicalPCN2.FirstObservedDateTime,
+            ContraventionId: physicalPCN2.Id,
+            WardenId: physicalPCN2.WardenId,
+            IssuedAt: physicalPCN2.EventDateTime,
           ),
           status: ContraventionStatus.Open.index,
-          type: physicalPCN.TypePCN,
+          type: physicalPCN2.TypePCN,
           contraventionPhotos: contraventionImageList,
         );
-
+        bool check = await checkDuplicateContravention(
+            physicalPCN2.ContraventionReference);
         if (!mounted) return;
-        contraventionProvider.upDateContravention(contraventionDataFake);
-        Navigator.of(context).pop();
-        step2 == true
-            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName,
-                arguments: {'isPrinter': isPrinter})
-            : step3 == true
-                ? Navigator.of(context).pushReplacementNamed(PrintPCN.routeName)
-                : Navigator.of(context).pushReplacementNamed(
-                    PrintIssue.routeName,
-                    arguments: {'isPrinter': isPrinter});
+        if (!check) {
+          contraventionProvider.upDateContravention(contraventionDataFake);
+          Navigator.of(context).pop();
+          step2 == true
+              ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName,
+                  arguments: {'isPrinter': isPrinter})
+              : step3 == true
+                  ? Navigator.of(context)
+                      .pushReplacementNamed(PrintPCN.routeName)
+                  : Navigator.of(context).pushReplacementNamed(
+                      PrintIssue.routeName,
+                      arguments: {'isPrinter': isPrinter});
+        } else {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 3),
+            title: Text(
+              "Please wait 1 minute.",
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        }
       }
 
       _formKey.currentState!.save();
@@ -513,9 +583,28 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     );
 
     Future<void> createVirtualTicket({bool? step2, bool? step3}) async {
-      virtualTicket.Plate = _vrnController.text;
-      virtualTicket.WardenComments = _commentController.text;
-
+      // virtualTicket.Plate = _vrnController.text;
+      // virtualTicket.WardenComments = _commentController.text;
+      final virtualTicket2 = ContraventionCreateWardenCommand(
+        ZoneId: locationProvider.zone?.Id ?? 0,
+        ContraventionReference:
+            contraventionReferenceHelper.getContraventionReference(
+                prefixNumber: 3, wardenID: wardensProvider.wardens?.Id ?? 0),
+        Plate: _vrnController.text,
+        VehicleMake: _vehicleMakeController.text,
+        VehicleColour: _vehicleColorController.text,
+        ContraventionReasonCode: _contraventionReasonController.text,
+        EventDateTime: DateTime.now(),
+        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+        WardenId: wardensProvider.wardens?.Id ?? 0,
+        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        WardenComments: _commentController.text,
+        BadgeNumber: 'test',
+        LocationAccuracy: 0, // missing
+        TypePCN: TypePCN.Virtual.index,
+        Id: randomNumber2,
+      );
       ConnectivityResult connectionStatus =
           await (Connectivity().checkConnectivity());
       final isValid = _formKey.currentState!.validate();
@@ -540,36 +629,36 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         Contravention contravention = Contravention(
-          reference: virtualTicket.ContraventionReference,
+          reference: virtualTicket2.ContraventionReference,
           created: DateTime.now(),
-          id: virtualTicket.Id,
-          plate: virtualTicket.Plate,
-          colour: virtualTicket.VehicleColour,
-          make: virtualTicket.VehicleMake,
-          eventDateTime: virtualTicket.EventDateTime,
+          id: virtualTicket2.Id,
+          plate: virtualTicket2.Plate,
+          colour: virtualTicket2.VehicleColour,
+          make: virtualTicket2.VehicleMake,
+          eventDateTime: virtualTicket2.EventDateTime,
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
-            code: virtualTicket.ContraventionReasonCode,
+            code: virtualTicket2.ContraventionReasonCode,
             contraventionReasonTranslations: contraventionReasonList
                 .where((e) =>
                     e.contraventionReason!.code ==
-                    virtualTicket.ContraventionReasonCode)
+                    virtualTicket2.ContraventionReasonCode)
                 .toList(),
           ),
           contraventionEvents: [
             ContraventionEvents(
-              contraventionId: virtualTicket.Id,
-              detail: virtualTicket.WardenComments,
+              contraventionId: virtualTicket2.Id,
+              detail: virtualTicket2.WardenComments,
             )
           ],
           contraventionDetailsWarden: ContraventionDetailsWarden(
-            FirstObserved: virtualTicket.FirstObservedDateTime,
-            ContraventionId: virtualTicket.Id,
-            WardenId: virtualTicket.WardenId,
-            IssuedAt: virtualTicket.EventDateTime,
+            FirstObserved: virtualTicket2.FirstObservedDateTime,
+            ContraventionId: virtualTicket2.Id,
+            WardenId: virtualTicket2.WardenId,
+            IssuedAt: virtualTicket2.EventDateTime,
           ),
           status: ContraventionStatus.Open.index,
-          type: virtualTicket.TypePCN,
+          type: virtualTicket2.TypePCN,
           contraventionPhotos: contraventionImageList,
         );
         if (!mounted) return;
@@ -583,48 +672,64 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                     .pushReplacementNamed(PrintIssue.routeName);
       } else {
         Contravention contraventionDataFake = Contravention(
-          reference: virtualTicket.ContraventionReference,
+          reference: virtualTicket2.ContraventionReference,
           created: DateTime.now(),
-          id: virtualTicket.Id,
-          plate: virtualTicket.Plate,
-          colour: virtualTicket.VehicleColour,
-          make: virtualTicket.VehicleMake,
-          eventDateTime: virtualTicket.EventDateTime,
+          id: virtualTicket2.Id,
+          plate: virtualTicket2.Plate,
+          colour: virtualTicket2.VehicleColour,
+          make: virtualTicket2.VehicleMake,
+          eventDateTime: virtualTicket2.EventDateTime,
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
-            code: virtualTicket.ContraventionReasonCode,
+            code: virtualTicket2.ContraventionReasonCode,
             contraventionReasonTranslations: fromJsonContraventionList
                 .where((e) =>
                     e.contraventionReason!.code ==
-                    virtualTicket.ContraventionReasonCode)
+                    virtualTicket2.ContraventionReasonCode)
                 .toList(),
           ),
           contraventionEvents: [
             ContraventionEvents(
-              contraventionId: virtualTicket.Id,
-              detail: virtualTicket.WardenComments,
+              contraventionId: virtualTicket2.Id,
+              detail: virtualTicket2.WardenComments,
             )
           ],
           contraventionDetailsWarden: ContraventionDetailsWarden(
-            FirstObserved: virtualTicket.FirstObservedDateTime,
-            ContraventionId: virtualTicket.Id,
-            WardenId: virtualTicket.WardenId,
-            IssuedAt: virtualTicket.EventDateTime,
+            FirstObserved: virtualTicket2.FirstObservedDateTime,
+            ContraventionId: virtualTicket2.Id,
+            WardenId: virtualTicket2.WardenId,
+            IssuedAt: virtualTicket2.EventDateTime,
           ),
           status: ContraventionStatus.Open.index,
-          type: virtualTicket.TypePCN,
+          type: virtualTicket2.TypePCN,
           contraventionPhotos: contraventionImageList,
         );
+        bool check = await checkDuplicateContravention(
+            virtualTicket2.ContraventionReference);
 
         if (!mounted) return;
-        contraventionProvider.upDateContravention(contraventionDataFake);
-        Navigator.of(context).pop();
-        step2 == true
-            ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName)
-            : step3 == true
-                ? Navigator.of(context).pushReplacementNamed(PrintPCN.routeName)
-                : Navigator.of(context)
-                    .pushReplacementNamed(PrintIssue.routeName);
+        if (!check) {
+          contraventionProvider.upDateContravention(contraventionDataFake);
+          Navigator.of(context).pop();
+          step2 == true
+              ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName)
+              : step3 == true
+                  ? Navigator.of(context)
+                      .pushReplacementNamed(PrintPCN.routeName)
+                  : Navigator.of(context)
+                      .pushReplacementNamed(PrintIssue.routeName);
+        } else {
+          Navigator.of(context).pop();
+          CherryToast.error(
+            toastDuration: const Duration(seconds: 3),
+            title: Text(
+              "Please wait 1 minute.",
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        }
       }
 
       _formKey.currentState!.save();

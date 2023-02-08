@@ -75,21 +75,18 @@ class _LocationScreenState extends State<LocationScreen> {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
   }
 
+  bool checkRotaOverTimed(DateTime timeFrom, DateTime timeTo) {
+    DateTime date = DateTime.parse(getLocalDate(DateTime.now()))
+        .subtract(const Duration(minutes: 30));
+    return timeTo.isAfter(date) ||
+        (date.isAfter(timeFrom) && date.isBefore(timeTo));
+  }
+
   List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
-    DateTime date = DateTime.parse(getLocalDate(DateTime.now()));
-    final filterRotaShiftByNow = list.where(
-      (location) {
-        DateTime timeFrom =
-            DateTime.parse(getLocalDate(location.timeFrom as DateTime));
-        DateTime timeTo =
-            DateTime.parse(getLocalDate(location.timeTo as DateTime));
-        return timeFrom.isAfter(date) ||
-            (date.isAfter(timeFrom) && date.isBefore(timeTo));
-      },
-    ).toList();
+    final filterRotaShiftByNow = list.toList();
     filterRotaShiftByNow.sort(
-      (i1, i2) => DateTime.parse(getLocalDate(i1.timeFrom as DateTime))
-          .compareTo(DateTime.parse(getLocalDate(i2.timeFrom as DateTime))),
+      (i1, i2) => DateTime.parse(getLocalDate(i2.timeFrom as DateTime))
+          .compareTo(DateTime.parse(getLocalDate(i1.timeFrom as DateTime))),
     );
     setState(() {
       listFilter = filterRotaShiftByNow;
@@ -176,7 +173,6 @@ class _LocationScreenState extends State<LocationScreen> {
       currentLocationPosition.currentLocation?.latitude ?? 0,
       currentLocationPosition.currentLocation?.longitude ?? 0,
     );
-
     final destination = LatLng(
       locations.location?.Latitude ?? 0,
       locations.location?.Longitude ?? 0,
@@ -437,9 +433,14 @@ class _LocationScreenState extends State<LocationScreen> {
                                           constraints: const BoxConstraints(
                                             maxHeight: 200,
                                           ),
+                                          disabledItemFn: (item) =>
+                                              !checkRotaOverTimed(
+                                                  item.timeFrom!, item.timeTo!),
                                           itemBuilder:
                                               (context, item, isSelected) {
-                                            return DropDownItem(
+                                            return DropDownItem3(
+                                              disable: checkRotaOverTimed(
+                                                  item.timeFrom!, item.timeTo!),
                                               title:
                                                   '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                               isSelected: item.Id ==
@@ -717,10 +718,12 @@ class DropDownItem extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
+  final bool disable;
   const DropDownItem({
     required this.title,
     this.subTitle,
     this.isSelected = false,
+    this.disable = false,
     super.key,
   });
 
@@ -748,6 +751,61 @@ class DropDownItem extends StatelessWidget {
               style: CustomTextStyle.body1.copyWith(
                 color: isSelected == false
                     ? ColorTheme.textPrimary
+                    : ColorTheme.primary,
+                fontSize: 16,
+              ),
+            ),
+            if (subTitle != null)
+              Text(
+                subTitle ?? '',
+                style: CustomTextStyle.body2,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DropDownItem3 extends StatelessWidget {
+  final String title;
+  final String? subTitle;
+  final bool? isSelected;
+  final bool disable;
+  const DropDownItem3({
+    required this.title,
+    this.subTitle,
+    this.isSelected = false,
+    this.disable = false,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 1,
+            color: ColorTheme.grey300,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: subTitle != null ? 10 : 15,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: CustomTextStyle.body1.copyWith(
+                color: isSelected == false
+                    ? !disable
+                        ? ColorTheme.grey400
+                        : ColorTheme.textPrimary
                     : ColorTheme.primary,
                 fontSize: 16,
               ),
