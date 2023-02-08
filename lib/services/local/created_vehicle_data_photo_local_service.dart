@@ -1,7 +1,7 @@
 import 'package:iWarden/services/local/local_service.dart';
 import '../../models/vehicle_information.dart';
 
-class VehicleDataLocalService extends ILocalService<VehicleInformation> {
+class CreatedVehicleDataLocalService extends ILocalService<VehicleInformation> {
   create(VehicleInformation vehicleInformation) {}
   syncAll() {}
   sync(VehicleInformation vehicleInformation) {}
