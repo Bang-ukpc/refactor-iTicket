@@ -25,23 +25,19 @@ class Service extends BaseModel {
   factory Service.fromJson(Map<String, dynamic> json) =>
       _$ServiceFromJson(json);
 
-  static Map<String, dynamic> toJson(Service service) => {
-        'Id': service.Id,
-        'Created':
-            service.Created != null ? service.Created!.toIso8601String() : null,
-        'Deleted':
-            service.Deleted != null ? service.Deleted!.toIso8601String() : null,
-        'ZoneId': service.ZoneId,
-        'ServiceType': service.ServiceType,
-        'Status': service.Status,
-        'InstallDate': service.InstallDate != null
-            ? service.InstallDate!.toIso8601String()
-            : null,
-        'TerminationDate': service.TerminationDate != null
-            ? service.TerminationDate!.toIso8601String()
-            : null,
-        'Notes': service.Notes,
-        'ServiceConfig': ServiceConfigModel.toJson(service.ServiceConfig),
+  Map<String, dynamic> toJson() => {
+        'Id': Id,
+        'Created': Created != null ? Created!.toIso8601String() : null,
+        'Deleted': Deleted != null ? Deleted!.toIso8601String() : null,
+        'ZoneId': ZoneId,
+        'ServiceType': ServiceType,
+        'Status': Status,
+        'InstallDate':
+            InstallDate != null ? InstallDate!.toIso8601String() : null,
+        'TerminationDate':
+            TerminationDate != null ? TerminationDate!.toIso8601String() : null,
+        'Notes': Notes,
+        'ServiceConfig': ServiceConfig.toJson(),
       };
 }
 
@@ -78,12 +74,11 @@ class ServiceConfigModel {
   factory ServiceConfigModel.fromJson(Map<String, dynamic> json) =>
       _$ServiceConfigModelFromJson(json);
 
-  static Map<String, dynamic> toJson(ServiceConfigModel serviceConfigModel) => {
-        'WardenNotes': serviceConfigModel.WardenNotes,
-        'IssuePCNType':
-            IssuePCNTypeModel.toJson(serviceConfigModel.IssuePCNType),
-        'FirstSeenPeriod': serviceConfigModel.FirstSeenPeriod,
-        'GracePeriod': serviceConfigModel.GracePeriod,
+  Map<String, dynamic> toJson() => {
+        'WardenNotes': WardenNotes,
+        'IssuePCNType': IssuePCNType.toJson(),
+        'FirstSeenPeriod': FirstSeenPeriod,
+        'GracePeriod': GracePeriod,
       };
 }
 
@@ -107,9 +102,9 @@ class IssuePCNTypeModel {
   factory IssuePCNTypeModel.fromJson(Map<String, dynamic> json) =>
       _$IssuePCNTypeModelFromJson(json);
 
-  static Map<String, dynamic> toJson(IssuePCNTypeModel issuePCNTypeModel) => {
-        'Physical': issuePCNTypeModel.Physical,
-        'Virtual': issuePCNTypeModel.Virtual,
+  Map<String, dynamic> toJson() => {
+        'Physical': Physical,
+        'Virtual': Virtual,
       };
 }
 

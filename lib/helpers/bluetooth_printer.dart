@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter_pos_printer_platform/flutter_pos_printer_platform.dart';
 import 'package:iWarden/models/contravention.dart';
@@ -34,9 +35,13 @@ class BluetoothPrinterHelper {
           typePrinter: PrinterType.bluetooth,
         ));
         if (devices.isNotEmpty) {
-          BluetoothPrinter deviceSelected = devices.firstWhere((device) =>
-              device.deviceName!.toUpperCase().contains('ezpcn'.toUpperCase()));
-          selectDevice(deviceSelected);
+          BluetoothPrinter? deviceSelected = devices.firstWhereOrNull(
+              (device) => device.deviceName!
+                  .toUpperCase()
+                  .contains('ezpcn'.toUpperCase()));
+          if (deviceSelected != null) {
+            selectDevice(deviceSelected);
+          }
         }
       },
     );

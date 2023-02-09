@@ -1,16 +1,12 @@
-# iwarden
+[20.0.0-1] - 2023-02-08
 
-A new Flutter project.
+- WRDN-440 [Preview Image] [Issue PCN virtual] The image title is always "Screen with ticket on".
+- WRDN-442 [Issue PCN] Disable icon button Search when VRN input is plank
+- WRDN-444 [Offline] Don't send GPS events after sync data
+- WRDN-206 Do not stop running in the background at the end of the 2nd shift
+- WRDN-459 Wrong time when syncing warden event track GPS to server
 
-## Getting Started
+[21.0.0-1] - 2023-02-08
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- WRDN-489 [Offline] Wrong type of PCN when sync data
+- WRDN-490 Update the GPS track correctly according to the current time zone of the device

@@ -16,7 +16,7 @@ class ContraventionController {
     try {
       final response = await dio.post(
         '/contravention/create-pcn',
-        data: json.encode(pcn),
+        data: pcn.toJson(),
       );
       print(response.data.toString());
       Contravention contraventionResult = Contravention.fromJson(response.data);
@@ -80,7 +80,7 @@ class ContraventionController {
         );
         Pagination contraventionPagination = Pagination.fromJson(response.data);
         final String encodedData =
-            json.encode(Pagination.toJson(contraventionPagination));
+            json.encode(contraventionPagination.toJson());
         SharedPreferencesHelper.setStringValue(
             'contraventionDataLocal', encodedData);
         return contraventionPagination;
@@ -126,7 +126,7 @@ class ContraventionController {
         Pagination contraventionReasonPagination =
             Pagination.fromJson(response.data);
         final String encodedData =
-            json.encode(Pagination.toJson(contraventionReasonPagination));
+            json.encode(contraventionReasonPagination.toJson());
         if (zoneId != null) {
           SharedPreferencesHelper.setStringValue(
               'contraventionReasonDataLocalWithHaveZoneId', encodedData);
@@ -193,8 +193,6 @@ class ContraventionController {
 
   Future<CheckPermit?> checkHasPermit(
       ContraventionCreateWardenCommand pcn) async {
-    print('data: ${pcn.Plate}');
-    print('data: ${pcn.WardenComments}');
     try {
       final response = await dio.post(
         '/contravention/check-has-permit',

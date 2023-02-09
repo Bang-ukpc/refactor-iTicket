@@ -4,18 +4,18 @@ on:
       - release/*
 
 env:
-  CMD_MAKE_BUILD_ENV: make build-dev
+  CMD_MAKE_BUILD_ENV: make build-product
   CMD_EXPORT_BRANCH_NAME: export BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/release/})
   FLUTTER_APP_SOURCE: "build/app/outputs/apk/release/app-release.apk"
   FLUTTER_VERSION: "3.7.1"
-  BLOB_STORAGE_CONTAINER_NAME: "${{ secrets.DEV_BLOB_STORAGE_CONTAINER_NAME }}"
-  BLOB_STORAGE_FOLDER_URL: "${{ secrets.DEV_BLOB_STORAGE_FOLDER_URL }}"
-  BLOB_STORAGE_ACCOUNT_NAME: "${{ secrets.DEV_BLOB_STORAGE_ACCOUNT_NAME }}"
-  BLOB_STORAGE_ACCOUNT_KEY: "${{ secrets.DEV_BLOB_STORAGE_ACCOUNT_KEY }}"
+  BLOB_STORAGE_CONTAINER_NAME: "${{ secrets.PROD_BLOB_STORAGE_CONTAINER_NAME }}"
+  BLOB_STORAGE_FOLDER_URL: "${{ secrets.PROD_BLOB_STORAGE_FOLDER_URL }}"
+  BLOB_STORAGE_ACCOUNT_NAME: "${{ secrets.PROD_BLOB_STORAGE_ACCOUNT_NAME }}"
+  BLOB_STORAGE_ACCOUNT_KEY: "${{ secrets.PROD_BLOB_STORAGE_ACCOUNT_KEY }}"
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy development
+    name: Build and Deploy production
     runs-on: ubuntu-latest
 
     steps:
@@ -41,5 +41,5 @@ jobs:
           azcliversion: latest
           inlineScript: |
             ${{ env.CMD_EXPORT_BRANCH_NAME }}
-            export FLUTTER_APP_NAME="$BLOB_STORAGE_FOLDER_URL/iticket_dev_$BRANCH_NAME.apk"
+            export FLUTTER_APP_NAME="$BLOB_STORAGE_FOLDER_URL/iticket_$BRANCH_NAME.apk"
             az storage blob upload -f ${{ env.FLUTTER_APP_SOURCE }} -c ${{ env.BLOB_STORAGE_CONTAINER_NAME }} -n "$FLUTTER_APP_NAME" --account-name ${{ env.BLOB_STORAGE_ACCOUNT_NAME }} --account-key ${{ env.BLOB_STORAGE_ACCOUNT_KEY }} --overwrite

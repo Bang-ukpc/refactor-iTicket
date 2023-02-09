@@ -98,45 +98,36 @@ class Contravention extends BaseModel {
         : null;
   }
 
-  static Map<String, dynamic> toJson(Contravention contravention) => {
-        'Created': contravention.created != null
-            ? contravention.created!.toIso8601String()
-            : null,
-        'Deleted': contravention.deleted != null
-            ? contravention.deleted!.toIso8601String()
-            : null,
-        'EventDateTime': contravention.eventDateTime != null
-            ? contravention.eventDateTime!.toIso8601String()
-            : null,
-        'Id': contravention.id,
-        'LocationId': contravention.locationId,
-        'ActiveAccountId': contravention.activeAccountId,
-        'AnalysisKey': contravention.analysisKey,
-        'CancellationReasonId': contravention.cancellationReasonId,
-        'Colour': contravention.colour,
-        'IsForeignPlate': contravention.isForeignPlate,
-        'LocationRateId': contravention.locationRateId,
-        'LowerAmount': contravention.lowerAmount,
-        'UpperAmount': contravention.upperAmount,
-        'Make': contravention.make,
-        'Model': contravention.model,
-        'Plate': contravention.plate,
-        'ReasonId': contravention.reasonId,
-        'Reference': contravention.reference,
-        'Status': contravention.status,
-        'Type': contravention.type,
-        'ZoneId': contravention.zoneId,
-        'Reason': contravention.reason != null
-            ? contravention.reason!.toJson()
-            : null,
-        'ContraventionEvents': contravention.contraventionEvents != null
-            ? contravention.contraventionEvents!.map((v) => v.toJson()).toList()
+  Map<String, dynamic> toJson() => {
+        'Created': created != null ? created!.toIso8601String() : null,
+        'Deleted': deleted != null ? deleted!.toIso8601String() : null,
+        'EventDateTime':
+            eventDateTime != null ? eventDateTime!.toIso8601String() : null,
+        'Id': id,
+        'LocationId': locationId,
+        'ActiveAccountId': activeAccountId,
+        'AnalysisKey': analysisKey,
+        'CancellationReasonId': cancellationReasonId,
+        'Colour': colour,
+        'IsForeignPlate': isForeignPlate,
+        'LocationRateId': locationRateId,
+        'LowerAmount': lowerAmount,
+        'UpperAmount': upperAmount,
+        'Make': make,
+        'Model': model,
+        'Plate': plate,
+        'ReasonId': reasonId,
+        'Reference': reference,
+        'Status': status,
+        'Type': type,
+        'ZoneId': zoneId,
+        'Reason': reason != null ? reason!.toJson() : null,
+        'ContraventionEvents': contraventionEvents != null
+            ? contraventionEvents!.map((v) => v.toJson()).toList()
             : [],
-        'ContraventionPhotos': contravention.contraventionPhotos != null
-            ? contravention.contraventionPhotos!.isNotEmpty
-                ? contravention.contraventionPhotos!
-                    .map((v) => v.toJson())
-                    .toList()
+        'ContraventionPhotos': contraventionPhotos != null
+            ? contraventionPhotos!.isNotEmpty
+                ? contraventionPhotos!.map((v) => v.toJson()).toList()
                 : []
             : [],
       };

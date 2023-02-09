@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -26,7 +28,7 @@ import 'package:iWarden/screens/grace-period/add_grace_period.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
+import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
@@ -56,6 +58,7 @@ class HomeOverview extends StatefulWidget {
 }
 
 class _HomeOverviewState extends State<HomeOverview> {
+  List<ContraventionReasonTranslations> contraventionReasonList = [];
   List<VehicleInformation> firstSeenActive = [];
   List<VehicleInformation> firstSeenExpired = [];
   List<VehicleInformation> gracePeriodActive = [];
@@ -65,6 +68,30 @@ class _HomeOverviewState extends State<HomeOverview> {
   bool firstSeenLoading = true;
   bool gracePeriodLoading = true;
   bool contraventionLoading = true;
+
+  Future<void> getContraventionReasonList({int? zoneId}) async {
+    ConnectivityResult connectionStatus =
+        await (Connectivity().checkConnectivity());
+
+    if (connectionStatus == ConnectivityResult.wifi ||
+        connectionStatus == ConnectivityResult.mobile) {
+      final Pagination list = await contraventionController
+          .getContraventionReasonServiceList(zoneId: zoneId);
+      setState(() {
+        contraventionReasonList = list.rows
+            .map((item) => ContraventionReasonTranslations.fromJson(item))
+            .toList();
+      });
+    } else {
+      final Pagination list =
+          await contraventionController.getContraventionReasonServiceList();
+      setState(() {
+        contraventionReasonList = list.rows
+            .map((item) => ContraventionReasonTranslations.fromJson(item))
+            .toList();
+      });
+    }
+  }
 
   void getFirstSeenList(
       {required int page, required int pageSize, required int zoneId}) async {
@@ -211,11 +238,21 @@ class _HomeOverviewState extends State<HomeOverview> {
     });
   }
 
+  bool checkHasOverstaying() {
+    var overStaying = contraventionReasonList
+        .firstWhereOrNull((e) => e.contraventionReason?.code == '36');
+    if (overStaying != null) {
+      return true;
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
+      getContraventionReasonList(zoneId: locations.zone?.Id);
       getFirstSeenList(
         page: 1,
         pageSize: 1000,
@@ -479,7 +516,7 @@ class _HomeOverviewState extends State<HomeOverview> {
       //   user: wardensProvider.wardens!.Email,
       // );
       try {
-        showCircularProgressIndicator(context: context, text: 'Processing');
+        showCircularProgressIndicator(context: context);
         await userController
             .createWardenEvent(wardenEventStartBreak)
             .then((value) {
@@ -524,6 +561,7 @@ class _HomeOverviewState extends State<HomeOverview> {
         gracePeriodLoading = true;
         contraventionLoading = true;
       });
+      getContraventionReasonList(zoneId: locations.zone?.Id);
       getFirstSeenList(
         page: 1,
         pageSize: 1000,
@@ -584,26 +622,30 @@ class _HomeOverviewState extends State<HomeOverview> {
                 const SizedBox(
                   height: 10,
                 ),
-                firstSeenLoading == false
-                    ? CardHome(
-                        width: width,
-                        assetIcon: "assets/svg/IconFirstSeen.svg",
-                        backgroundIcon: ColorTheme.lighterPrimary,
-                        title: "First seen",
-                        infoRight: "Active: ${firstSeenActive.length}",
-                        infoLeft: "Expired: ${firstSeenExpired.length}",
-                        route: AddFirstSeenScreen.routeName,
-                        routeView: ActiveFirstSeenScreen.routeName,
+                checkHasOverstaying() == true
+                    ? firstSeenLoading == false
+                        ? CardHome(
+                            width: width,
+                            assetIcon: "assets/svg/IconFirstSeen.svg",
+                            backgroundIcon: ColorTheme.lighterPrimary,
+                            title: "First seen",
+                            infoRight: "Active: ${firstSeenActive.length}",
+                            infoLeft: "Expired: ${firstSeenExpired.length}",
+                            route: AddFirstSeenScreen.routeName,
+                            routeView: ActiveFirstSeenScreen.routeName,
+                          )
+                        : SkeletonAvatar(
+                            style: SkeletonAvatarStyle(
+                              width: width,
+                              height: 100,
+                            ),
+                          )
+                    : const SizedBox(),
+                checkHasOverstaying() == true
+                    ? const SizedBox(
+                        height: 10,
                       )
-                    : SkeletonAvatar(
-                        style: SkeletonAvatarStyle(
-                          width: width,
-                          height: 100,
-                        ),
-                      ),
-                const SizedBox(
-                  height: 10,
-                ),
+                    : const SizedBox(),
                 gracePeriodLoading == false
                     ? CardHome(
                         width: width,

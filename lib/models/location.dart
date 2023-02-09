@@ -101,43 +101,34 @@ class LocationWithZones extends Location {
   factory LocationWithZones.fromJson(Map<String, dynamic> json) =>
       _$LocationWithZonesFromJson(json);
 
-  static Map<String, dynamic> toJson(LocationWithZones locationWithZones) => {
-        'Address': locationWithZones.Address,
-        'Latitude': locationWithZones.Latitude,
-        'Longitude': locationWithZones.Longitude,
-        'Created': locationWithZones.Created != null
-            ? locationWithZones.Created!.toIso8601String()
-            : null,
-        'Deleted': locationWithZones.Deleted != null
-            ? locationWithZones.Deleted!.toIso8601String()
-            : null,
-        'Id': locationWithZones.Id,
-        'CountryRegionId': locationWithZones.CountryRegionId,
-        'CountrySubRegionId': locationWithZones.CountrySubRegionId,
-        'Name': locationWithZones.Name,
-        'Address1': locationWithZones.Address1,
-        'Address2': locationWithZones.Address2,
-        'Address3': locationWithZones.Address3,
-        'Town': locationWithZones.Town,
-        'County': locationWithZones.County,
-        'Postcode': locationWithZones.Postcode,
-        'LocationType': locationWithZones.LocationType,
-        'Notes': locationWithZones.Notes,
-        'Zones': locationWithZones.Zones != null
-            ? locationWithZones.Zones!.map((v) => Zone.toJson(v)).toList()
-            : [],
-        'Distance': locationWithZones.Distance,
-        'OperationalPeriodHistories':
-            locationWithZones.operationalPeriodHistories != null
-                ? locationWithZones.operationalPeriodHistories!
-                    .map((e) => OperationalPeriodHistories.toJson(e))
-                    .toList()
-                : []
+  Map<String, dynamic> toJson() => {
+        'Address': Address,
+        'Latitude': Latitude,
+        'Longitude': Longitude,
+        'Created': Created != null ? Created!.toIso8601String() : null,
+        'Deleted': Deleted != null ? Deleted!.toIso8601String() : null,
+        'Id': Id,
+        'CountryRegionId': CountryRegionId,
+        'CountrySubRegionId': CountrySubRegionId,
+        'Name': Name,
+        'Address1': Address1,
+        'Address2': Address2,
+        'Address3': Address3,
+        'Town': Town,
+        'County': County,
+        'Postcode': Postcode,
+        'LocationType': LocationType,
+        'Notes': Notes,
+        'Zones': Zones != null ? Zones!.map((v) => v.toJson()).toList() : [],
+        'Distance': Distance,
+        'OperationalPeriodHistories': operationalPeriodHistories != null
+            ? operationalPeriodHistories!.map((e) => e.toJson()).toList()
+            : []
       };
 
   static String encode(List<LocationWithZones> locationWithZones) =>
       json.encode(
-        locationWithZones.map((i) => LocationWithZones.toJson(i)).toList(),
+        locationWithZones.map((i) => i.toJson()).toList(),
       );
 
   static List<LocationWithZones> decode(String locations) =>
@@ -261,25 +252,19 @@ class RotaWithLocation extends Rota {
   factory RotaWithLocation.fromJson(Map<String, dynamic> json) =>
       _$RotaWithLocationFromJson(json);
 
-  static Map<String, dynamic> toJson(RotaWithLocation rotaWithLocation) => {
-        'WardenId': rotaWithLocation.wardenId,
-        'Created': rotaWithLocation.Created != null
-            ? rotaWithLocation.Created!.toIso8601String()
-            : null,
-        'Deleted': rotaWithLocation.Deleted != null
-            ? rotaWithLocation.Deleted!.toIso8601String()
-            : null,
-        'Id': rotaWithLocation.Id,
-        'TimeFrom': rotaWithLocation.timeFrom!.toIso8601String(),
-        'TimeTo': rotaWithLocation.timeTo!.toIso8601String(),
-        'RotaType': rotaWithLocation.rotaType,
-        'Locations': rotaWithLocation.locations!
-            .map((i) => LocationWithZones.toJson(i))
-            .toList(),
+  Map<String, dynamic> toJson() => {
+        'WardenId': wardenId,
+        'Created': Created != null ? Created!.toIso8601String() : null,
+        'Deleted': Deleted != null ? Deleted!.toIso8601String() : null,
+        'Id': Id,
+        'TimeFrom': timeFrom!.toIso8601String(),
+        'TimeTo': timeTo!.toIso8601String(),
+        'RotaType': rotaType,
+        'Locations': locations!.map((i) => i.toJson()).toList(),
       };
 
   static String encode(List<RotaWithLocation> rotaWithLocation) => json.encode(
-        rotaWithLocation.map((i) => RotaWithLocation.toJson(i)).toList(),
+        rotaWithLocation.map((i) => i.toJson()).toList(),
       );
 
   static List<RotaWithLocation> decode(String rotaWithLocation) =>

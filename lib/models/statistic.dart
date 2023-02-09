@@ -27,13 +27,11 @@ class StatisticWardenPropsData {
   factory StatisticWardenPropsData.fromJson(Map<String, dynamic> json) =>
       statisticFromJson(json);
 
-  static Map<String, dynamic> toJson(
-          StatisticWardenPropsData statisticWardenPropsData) =>
-      {
-        'AbortedPCN': statisticWardenPropsData.abortedPCN,
-        'FirstSeen': statisticWardenPropsData.firstSeen,
-        'GracePeriod': statisticWardenPropsData.gracePeriod,
-        'IssuedPCN': statisticWardenPropsData.issuedPCN,
+  Map<String, dynamic> toJson() => {
+        'AbortedPCN': abortedPCN,
+        'FirstSeen': firstSeen,
+        'GracePeriod': gracePeriod,
+        'IssuedPCN': issuedPCN,
       };
 }
 

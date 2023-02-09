@@ -33,23 +33,21 @@ class Wardens extends BaseModel {
   factory Wardens.fromJson(Map<String, dynamic> json) =>
       _$WardensFromJson(json);
 
-  static Map<String, dynamic> toJson(Wardens wardens) => {
-        'Id': wardens.Id,
-        'Created':
-            wardens.Created != null ? wardens.Created!.toIso8601String() : null,
-        'Deleted':
-            wardens.Deleted != null ? wardens.Deleted!.toIso8601String() : null,
-        'ExternalId': wardens.ExternalId,
-        'CountrySubRegionId': wardens.CountrySubRegionId,
-        'FistName': wardens.FistName,
-        'LastName': wardens.LastName,
-        'FullName': wardens.FullName,
-        'Email': wardens.Email,
-        'PhoneNumber': wardens.PhoneNumber,
-        'Postcode': wardens.Postcode,
-        'Picture': wardens.Picture,
-        'Latitude': wardens.Latitude,
-        'Longitude': wardens.Longitude,
+  Map<String, dynamic> toJson() => {
+        'Id': Id,
+        'Created': Created != null ? Created!.toIso8601String() : null,
+        'Deleted': Deleted != null ? Deleted!.toIso8601String() : null,
+        'ExternalId': ExternalId,
+        'CountrySubRegionId': CountrySubRegionId,
+        'FistName': FistName,
+        'LastName': LastName,
+        'FullName': FullName,
+        'Email': Email,
+        'PhoneNumber': PhoneNumber,
+        'Postcode': Postcode,
+        'Picture': Picture,
+        'Latitude': Latitude,
+        'Longitude': Longitude,
       };
 }
 
