@@ -9,6 +9,7 @@ env:
   FLUTTER_APP_SOURCE: "build/app/outputs/apk/release/app-release.apk"
   FLUTTER_VERSION: "3.7.1"
   BLOB_STORAGE_CONTAINER_NAME: "${{ secrets.DEV_BLOB_STORAGE_CONTAINER_NAME }}"
+  BLOB_STORAGE_FOLDER_URL: "${{ secrets.DEV_BLOB_STORAGE_FOLDER_URL }}"
   BLOB_STORAGE_ACCOUNT_NAME: "${{ secrets.DEV_BLOB_STORAGE_ACCOUNT_NAME }}"
   BLOB_STORAGE_ACCOUNT_KEY: "${{ secrets.DEV_BLOB_STORAGE_ACCOUNT_KEY }}"
 
@@ -40,4 +41,5 @@ jobs:
           azcliversion: latest
           inlineScript: |
             ${{ env.CMD_EXPORT_BRANCH_NAME }}
-            az storage blob upload -f ${{ env.FLUTTER_APP_SOURCE }} -c ${{ env.BLOB_STORAGE_CONTAINER_NAME }} -n "iTicket_v$BRANCH_NAME.apk" --account-name ${{ env.BLOB_STORAGE_ACCOUNT_NAME }} --account-key ${{ env.BLOB_STORAGE_ACCOUNT_KEY }}
+            export FLUTTER_APP_NAME="$BLOB_STORAGE_FOLDER_URL/iTicket_v$BRANCH_NAME.apk"
+            az storage blob upload -f ${{ env.FLUTTER_APP_SOURCE }} -c ${{ env.BLOB_STORAGE_CONTAINER_NAME }} -n "$FLUTTER_APP_NAME" --account-name ${{ env.BLOB_STORAGE_ACCOUNT_NAME }} --account-key ${{ env.BLOB_STORAGE_ACCOUNT_KEY }}
