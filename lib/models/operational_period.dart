@@ -19,20 +19,14 @@ class OperationalPeriodHistories extends BaseModel {
   factory OperationalPeriodHistories.fromJson(Map<String, dynamic> json) =>
       _$OperationalPeriodFromJson(json);
 
-  static Map<String, dynamic> toJson(
-          OperationalPeriodHistories operationalPeriod) =>
-      {
-        'Created': operationalPeriod.Created != null
-            ? operationalPeriod.Created!.toIso8601String()
-            : null,
-        'Deleted': operationalPeriod.Deleted != null
-            ? operationalPeriod.Deleted!.toIso8601String()
-            : null,
-        'Id': operationalPeriod.Id,
-        'RequireWarden': operationalPeriod.RequireWarden,
-        'TimeFrom': operationalPeriod.TimeFrom.toIso8601String(),
-        'TimeTo': operationalPeriod.TimeTo.toIso8601String(),
-        'LocationId': operationalPeriod.LocationId,
+  Map<String, dynamic> toJson() => {
+        'Created': Created != null ? Created!.toIso8601String() : null,
+        'Deleted': Deleted != null ? Deleted!.toIso8601String() : null,
+        'Id': Id,
+        'RequireWarden': RequireWarden,
+        'TimeFrom': TimeFrom.toIso8601String(),
+        'TimeTo': TimeTo.toIso8601String(),
+        'LocationId': LocationId,
       };
 }
 

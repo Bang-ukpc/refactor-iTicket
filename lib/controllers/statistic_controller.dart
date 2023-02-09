@@ -25,8 +25,7 @@ class StatisticController {
             .post('/vehicleInformation/statistics', data: bodyRequest);
         StatisticWardenPropsData statisticData =
             StatisticWardenPropsData.fromJson(response.data);
-        final String encodedData =
-            json.encode(StatisticWardenPropsData.toJson(statisticData));
+        final String encodedData = json.encode(statisticData.toJson());
         SharedPreferencesHelper.setStringValue(
             'StatisticWardenPropsDataLocal', encodedData);
         return statisticData;

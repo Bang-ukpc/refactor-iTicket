@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
@@ -15,13 +16,17 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
+import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -45,6 +50,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   final _bayNumberController = TextEditingController();
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
+  List<Contravention> contraventionList = [];
 
   Future<void> getLocationList(Locations locations, int wardenId) async {
     ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
@@ -72,6 +78,54 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       }
     }).catchError((err) {
       print(err);
+    });
+  }
+
+  Future<List<Contravention>> getParkingCharges(
+      {required int page, required int pageSize, required int zoneId}) async {
+    final Pagination list = await contraventionController
+        .getContraventionServiceList(
+      zoneId: zoneId,
+      page: page,
+      pageSize: pageSize,
+    )
+        .then((value) {
+      return value;
+    }).catchError((err) {
+      throw Error();
+    });
+    contraventionList =
+        list.rows.map((item) => Contravention.fromJson(item)).toList();
+    return contraventionList;
+  }
+
+  bool checkVrnExistsWithOverStaying({
+    required String vrn,
+    required int zoneId,
+  }) {
+    var findVRNExits = contraventionList.firstWhereOrNull(
+        (e) => e.plate == vrn && e.zoneId == zoneId && e.reason?.code == '36');
+    if (findVRNExits != null) {
+      log('Created At: ${findVRNExits.created}');
+      var date = DateTime.now();
+      var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
+      if (date.isBefore(timeMayIssue)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final locationProvider = Provider.of<Locations>(context, listen: false);
+      getParkingCharges(
+        page: 1,
+        pageSize: 1000,
+        zoneId: locationProvider.zone!.Id as int,
+      );
     });
   }
 
@@ -111,11 +165,15 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         Created: DateTime.now(),
         CreatedBy: wardenProvider.wardens?.Id ?? 0,
       );
+
       final isValid = _formKey.currentState!.validate();
+
       bool check = false;
+
       setState(() {
         evidencePhotoList.clear();
       });
+
       if (arrayImage.isEmpty) {
         if (!mounted) return false;
         CherryToast.error(
@@ -131,9 +189,21 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       }
       if (!isValid) {
         return false;
-      } else {
-        showCircularProgressIndicator(context: context);
       }
+
+      if (!mounted) return false;
+
+      if (checkVrnExistsWithOverStaying(
+            vrn: vehicleInfo.Plate,
+            zoneId: vehicleInfo.ZoneId,
+          ) ==
+          false) {
+        showAlertCheckVrnExits(context: context, checkAddFirstSeen: true);
+        return false;
+      }
+
+      showCircularProgressIndicator(context: context);
+
       if (connectionStatus == ConnectivityResult.wifi ||
           connectionStatus == ConnectivityResult.mobile) {
         try {

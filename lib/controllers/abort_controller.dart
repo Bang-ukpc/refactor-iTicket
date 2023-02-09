@@ -5,8 +5,6 @@ import 'package:dio/dio.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/abort_pcn.dart';
-import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/models/pagination.dart';
 
 class AbortController {
   static final dio = DioHelper.defaultApiClient;
@@ -24,7 +22,7 @@ class AbortController {
         List<CancellationReason> cancellationReasons =
             temp.map((model) => CancellationReason.fromJson(model)).toList();
         final String encodedData = json.encode(
-          cancellationReasons.map((i) => CancellationReason.toJson(i)).toList(),
+          cancellationReasons.map((i) => i.toJson()).toList(),
         );
         SharedPreferencesHelper.setStringValue(
             'cancellationReasonDataLocal', encodedData);

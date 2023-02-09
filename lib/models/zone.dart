@@ -21,19 +21,16 @@ class Zone extends BaseModel {
 
   factory Zone.fromJson(Map<String, dynamic> json) => _$ZoneFromJson(json);
 
-  static Map<String, dynamic> toJson(Zone zone) => {
-        'Created':
-            zone.Created != null ? zone.Created!.toIso8601String() : null,
-        'Deleted':
-            zone.Deleted != null ? zone.Deleted!.toIso8601String() : null,
-        'Id': zone.Id,
-        'LocationId': zone.LocationId,
-        'Name': zone.Name,
-        'PublicName': zone.PublicName,
-        'ExternalReference': zone.ExternalReference,
-        'Services': zone.Services != null
-            ? zone.Services!.map((v) => Service.toJson(v)).toList()
-            : [],
+  Map<String, dynamic> toJson() => {
+        'Created': Created != null ? Created!.toIso8601String() : null,
+        'Deleted': Deleted != null ? Deleted!.toIso8601String() : null,
+        'Id': Id,
+        'LocationId': LocationId,
+        'Name': Name,
+        'PublicName': PublicName,
+        'ExternalReference': ExternalReference,
+        'Services':
+            Services != null ? Services!.map((v) => v.toJson()).toList() : [],
       };
 }
 
