@@ -251,8 +251,8 @@ class _PrintPCNState extends State<PrintPCN> {
         int randomNumber =
             (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
         contraventionCreate.Id = randomNumber;
-        final String encodedPhysicalPCNData = json.encode(
-            ContraventionCreateWardenCommand.toJson(contraventionCreate));
+        final String encodedPhysicalPCNData =
+            json.encode(contraventionCreate.toJson());
         final String? issuePCNData =
             await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
         if (issuePCNData == null) {
@@ -313,7 +313,7 @@ class _PrintPCNState extends State<PrintPCN> {
 
         if (contraventionList == null) {
           List<dynamic> newData = [];
-          newData.add(Contravention.toJson(args));
+          newData.add(args.toJson());
           var dataFormat = Pagination(
             page: 1,
             pageSize: 1000,
@@ -321,17 +321,16 @@ class _PrintPCNState extends State<PrintPCN> {
             totalPages: 1,
             rows: newData,
           );
-          final String encodedNewData =
-              json.encode(Pagination.toJson(dataFormat));
+          final String encodedNewData = json.encode(dataFormat.toJson());
           SharedPreferencesHelper.setStringValue(
               'contraventionDataLocal', encodedNewData);
         } else {
           final createdData =
               json.decode(contraventionList) as Map<String, dynamic>;
           Pagination fromJsonContravention = Pagination.fromJson(createdData);
-          fromJsonContravention.rows.add(Contravention.toJson(args));
+          fromJsonContravention.rows.add(args.toJson());
           final String encodedCreatedData =
-              json.encode(Pagination.toJson(fromJsonContravention));
+              json.encode(fromJsonContravention.toJson());
           SharedPreferencesHelper.setStringValue(
               'contraventionDataLocal', encodedCreatedData);
         }

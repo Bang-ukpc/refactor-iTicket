@@ -41,8 +41,7 @@ class Locations with ChangeNotifier {
   void onSelectedRotaShift(RotaWithLocation? rotaShift) {
     rotaShiftSelected = rotaShift;
     if (rotaShift != null) {
-      final String encodedRotaShiftData =
-          json.encode(RotaWithLocation.toJson(rotaShift));
+      final String encodedRotaShiftData = json.encode(rotaShift.toJson());
       SharedPreferencesHelper.setStringValue(
           'rotaShiftSelectedByWarden', encodedRotaShiftData);
     }
@@ -52,8 +51,7 @@ class Locations with ChangeNotifier {
   void onSelectedLocation(LocationWithZones? location) {
     locationSelected = location;
     if (location != null) {
-      final String encodedLocationData =
-          json.encode(LocationWithZones.toJson(location));
+      final String encodedLocationData = json.encode(location.toJson());
       SharedPreferencesHelper.setStringValue(
           'locationSelectedByWarden', encodedLocationData);
     }
@@ -63,7 +61,7 @@ class Locations with ChangeNotifier {
   void onSelectedZone(Zone? zone) {
     zoneSelected = zone;
     if (zone != null) {
-      final String encodedZoneData = json.encode(Zone.toJson(zone));
+      final String encodedZoneData = json.encode(zone.toJson());
       SharedPreferencesHelper.setStringValue(
           'zoneSelectedByWarden', encodedZoneData);
     }

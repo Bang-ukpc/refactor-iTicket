@@ -16,12 +16,12 @@ class Pagination {
   factory Pagination.fromJson(Map<String, dynamic> json) =>
       _$PaginationFromJson(json);
 
-  static Map<String, dynamic> toJson(Pagination pagination) => {
-        'page': pagination.page,
-        'pageSize': pagination.pageSize,
-        'total': pagination.total,
-        'totalPages': pagination.totalPages,
-        'rows': pagination.rows,
+  Map<String, dynamic> toJson() => {
+        'page': page,
+        'pageSize': pageSize,
+        'total': total,
+        'totalPages': totalPages,
+        'rows': rows,
       };
 }
 
