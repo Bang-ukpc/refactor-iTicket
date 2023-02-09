@@ -215,6 +215,7 @@ class CameraPicker extends HookWidget {
         File files = await File('${tempDir.path}/$fileName').create();
         var capturedImage = img.decodeImage(await file.readAsBytes());
         img.encodeJpg(capturedImage!, quality: 40);
+        log(files.path);
         store.addFile(files);
         filesDataImage.value = filesDataImage.value + 1;
         previewImage == true
