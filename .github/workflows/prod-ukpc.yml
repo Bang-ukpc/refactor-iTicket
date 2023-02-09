@@ -40,5 +40,6 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            export FLUTTER_APP_NAME="$BLOB_STORAGE_FOLDER_URL/iTicket-release.apk"
+            ${{ env.CMD_EXPORT_BRANCH_NAME }}
+            export FLUTTER_APP_NAME="$BLOB_STORAGE_FOLDER_URL/iticket_$BRANCH_NAME.apk"
             az storage blob upload -f ${{ env.FLUTTER_APP_SOURCE }} -c ${{ env.BLOB_STORAGE_CONTAINER_NAME }} -n "$FLUTTER_APP_NAME" --account-name ${{ env.BLOB_STORAGE_ACCOUNT_NAME }} --account-key ${{ env.BLOB_STORAGE_ACCOUNT_KEY }}
