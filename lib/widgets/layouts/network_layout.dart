@@ -305,7 +305,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
 
   void dataSynch() async {
     // bool vehicleInfoSynchStatus = false;
-    // bool issuePCNSynchStatus = false;
+    // bool issuePCNSynchStatus = fjlse;
     // bool wardenEventSyncStatus = false;
     // await vehicleInfoDataSynch().then((value) {
     //   vehicleInfoSynchStatus = value;

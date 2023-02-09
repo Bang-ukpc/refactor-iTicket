@@ -486,13 +486,25 @@ class _HomeOverviewState extends State<HomeOverview> {
                       List<ContraventionCreatePhoto> allPcnPhotos =
                           await issuedPcnPhotoLocalService.getAll();
                       log("hehehe ${allPcns.length}");
-                      log("hehehe ${allPcnPhotos.length}");
-                      //  SharedPreferencesHelper.removeStringValue(
+                      log("hehehe ${allPcnPhotos.map(
+                        (e) {
+                          print(e.contraventionReference);
+                        },
+                      )}");
+                      // SharedPreferencesHelper.removeStringValue(
                       //     'issuePCNDataLocal');
                       // SharedPreferencesHelper.removeStringValue(
                       //     'contraventionPhotoDataLocal');
                     },
                     child: Text("hehehehe")),
+                ElevatedButton(
+                    onPressed: () async {
+                      SharedPreferencesHelper.removeStringValue(
+                          'issuePCNDataLocal');
+                      SharedPreferencesHelper.removeStringValue(
+                          'contraventionPhotoDataLocal');
+                    },
+                    child: Text("delete")),
               ],
             ),
           ),

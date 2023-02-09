@@ -46,27 +46,28 @@ class ContraventionCreateWardenCommand extends Identifiable {
           Map<String, dynamic> json) =>
       _$ContraventionCreateWardenCommandFromJson(json);
 
-  static Map<String, dynamic> toJson(
-          ContraventionCreateWardenCommand instance) =>
-      {
-        'ContraventionReference': instance.ContraventionReference,
-        'Plate': instance.Plate,
-        'VehicleMake': instance.VehicleMake,
-        'VehicleColour': instance.VehicleColour,
-        'ContraventionReasonCode': instance.ContraventionReasonCode,
-        'EventDateTime': instance.EventDateTime.toIso8601String(),
-        'FirstObservedDateTime':
-            instance.FirstObservedDateTime.toIso8601String(),
-        'WardenId': instance.WardenId,
-        'BadgeNumber': instance.BadgeNumber,
-        'Longitude': instance.Longitude,
-        'Latitude': instance.Latitude,
-        'LocationAccuracy': instance.LocationAccuracy,
-        'WardenComments': instance.WardenComments,
-        'TypePCN': instance.TypePCN,
-        'ZoneId': instance.ZoneId,
-        'Id': instance.Id ?? 0,
+  Map<String, dynamic> toJson() => {
+        'ContraventionReference': ContraventionReference,
+        'Plate': Plate,
+        'VehicleMake': VehicleMake,
+        'VehicleColour': VehicleColour,
+        'ContraventionReasonCode': ContraventionReasonCode,
+        'EventDateTime': EventDateTime.toIso8601String(),
+        'FirstObservedDateTime': FirstObservedDateTime.toIso8601String(),
+        'WardenId': WardenId,
+        'BadgeNumber': BadgeNumber,
+        'Longitude': Longitude,
+        'Latitude': Latitude,
+        'LocationAccuracy': LocationAccuracy,
+        'WardenComments': WardenComments,
+        'TypePCN': TypePCN,
+        'ZoneId': ZoneId,
+        'Id': Id ?? 0,
       };
+
+  // Map<String, dynamic> toJson() => {
+  //       'ContraventionReference': ContraventionReference,
+  //     };
 }
 
 ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
@@ -171,6 +172,7 @@ class ContraventionCreatePhoto extends Identifiable {
     required this.originalFileName,
     required this.capturedDateTime,
     required this.filePath,
+    super.Id,
   });
 
   factory ContraventionCreatePhoto.fromJson(Map<String, dynamic> json) =>

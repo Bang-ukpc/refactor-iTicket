@@ -16,7 +16,7 @@ class ContraventionController {
     try {
       final response = await dio.post(
         '/contravention/create-pcn',
-        data: ContraventionCreateWardenCommand.toJson(pcn),
+        data: json.encode(pcn),
       );
       print(response.data.toString());
       Contravention contraventionResult = Contravention.fromJson(response.data);
@@ -198,7 +198,7 @@ class ContraventionController {
     try {
       final response = await dio.post(
         '/contravention/check-has-permit',
-        data: ContraventionCreateWardenCommand.toJson(pcn),
+        data: pcn.toJson(),
       );
       print('check permit: ${response.data}');
       CheckPermit data = CheckPermit.fromJson(response.data);
