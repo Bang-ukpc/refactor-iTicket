@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy
+    name: Build and Deploy production
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +32,7 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
       - name: Build APK
-        run: ${{ env.MAKE_BUILD_ENV }}
+        run: ${{ env.CMD_MAKE_BUILD_ENV }}
 
       - name: Upload APK to Azure Blob Storage
         uses: azure/CLI@v1
