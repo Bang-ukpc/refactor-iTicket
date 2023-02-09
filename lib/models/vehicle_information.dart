@@ -4,7 +4,7 @@ enum VehicleInformationType { FIRST_SEEN, GRACE_PERIOD }
 
 class EvidencePhoto extends BaseModel {
   final int? VehicleInformationId;
-  final String BlobName;
+  late String BlobName;
 
   EvidencePhoto({
     int? Id,

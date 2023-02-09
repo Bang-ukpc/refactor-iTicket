@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -27,6 +28,7 @@ import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
@@ -37,6 +39,13 @@ import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:iWarden/widgets/home/card_home.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
+
+List<String> fakeImages = [
+  '/data/user/0/com.example.iWarden/cache/CAP1317129956677019721.jpg',
+  '/data/user/0/com.example.iWarden/cache/CAP505075306031560444.jpg',
+  '/data/user/0/com.example.iWarden/cache/CAP4469024442255754578.jpg',
+  '/data/user/0/com.example.iWarden/cache/CAP4011318888943806994.jpg',
+];
 
 class HomeOverview extends StatefulWidget {
   static const routeName = '/home';
@@ -240,6 +249,159 @@ class _HomeOverviewState extends State<HomeOverview> {
     final width = MediaQuery.of(context).size.width;
     final locations = Provider.of<Locations>(context, listen: false);
     final wardensProvider = Provider.of<WardensInfo>(context);
+
+    void createFakePCN() async {
+      int pcnId = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+      int randomReference =
+          (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
+      final contraventionCreate = ContraventionCreateWardenCommand(
+        ZoneId: locations.zone?.Id ?? 0,
+        ContraventionReference: '$randomReference',
+        Plate: "VRN${(randomReference / 10000).ceil()}",
+        VehicleMake: "Audi",
+        VehicleColour: "Black",
+        ContraventionReasonCode: "21",
+        EventDateTime: DateTime.now(),
+        FirstObservedDateTime: DateTime.now(),
+        WardenId: wardensProvider.wardens?.Id ?? 0,
+        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        WardenComments: '',
+        BadgeNumber: 'test',
+        LocationAccuracy: 0, // missing
+        TypePCN: TypePCN.Virtual.index,
+        Id: pcnId,
+      );
+
+      final String? contraventionList =
+          await SharedPreferencesHelper.getStringValue(
+              'contraventionDataLocal');
+
+      List<ContraventionPhotos> contraventionImageList = [];
+      for (int i = 0; i < fakeImages.length; i++) {
+        int randomReference =
+            (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
+        contraventionImageList.add(ContraventionPhotos(
+          blobName: '$randomReference',
+          contraventionId: contraventionCreate.Id,
+        ));
+      }
+
+      int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+      contraventionCreate.Id = randomNumber;
+      final String encodedPhysicalPCNData =
+          json.encode(contraventionCreate.toJson());
+      final String? issuePCNData =
+          await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
+      if (issuePCNData == null) {
+        List<String> newData = [];
+        newData.add(encodedPhysicalPCNData);
+        final encodedNewData = json.encode(newData);
+        SharedPreferencesHelper.setStringValue(
+            'issuePCNDataLocal', encodedNewData);
+      } else {
+        final createdData = json.decode(issuePCNData) as List<dynamic>;
+        createdData.add(encodedPhysicalPCNData);
+        final encodedCreatedData = json.encode(createdData);
+        SharedPreferencesHelper.setStringValue(
+            'issuePCNDataLocal', encodedCreatedData);
+      }
+
+      final String? contraventionPhotoData =
+          await SharedPreferencesHelper.getStringValue(
+              'contraventionPhotoDataLocal');
+
+      if (contraventionPhotoData == null) {
+        List<String> newPhotoData = [];
+        for (int i = 0; i < fakeImages.length; i++) {
+          int randomNumberName =
+              (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
+          final String encodedData = json.encode(ContraventionCreatePhoto(
+            contraventionReference: contraventionCreate.ContraventionReference,
+            originalFileName: '$randomNumberName',
+            capturedDateTime: DateTime.now(),
+            filePath: fakeImages[i],
+          ).toJson());
+          newPhotoData.add(encodedData);
+        }
+        final encodedNewData = json.encode(newPhotoData);
+        SharedPreferencesHelper.setStringValue(
+            'contraventionPhotoDataLocal', encodedNewData);
+      } else {
+        final createdData =
+            json.decode(contraventionPhotoData) as List<dynamic>;
+        for (int i = 0; i < fakeImages.length; i++) {
+          int randomNumberName =
+              (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
+          final String encodedData = json.encode(ContraventionCreatePhoto(
+            contraventionReference: contraventionCreate.ContraventionReference,
+            originalFileName: '$randomNumberName',
+            capturedDateTime: DateTime.now(),
+            filePath: fakeImages[i],
+          ).toJson());
+          createdData.add(encodedData);
+        }
+        final encodedNewData = json.encode(createdData);
+        SharedPreferencesHelper.setStringValue(
+            'contraventionPhotoDataLocal', encodedNewData);
+      }
+
+      Contravention contraventionDataFake = Contravention(
+        reference: contraventionCreate.ContraventionReference,
+        created: DateTime.now(),
+        id: contraventionCreate.Id,
+        plate: contraventionCreate.Plate,
+        colour: contraventionCreate.VehicleColour,
+        make: contraventionCreate.VehicleMake,
+        eventDateTime: contraventionCreate.EventDateTime,
+        zoneId: locations.zone?.Id ?? 0,
+        reason: Reason(
+          code: contraventionCreate.ContraventionReasonCode,
+          contraventionReasonTranslations: [],
+        ),
+        contraventionEvents: [
+          ContraventionEvents(
+            contraventionId: contraventionCreate.Id,
+            detail: contraventionCreate.WardenComments,
+          )
+        ],
+        contraventionDetailsWarden: ContraventionDetailsWarden(
+          FirstObserved: contraventionCreate.FirstObservedDateTime,
+          ContraventionId: contraventionCreate.Id,
+          WardenId: contraventionCreate.WardenId,
+          IssuedAt: contraventionCreate.EventDateTime,
+        ),
+        status: ContraventionStatus.Open.index,
+        type: contraventionCreate.TypePCN,
+        contraventionPhotos: contraventionImageList,
+      );
+
+      if (contraventionList == null) {
+        List<dynamic> newData = [];
+        newData.add(Contravention.toJson(contraventionDataFake));
+        var dataFormat = Pagination(
+          page: 1,
+          pageSize: 1000,
+          total: newData.length,
+          totalPages: 1,
+          rows: newData,
+        );
+        final String encodedNewData =
+            json.encode(Pagination.toJson(dataFormat));
+        SharedPreferencesHelper.setStringValue(
+            'contraventionDataLocal', encodedNewData);
+      } else {
+        final createdData =
+            json.decode(contraventionList) as Map<String, dynamic>;
+        Pagination fromJsonContravention = Pagination.fromJson(createdData);
+        fromJsonContravention.rows
+            .add(Contravention.toJson(contraventionDataFake));
+        final String encodedCreatedData =
+            json.encode(Pagination.toJson(fromJsonContravention));
+        SharedPreferencesHelper.setStringValue(
+            'contraventionDataLocal', encodedCreatedData);
+      }
+    }
 
     log('Home screen');
 
@@ -481,18 +643,31 @@ class _HomeOverviewState extends State<HomeOverview> {
                       ),
                 ElevatedButton(
                     onPressed: () async {
-                      List<ContraventionCreateWardenCommand> allPcns =
-                          await issuedPcnLocalService.getAll();
-                      List<ContraventionCreatePhoto> allPcnPhotos =
-                          await issuedPcnPhotoLocalService.getAll();
-                      log("hehehe ${allPcns.length}");
-                      log("hehehe ${allPcnPhotos.length}");
-                      //  SharedPreferencesHelper.removeStringValue(
+                      List<VehicleInformation> vehicles =
+                          await createdVehicleDataLocalService.getAll();
+                      log("hehehe ${vehicles.length}");
+                      log("hehehe ${vehicles.map(
+                        (e) {
+                          print(json.encode(e));
+                        },
+                      )}");
+                      // SharedPreferencesHelper.removeStringValue(
                       //     'issuePCNDataLocal');
                       // SharedPreferencesHelper.removeStringValue(
                       //     'contraventionPhotoDataLocal');
                     },
                     child: Text("hehehehe")),
+                // ElevatedButton(
+                //     onPressed: () async {
+                //       createFakePCN();
+                //     },
+                //     child: Text("create fake pcn")),
+                ElevatedButton(
+                    onPressed: () async {
+                      SharedPreferencesHelper.removeStringValue(
+                          'vehicleInfoUpsertDataLocal');
+                    },
+                    child: Text("delete")),
               ],
             ),
           ),

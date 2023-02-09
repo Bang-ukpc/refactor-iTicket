@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/services/local/local_service.dart';
 import '../../controllers/contravention_controller.dart';
@@ -6,28 +10,36 @@ import '../../models/ContraventionService.dart';
 class IssuedPcnLocalService
     extends BaseLocalService<ContraventionCreateWardenCommand> {
   late List<ContraventionCreatePhoto> allPcnPhotos;
-  IssuedPcnLocalService(): super('issuePCNDataLocal');
+
+  IssuedPcnLocalService() : super('issuePCNDataLocal');
 
   @override
   syncAll() async {
+    if (isSyncing) {
+      print("IssuedPcnLocalService is syncing");
+      return;
+    }
+    isSyncing = true;
     List<ContraventionCreateWardenCommand> allPcns = await getAll();
     allPcnPhotos = await issuedPcnPhotoLocalService.getAll();
-
     for (var pcn in allPcns) {
       await sync(pcn);
     }
-
-    // Some photos can be missed to sync the server. So after sync all the PCNs we should sync the remaining photo.
     await issuedPcnPhotoLocalService.syncAll();
+    isSyncing = false;
   }
 
   @override
   sync(ContraventionCreateWardenCommand pcn) async {
-    Future.delayed(const Duration(seconds: 1), () async {
+    print("syn!!!!!!");
+    try {
       await contraventionController.createPCN(pcn);
       await syncPcnPhotos(pcn);
-      delete(pcn.Id!); // Prints after 1 second.
-    });
+    } catch (e) {
+      print(e.toString());
+    } finally {
+      await delete(pcn.Id!);
+    }
   }
 
   syncPcnPhotos(ContraventionCreateWardenCommand pcn) async {

@@ -26,7 +26,8 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
-
+import 'package:uuid/uuid.dart';
+import 'package:uuid/uuid_util.dart';
 import '../../widgets/parking-charge/detail_parking_common2.dart';
 
 class PrintPCN extends StatefulWidget {
@@ -40,6 +41,7 @@ class PrintPCN extends StatefulWidget {
 class _PrintPCNState extends State<PrintPCN> {
   @override
   Widget build(BuildContext context) {
+    var uuid = Uuid();
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
@@ -222,8 +224,8 @@ class _PrintPCNState extends State<PrintPCN> {
         int randomNumber =
             (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
         contraventionCreate.Id = randomNumber;
-        final String encodedPhysicalPCNData = json.encode(
-            ContraventionCreateWardenCommand.toJson(contraventionCreate));
+        final String encodedPhysicalPCNData =
+            json.encode(contraventionCreate.toJson());
         final String? issuePCNData =
             await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
         if (issuePCNData == null) {
@@ -244,9 +246,12 @@ class _PrintPCNState extends State<PrintPCN> {
             await SharedPreferencesHelper.getStringValue(
                 'contraventionPhotoDataLocal');
         if (contraventionPhotoData == null) {
+          int randomNumber2 =
+              (DateTime.now().microsecondsSinceEpoch / -1001).ceil();
           List<String> newPhotoData = [];
           for (int i = 0; i < args.contraventionPhotos!.length; i++) {
             final String encodedData = json.encode(ContraventionCreatePhoto(
+              Id: randomNumber2,
               contraventionReference:
                   contraventionCreate.ContraventionReference,
               originalFileName:
@@ -260,10 +265,13 @@ class _PrintPCNState extends State<PrintPCN> {
           SharedPreferencesHelper.setStringValue(
               'contraventionPhotoDataLocal', encodedNewData);
         } else {
+          int randomNumber2 =
+              (DateTime.now().microsecondsSinceEpoch / -1001).ceil();
           final createdData =
               json.decode(contraventionPhotoData) as List<dynamic>;
           for (int i = 0; i < args.contraventionPhotos!.length; i++) {
             final String encodedData = json.encode(ContraventionCreatePhoto(
+              Id: randomNumber2,
               contraventionReference:
                   contraventionCreate.ContraventionReference,
               originalFileName:

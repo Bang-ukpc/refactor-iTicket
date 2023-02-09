@@ -1,9 +1,9 @@
-
-class Identifiable{
+class Identifiable {
   int? Id;
+  Identifiable({this.Id});
 }
 
-class BaseModel extends Identifiable{
+class BaseModel extends Identifiable {
   int? Id;
   DateTime? Created;
   DateTime? Deleted;

@@ -3,10 +3,27 @@ import 'package:iWarden/services/cache/cache_service.dart';
 
 abstract class ILocalService<T extends Identifiable> {
   syncAll();
-  sync(T t);
+  T? sync(T t);
 }
 
 abstract class BaseLocalService<T extends Identifiable> extends CacheService<T>
     implements ILocalService<T> {
+  bool isSyncing = false;
   BaseLocalService(super.initLocalKey);
+
+  @override
+  syncAll() async {
+    if (isSyncing) {
+      print("Is syncing");
+      return;
+    }
+    isSyncing = true;
+
+    final items = await getAll();
+    for (var item in items) {
+      await sync(item);
+    }
+
+    isSyncing = false;
+  }
 }

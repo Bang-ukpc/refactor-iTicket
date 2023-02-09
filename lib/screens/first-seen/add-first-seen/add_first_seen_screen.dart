@@ -220,12 +220,15 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       } else {
         int randomNumber =
             (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+        int randomNumber2 =
+            (DateTime.now().microsecondsSinceEpoch / -1003).ceil();
         vehicleInfo.Id = randomNumber;
         vehicleInfo.Created = DateTime.now();
         if (arrayImage.isNotEmpty) {
           for (int i = 0; i < arrayImage.length; i++) {
             evidencePhotoList.add(
               EvidencePhoto(
+                Id: randomNumber2,
                 BlobName: arrayImage[i].path,
                 VehicleInformationId: vehicleInfo.Id,
                 Created: DateTime.now(),

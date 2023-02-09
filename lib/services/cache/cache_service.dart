@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:iWarden/factory/json_decode_factory.dart';
+import 'package:iWarden/models/ContraventionService.dart';
 
 import '../../helpers/shared_preferences_helper.dart';
 import '../../models/base_model.dart';
@@ -38,7 +39,8 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   @override
   delete(int id) async {
     final items = await getAll();
-    final updatedItems = items.where((element) => element.Id != id);
+    print(items.map((e) => e.Id));
+    final updatedItems = items.where((element) => element.Id! != id);
     set(updatedItems.toList());
   }
 
@@ -57,13 +59,18 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   Future<List<T>> getAll() async {
     final String? jsonItems =
         await SharedPreferencesHelper.getStringValue(localKey);
-    // const jsonItems = '[{"ExpiredAt":"2023-02-06T00:00:00.000Z","Plate":"12323","ZoneId":1,"LocationId":1,"BayNumber":"12","Type":0,"Latitude":0,"Longitude":0,"CarLeft":false,"EvidencePhotos":[]}]';
+    // const jsonItems =
+    //     '[{"Id":1,"ZoneId":1,"ContraventionReference":"123123","Plate":"123123","VehicleMake":"123","VehicleColour":"213","ContraventionReasonCode":"36","EventDateTime":"2023-02-06T00:00:00.000Z","FirstObservedDateTime":"2023-02-06T00:00:00.000Z","WardenId":1,"BadgeNumber":"1","Longitude":0,"Latitude":0,"LocationAccuracy":1,"WardenComments":""}]';
 
     if (jsonItems == null) return [];
     var decodedItems = json.decode(jsonItems) as List<dynamic>;
-    return decodedItems
-        .map((decodedItem) => jsonDecodeFactory.decode<T>(decodedItem) as T)
-        .toList();
+    return decodedItems.map((decodedItem) {
+      if (decodedItem is String) {
+        return jsonDecodeFactory.decode<T>(json.decode(decodedItem)) as T;
+      } else {
+        return jsonDecodeFactory.decode<T>(decodedItem) as T;
+      }
+    }).toList();
   }
 
   @override
@@ -85,7 +92,8 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
 }
 
 Future<void> main(List<String> args) async {
-  final cacheService = CacheService<VehicleInformation>('a');
+  final cacheService = CacheService<ContraventionCreateWardenCommand>('a');
   var items = await cacheService.getAll();
-  print(items[0].ExpiredAt);
+  print(json.encode(items));
+  print(items[0]);
 }
