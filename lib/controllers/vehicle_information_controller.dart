@@ -38,8 +38,7 @@ class VehicleInfoController {
         final String? data = await SharedPreferencesHelper.getStringValue(
             'vehicleInfoDataLocal');
         if (data == null) {
-          final String encodedData =
-              json.encode(Pagination.toJson(vehicleInfoDataLocal));
+          final String encodedData = json.encode(vehicleInfoDataLocal.toJson());
           SharedPreferencesHelper.setStringValue(
             'vehicleInfoDataLocal',
             encodedData,
@@ -64,8 +63,7 @@ class VehicleInfoController {
           }
           vehicleInfoDataLocal.rows = List.from(vehicleInfoDataLocal.rows)
             ..addAll(fromJsonVehicleInfo.rows);
-          final String encodedData =
-              json.encode(Pagination.toJson(vehicleInfoDataLocal));
+          final String encodedData = json.encode(vehicleInfoDataLocal.toJson());
           SharedPreferencesHelper.setStringValue(
             'vehicleInfoDataLocal',
             encodedData,
@@ -167,7 +165,7 @@ class VehicleInfoController {
               fromJsonVehicleInfo.rows.removeAt(position);
             }
             final String encodedDataList =
-                json.encode(Pagination.toJson(fromJsonVehicleInfo));
+                json.encode(fromJsonVehicleInfo.toJson());
             SharedPreferencesHelper.setStringValue(
                 'vehicleInfoDataLocal', encodedDataList);
           }
@@ -191,7 +189,7 @@ class VehicleInfoController {
             fromJsonVehicleInfo.rows.removeAt(position);
           }
           final String encodedDataList =
-              json.encode(Pagination.toJson(fromJsonVehicleInfo));
+              json.encode(fromJsonVehicleInfo.toJson());
           SharedPreferencesHelper.setStringValue(
               'vehicleInfoDataLocal', encodedDataList);
         }

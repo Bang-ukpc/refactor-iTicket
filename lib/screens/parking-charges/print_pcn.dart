@@ -11,17 +11,19 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
+import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
-import 'package:iWarden/screens/parking-charges/parking_charge_info.dart';
+import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_info.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
@@ -46,10 +48,9 @@ class _PrintPCNState extends State<PrintPCN> {
     var args = contraventionProvider.contravention;
     final printIssue = Provider.of<PrintIssueProviders>(context);
 
-    int randomReference = (DateTime.now().microsecondsSinceEpoch / 1000).ceil();
     final contraventionCreate = ContraventionCreateWardenCommand(
       ZoneId: args?.zoneId ?? 0,
-      ContraventionReference: args?.reference ?? '$randomReference',
+      ContraventionReference: args?.reference ?? "",
       Plate: args?.plate ?? "",
       VehicleMake: contraventionProvider.getMakeNullProvider ?? "",
       VehicleColour: contraventionProvider.getColorNullProvider ?? "",
@@ -62,17 +63,42 @@ class _PrintPCNState extends State<PrintPCN> {
       WardenId: args?.contraventionDetailsWarden?.WardenId ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      WardenComments: args!.contraventionEvents!.isNotEmpty
-          ? args.contraventionEvents!
-              .map((item) => item.detail)
-              .toString()
-              .replaceAll('(', '')
-              .replaceAll(')', '')
+      WardenComments: args != null
+          ? args.contraventionEvents!.isNotEmpty
+              ? args.contraventionEvents!
+                  .map((item) => item.detail)
+                  .toString()
+                  .replaceAll('(', '')
+                  .replaceAll(')', '')
+              : ''
           : '',
       BadgeNumber: 'test',
       LocationAccuracy: 0, // missing
-      TypePCN: args.type,
+      TypePCN: args != null ? args.type : 1,
     );
+
+    Future<void> onRemoveFromVehicleInfo() async {
+      if (contraventionProvider.getVehicleInfo != null) {
+        var vehicleInfo =
+            contraventionProvider.getVehicleInfo as VehicleInformation;
+
+        VehicleInformation vehicleInfoToUpdate = VehicleInformation(
+          ExpiredAt: vehicleInfo.ExpiredAt,
+          Plate: vehicleInfo.Plate,
+          ZoneId: vehicleInfo.ZoneId,
+          LocationId: vehicleInfo.LocationId,
+          BayNumber: vehicleInfo.BayNumber,
+          Type: vehicleInfo.Type,
+          Latitude: vehicleInfo.Latitude,
+          Longitude: vehicleInfo.Longitude,
+          CarLeft: true,
+          EvidencePhotos: [],
+          Id: vehicleInfo.Id,
+        );
+        await vehicleInfoController.upsertVehicleInfo(vehicleInfoToUpdate);
+      }
+      return;
+    }
 
     Future<void> issuePCN() async {
       ConnectivityResult connectionStatus =
@@ -138,7 +164,7 @@ class _PrintPCNState extends State<PrintPCN> {
         }
 
         if (contravention != null) {
-          for (int i = 0; i < args.contraventionPhotos!.length; i++) {
+          for (int i = 0; i < args!.contraventionPhotos!.length; i++) {
             try {
               await contraventionController.uploadContraventionImage(
                 ContraventionCreatePhoto(
@@ -169,20 +195,23 @@ class _PrintPCNState extends State<PrintPCN> {
             await userController
                 .createWardenEvent(wardenEventIssuePCN)
                 .then((value) {
-              contraventionProvider.clearContraventionData();
-              printIssue.resetData();
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
-                  arguments: contravention);
-              CherryToast.success(
-                displayCloseButton: false,
-                title: Text(
-                  'The PCN has been created successfully',
-                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-                ),
-                toastPosition: Position.bottom,
-                borderRadius: 5,
-              ).show(context);
+              onRemoveFromVehicleInfo().then((value) {
+                contraventionProvider.clearContraventionData();
+                printIssue.resetData();
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
+                    arguments: contravention);
+                CherryToast.success(
+                  displayCloseButton: false,
+                  title: Text(
+                    'The PCN has been created successfully',
+                    style:
+                        CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+                  ),
+                  toastPosition: Position.bottom,
+                  borderRadius: 5,
+                ).show(context);
+              });
             });
           } on DioError catch (error) {
             if (!mounted) return;
@@ -222,8 +251,8 @@ class _PrintPCNState extends State<PrintPCN> {
         int randomNumber =
             (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
         contraventionCreate.Id = randomNumber;
-        final String encodedPhysicalPCNData = json.encode(
-            ContraventionCreateWardenCommand.toJson(contraventionCreate));
+        final String encodedPhysicalPCNData =
+            json.encode(contraventionCreate.toJson());
         final String? issuePCNData =
             await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
         if (issuePCNData == null) {
@@ -245,7 +274,7 @@ class _PrintPCNState extends State<PrintPCN> {
                 'contraventionPhotoDataLocal');
         if (contraventionPhotoData == null) {
           List<String> newPhotoData = [];
-          for (int i = 0; i < args.contraventionPhotos!.length; i++) {
+          for (int i = 0; i < args!.contraventionPhotos!.length; i++) {
             final String encodedData = json.encode(ContraventionCreatePhoto(
               contraventionReference:
                   contraventionCreate.ContraventionReference,
@@ -262,7 +291,7 @@ class _PrintPCNState extends State<PrintPCN> {
         } else {
           final createdData =
               json.decode(contraventionPhotoData) as List<dynamic>;
-          for (int i = 0; i < args.contraventionPhotos!.length; i++) {
+          for (int i = 0; i < args!.contraventionPhotos!.length; i++) {
             final String encodedData = json.encode(ContraventionCreatePhoto(
               contraventionReference:
                   contraventionCreate.ContraventionReference,
@@ -284,7 +313,7 @@ class _PrintPCNState extends State<PrintPCN> {
 
         if (contraventionList == null) {
           List<dynamic> newData = [];
-          newData.add(Contravention.toJson(args));
+          newData.add(args.toJson());
           var dataFormat = Pagination(
             page: 1,
             pageSize: 1000,
@@ -292,17 +321,16 @@ class _PrintPCNState extends State<PrintPCN> {
             totalPages: 1,
             rows: newData,
           );
-          final String encodedNewData =
-              json.encode(Pagination.toJson(dataFormat));
+          final String encodedNewData = json.encode(dataFormat.toJson());
           SharedPreferencesHelper.setStringValue(
               'contraventionDataLocal', encodedNewData);
         } else {
           final createdData =
               json.decode(contraventionList) as Map<String, dynamic>;
           Pagination fromJsonContravention = Pagination.fromJson(createdData);
-          fromJsonContravention.rows.add(Contravention.toJson(args));
+          fromJsonContravention.rows.add(args.toJson());
           final String encodedCreatedData =
-              json.encode(Pagination.toJson(fromJsonContravention));
+              json.encode(fromJsonContravention.toJson());
           SharedPreferencesHelper.setStringValue(
               'contraventionDataLocal', encodedCreatedData);
         }
@@ -312,20 +340,22 @@ class _PrintPCNState extends State<PrintPCN> {
         await userController
             .createWardenEvent(wardenEventIssuePCN)
             .then((value) {
-          contraventionProvider.clearContraventionData();
-          printIssue.resetData();
-          Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
-              arguments: contraventionDataFake);
-          CherryToast.success(
-            displayCloseButton: false,
-            title: Text(
-              'The PCN has been created successfully',
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
+          onRemoveFromVehicleInfo().then((value) {
+            contraventionProvider.clearContraventionData();
+            printIssue.resetData();
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
+                arguments: contraventionDataFake);
+            CherryToast.success(
+              displayCloseButton: false,
+              title: Text(
+                'The PCN has been created successfully',
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+              ),
+              toastPosition: Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+          });
         });
       }
     }

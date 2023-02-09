@@ -16,7 +16,7 @@ class UserController {
       try {
         final response = await dio.get('/warden/get-me');
         final wardenFromJson = Wardens.fromJson(response.data);
-        final String encodedData = json.encode(Wardens.toJson(wardenFromJson));
+        final String encodedData = json.encode(wardenFromJson.toJson());
         SharedPreferencesHelper.setStringValue('wardenDataLocal', encodedData);
         return wardenFromJson;
       } on DioError catch (error) {
