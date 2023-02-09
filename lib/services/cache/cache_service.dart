@@ -12,6 +12,7 @@ import '../../models/vehicle_information.dart';
 // import '../../helpers/shared_preferences_helper.dart';
 
 abstract class ICacheService<T extends Identifiable> {
+  syncFromServer();
   create(T t);
   delete(int id);
   get(int id);
@@ -82,6 +83,11 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
     final items = await getAll();
     items.map((item) => item.Id == t.Id ? t : item);
     set(items);
+  }
+
+  @override
+  syncFromServer() {
+    throw UnimplementedError();
   }
 }
 

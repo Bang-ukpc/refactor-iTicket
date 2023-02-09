@@ -189,7 +189,7 @@ class Reason {
   }
 }
 
-class ContraventionReasonTranslations {
+class ContraventionReasonTranslations extends Identifiable{
   DateTime? created;
   DateTime? deleted;
   int? id;
