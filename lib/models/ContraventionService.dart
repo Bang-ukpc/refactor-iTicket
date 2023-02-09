@@ -184,6 +184,7 @@ class ContraventionCreatePhoto extends Identifiable {
 ContraventionCreatePhoto _$ContraventionCreatePhotoFromJson(
     Map<String, dynamic> json) {
   return ContraventionCreatePhoto(
+    Id: json['id'],
     contraventionReference: json['contraventionReference'],
     photoType: json['photoType'],
     originalFileName: json['originalFileName'],
@@ -195,6 +196,7 @@ ContraventionCreatePhoto _$ContraventionCreatePhotoFromJson(
 Map<String, dynamic> _$ContraventionCreatePhotoToJson(
     ContraventionCreatePhoto instance) {
   return <String, dynamic>{
+    'id': instance.Id,
     'contraventionReference': instance.contraventionReference,
     'photoType': instance.photoType,
     'originalFileName': instance.originalFileName,

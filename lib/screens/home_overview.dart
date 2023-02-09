@@ -288,8 +288,8 @@ class _HomeOverviewState extends State<HomeOverview> {
 
       int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
       contraventionCreate.Id = randomNumber;
-      final String encodedPhysicalPCNData = json
-          .encode(ContraventionCreateWardenCommand.toJson(contraventionCreate));
+      final String encodedPhysicalPCNData =
+          json.encode(contraventionCreate.toJson());
       final String? issuePCNData =
           await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
       if (issuePCNData == null) {
@@ -649,7 +649,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                       log("hehehe ${allPcns.length}");
                       log("hehehe ${allPcnPhotos.map(
                         (e) {
-                          print(e.contraventionReference);
+                          print(json.encode(e));
                         },
                       )}");
                       // SharedPreferencesHelper.removeStringValue(
