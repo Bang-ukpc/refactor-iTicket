@@ -28,6 +28,7 @@ import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
@@ -642,12 +643,10 @@ class _HomeOverviewState extends State<HomeOverview> {
                       ),
                 ElevatedButton(
                     onPressed: () async {
-                      List<ContraventionCreateWardenCommand> allPcns =
-                          await issuedPcnLocalService.getAll();
-                      List<ContraventionCreatePhoto> allPcnPhotos =
-                          await issuedPcnPhotoLocalService.getAll();
-                      log("hehehe ${allPcns.length}");
-                      log("hehehe ${allPcnPhotos.map(
+                      List<VehicleInformation> vehicles =
+                          await createdVehicleDataLocalService.getAll();
+                      log("hehehe ${vehicles.length}");
+                      log("hehehe ${vehicles.map(
                         (e) {
                           print(json.encode(e));
                         },
@@ -658,17 +657,15 @@ class _HomeOverviewState extends State<HomeOverview> {
                       //     'contraventionPhotoDataLocal');
                     },
                     child: Text("hehehehe")),
-                ElevatedButton(
-                    onPressed: () async {
-                      createFakePCN();
-                    },
-                    child: Text("create fake pcn")),
+                // ElevatedButton(
+                //     onPressed: () async {
+                //       createFakePCN();
+                //     },
+                //     child: Text("create fake pcn")),
                 ElevatedButton(
                     onPressed: () async {
                       SharedPreferencesHelper.removeStringValue(
-                          'issuePCNDataLocal');
-                      SharedPreferencesHelper.removeStringValue(
-                          'contraventionPhotoDataLocal');
+                          'vehicleInfoUpsertDataLocal');
                     },
                     child: Text("delete")),
               ],

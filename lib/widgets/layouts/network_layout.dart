@@ -15,7 +15,10 @@ import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
+import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
@@ -323,9 +326,13 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     //     NavigationService.navigatorKey.currentState!.pop();
     //   });
     // }
-    await vehicleInfoDataSynch();
+    print("synsynsyn");
+    await createdVehicleDataLocalService.syncAll();
+    // await vehicleInfoDataSynch();
     // await parkingChargeDataSynch();
     await issuedPcnLocalService.syncAll();
+    // await createdWardenEventLocalService.syncAll();
+
     await wardenEventDataSync();
   }
 

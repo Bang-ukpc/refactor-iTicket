@@ -29,14 +29,6 @@ class IssuedPcnPhotoLocalService
       await delete(pcnPhoto.Id!);
     }
   }
-
-  delete2(int Id) async {
-    print("id photo $Id");
-    List<ContraventionCreatePhoto> allPcnPhotos = await getAll();
-    final updatedItems = allPcnPhotos.where((element) => element.Id != Id);
-    SharedPreferencesHelper.setStringValue(
-        LOCAL_KEY, json.encode(updatedItems));
-  }
 }
 
 final issuedPcnPhotoLocalService = IssuedPcnPhotoLocalService();

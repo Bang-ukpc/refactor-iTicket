@@ -14,7 +14,7 @@ class JsonDecodeFactory {
     if (T == WardenEvent) return WardenEvent.fromJson(json) as T;
     if (T == ContraventionReasonTranslations)
       return ContraventionReasonTranslations.fromJson(json) as T;
-
+    if (T == EvidencePhoto) return EvidencePhoto.fromJson(json) as T;
     final className = T.toString();
     throw Exception("$className is not register to the factory");
   }
