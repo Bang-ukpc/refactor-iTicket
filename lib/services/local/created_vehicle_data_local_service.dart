@@ -17,10 +17,10 @@ class CreatedVehicleDataLocalService
         evidencePhoto.Created = vehicleInformation.Created;
         EvidencePhoto data = createdVehicleDataPhotoLocalService
             .sync(evidencePhoto) as EvidencePhoto;
-        print(json.encode(data));
+        allVehiclePhotos.add(data);
       }
-      // VehicleInformation vehicleInformation2 =
-      // await vehicleInfoController.upsertVehicleInfo(vehicleInformation);
+      vehicleInformation.EvidencePhotos = allVehiclePhotos;
+      await vehicleInfoController.upsertVehicleInfo(vehicleInformation);
     } catch (e) {
       print(e.toString());
     } finally {
