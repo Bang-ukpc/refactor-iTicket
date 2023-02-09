@@ -15,7 +15,9 @@ class CreatedVehicleDataLocalService
     try {
       for (var evidencePhoto in vehicleInformation.EvidencePhotos!) {
         evidencePhoto.Created = vehicleInformation.Created;
-        createdVehicleDataPhotoLocalService.sync(evidencePhoto);
+        EvidencePhoto data = createdVehicleDataPhotoLocalService
+            .sync(evidencePhoto) as EvidencePhoto;
+        print(json.encode(data));
       }
       // VehicleInformation vehicleInformation2 =
       // await vehicleInfoController.upsertVehicleInfo(vehicleInformation);

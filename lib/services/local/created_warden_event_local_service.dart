@@ -7,7 +7,7 @@ class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
   CreatedWardenEventLocalService() : super("wardenEventDataLocal");
 
   @override
-  sync(WardenEvent wardenEvent) {
+  sync(WardenEvent wardenEvent) async {
     print("sync warden event");
   }
 }

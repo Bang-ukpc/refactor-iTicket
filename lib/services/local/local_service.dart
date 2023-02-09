@@ -3,7 +3,7 @@ import 'package:iWarden/services/cache/cache_service.dart';
 
 abstract class ILocalService<T extends Identifiable> {
   syncAll();
-  sync(T t);
+  T? sync(T t);
 }
 
 abstract class BaseLocalService<T extends Identifiable> extends CacheService<T>

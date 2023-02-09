@@ -9,25 +9,22 @@ class CreatedVehicleDataPhotoLocalService
   @override
   sync(EvidencePhoto evidencePhoto) async {
     try {
-      evidencePhotoController.uploadImage(
-          filePath: evidencePhoto.BlobName,
-          capturedDateTime: evidencePhoto.Created);
+      return evidencePhotoController
+          .uploadImage(
+              filePath: evidencePhoto.BlobName,
+              capturedDateTime: evidencePhoto.Created)
+          .then((value) {
+        evidencePhoto.BlobName = value['blobName'];
+        return evidencePhoto;
+      });
     } catch (e) {
       print(e.toString());
+      return evidencePhoto;
     } finally {
       await delete(evidencePhoto.Id!);
+      return evidencePhoto;
     }
   }
-//  Future <EvidencePhoto> syncPhoto(EvidencePhoto evidencePhoto) async {
-//     try {
-//       evidencePhotoController.uploadImage(
-//           filePath: evidencePhoto.BlobName,
-//           capturedDateTime: evidencePhoto.Created).then((value) => value);
-//     } catch (e) {
-//       print(e.toString());
-//     } finally {
-//       await delete(evidencePhoto.Id!);
-//     }
 }
 
 final createdVehicleDataPhotoLocalService =
