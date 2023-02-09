@@ -485,7 +485,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         VehicleColour: _vehicleColorController.text,
         ContraventionReasonCode: _contraventionReasonController.text,
         EventDateTime: DateTime.now(),
-        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+        FirstObservedDateTime:
+            vehicleInfo != null ? vehicleInfo.Created : DateTime.now(),
         WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -678,7 +679,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         VehicleColour: _vehicleColorController.text,
         ContraventionReasonCode: _contraventionReasonController.text,
         EventDateTime: DateTime.now(),
-        FirstObservedDateTime: args != null ? args.Created : DateTime.now(),
+        FirstObservedDateTime:
+            vehicleInfo != null ? vehicleInfo.Created : DateTime.now(),
         WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,

@@ -415,7 +415,7 @@ class _HomeOverviewState extends State<HomeOverview> {
 
       if (contraventionList == null) {
         List<dynamic> newData = [];
-        newData.add(Contravention.toJson(contraventionDataFake));
+        newData.add(contraventionDataFake.toJson());
         var dataFormat = Pagination(
           page: 1,
           pageSize: 1000,
@@ -423,18 +423,16 @@ class _HomeOverviewState extends State<HomeOverview> {
           totalPages: 1,
           rows: newData,
         );
-        final String encodedNewData =
-            json.encode(Pagination.toJson(dataFormat));
+        final String encodedNewData = json.encode(dataFormat.toJson());
         SharedPreferencesHelper.setStringValue(
             'contraventionDataLocal', encodedNewData);
       } else {
         final createdData =
             json.decode(contraventionList) as Map<String, dynamic>;
         Pagination fromJsonContravention = Pagination.fromJson(createdData);
-        fromJsonContravention.rows
-            .add(Contravention.toJson(contraventionDataFake));
+        fromJsonContravention.rows.add(contraventionDataFake.toJson());
         final String encodedCreatedData =
-            json.encode(Pagination.toJson(fromJsonContravention));
+            json.encode(fromJsonContravention.toJson());
         SharedPreferencesHelper.setStringValue(
             'contraventionDataLocal', encodedCreatedData);
       }
