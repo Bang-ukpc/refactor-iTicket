@@ -4,15 +4,13 @@ on:
       - release/*
 
 env:
-  MAKE_BUILD_ENV: make build-product
+  CMD_MAKE_BUILD_ENV: make build-product
+  CMD_EXPORT_BRANCH_NAME: export BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/release/})
   FLUTTER_APP_SOURCE: "build/app/outputs/apk/release/app-release.apk"
   FLUTTER_VERSION: "3.7.1"
   BLOB_STORAGE_CONTAINER_NAME: "${{ secrets.PROD_BLOB_STORAGE_CONTAINER_NAME }}"
   BLOB_STORAGE_ACCOUNT_NAME: "${{ secrets.PROD_BLOB_STORAGE_ACCOUNT_NAME }}"
   BLOB_STORAGE_ACCOUNT_KEY: "${{ secrets.PROD_BLOB_STORAGE_ACCOUNT_KEY }}"
-  AZURE_TENANT_ID: "${{ secrets.PROD_AZURE_TENANT_ID }}"
-  AZURE_CLIENT_ID: "${{ secrets.PROD_AZURE_CLIENT_ID }}"
-  AZURE_CLIENT_SECRET: "${{ secrets.PROD_AZURE_CLIENT_SECRET }}"
 
 jobs:
   build-and-deploy:
@@ -25,7 +23,7 @@ jobs:
 
       - name: Replace build version
         run: |
-          export BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/release/})
+          ${{ env.CMD_EXPORT_BRANCH_NAME }}
           sed -i "s/version: .*/version: $BRANCH_NAME+1/" pubspec.yaml
 
       - name: Use Flutter ${{ env.FLUTTER_VERSION }}
@@ -41,5 +39,5 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az login --service-principal -u ${{ env.AZURE_CLIENT_ID }} -p ${{ env.AZURE_CLIENT_SECRET }} --tenant ${{ env.AZURE_TENANT_ID }}
-            az storage blob upload -f ${{ env.FLUTTER_APP_SOURCE }} -c ${{ env.BLOB_STORAGE_CONTAINER_NAME }} -n iTicket_latest.apk --account-name ${{ env.BLOB_STORAGE_ACCOUNT_NAME }} --account-key ${{ env.BLOB_STORAGE_ACCOUNT_KEY }}
+            ${{ env.CMD_EXPORT_BRANCH_NAME }}
+            az storage blob upload -f ${{ env.FLUTTER_APP_SOURCE }} -c ${{ env.BLOB_STORAGE_CONTAINER_NAME }} -n "iTicket_v$BRANCH_NAME.apk" --account-name ${{ env.BLOB_STORAGE_ACCOUNT_NAME }} --account-key ${{ env.BLOB_STORAGE_ACCOUNT_KEY }}
