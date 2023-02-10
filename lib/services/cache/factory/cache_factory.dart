@@ -18,6 +18,8 @@ class CachedServiceFactory {
   }
 }
 
+final cachedServiceFactory = CachedServiceFactory(1);
+
 // TODO: Example to sync the data from server
 // Future<void> main(List<String> args) async {
 //   final cachedServiceFactory = CachedServiceFactory(1);
