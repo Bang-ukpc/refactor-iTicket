@@ -644,7 +644,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                     width: 14,
                                                   ),
                                                   Text(
-                                                    "${((locations.location?.Distance ?? 0) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)",
+                                                    "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)",
                                                     style: CustomTextStyle.h4
                                                         .copyWith(
                                                       color: ColorTheme.primary,
