@@ -15,5 +15,6 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
         latitude: 0, longitude: 0, wardenId: wardenId);
     var rotaWithLocations = await locationController.getAll(filter);
     set(rotaWithLocations);
+    return rotaWithLocations;
   }
 }

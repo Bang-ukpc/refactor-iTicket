@@ -10,7 +10,7 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
     zoneId = initZoneId;
   }
 
-   @override
+  @override
   syncFromServer() async {
     var paging = await weakNetworkVehicleInfoController
         .getVehicleInfoList(
@@ -29,6 +29,7 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
     });
     var vehicleInfos = paging.rows as List<VehicleInformation>;
     set(vehicleInfos);
+    return vehicleInfos;
   }
 
   getAllWithCreatedOnTheOffline() async {

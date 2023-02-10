@@ -14,5 +14,6 @@ class PCNCachedService extends CacheService<Contravention> {
         zoneId: zoneId, page: 1, pageSize: 1000);
     var contraventions = paging.rows as List<Contravention>;
     set(contraventions);
+    return contraventions;
   }
 }

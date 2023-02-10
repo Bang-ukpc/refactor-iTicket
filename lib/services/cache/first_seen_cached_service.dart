@@ -30,6 +30,7 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     });
     var vehicleInfos = paging.rows as List<VehicleInformation>;
     set(vehicleInfos);
+    return vehicleInfos;
   }
 
   getAllWithCreatedOnTheOffline() async {
