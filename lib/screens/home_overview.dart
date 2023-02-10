@@ -685,7 +685,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                     onPressed: () async {
                       List<VehicleInformation> vehicles =
                           await createdVehicleDataLocalService.getAll();
-                      log("hehehe ${vehicles.length}");
+                      log("hehehe ${vehicles[0].EvidencePhotos!.length}");
                       log("hehehe ${vehicles.map(
                         (e) {
                           print(json.encode(e));

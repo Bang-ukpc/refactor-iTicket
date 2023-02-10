@@ -332,7 +332,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     await issuedPcnLocalService.syncAll();
     // await createdWardenEventLocalService.syncAll();
 
-    await wardenEventDataSync();
+    // await wardenEventDataSync();
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
@@ -343,29 +343,20 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         var firstSeenLength = 0;
         var gracePeriodLength = 0;
         var pcnLength = 0;
-
-        final String? dataUpsert = await SharedPreferencesHelper.getStringValue(
-            'vehicleInfoUpsertDataLocal');
+        List<VehicleInformation> dataUpsert2 =
+            await createdVehicleDataLocalService.getAll();
         final String? issuePCNData =
             await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
 
-        if (dataUpsert != null) {
-          final vehicleInfoUpsertData =
-              json.decode(dataUpsert) as List<dynamic>;
-          List<VehicleInformation> vehicleInfoList = vehicleInfoUpsertData
-              .map((i) => VehicleInformation.fromJson(json.decode(i)))
-              .toList();
+        var firstSeenList = dataUpsert2
+            .where((e) => e.Type == VehicleInformationType.FIRST_SEEN.index)
+            .toList();
+        var gracePeriodList = dataUpsert2
+            .where((e) => e.Type == VehicleInformationType.GRACE_PERIOD.index)
+            .toList();
 
-          var firstSeenList = vehicleInfoList
-              .where((e) => e.Type == VehicleInformationType.FIRST_SEEN.index)
-              .toList();
-          var gracePeriodList = vehicleInfoList
-              .where((e) => e.Type == VehicleInformationType.GRACE_PERIOD.index)
-              .toList();
-
-          firstSeenLength = firstSeenList.length;
-          gracePeriodLength = gracePeriodList.length;
-        }
+        firstSeenLength = firstSeenList.length;
+        gracePeriodLength = gracePeriodList.length;
 
         if (issuePCNData != null) {
           var decodedData = json.decode(issuePCNData) as List<dynamic>;

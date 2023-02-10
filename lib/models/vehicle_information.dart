@@ -20,14 +20,15 @@ class EvidencePhoto extends BaseModel {
   Map<String, dynamic> toJson() => _$EvidencePhotoToJson(this);
 }
 
-EvidencePhoto _$EvidencePhotoFromJson(Map<String, dynamic> json) =>
-    EvidencePhoto(
-      VehicleInformationId: json['VehicleInformationId'],
-      BlobName: json['BlobName'],
-      Id: json['Id'] ?? 0,
-      Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
-      Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
-    );
+EvidencePhoto _$EvidencePhotoFromJson(Map<String, dynamic> json) {
+  return EvidencePhoto(
+    VehicleInformationId: json['VehicleInformationId'],
+    BlobName: json['BlobName'],
+    Id: json['Id'] ?? 0,
+    Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
+    Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
+  );
+}
 
 Map<String, dynamic> _$EvidencePhotoToJson(EvidencePhoto instance) {
   return <String, dynamic>{
