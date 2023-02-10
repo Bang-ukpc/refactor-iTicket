@@ -34,11 +34,11 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
   }
 
   syncContraventionReasonForAllZones(
-      void Function(int total, int processingIndex)? callback) async {
+      void Function(int total, int processingIndex)? progressCallback) async {
     var zones = await _getAllZonesFromRotas();
     for (int i = 0; i < zones.length; i++) {
       var zone = zones[i];
-      callback!(zones.length, i);
+      progressCallback!(zones.length, i);
       var contraventionReasonCachedService =
           ContraventionReasonCachedService(zone.Id ?? 0);
       await contraventionReasonCachedService.syncFromServer();
