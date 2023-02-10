@@ -11,7 +11,11 @@ import 'package:iWarden/models/vehicle_information.dart';
 class VehicleInfoController {
   late Dio dio;
 
-  VehicleInfoController(Dio initDio) {
+  VehicleInfoController() {
+    dio = DioHelper.defaultApiClient;
+  }
+
+  VehicleInfoController.fromDio(Dio initDio) {
     dio = initDio;
   }
 
@@ -207,4 +211,4 @@ class VehicleInfoController {
   }
 }
 
-final vehicleInfoController = VehicleInfoController(DioHelper.defaultApiClient);
+final vehicleInfoController = VehicleInfoController();
