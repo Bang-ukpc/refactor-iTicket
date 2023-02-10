@@ -6,7 +6,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
-import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
@@ -163,8 +162,6 @@ class _LocationScreenState extends State<LocationScreen> {
     super.dispose();
   }
 
-  double? distanceValue = 0.0;
-
   // double distanceInMeters =
   @override
   Widget build(BuildContext context) {
@@ -172,21 +169,14 @@ class _LocationScreenState extends State<LocationScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-    final sourceLocation = LatLng(
-      currentLocationPosition.currentLocation?.latitude ?? 0,
-      currentLocationPosition.currentLocation?.longitude ?? 0,
-    );
 
-    final destination = LatLng(
-      locations.location?.Latitude ?? 0,
-      locations.location?.Longitude ?? 0,
-    );
-    double handelDistanceInMeters() {
+    double handelDistanceInMeters(
+        {required double endLatitude, required double endLongitude}) {
       return Geolocator.distanceBetween(
           currentLocationPosition.currentLocation?.latitude ?? 0,
           currentLocationPosition.currentLocation?.longitude ?? 0,
-          destination.latitude,
-          destination.longitude);
+          endLatitude,
+          endLongitude);
     }
 
     Future<void> showMyDialog() async {
@@ -278,6 +268,9 @@ class _LocationScreenState extends State<LocationScreen> {
         locations.onSelectedLocation(listFilterByRota[0].locations!.isNotEmpty
             ? listFilterByRota[0].locations![0]
             : null);
+        handelDistanceInMeters(
+            endLatitude: listFilterByRota[0].locations![0].Latitude ?? 0,
+            endLongitude: listFilterByRota[0].locations![0].Longitude ?? 0);
         goToDestination(
             latitude: listFilterByRota[0].locations?[0].Latitude ?? 0,
             longitude: listFilterByRota[0].locations?[0].Longitude ?? 0);
@@ -339,7 +332,10 @@ class _LocationScreenState extends State<LocationScreen> {
                 if (!isValid) {
                   return;
                 } else {
-                  if (handelDistanceInMeters() <= 1609.344) {
+                  if (handelDistanceInMeters(
+                          endLatitude: locations.location?.Latitude ?? 0,
+                          endLongitude: locations.location?.Longitude ?? 0) <=
+                      1609.344) {
                     Navigator.of(context)
                         .pushNamed(ReadRegulationScreen.routeName);
                   } else {
@@ -528,7 +524,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                               (context, item, isSelected) {
                                             return DropDownItem2(
                                               title: item.Name,
-                                              subTitle: '${item.Distance}km',
+                                              subTitle:
+                                                  '${(handelDistanceInMeters(endLatitude: item.Latitude ?? 0, endLongitude: item.Longitude ?? 0) / 1000).toStringAsFixed(3)}km',
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
                                               operationalPeriodsList:
@@ -548,9 +545,6 @@ class _LocationScreenState extends State<LocationScreen> {
                                           setZoneWhenSelectedLocation(
                                             locationSelected,
                                           );
-                                          setState(() {
-                                            distanceValue = value!.Distance;
-                                          });
                                           await goToDestination(
                                               latitude: value?.Latitude ?? 0,
                                               longitude: value?.Longitude ?? 0);
@@ -650,7 +644,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                     width: 14,
                                                   ),
                                                   Text(
-                                                    "${((locations.location?.Distance ?? 0) / 15 * 60).ceil()}min (${locations.location?.Distance ?? 0}km)",
+                                                    "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)",
                                                     style: CustomTextStyle.h4
                                                         .copyWith(
                                                       color: ColorTheme.primary,
