@@ -6,7 +6,7 @@ import 'cache_service.dart';
 
 class GracePeriodCachedService extends CacheService<VehicleInformation> {
   late int zoneId;
-  GracePeriodCachedService(int initZoneId) : super("cachedGracePeriodItems") {
+  GracePeriodCachedService(int initZoneId) : super("cachedGracePeriodItems_$initZoneId") {
     zoneId = initZoneId;
   }
 

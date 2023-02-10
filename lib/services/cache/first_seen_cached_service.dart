@@ -7,7 +7,7 @@ import 'cache_service.dart';
 
 class FirstSeenCachedService extends CacheService<VehicleInformation> {
   late int zoneId;
-  FirstSeenCachedService(int initZoneId) : super("cacheFirstSeenItems") {
+  FirstSeenCachedService(int initZoneId) : super("cacheFirstSeenItems_$initZoneId") {
     zoneId = initZoneId;
   }
 

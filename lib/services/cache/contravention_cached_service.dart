@@ -4,7 +4,7 @@ import 'cache_service.dart';
 
 class PCNCachedService extends CacheService<Contravention> {
   late int zoneId;
-  PCNCachedService(int initZoneId) : super("cachedContraventions") {
+  PCNCachedService(int initZoneId) : super("cachedContraventions_$initZoneId") {
     zoneId = initZoneId;
   }
 
