@@ -702,12 +702,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           type: virtualTicket2.TypePCN,
           contraventionPhotos: contraventionImageList,
         );
+        bool check = await checkDuplicateContravention(
+            virtualTicket2.ContraventionReference);
 
         bool check = await checkDuplicateContravention(
             virtualTicket2.ContraventionReference);
 
         if (!mounted) return;
-
         if (!check) {
           contraventionProvider.upDateContravention(contraventionDataFake);
           Navigator.of(context).pop();
