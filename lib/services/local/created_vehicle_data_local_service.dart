@@ -28,6 +28,19 @@ class CreatedVehicleDataLocalService
     }
   }
 
+  getAllFirstSeen() async {
+    var items = await getAll();
+    return items.where(
+        (element) => element.Type == VehicleInformationType.FIRST_SEEN.index);
+  }
+
+ getAllGracePeriod() async {
+    var items = await getAll();
+    return items.where(
+        (element) => element.Type == VehicleInformationType.GRACE_PERIOD.index);
+  }
+
+
   syncPhoto() {}
 }
 
