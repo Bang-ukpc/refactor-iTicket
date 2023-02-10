@@ -3,13 +3,8 @@ import 'dart:convert';
 
 import 'package:iWarden/factory/json_decode_factory.dart';
 import 'package:iWarden/models/ContraventionService.dart';
-
 import '../../helpers/shared_preferences_helper.dart';
 import '../../models/base_model.dart';
-import '../../models/vehicle_information.dart';
-// import 'dart:developer';
-// import 'package:iWarden/models/vehicle_information.dart';
-// import '../../helpers/shared_preferences_helper.dart';
 
 abstract class ICacheService<T extends Identifiable> {
   syncFromServer();

@@ -6,9 +6,10 @@ import '../../controllers/index.dart';
 import 'cache_service.dart';
 
 class FirstSeenCachedService extends CacheService<VehicleInformation> {
-  late int zoneId;
-  FirstSeenCachedService(int initZoneId) : super("cacheFirstSeenItems_$initZoneId") {
-    zoneId = initZoneId;
+  late int _zoneId;
+  FirstSeenCachedService(int zoneId)
+      : super("cacheFirstSeenItems_$zoneId") {
+    _zoneId = zoneId;
   }
 
   @override
@@ -16,7 +17,7 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     var paging = await weakNetworkVehicleInfoController
         .getVehicleInfoList(
             vehicleInfoType: VehicleInformationType.FIRST_SEEN.index,
-            zoneId: zoneId,
+            zoneId: _zoneId,
             page: 1,
             pageSize: 1000)
         .catchError((err) async {

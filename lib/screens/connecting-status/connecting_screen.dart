@@ -25,7 +25,7 @@ import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
-import 'package:iWarden/services/cache/cache_factory.dart';
+import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
