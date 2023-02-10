@@ -39,6 +39,7 @@ class _AbortScreenState extends State<AbortScreen> {
       TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   bool isLoading = true;
+  late CachedServiceFactory cachedServiceFactory;
 
   void getCancellationReasons() async {
     await cachedServiceFactory.cancellationReasonCachedService

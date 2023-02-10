@@ -15,9 +15,11 @@ class ContraventionReasonCachedService
   syncFromServer() async {
     var paging = await contraventionController
         .getContraventionReasonServiceList(zoneId: _zoneId);
-    var contraventionReasons =
-        paging.rows as List<ContraventionReasonTranslations>;
-    set(contraventionReasons);
-    return contraventionReasons;
+    var contraventionReasons = paging.rows;
+    var contraventionReasonsFromJson = contraventionReasons
+        .map((item) => ContraventionReasonTranslations.fromJson(item))
+        .toList();
+    set(contraventionReasonsFromJson);
+    return contraventionReasonsFromJson;
   }
 }

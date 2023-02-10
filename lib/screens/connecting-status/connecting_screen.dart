@@ -56,6 +56,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   List<ContraventionReasonTranslations> contraventionReasonList = [];
+  late CachedServiceFactory cachedServiceFactory = CachedServiceFactory(0);
 
   _buildConnect(String title, StateDevice state) {
     return Container(
@@ -168,12 +169,25 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     }
   }
 
-  void getContraventionReasonList() async {
-    await cachedServiceFactory.defaultContraventionReasonCachedService.syncFromServer();
+  Future<void> getRotaList() async {
+    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
   }
 
-  void getCancellationReasonList() async {
+  Future<void> getContraventionReasonList() async {
+    await cachedServiceFactory.defaultContraventionReasonCachedService
+        .syncFromServer();
+    await cachedServiceFactory.rotaWithLocationCachedService
+        .syncContraventionReasonForAllZones();
+  }
+
+  Future<void> getCancellationReasonList() async {
     await cachedServiceFactory.cancellationReasonCachedService.syncFromServer();
+  }
+
+  Future<void> syncAllRequiredData() async {
+    await getRotaList();
+    await getCancellationReasonList();
+    await getContraventionReasonList();
   }
 
   @override
@@ -181,10 +195,10 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     super.initState();
     onStartBackgroundService();
     getCurrentLocationOfWarden();
-    getContraventionReasonList();
-    getCancellationReasonList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
+      cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
+
       await wardensInfo.getWardensInfoLogging().then((value) {
         setState(() {
           isPending = false;
@@ -195,6 +209,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
         });
       });
     });
+    syncAllRequiredData();
     checkGpsConnectingStatus();
     serviceStatusStreamSubscription =
         Geolocator.getServiceStatusStream().listen(_updateConnectionGpsStatus);

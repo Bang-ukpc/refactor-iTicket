@@ -326,7 +326,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     //     NavigationService.navigatorKey.currentState!.pop();
     //   });
     // }
-    print("synsynsyn");
     await createdVehicleDataLocalService.syncAll();
     // await vehicleInfoDataSynch();
     // await parkingChargeDataSynch();

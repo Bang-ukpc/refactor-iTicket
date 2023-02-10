@@ -4,11 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/zone.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 
 class Locations with ChangeNotifier {
   static RotaWithLocation? rotaShiftSelected;
   static LocationWithZones? locationSelected;
   static Zone? zoneSelected;
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   RotaWithLocation? get rotaShift {
     return rotaShiftSelected;
@@ -16,6 +18,10 @@ class Locations with ChangeNotifier {
 
   LocationWithZones? get location {
     return locationSelected;
+  }
+
+  ZoneCachedServiceFactory? get getZoneCachedServiceFactory {
+    return zoneCachedServiceFactory;
   }
 
   Zone? get zone {
@@ -55,6 +61,7 @@ class Locations with ChangeNotifier {
       SharedPreferencesHelper.setStringValue(
           'locationSelectedByWarden', encodedLocationData);
     }
+
     notifyListeners();
   }
 
@@ -65,6 +72,7 @@ class Locations with ChangeNotifier {
       SharedPreferencesHelper.setStringValue(
           'zoneSelectedByWarden', encodedZoneData);
     }
+    zoneCachedServiceFactory = ZoneCachedServiceFactory(zone!.Id ?? 0);
     notifyListeners();
   }
 
