@@ -13,9 +13,17 @@ class CachedServiceFactory {
     _wardenId = wardenId;
     cancellationReasonCachedService = CancellationReasonCachedService();
     rotaWithLocationCachedService = RotaWithLocationCachedService(_wardenId);
-    defaultContraventionReasonCachedService = ContraventionReasonCachedService(0);
+    defaultContraventionReasonCachedService =
+        ContraventionReasonCachedService(0);
   }
 }
 
-// TODO: need to relace wardenID
-final cachedServiceFactory = CachedServiceFactory(1);
+// TODO: Example to sync the data from server
+// Future<void> main(List<String> args) async {
+//   final cachedServiceFactory = CachedServiceFactory(1);
+//   await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+//   await cachedServiceFactory.cancellationReasonCachedService.syncFromServer();
+
+//   await cachedServiceFactory.defaultContraventionReasonCachedService.syncFromServer();
+//   await cachedServiceFactory.rotaWithLocationCachedService.syncContraventionReasonForAllZones();
+// }
