@@ -169,7 +169,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   void getContraventionReasonList() async {
-    await contraventionReasonCachedService.syncFromServer();
+    await cachedServiceFactory.contraventionReasonCachedService.syncFromServer();
   }
 
   void getCancellationReasonList() async {
