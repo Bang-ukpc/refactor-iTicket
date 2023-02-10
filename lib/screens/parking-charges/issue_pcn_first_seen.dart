@@ -372,10 +372,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       for (int i = 0; i < dataCache.length; i++) {
         if (dataCache[i].ContraventionReference == contraventionReferenceID) {
-          print("trueeeeeeeeeeeeee");
           check = true;
         } else {
-          print("falseeeeeeeeeee");
           check = false;
         }
       }
