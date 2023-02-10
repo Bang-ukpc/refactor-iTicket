@@ -34,7 +34,7 @@ class VehicleInfoController {
             await dio.post('/vehicleInformation/filter', data: bodyRequest);
         Pagination vehicleInfoPagination = Pagination.fromJson(response.data);
         Pagination vehicleInfoDataLocal = Pagination.fromJson(response.data);
-
+        print("[DETAIL] ${json.encode(vehicleInfoDataLocal.toJson())}");
         final String? data = await SharedPreferencesHelper.getStringValue(
             'vehicleInfoDataLocal');
         if (data == null) {
@@ -127,6 +127,7 @@ class VehicleInfoController {
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
+      print("[UPSERT] upsertVehicleInfo");
       try {
         final response = await dio.post(
           '/vehicleInformation',

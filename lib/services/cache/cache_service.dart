@@ -40,7 +40,10 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   delete(int id) async {
     final items = await getAll();
     print(items.map((e) => e.Id));
-    final updatedItems = items.where((element) => element.Id! != id);
+    final updatedItems = items.where((element) {
+      print("element.Id ${element.Id == null}");
+      return element.Id != id;
+    });
     set(updatedItems.toList());
   }
 
