@@ -705,9 +705,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         bool check = await checkDuplicateContravention(
             virtualTicket2.ContraventionReference);
 
-        bool check = await checkDuplicateContravention(
-            virtualTicket2.ContraventionReference);
-
         if (!mounted) return;
         if (!check) {
           contraventionProvider.upDateContravention(contraventionDataFake);
