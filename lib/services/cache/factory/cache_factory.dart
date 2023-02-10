@@ -6,14 +6,14 @@ import '../contravention_reason_cached_service.dart';
 class CachedServiceFactory {
   late CancellationReasonCachedService cancellationReasonCachedService;
   late RotaWithLocationCachedService rotaWithLocationCachedService;
-  late ContraventionReasonCachedService contraventionReasonCachedService;
+  late ContraventionReasonCachedService defaultContraventionReasonCachedService;
   late int _wardenId;
 
   CachedServiceFactory(int wardenId) {
     _wardenId = wardenId;
     cancellationReasonCachedService = CancellationReasonCachedService();
     rotaWithLocationCachedService = RotaWithLocationCachedService(_wardenId);
-    contraventionReasonCachedService = ContraventionReasonCachedService(0);
+    defaultContraventionReasonCachedService = ContraventionReasonCachedService(0);
   }
 }
 
