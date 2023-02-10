@@ -16,7 +16,8 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
         zoneId: zoneId,
         page: 1,
         pageSize: 1000);
-    var vehicleInfos = paging.rows as List<VehicleInformation>;
-    set(vehicleInfos);
+    var firstSeenItems = paging.rows as List<VehicleInformation>;
+    set(firstSeenItems);
+    return firstSeenItems;
   }
 }

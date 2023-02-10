@@ -86,7 +86,7 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   }
 
   @override
-  syncFromServer() {
+  Future<List<T>> syncFromServer() {
     throw UnimplementedError();
   }
 }

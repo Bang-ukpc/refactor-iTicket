@@ -16,7 +16,8 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
         zoneId: zoneId,
         page: 1,
         pageSize: 1000);
-    var vehicleInfos = paging.rows as List<VehicleInformation>;
-    set(vehicleInfos);
+    var gracePeriodItems = paging.rows as List<VehicleInformation>;
+    set(gracePeriodItems);
+    return gracePeriodItems;
   }
 }
