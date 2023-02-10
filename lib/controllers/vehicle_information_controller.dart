@@ -9,7 +9,12 @@ import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 
 class VehicleInfoController {
-  static final dio = DioHelper.defaultApiClient;
+  late Dio dio;
+
+  VehicleInfoController(Dio initDio) {
+    dio = initDio;
+  }
+
   Future<Pagination> getVehicleInfoList(
       {required int vehicleInfoType,
       required int zoneId,
@@ -202,4 +207,4 @@ class VehicleInfoController {
   }
 }
 
-final vehicleInfoController = VehicleInfoController();
+final vehicleInfoController = VehicleInfoController(DioHelper.defaultApiClient);
