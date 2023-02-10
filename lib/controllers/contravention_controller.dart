@@ -11,7 +11,16 @@ import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_registration.dart';
 
 class ContraventionController {
-  static final dio = DioHelper.defaultApiClient;
+  late Dio dio;
+
+  ContraventionController(){
+    dio =  DioHelper.defaultApiClient;
+  }
+
+  ContraventionController.fromDio(Dio initDio){
+    dio =  initDio;
+  }
+
   Future<Contravention> createPCN(ContraventionCreateWardenCommand pcn) async {
     try {
       final response = await dio.post(

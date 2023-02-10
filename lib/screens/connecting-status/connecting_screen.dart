@@ -15,7 +15,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
@@ -26,6 +25,8 @@ import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
+import 'package:iWarden/services/cache/factory/cache_factory.dart';
+import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
@@ -55,7 +56,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   List<ContraventionReasonTranslations> contraventionReasonList = [];
-  List<CancellationReason> cancellationReasonList = [];
 
   _buildConnect(String title, StateDevice state) {
     return Container(
@@ -169,25 +169,11 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   void getContraventionReasonList() async {
-    final Pagination list =
-        await contraventionController.getContraventionReasonServiceList();
-    setState(() {
-      contraventionReasonList = list.rows
-          .map((item) => ContraventionReasonTranslations.fromJson(item))
-          .toList();
-    });
+    await cachedServiceFactory.defaultContraventionReasonCachedService.syncFromServer();
   }
 
   void getCancellationReasonList() async {
-    if (!mounted) return;
-    await abortController.getCancellationReasonList().then((value) {
-      setState(() {
-        cancellationReasonList = value;
-      });
-    }).catchError((err) {
-      print(err);
-      throw Error();
-    });
+    await cachedServiceFactory.cancellationReasonCachedService.syncFromServer();
   }
 
   @override

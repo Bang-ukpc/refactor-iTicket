@@ -9,7 +9,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/abort_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -19,6 +18,7 @@ import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
+import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
@@ -34,17 +34,19 @@ class AbortScreen extends StatefulWidget {
 
 class _AbortScreenState extends State<AbortScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  List<CancellationReason> cancellationReasonList = [];
+  List<CancellationReason> cancellationReasons = [];
   final TextEditingController _cancellationReasonController =
       TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   bool isLoading = true;
 
-  void getCancellationReasonList() async {
-    await abortController.getCancellationReasonList().then((value) {
+  void getCancellationReasons() async {
+    await cachedServiceFactory.cancellationReasonCachedService
+        .getAll()
+        .then((value) {
       setState(() {
         isLoading = false;
-        cancellationReasonList = value;
+        cancellationReasons = value;
       });
     }).catchError((err) {
       setState(() {
@@ -56,7 +58,7 @@ class _AbortScreenState extends State<AbortScreen> {
   @override
   void initState() {
     super.initState();
-    getCancellationReasonList();
+    getCancellationReasons();
   }
 
   @override
@@ -232,7 +234,7 @@ class _AbortScreenState extends State<AbortScreen> {
                                             hintText: 'Select reason',
                                           ),
                                         ),
-                                        items: cancellationReasonList,
+                                        items: cancellationReasons,
                                         itemAsString: (item) => item.reason,
                                         popupProps: PopupProps.menu(
                                           fit: FlexFit.loose,
