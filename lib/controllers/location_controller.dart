@@ -24,9 +24,6 @@ class LocationController {
         List<dynamic> temp = response.data;
         List<RotaWithLocation> rotaWithLocations =
             temp.map((model) => RotaWithLocation.fromJson(model)).toList();
-        final String encodedData = RotaWithLocation.encode(rotaWithLocations);
-        SharedPreferencesHelper.setStringValue(
-            'rotaWithLocationDataLocal', encodedData);
         return rotaWithLocations;
       } on DioError catch (error) {
         print(error.response);

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 
@@ -22,6 +23,7 @@ class JsonDecodeFactory {
     }
     if (T == CancellationReason) return CancellationReason.fromJson(json) as T;
     if (T == EvidencePhoto) return EvidencePhoto.fromJson(json) as T;
+    if (T == RotaWithLocation) return RotaWithLocation.fromJson(json) as T;
     final className = T.toString();
     throw Exception("$className is not register to the factory");
   }

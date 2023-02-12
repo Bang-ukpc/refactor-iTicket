@@ -28,7 +28,6 @@ class UserController {
       final String? data =
           await SharedPreferencesHelper.getStringValue('wardenDataLocal');
       final wardens = json.decode(data as String) as Map<String, dynamic>;
-      print(wardens);
       return Wardens.fromJson(wardens);
     }
   }

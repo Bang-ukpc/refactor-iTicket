@@ -48,7 +48,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
   bool checkGps = false;
-  Position? currentLocationOfWarder;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;
   bool? checkBluetooth;
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
@@ -56,7 +55,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   List<ContraventionReasonTranslations> contraventionReasonList = [];
-  late CachedServiceFactory cachedServiceFactory = CachedServiceFactory(0);
+  late CachedServiceFactory cachedServiceFactory;
 
   _buildConnect(String title, StateDevice state) {
     return Container(
@@ -144,7 +143,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     await currentLocationPosition.getCurrentLocation().then((value) {
       setState(() {
         pendingGetCurrentLocation = false;
-        currentLocationOfWarder = value;
       });
       checkPermissionGPS();
     }).catchError((err) {
@@ -185,8 +183,11 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   Future<void> syncAllRequiredData() async {
+    print('GET ROTA');
     await getRotaList();
+    print('GET CANCELLATION REASON');
     await getCancellationReasonList();
+    print('GET CONTRAVENTION REASON');
     await getContraventionReasonList();
   }
 
@@ -197,9 +198,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     getCurrentLocationOfWarden();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
-      cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
-
-      await wardensInfo.getWardensInfoLogging().then((value) {
+      await wardensInfo.getWardensInfoLogging().then((value) async {
         setState(() {
           isPending = false;
         });
@@ -208,8 +207,9 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
           isPending = false;
         });
       });
+      cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
+      await syncAllRequiredData();
     });
-    syncAllRequiredData();
     checkGpsConnectingStatus();
     serviceStatusStreamSubscription =
         Geolocator.getServiceStatusStream().listen(_updateConnectionGpsStatus);
@@ -244,8 +244,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     final wardenEventStartShift = WardenEvent(
       type: TypeWardenEvent.StartShift.index,
       detail: 'Warden has started shift',
-      latitude: currentLocationOfWarder?.latitude ?? 0,
-      longitude: currentLocationOfWarder?.longitude ?? 0,
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardensProvider.wardens?.Id ?? 0,
     );
 

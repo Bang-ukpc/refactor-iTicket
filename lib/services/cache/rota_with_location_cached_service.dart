@@ -1,3 +1,4 @@
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
 import '../../models/location.dart';
@@ -14,17 +15,25 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
   @override
   syncFromServer() async {
     var filter = ListLocationOfTheDayByWardenIdProps(
-        latitude: 0, longitude: 0, wardenId: _wardenId);
-    var rotaWithLocations = await locationController.getAll(filter);
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: _wardenId,
+    );
+    var rotaWithLocations =
+        await locationController.getAll(filter).catchError((err) async {
+      return await getAll();
+    });
+
     set(rotaWithLocations);
     return rotaWithLocations;
   }
 
   Future<List<Zone>> _getAllZonesFromRotas() async {
     var rotaWithLocations = await getAll();
-    var locations = rotaWithLocations
-        .map((e) => e.locations ?? [])
-        .toList()
+    var groupLocations =
+        rotaWithLocations.map((e) => e.locations ?? []).toList();
+
+    var locations = groupLocations
         .reduce((allLocations, locations) => [...allLocations, ...locations]);
 
     var zones = locations
@@ -38,7 +47,9 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
     var zones = await _getAllZonesFromRotas();
     for (int i = 0; i < zones.length; i++) {
       var zone = zones[i];
-      progressCallback!(zones.length, i);
+      if (progressCallback != null) {
+        progressCallback(zones.length, i);
+      }
       var contraventionReasonCachedService =
           ContraventionReasonCachedService(zone.Id ?? 0);
       await contraventionReasonCachedService.syncFromServer();

@@ -16,6 +16,9 @@ class ZoneCachedServiceFactory {
     firstSeenCachedService = FirstSeenCachedService(_zoneId);
     gracePeriodCachedService = GracePeriodCachedService(_zoneId);
     contraventionCachedService = ContraventionCachedService(_zoneId);
-    contraventionReasonCachedService = ContraventionReasonCachedService(_zoneId);
+    contraventionReasonCachedService =
+        ContraventionReasonCachedService(_zoneId);
+
+    // contraventionCachedService.create(t)
   }
 }

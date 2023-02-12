@@ -6,7 +6,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
-import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
@@ -18,6 +17,7 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
 import 'package:iWarden/screens/read_regulation_screen.dart';
+import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
@@ -44,22 +44,17 @@ class _LocationScreenState extends State<LocationScreen> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   Position? currentLocation;
+  late CachedServiceFactory cachedServiceFactory;
 
   String formatRotaShift(DateTime date) {
     return DateFormat('HH:mm').format(date);
   }
 
-  Future<void> getLocationList(Locations locations, int wardenId) async {
-    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
-        ListLocationOfTheDayByWardenIdProps(
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardenId,
-    );
-
-    await locationController
-        .getAll(listLocationOfTheDayByWardenIdProps)
+  Future<void> getRotas() async {
+    await cachedServiceFactory.rotaWithLocationCachedService
+        .getAll()
         .then((value) {
+      print('ROTAS: ${value.length}');
       setState(() {
         locationWithRotaList = value;
         isLoading = false;
@@ -75,18 +70,21 @@ class _LocationScreenState extends State<LocationScreen> {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
   }
 
-  bool checkRotaOverTimed(DateTime timeFrom, DateTime timeTo) {
-    DateTime date = DateTime.parse(getLocalDate(DateTime.now()))
-        .subtract(const Duration(minutes: 30));
-    return timeTo.isAfter(date) ||
-        (date.isAfter(timeFrom) && date.isBefore(timeTo));
-  }
-
   List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
-    final filterRotaShiftByNow = list.toList();
+    DateTime date = DateTime.parse(getLocalDate(DateTime.now()));
+    final filterRotaShiftByNow = list.where(
+      (location) {
+        DateTime timeFrom =
+            DateTime.parse(getLocalDate(location.timeFrom as DateTime));
+        DateTime timeTo =
+            DateTime.parse(getLocalDate(location.timeTo as DateTime));
+        return timeFrom.isAfter(date) ||
+            (date.isAfter(timeFrom) && date.isBefore(timeTo));
+      },
+    ).toList();
     filterRotaShiftByNow.sort(
-      (i1, i2) => DateTime.parse(getLocalDate(i2.timeFrom as DateTime))
-          .compareTo(DateTime.parse(getLocalDate(i1.timeFrom as DateTime))),
+      (i1, i2) => DateTime.parse(getLocalDate(i1.timeFrom as DateTime))
+          .compareTo(DateTime.parse(getLocalDate(i2.timeFrom as DateTime))),
     );
     setState(() {
       listFilter = filterRotaShiftByNow;
@@ -136,9 +134,11 @@ class _LocationScreenState extends State<LocationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       locations.resetLocationWithZones();
-      final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
+      final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
+      cachedServiceFactory =
+          CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
+      await getRotas();
 
-      await getLocationList(locations, wardersProvider.wardens?.Id ?? 0);
       rotaList(locationWithRotaList);
       if (listFilter.isNotEmpty) {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
@@ -160,8 +160,6 @@ class _LocationScreenState extends State<LocationScreen> {
     super.dispose();
   }
 
-  double? distanceValue = 0.0;
-
   // double distanceInMeters =
   @override
   Widget build(BuildContext context) {
@@ -169,20 +167,14 @@ class _LocationScreenState extends State<LocationScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-    final sourceLocation = LatLng(
-      currentLocationPosition.currentLocation?.latitude ?? 0,
-      currentLocationPosition.currentLocation?.longitude ?? 0,
-    );
-    final destination = LatLng(
-      locations.location?.Latitude ?? 0,
-      locations.location?.Longitude ?? 0,
-    );
-    double handelDistanceInMeters() {
+
+    double handelDistanceInMeters(
+        {required double endLatitude, required double endLongitude}) {
       return Geolocator.distanceBetween(
           currentLocationPosition.currentLocation?.latitude ?? 0,
           currentLocationPosition.currentLocation?.longitude ?? 0,
-          destination.latitude,
-          destination.longitude);
+          endLatitude,
+          endLongitude);
     }
 
     Future<void> showMyDialog() async {
@@ -266,7 +258,7 @@ class _LocationScreenState extends State<LocationScreen> {
     print('zone: ${locations.zone?.Name}');
 
     Future<void> refresh() async {
-      await getLocationList(locations, wardensProvider.wardens?.Id ?? 0);
+      await getRotas();
       rotaList(locationWithRotaList);
       if (listFilter.isNotEmpty) {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
@@ -274,6 +266,9 @@ class _LocationScreenState extends State<LocationScreen> {
         locations.onSelectedLocation(listFilterByRota[0].locations!.isNotEmpty
             ? listFilterByRota[0].locations![0]
             : null);
+        handelDistanceInMeters(
+            endLatitude: listFilterByRota[0].locations![0].Latitude ?? 0,
+            endLongitude: listFilterByRota[0].locations![0].Longitude ?? 0);
         goToDestination(
             latitude: listFilterByRota[0].locations?[0].Latitude ?? 0,
             longitude: listFilterByRota[0].locations?[0].Longitude ?? 0);
@@ -335,7 +330,10 @@ class _LocationScreenState extends State<LocationScreen> {
                 if (!isValid) {
                   return;
                 } else {
-                  if (handelDistanceInMeters() <= 1609.344) {
+                  if (handelDistanceInMeters(
+                          endLatitude: locations.location?.Latitude ?? 0,
+                          endLongitude: locations.location?.Longitude ?? 0) <=
+                      1609.344) {
                     Navigator.of(context)
                         .pushNamed(ReadRegulationScreen.routeName);
                   } else {
@@ -433,14 +431,9 @@ class _LocationScreenState extends State<LocationScreen> {
                                           constraints: const BoxConstraints(
                                             maxHeight: 200,
                                           ),
-                                          disabledItemFn: (item) =>
-                                              !checkRotaOverTimed(
-                                                  item.timeFrom!, item.timeTo!),
                                           itemBuilder:
                                               (context, item, isSelected) {
-                                            return DropDownItem3(
-                                              disable: checkRotaOverTimed(
-                                                  item.timeFrom!, item.timeTo!),
+                                            return DropDownItem(
                                               title:
                                                   '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                               isSelected: item.Id ==
@@ -529,7 +522,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                               (context, item, isSelected) {
                                             return DropDownItem2(
                                               title: item.Name,
-                                              subTitle: '${item.Distance}km',
+                                              subTitle:
+                                                  '${(handelDistanceInMeters(endLatitude: item.Latitude ?? 0, endLongitude: item.Longitude ?? 0) / 1000).toStringAsFixed(3)}km',
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
                                               operationalPeriodsList:
@@ -549,9 +543,6 @@ class _LocationScreenState extends State<LocationScreen> {
                                           setZoneWhenSelectedLocation(
                                             locationSelected,
                                           );
-                                          setState(() {
-                                            distanceValue = value!.Distance;
-                                          });
                                           await goToDestination(
                                               latitude: value?.Latitude ?? 0,
                                               longitude: value?.Longitude ?? 0);
@@ -651,7 +642,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                     width: 14,
                                                   ),
                                                   Text(
-                                                    "${((locations.location?.Distance ?? 0) / 15 * 60).ceil()}min (${locations.location?.Distance ?? 0}km)",
+                                                    "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)",
                                                     style: CustomTextStyle.h4
                                                         .copyWith(
                                                       color: ColorTheme.primary,
@@ -718,12 +709,10 @@ class DropDownItem extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
-  final bool disable;
   const DropDownItem({
     required this.title,
     this.subTitle,
     this.isSelected = false,
-    this.disable = false,
     super.key,
   });
 
@@ -751,61 +740,6 @@ class DropDownItem extends StatelessWidget {
               style: CustomTextStyle.body1.copyWith(
                 color: isSelected == false
                     ? ColorTheme.textPrimary
-                    : ColorTheme.primary,
-                fontSize: 16,
-              ),
-            ),
-            if (subTitle != null)
-              Text(
-                subTitle ?? '',
-                style: CustomTextStyle.body2,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DropDownItem3 extends StatelessWidget {
-  final String title;
-  final String? subTitle;
-  final bool? isSelected;
-  final bool disable;
-  const DropDownItem3({
-    required this.title,
-    this.subTitle,
-    this.isSelected = false,
-    this.disable = false,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            width: 1,
-            color: ColorTheme.grey300,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: subTitle != null ? 10 : 15,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: CustomTextStyle.body1.copyWith(
-                color: isSelected == false
-                    ? !disable
-                        ? ColorTheme.grey400
-                        : ColorTheme.textPrimary
                     : ColorTheme.primary,
                 fontSize: 16,
               ),
