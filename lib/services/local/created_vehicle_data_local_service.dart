@@ -13,17 +13,39 @@ class CreatedVehicleDataLocalService
 
   @override
   create(VehicleInformation t) async {
-    for (var photo in (t.EvidencePhotos ?? [])) {
-      await createdVehicleDataPhotoLocalService.create(photo);
+    if (t.EvidencePhotos!.isNotEmpty) {
+      await createdVehicleDataPhotoLocalService
+          .bulkCreate(t.EvidencePhotos as List<EvidencePhoto>);
     }
     return super.create(t);
   }
 
   @override
+  syncAll() async {
+    print("CreatedVehicleDataLocalService syncAll called!");
+
+    if (isSyncing) {
+      print("CreatedVehicleDataLocalService is syncing ...");
+      return;
+    }
+    isSyncing = true;
+
+    final items = await getAll();
+    print('[SYNC ALL] ${items.map((e) => e.Id)}');
+    for (var item in items) {
+      await sync(item);
+    }
+
+    isSyncing = false;
+  }
+
+  @override
   sync(VehicleInformation vehicleInformation) async {
+    print(
+        '[SYNC VEHICLE] syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
     try {
-      syncPcnPhotos(vehicleInformation.EvidencePhotos!).then((value) {
-        vehicleInformation.EvidencePhotos = value;
+      syncPcnPhotos(vehicleInformation.EvidencePhotos!).then((evidencePhotos) {
+        vehicleInformation.EvidencePhotos = evidencePhotos;
         print("[syncPcnPhotos] value ${json.encode(vehicleInformation)}");
         if (vehicleInformation.Id != null && vehicleInformation.Id! < 0) {
           vehicleInformation.Id = null;

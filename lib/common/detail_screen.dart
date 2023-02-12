@@ -46,8 +46,6 @@ class _DetailScreenState extends State<DetailScreen> {
     }).toList();
     final vehicleInfoController = VehicleInfoController();
 
-    print('Route Image file: ${images.map((e) => e)}');
-
     void onCarLeft() {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(
         ExpiredAt: args.ExpiredAt,

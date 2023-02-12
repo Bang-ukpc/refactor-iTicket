@@ -20,6 +20,7 @@ abstract class BaseLocalService<T extends Identifiable> extends CacheService<T>
     isSyncing = true;
 
     final items = await getAll();
+    print('[SYNC ALL] ${items.map((e) => e.Id)}');
     for (var item in items) {
       await sync(item);
     }

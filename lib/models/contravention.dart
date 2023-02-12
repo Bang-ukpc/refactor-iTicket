@@ -204,8 +204,6 @@ class ContraventionReasonTranslations extends Identifiable {
   });
 
   ContraventionReasonTranslations.fromJson(Map<String, dynamic> json) {
-    print(
-        '[CONTRAVENTION REASON CODE FROM JSON]: ${json['ContraventionReason']?['Code']}');
     created = json['Created'] == null ? null : DateTime.parse(json['Created']);
     deleted = json['Deleted'] == null ? null : DateTime.parse(json['Deleted']);
     id = json['Id'];

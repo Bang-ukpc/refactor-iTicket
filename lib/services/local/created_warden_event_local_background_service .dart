@@ -28,10 +28,10 @@ class CreatedWardenEventLocalBackgroundService
     set(allWardenEventsSort);
     print('[allWardenEvents LENGTH] ${allWardenEvents.length}');
 
-    for (int i = 0; i < allWardenEventsSort.length; i++) {
-      log("[LOOP] ${i}");
-      await sync(allWardenEventsSort[i]);
-    }
+    // for (int i = 0; i < allWardenEventsSort.length; i++) {
+    //   log("[LOOP] ${i}");
+    //   await sync(allWardenEventsSort[i]);
+    // }
     isSyncing = false;
     // return super.syncAll();
   }

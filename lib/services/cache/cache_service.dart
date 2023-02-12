@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class ICacheService<T extends Identifiable> {
   syncFromServer();
   create(T t);
+  bulkCreate(List<T> listT);
   delete(int id);
   get(int id);
   update(T t);
@@ -29,6 +30,13 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   create(T t) async {
     final items = await getAll();
     items.add(t);
+    set(items);
+  }
+
+  @override
+  bulkCreate(List<T> listT) async {
+    final items = await getAll();
+    items.addAll(listT);
     set(items);
   }
 

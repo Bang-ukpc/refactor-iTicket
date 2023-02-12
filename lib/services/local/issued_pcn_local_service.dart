@@ -14,6 +14,11 @@ class IssuedPcnLocalService
   IssuedPcnLocalService() : super('issuePCNDataLocal');
 
   @override
+  create(ContraventionCreateWardenCommand t) {
+    return super.create(t);
+  }
+
+  @override
   syncAll() async {
     if (isSyncing) {
       print("IssuedPcnLocalService is syncing");

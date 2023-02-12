@@ -137,82 +137,19 @@ class VehicleInfoController {
 
   Future<VehicleInformation?> upsertVehicleInfo(
       VehicleInformation vehicleInfo) async {
-    ConnectivityResult connectionStatus =
-        await (Connectivity().checkConnectivity());
-    if (connectionStatus == ConnectivityResult.wifi ||
-        connectionStatus == ConnectivityResult.mobile) {
-      print("[UPSERT] upsertVehicleInfo");
-      try {
-        final response = await dio.post(
-          '/vehicleInformation',
-          data: vehicleInfo.toJson(),
-        );
-        print(response.data);
+    try {
+      final response = await dio.post(
+        '/vehicleInformation',
+        data: vehicleInfo.toJson(),
+      );
+      print(response.data);
+      if (response.data != null) {
         final vehicleFromJson = VehicleInformation.fromJson(response.data);
         return vehicleFromJson;
-      } on DioError catch (error) {
-        print(error.response);
-        rethrow;
       }
-    } else {
-      final String? dataList =
-          await SharedPreferencesHelper.getStringValue('vehicleInfoDataLocal');
-      final String? vehicleUpsertData =
-          await SharedPreferencesHelper.getStringValue(
-              'vehicleInfoUpsertDataLocal');
-
-      if (vehicleUpsertData != null) {
-        var decodedData = json.decode(vehicleUpsertData) as List<dynamic>;
-        decodedData = decodedData.map(((i) => json.decode(i))).toList();
-        var index = decodedData.indexWhere((r) => r['Id'] == vehicleInfo.Id);
-        if (index != -1) {
-          decodedData[index]['CarLeft'] = true;
-        } else {
-          decodedData.add(vehicleInfo.toJson());
-          if (dataList != null) {
-            final vehicleInfoDataLocal =
-                json.decode(dataList) as Map<String, dynamic>;
-            Pagination fromJsonVehicleInfo =
-                Pagination.fromJson(vehicleInfoDataLocal);
-            var position = fromJsonVehicleInfo.rows
-                .indexWhere((i) => i['Id'] == vehicleInfo.Id);
-            if (position != -1) {
-              fromJsonVehicleInfo.rows.removeAt(position);
-            }
-            final String encodedDataList =
-                json.encode(fromJsonVehicleInfo.toJson());
-            SharedPreferencesHelper.setStringValue(
-                'vehicleInfoDataLocal', encodedDataList);
-          }
-        }
-        decodedData = decodedData.map(((i) => json.encode(i))).toList();
-        final String encodedData = json.encode(decodedData);
-        SharedPreferencesHelper.setStringValue(
-            'vehicleInfoUpsertDataLocal', encodedData);
-      } else {
-        final String encodedNewData = json.encode(vehicleInfo.toJson());
-        List<String> newData = [];
-        newData.add(encodedNewData);
-        if (dataList != null) {
-          final vehicleInfoDataLocal =
-              json.decode(dataList) as Map<String, dynamic>;
-          Pagination fromJsonVehicleInfo =
-              Pagination.fromJson(vehicleInfoDataLocal);
-          var position = fromJsonVehicleInfo.rows
-              .indexWhere((i) => i['Id'] == vehicleInfo.Id);
-          if (position != -1) {
-            fromJsonVehicleInfo.rows.removeAt(position);
-          }
-          final String encodedDataList =
-              json.encode(fromJsonVehicleInfo.toJson());
-          SharedPreferencesHelper.setStringValue(
-              'vehicleInfoDataLocal', encodedDataList);
-        }
-        final newVehicle = json.encode(newData);
-        SharedPreferencesHelper.setStringValue(
-            'vehicleInfoUpsertDataLocal', newVehicle);
-      }
-      return vehicleInfo;
+    } on DioError catch (error) {
+      print(error.response);
+      rethrow;
     }
   }
 }

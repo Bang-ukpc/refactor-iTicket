@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:collection/collection.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -11,13 +9,8 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/user_controller.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
-import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -31,11 +24,6 @@ import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
-import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
-import 'package:iWarden/services/local/created_warden_event_local_background_service%20.dart';
-import 'package:iWarden/services/local/created_warden_event_local_service.dart';
-import 'package:iWarden/services/local/issued_pcn_local_service.dart';
-import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -166,8 +154,6 @@ class _HomeOverviewState extends State<HomeOverview> {
   }
 
   bool checkHasOverstaying() {
-    print(
-        'DATA CONTRAVENTION REASON: ${contraventionReasonList.map((e) => e.code)}');
     var overStaying =
         contraventionReasonList.firstWhereOrNull((e) => e.code == '36');
     if (overStaying != null) {
@@ -430,37 +416,6 @@ class _HomeOverviewState extends State<HomeOverview> {
                           height: 100,
                         ),
                       ),
-                ElevatedButton(
-                    onPressed: () async {
-                      List<WardenEvent> wardenEventsLocal =
-                          await createdWardenEventLocalService.getAll();
-                      List<WardenEvent>
-                          CreatedWardenEventLocalBackgroundService =
-                          await createdWardenEventLocalBackgroundService
-                              .getAll();
-                      log("hehehe ${json.encode(CreatedWardenEventLocalBackgroundService)}");
-                      log("hehehe ${CreatedWardenEventLocalBackgroundService.length}");
-                      log("hehehe1 ${wardenEventsLocal.length}");
-
-                      // SharedPreferencesHelper.removeStringValue(
-                      //     'issuePCNDataLocal');
-                      // SharedPreferencesHelper.removeStringValue(
-                      //     'contraventionPhotoDataLocal');
-                    },
-                    child: Text("hehehehe")),
-                // ElevatedButton(
-                //     onPressed: () async {
-                //       createFakePCN();
-                //     },
-                //     child: Text("create fake pcn")),
-                ElevatedButton(
-                    onPressed: () async {
-                      SharedPreferencesHelper.removeStringValue(
-                          'wardenEventCheckGPSDataLocal');
-                      SharedPreferencesHelper.removeStringValue(
-                          'wardenEventDataLocal');
-                    },
-                    child: Text("delete")),
               ],
             ),
           ),

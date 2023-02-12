@@ -6,6 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/my_dialog.dart';
+import 'package:iWarden/helpers/url_helper.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -15,10 +16,8 @@ class AddImage extends StatefulWidget {
   final bool isSlideImage;
   final bool isCamera;
   List<dynamic> listImage;
-  List<dynamic>? listImageFile;
   final bool? displayTitle;
   final VoidCallback onAddImage;
-  final bool? imagePreview;
 
   AddImage({
     Key? key,
@@ -27,8 +26,6 @@ class AddImage extends StatefulWidget {
     this.displayTitle = true,
     required this.onAddImage,
     required this.listImage,
-    this.listImageFile,
-    this.imagePreview = false,
   }) : super(key: key);
   @override
   State<AddImage> createState() => _AddImageState();
@@ -92,10 +89,6 @@ class _AddImageState extends State<AddImage> {
     super.initState();
   }
 
-  isOnlineImage(String url) {
-    return url.contains("http");
-  }
-
   @override
   Widget build(BuildContext context) {
     print(checkConnection);
@@ -105,7 +98,7 @@ class _AddImageState extends State<AddImage> {
           if (widget.isSlideImage)
             CarouselSlider(
               items: widget.listImage.map((item) {
-                return isOnlineImage(item)
+                return urlHelper.isHttpUrl(item)
                     ? CachedNetworkImage(
                         imageUrl: item.toString(),
                         progressIndicatorBuilder:
@@ -224,57 +217,70 @@ class _AddImageState extends State<AddImage> {
                                         child: SizedBox(
                                           width: 56,
                                           height: 56,
-                                          child: isOnlineImage(
-                                                  widget.listImage[index])
-                                              ? CachedNetworkImage(
-                                                  imageUrl: widget
-                                                      .listImage[index]
-                                                      .toString(),
-                                                  fit: BoxFit.cover,
-                                                  progressIndicatorBuilder:
-                                                      (context, url,
-                                                              downloadProgress) =>
-                                                          Center(
-                                                    child: SizedBox(
-                                                      width: 25,
-                                                      height: 25,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        color:
-                                                            ColorTheme.primary,
+                                          child: widget.listImage[index]
+                                                      .runtimeType ==
+                                                  String
+                                              ? urlHelper.isHttpUrl(
+                                                      widget.listImage[index])
+                                                  ? CachedNetworkImage(
+                                                      imageUrl: widget
+                                                          .listImage[index]
+                                                          .toString(),
+                                                      fit: BoxFit.cover,
+                                                      progressIndicatorBuilder:
+                                                          (context, url,
+                                                                  downloadProgress) =>
+                                                              Center(
+                                                        child: SizedBox(
+                                                          width: 25,
+                                                          height: 25,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            color: ColorTheme
+                                                                .primary,
+                                                          ),
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ),
-                                                  errorWidget:
-                                                      (context, url, error) =>
+                                                      errorWidget: (context,
+                                                              url, error) =>
                                                           Container(
-                                                    width: 56,
-                                                    height: 56,
-                                                    color: ColorTheme.grey200,
-                                                    alignment: Alignment.center,
-                                                    child: Image.asset(
-                                                      'assets/images/No-Image-Icon.png',
-                                                      width: 30,
-                                                      height: 30,
-                                                    ),
-                                                  ),
-                                                )
+                                                        width: 56,
+                                                        height: 56,
+                                                        color:
+                                                            ColorTheme.grey200,
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Image.asset(
+                                                          'assets/images/No-Image-Icon.png',
+                                                          width: 30,
+                                                          height: 30,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Image.file(
+                                                      fit: BoxFit.cover,
+                                                      File(widget
+                                                          .listImage[index]),
+                                                      errorBuilder: (context,
+                                                              error,
+                                                              stackTrace) =>
+                                                          Container(
+                                                        width: 56,
+                                                        height: 56,
+                                                        color:
+                                                            ColorTheme.grey200,
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Image.asset(
+                                                          'assets/images/No-Image-Icon.png',
+                                                          width: 30,
+                                                          height: 30,
+                                                        ),
+                                                      ),
+                                                    )
                                               : Image.file(
+                                                  widget.listImage[index],
                                                   fit: BoxFit.cover,
-                                                  File(widget.listImage[index]),
-                                                  errorBuilder: (context, error,
-                                                          stackTrace) =>
-                                                      Container(
-                                                    width: 56,
-                                                    height: 56,
-                                                    color: ColorTheme.grey200,
-                                                    alignment: Alignment.center,
-                                                    child: Image.asset(
-                                                      'assets/images/No-Image-Icon.png',
-                                                      width: 30,
-                                                      height: 30,
-                                                    ),
-                                                  ),
                                                 ),
                                         ),
                                       ),

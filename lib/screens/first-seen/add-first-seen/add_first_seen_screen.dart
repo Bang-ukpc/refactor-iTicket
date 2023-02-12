@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,15 +9,11 @@ import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/label_require.dart';
-import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/controllers/evidence_photo_controller.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
-import 'package:iWarden/helpers/IdHelper.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
@@ -29,6 +22,7 @@ import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -175,7 +169,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       });
 
       if (arrayImage.isEmpty) {
-        if (!mounted) return false;
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -191,8 +184,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         return false;
       }
 
-      if (!mounted) return false;
-
       if (checkVrnExistsWithOverStaying(
             vrn: vehicleInfo.Plate,
             zoneId: vehicleInfo.ZoneId,
@@ -203,15 +194,17 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       }
 
       vehicleInfo.EvidencePhotos = arrayImage
-          .map((image) => EvidencePhoto(
+          .map(
+            (image) => EvidencePhoto(
               Id: idHelper.generateId(),
               BlobName: image.path,
               Created: DateTime.now(),
-              VehicleInformationId: vehicleInfo.Id))
+              VehicleInformationId: vehicleInfo.Id,
+            ),
+          )
           .toList();
-      zoneCachedServiceFactory.firstSeenCachedService.create(vehicleInfo);
+      createdVehicleDataLocalService.create(vehicleInfo);
 
-      if (!mounted) return false;
       Navigator.of(context).pop();
       CherryToast.success(
         displayCloseButton: false,

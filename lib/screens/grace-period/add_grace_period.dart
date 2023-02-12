@@ -10,7 +10,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/common/button_scan.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
@@ -25,11 +24,15 @@ import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
+
+import '../../helpers/id_helper.dart';
 
 class AddGracePeriod extends StatefulWidget {
   static const routeName = '/add-grace-period';
@@ -45,6 +48,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
   final _bayNumberController = TextEditingController();
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> getLocationList(Locations locations, int wardenId) async {
     ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
@@ -76,6 +80,15 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final locationProvider = Provider.of<Locations>(context, listen: false);
+      zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
+    });
+  }
+
+  @override
   void dispose() {
     _vrnController.dispose();
     _bayNumberController.dispose();
@@ -90,10 +103,8 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
     final wardensProvider = Provider.of<WardensInfo>(context);
 
     Future<bool> saveForm() async {
-      ConnectivityResult connectionStatus =
-          await (Connectivity().checkConnectivity());
       final vehicleInfo = VehicleInformation(
-        Id: 0,
+        Id: idHelper.generateId(),
         ExpiredAt: DateTime.now().add(
           Duration(
             seconds: locationProvider.expiringTimeGracePeriod,
@@ -112,12 +123,10 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
         CreatedBy: wardensProvider.wardens?.Id ?? 0,
       );
       final isValid = _formKey.currentState!.validate();
-      bool check = false;
       setState(() {
         evidencePhotoList.clear();
       });
       if (arrayImage.isEmpty) {
-        if (!mounted) return false;
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -131,144 +140,37 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
       }
       if (!isValid) {
         return false;
-      } else {
-        showCircularProgressIndicator(context: context);
       }
-      if (connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile) {
-        try {
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              await evidencePhotoController
-                  .uploadImage(filePath: arrayImage[i].path)
-                  .then((value) {
-                evidencePhotoList
-                    .add(EvidencePhoto(BlobName: value['blobName']));
-              });
-            }
-          }
 
-          await getLocationList(
-                  locationProvider, wardensProvider.wardens?.Id ?? 0)
-              .then((value) async {
-            vehicleInfo.ExpiredAt = DateTime.now().add(
-              Duration(
-                seconds: locationProvider.expiringTimeGracePeriod,
-              ),
-            );
-            await vehicleInfoController
-                .upsertVehicleInfo(vehicleInfo)
-                .then((value) {
-              if (value != null) {
-                check = true;
-              }
-            });
-          });
-
-          if (check == true) {
-            if (!mounted) return false;
-            Navigator.of(context).pop();
-            CherryToast.success(
-              displayCloseButton: false,
-              title: Text(
-                'Grace period added successfully',
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-
-            setState(() {
-              _vrnController.text = '';
-              _bayNumberController.text = '';
-              arrayImage.clear();
-              evidencePhotoList.clear();
-            });
-          }
-        } on DioError catch (error) {
-          if (!mounted) return false;
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return false;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+      vehicleInfo.EvidencePhotos = arrayImage
+          .map(
+            (image) => EvidencePhoto(
+              Id: idHelper.generateId(),
+              BlobName: image.path,
+              Created: DateTime.now(),
+              VehicleInformationId: vehicleInfo.Id,
             ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return false;
-        }
-      } else {
-        int randomNumber =
-            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-        vehicleInfo.Id = randomNumber;
-        vehicleInfo.Created = DateTime.now();
-        if (arrayImage.isNotEmpty) {
-          for (int i = 0; i < arrayImage.length; i++) {
-            evidencePhotoList.add(
-              EvidencePhoto(
-                BlobName: arrayImage[i].path,
-                VehicleInformationId: vehicleInfo.Id,
-                Created: DateTime.now(),
-              ),
-            );
-          }
-        }
-        final String encodedData = json.encode(vehicleInfo.toJson());
-        final String? vehicleUpsertData =
-            await SharedPreferencesHelper.getStringValue(
-                'vehicleInfoUpsertDataLocal');
-        if (vehicleUpsertData == null) {
-          List<String> newData = [];
-          newData.add(encodedData);
-          final encodedNewData = json.encode(newData);
-          SharedPreferencesHelper.setStringValue(
-              'vehicleInfoUpsertDataLocal', encodedNewData);
-        } else {
-          final createdData = json.decode(vehicleUpsertData) as List<dynamic>;
-          createdData.add(encodedData);
-          final encodedCreatedData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'vehicleInfoUpsertDataLocal', encodedCreatedData);
-        }
-        if (!mounted) return false;
-        Navigator.of(context).pop();
-        CherryToast.success(
-          displayCloseButton: false,
-          title: Text(
-            'Grace period added successfully',
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
+          )
+          .toList();
+      createdVehicleDataLocalService.create(vehicleInfo);
 
-        setState(() {
-          _vrnController.text = '';
-          _bayNumberController.text = '';
-          arrayImage.clear();
-          evidencePhotoList.clear();
-        });
-      }
+      Navigator.of(context).pop();
+      CherryToast.success(
+        displayCloseButton: false,
+        title: Text(
+          'Grace period added successfully',
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+
+      setState(() {
+        _vrnController.text = '';
+        _bayNumberController.text = '';
+        arrayImage.clear();
+        evidencePhotoList.clear();
+      });
 
       _formKey.currentState!.save();
       return true;

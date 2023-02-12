@@ -74,6 +74,6 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
   Future<List<VehicleInformation>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
     var issuedItem = await createdVehicleDataLocalService.getAllFirstSeen();
-    return [...cachedItems, ...issuedItem];
+    return [...issuedItem, ...cachedItems];
   }
 }
