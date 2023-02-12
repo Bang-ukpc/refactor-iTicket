@@ -32,6 +32,8 @@ import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_l
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
+import 'package:iWarden/services/local/created_warden_event_local_background_service%20.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
@@ -428,6 +430,37 @@ class _HomeOverviewState extends State<HomeOverview> {
                           height: 100,
                         ),
                       ),
+                ElevatedButton(
+                    onPressed: () async {
+                      List<WardenEvent> wardenEventsLocal =
+                          await createdWardenEventLocalService.getAll();
+                      List<WardenEvent>
+                          CreatedWardenEventLocalBackgroundService =
+                          await createdWardenEventLocalBackgroundService
+                              .getAll();
+                      log("hehehe ${json.encode(CreatedWardenEventLocalBackgroundService)}");
+                      log("hehehe ${CreatedWardenEventLocalBackgroundService.length}");
+                      log("hehehe1 ${wardenEventsLocal.length}");
+
+                      // SharedPreferencesHelper.removeStringValue(
+                      //     'issuePCNDataLocal');
+                      // SharedPreferencesHelper.removeStringValue(
+                      //     'contraventionPhotoDataLocal');
+                    },
+                    child: Text("hehehehe")),
+                // ElevatedButton(
+                //     onPressed: () async {
+                //       createFakePCN();
+                //     },
+                //     child: Text("create fake pcn")),
+                ElevatedButton(
+                    onPressed: () async {
+                      SharedPreferencesHelper.removeStringValue(
+                          'wardenEventCheckGPSDataLocal');
+                      SharedPreferencesHelper.removeStringValue(
+                          'wardenEventDataLocal');
+                    },
+                    child: Text("delete")),
               ],
             ),
           ),

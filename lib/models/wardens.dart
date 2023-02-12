@@ -142,6 +142,7 @@ Map<String, dynamic> _$WardenEventToJson(WardenEvent instance) {
     'Created':
         instance.Created != null ? instance.Created!.toIso8601String() : null,
     'Type': instance.type,
+    'Id': instance.Id,
     'Detail': instance.detail,
     'Latitude': instance.latitude,
     'Longitude': instance.longitude,

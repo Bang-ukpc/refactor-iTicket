@@ -16,6 +16,7 @@ import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
+import 'package:iWarden/services/local/created_warden_event_local_background_service%20.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
@@ -265,8 +266,6 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             'wardenEventCheckGPSDataLocal');
       }
 
-      log(decodedWardenEventData.toString());
-
       List<WardenEvent> wardenEventList = decodedWardenEventData
           .map((i) => WardenEvent.fromJson(json.decode(i)))
           .toList();
@@ -330,8 +329,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     // await vehicleInfoDataSynch();
     // await parkingChargeDataSynch();
     await issuedPcnLocalService.syncAll();
+    await createdWardenEventLocalBackgroundService.syncAll();
     // await createdWardenEventLocalService.syncAll();
-
+    // await createdWardenEventLocalService.syncAll();
     // await wardenEventDataSync();
   }
 

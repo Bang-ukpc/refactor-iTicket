@@ -55,27 +55,52 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   List<ContraventionReasonTranslations> contraventionReasonList = [];
+  bool checkStateRota = false;
+  bool checkStateCancel = false;
+  bool checkStatePermit = false;
   late CachedServiceFactory cachedServiceFactory;
 
-  _buildConnect(String title, StateDevice state) {
+  _buildConnect(String title, StateDevice state, {bool required = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 19),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: CustomTextStyle.h5,
+          Row(
+            children: [
+              Text(
+                title,
+                style: CustomTextStyle.h5,
+              ),
+              if (required)
+                Text(
+                  "*",
+                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                ),
+            ],
           ),
-          if (state == StateDevice.pending)
-            SpinKitCircle(
-              color: ColorTheme.primary,
-              size: 18,
-            ),
-          if (state == StateDevice.disconnect)
-            SvgPicture.asset("assets/svg/IconDotCom.svg"),
-          if (state == StateDevice.connected)
-            SvgPicture.asset("assets/svg/IconCompleteActive.svg")
+          Row(
+            children: [
+              // if (required)
+              //   Text(
+              //     "(Local)",
+              //     style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
+              //   ),
+              // if (required)
+              //   const SizedBox(
+              //     width: 5,
+              //   ),
+              if (state == StateDevice.pending)
+                SpinKitCircle(
+                  color: ColorTheme.primary,
+                  size: 18,
+                ),
+              if (state == StateDevice.disconnect)
+                SvgPicture.asset("assets/svg/IconDotCom.svg"),
+              if (state == StateDevice.connected)
+                SvgPicture.asset("assets/svg/IconCompleteActive.svg")
+            ],
+          ),
         ],
       ),
     );
@@ -168,7 +193,13 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   Future<void> getRotaList() async {
-    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+    await cachedServiceFactory.rotaWithLocationCachedService
+        .syncFromServer()
+        .then((value) {
+      setState(() {
+        checkStateRota = value.length > 1;
+      });
+    });
   }
 
   Future<void> getContraventionReasonList() async {
@@ -398,16 +429,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   children: [
                     isPending == false
                         ? pendingGetCurrentLocation == false
-                            ? _buildConnect("1. Connect bluetooth",
-                                checkState(checkBluetooth == true))
-                            : _buildConnect(
-                                '1. Connect bluetooth', StateDevice.pending)
-                        : _buildConnect(
-                            '1. Connect bluetooth', StateDevice.pending),
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
                             ? _buildConnect(
-                                "2. Connect network",
+                                "1. Connect network",
                                 checkState(
                                   _connectionStatus ==
                                           ConnectivityResult.mobile ||
@@ -416,19 +439,90 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 ),
                               )
                             : _buildConnect(
-                                '2. Connect network', StateDevice.pending)
+                                '1. Connect network', StateDevice.pending)
                         : _buildConnect(
-                            '2. Connect network', StateDevice.pending),
+                            '1. Connect network', StateDevice.pending),
+                    // here
+
                     isPending == false
                         ? pendingGetCurrentLocation == false
                             ? _buildConnect(
-                                "3. GPS has been turned on",
-                                checkState(gpsConnectionStatus ==
-                                    ServiceStatus.enabled))
-                            : _buildConnect('3. GPS has been turned on',
+                                required: true,
+                                "2. Rota shifts and locations",
+                                checkState(
+                                  checkStateRota,
+                                ),
+                              )
+                            : _buildConnect(
+                                required: true,
+                                '2. Rota shifts and locations',
                                 StateDevice.pending)
                         : _buildConnect(
-                            '3. GPS has been turned on', StateDevice.pending),
+                            required: true,
+                            '2. Rota shifts and locations',
+                            StateDevice.pending),
+
+                    isPending == false
+                        ? pendingGetCurrentLocation == false
+                            ? _buildConnect(
+                                required: true,
+                                "3. Cancellation reasons",
+                                checkState(
+                                  _connectionStatus ==
+                                          ConnectivityResult.mobile ||
+                                      _connectionStatus ==
+                                          ConnectivityResult.wifi,
+                                ),
+                              )
+                            : _buildConnect(
+                                required: true,
+                                '3. Cancellation reasons',
+                                StateDevice.pending)
+                        : _buildConnect(
+                            required: true,
+                            '3. Cancellation reasons',
+                            StateDevice.pending),
+
+                    isPending == false
+                        ? pendingGetCurrentLocation == false
+                            ? _buildConnect(
+                                required: true,
+                                "4. Location permission",
+                                checkState(
+                                  _connectionStatus ==
+                                          ConnectivityResult.mobile ||
+                                      _connectionStatus ==
+                                          ConnectivityResult.wifi,
+                                ),
+                              )
+                            : _buildConnect(
+                                required: true,
+                                '4. Location permission',
+                                StateDevice.pending)
+                        : _buildConnect(
+                            required: true,
+                            '4. Location permission',
+                            StateDevice.pending),
+
+                    // here
+                    isPending == false
+                        ? pendingGetCurrentLocation == false
+                            ? _buildConnect("5. Connect bluetooth",
+                                checkState(checkBluetooth == true))
+                            : _buildConnect(
+                                '5. Connect bluetooth', StateDevice.pending)
+                        : _buildConnect(
+                            '5. Connect bluetooth', StateDevice.pending),
+                    isPending == false
+                        ? pendingGetCurrentLocation == false
+                            ? _buildConnect(
+                                "6. GPS has been turned on",
+                                checkState(gpsConnectionStatus ==
+                                    ServiceStatus.enabled))
+                            : _buildConnect('6. GPS has been turned on',
+                                StateDevice.pending)
+                        : _buildConnect(
+                            '6. GPS has been turned on', StateDevice.pending),
                   ],
                 ),
               ),
