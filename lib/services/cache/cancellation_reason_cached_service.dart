@@ -8,9 +8,12 @@ class CancellationReasonCachedService extends CacheService<CancellationReason> {
 
   @override
   syncFromServer() async {
-    var cancellationReasons =
-        await weakNetworkCancellationReasonController.all();
-    print('[CANCELLATION REASON LENGTH] $cancellationReasons');
+    var cancellationReasons = await weakNetworkCancellationReasonController
+        .getAll()
+        .catchError((err) async {
+      return await getAll();
+    });
+    print('[CANCELLATION REASON LENGTH] ${cancellationReasons.length}');
     set(cancellationReasons);
     return cancellationReasons;
   }

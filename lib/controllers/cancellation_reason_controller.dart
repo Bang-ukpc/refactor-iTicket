@@ -14,7 +14,7 @@ class CancellationReasonController {
     dio = initDio;
   }
 
-  Future<List<CancellationReason>> all() async {
+  Future<List<CancellationReason>> getAll() async {
     try {
       final response = await dio.get('/contravention/list-cancellation-reason');
       return jsonDecodeFactory.decodeList<CancellationReason>(response.data);

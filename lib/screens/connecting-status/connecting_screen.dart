@@ -47,7 +47,6 @@ class ConnectingScreen extends StatefulWidget {
 class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
-  bool checkGps = false;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;
   bool? checkBluetooth;
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
@@ -55,9 +54,9 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   List<ContraventionReasonTranslations> contraventionReasonList = [];
-  bool checkStateRota = false;
-  bool checkStateCancel = false;
-  bool checkStatePermit = false;
+  bool isRotaNotNull = false;
+  bool isCancellationNotNull = false;
+  bool isLocationPermission = false;
   late CachedServiceFactory cachedServiceFactory;
 
   _buildConnect(String title, StateDevice state, {bool required = false}) {
@@ -81,15 +80,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
           ),
           Row(
             children: [
-              // if (required)
-              //   Text(
-              //     "(Local)",
-              //     style: CustomTextStyle.h5.copyWith(color: ColorTheme.success),
-              //   ),
-              // if (required)
-              //   const SizedBox(
-              //     width: 5,
-              //   ),
               if (state == StateDevice.pending)
                 SpinKitCircle(
                   color: ColorTheme.primary,
@@ -178,9 +168,9 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   void checkPermissionGPS() async {
-    var check = await permission.Permission.locationWhenInUse.isGranted;
+    var isGranted = await permission.Permission.locationWhenInUse.isGranted;
     setState(() {
-      checkGps = check;
+      isLocationPermission = isGranted;
     });
   }
 
@@ -192,34 +182,55 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     }
   }
 
-  Future<void> getRotaList() async {
-    await cachedServiceFactory.rotaWithLocationCachedService
-        .syncFromServer()
-        .then((value) {
-      setState(() {
-        checkStateRota = value.length > 1;
-      });
-    });
+  Future<void> syncRotaList() async {
+    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+    await getRotas();
   }
 
-  Future<void> getContraventionReasonList() async {
+  Future<void> syncCancellationReasonList() async {
+    await cachedServiceFactory.cancellationReasonCachedService.syncFromServer();
+    await getCancellationReasons();
+  }
+
+  Future<void> syncContraventionReasonList() async {
     await cachedServiceFactory.defaultContraventionReasonCachedService
         .syncFromServer();
     await cachedServiceFactory.rotaWithLocationCachedService
         .syncContraventionReasonForAllZones();
   }
 
-  Future<void> getCancellationReasonList() async {
-    await cachedServiceFactory.cancellationReasonCachedService.syncFromServer();
-  }
-
   Future<void> syncAllRequiredData() async {
     print('GET ROTA');
-    await getRotaList();
+    await syncRotaList();
     print('GET CANCELLATION REASON');
-    await getCancellationReasonList();
+    await syncCancellationReasonList();
     print('GET CONTRAVENTION REASON');
-    await getContraventionReasonList();
+    await syncContraventionReasonList();
+  }
+
+  Future<void> getRotas() async {
+    var rotas =
+        await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+    print('[Rota length] ${rotas.length}');
+    setState(() {
+      isRotaNotNull = rotas.isNotEmpty;
+    });
+  }
+
+  Future<void> getCancellationReasons() async {
+    var cancellationReasons =
+        await cachedServiceFactory.cancellationReasonCachedService.getAll();
+    print('[Cancellation reason length] ${cancellationReasons.length}');
+    setState(() {
+      isCancellationNotNull = cancellationReasons.isNotEmpty;
+    });
+  }
+
+  bool isDataValid() {
+    if (!isRotaNotNull || !isCancellationNotNull) {
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -230,16 +241,15 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
       await wardensInfo.getWardensInfoLogging().then((value) async {
-        setState(() {
-          isPending = false;
-        });
+        return;
       }).catchError((err) {
-        setState(() {
-          isPending = false;
-        });
+        return;
       });
       cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
       await syncAllRequiredData();
+      setState(() {
+        isPending = false;
+      });
     });
     checkGpsConnectingStatus();
     serviceStatusStreamSubscription =
@@ -377,242 +387,258 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       }
     }
 
+    Future<void> refresh() async {
+      setState(() {
+        isPending = true;
+      });
+      await syncAllRequiredData();
+      setState(() {
+        isPending = false;
+      });
+    }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(
-                height: 80,
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (pendingGetCurrentLocation == true)
-                      Text(
-                        "Connecting paired devices",
-                        style: CustomTextStyle.h3
-                            .copyWith(color: ColorTheme.primary),
-                      ),
-                    if (isPending == false &&
-                        pendingGetCurrentLocation == false)
-                      Text(
-                        isCheckoutScreen
-                            ? 'Shift ended successfully'
-                            : "Connected successfully",
-                        style: CustomTextStyle.h3
-                            .copyWith(color: ColorTheme.primary),
-                      ),
-                    if (pendingGetCurrentLocation == true)
-                      Container(
-                        margin: const EdgeInsets.only(top: 10, left: 2),
-                        child: SpinKitThreeBounce(
-                          color: ColorTheme.primary,
-                          size: 7,
-                        ),
-                      )
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Column(
-                  children: [
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect(
-                                "1. Connect network",
-                                checkState(
-                                  _connectionStatus ==
-                                          ConnectivityResult.mobile ||
+        body: RefreshIndicator(
+          onRefresh: refresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    height: 60,
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (isPending == true ||
+                            pendingGetCurrentLocation == true)
+                          Row(
+                            children: [
+                              Text(
+                                "Connecting paired devices",
+                                style: CustomTextStyle.h3
+                                    .copyWith(color: ColorTheme.primary),
+                              ),
+                              Container(
+                                margin: const EdgeInsets.only(top: 10, left: 2),
+                                child: SpinKitThreeBounce(
+                                  color: ColorTheme.primary,
+                                  size: 7,
+                                ),
+                              )
+                            ],
+                          ),
+                        if (isPending == false &&
+                            pendingGetCurrentLocation == false)
+                          Text(
+                            isCheckoutScreen
+                                ? 'Shift ended successfully'
+                                : "Connected successfully",
+                            style: CustomTextStyle.h3
+                                .copyWith(color: ColorTheme.primary),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      children: [
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    "1. Connect network",
+                                    checkState(
                                       _connectionStatus ==
-                                          ConnectivityResult.wifi,
-                                ),
-                              )
+                                              ConnectivityResult.mobile ||
+                                          _connectionStatus ==
+                                              ConnectivityResult.wifi,
+                                    ),
+                                  )
+                                : _buildConnect(
+                                    '1. Connect network', StateDevice.pending)
                             : _buildConnect(
-                                '1. Connect network', StateDevice.pending)
-                        : _buildConnect(
-                            '1. Connect network', StateDevice.pending),
-                    // here
+                                '1. Connect network', StateDevice.pending),
+                        // here
 
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect(
-                                required: true,
-                                "2. Rota shifts and locations",
-                                checkState(
-                                  checkStateRota,
-                                ),
-                              )
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    required: true,
+                                    "2. Rota shifts and locations",
+                                    checkState(
+                                      isRotaNotNull,
+                                    ),
+                                  )
+                                : _buildConnect(
+                                    required: true,
+                                    '2. Rota shifts and locations',
+                                    StateDevice.pending)
                             : _buildConnect(
                                 required: true,
                                 '2. Rota shifts and locations',
-                                StateDevice.pending)
-                        : _buildConnect(
-                            required: true,
-                            '2. Rota shifts and locations',
-                            StateDevice.pending),
+                                StateDevice.pending),
 
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect(
-                                required: true,
-                                "3. Cancellation reasons",
-                                checkState(
-                                  _connectionStatus ==
-                                          ConnectivityResult.mobile ||
-                                      _connectionStatus ==
-                                          ConnectivityResult.wifi,
-                                ),
-                              )
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    required: true,
+                                    "3. Cancellation reasons",
+                                    checkState(isCancellationNotNull),
+                                  )
+                                : _buildConnect(
+                                    required: true,
+                                    '3. Cancellation reasons',
+                                    StateDevice.pending)
                             : _buildConnect(
                                 required: true,
                                 '3. Cancellation reasons',
-                                StateDevice.pending)
-                        : _buildConnect(
-                            required: true,
-                            '3. Cancellation reasons',
-                            StateDevice.pending),
+                                StateDevice.pending),
 
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect(
-                                required: true,
-                                "4. Location permission",
-                                checkState(
-                                  _connectionStatus ==
-                                          ConnectivityResult.mobile ||
-                                      _connectionStatus ==
-                                          ConnectivityResult.wifi,
-                                ),
-                              )
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    required: true,
+                                    "4. Location permission",
+                                    checkState(isLocationPermission),
+                                  )
+                                : _buildConnect(
+                                    required: true,
+                                    '4. Location permission',
+                                    StateDevice.pending)
                             : _buildConnect(
                                 required: true,
                                 '4. Location permission',
-                                StateDevice.pending)
-                        : _buildConnect(
-                            required: true,
-                            '4. Location permission',
-                            StateDevice.pending),
+                                StateDevice.pending),
 
-                    // here
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect("5. Connect bluetooth",
-                                checkState(checkBluetooth == true))
+                        // here
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect("5. Connect bluetooth",
+                                    checkState(checkBluetooth == true))
+                                : _buildConnect(
+                                    '5. Connect bluetooth', StateDevice.pending)
                             : _buildConnect(
-                                '5. Connect bluetooth', StateDevice.pending)
-                        : _buildConnect(
-                            '5. Connect bluetooth', StateDevice.pending),
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect(
-                                "6. GPS has been turned on",
-                                checkState(gpsConnectionStatus ==
-                                    ServiceStatus.enabled))
+                                '5. Connect bluetooth', StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    "6. GPS has been turned on",
+                                    checkState(gpsConnectionStatus ==
+                                        ServiceStatus.enabled))
+                                : _buildConnect('6. GPS has been turned on',
+                                    StateDevice.pending)
                             : _buildConnect('6. GPS has been turned on',
-                                StateDevice.pending)
-                        : _buildConnect(
-                            '6. GPS has been turned on', StateDevice.pending),
-                  ],
-                ),
-              ),
-              if (isPending == false && pendingGetCurrentLocation == false)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
-                  width: double.infinity,
-                  child: Row(
-                    children: [
-                      if (isCheckoutScreen)
-                        Consumer<Auth>(
-                          builder: (context, auth, _) {
-                            return Expanded(
-                              child: ElevatedButton.icon(
-                                icon: SvgPicture.asset(
-                                  "assets/svg/IconEndShift.svg",
-                                  width: 18,
-                                  height: 18,
-                                  color: ColorTheme.textPrimary,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  shadowColor: Colors.transparent,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  backgroundColor: ColorTheme.grey300,
-                                ),
-                                onPressed: () {
-                                  // eventAnalytics.clickButton(
-                                  //   button: "Log out",
-                                  //   user: wardensProvider.wardens!.Email,
-                                  // );
-                                  onLogout(auth);
-                                },
-                                label: Text(
-                                  "Log out",
-                                  style: CustomTextStyle.h5.copyWith(
-                                    color: ColorTheme.textPrimary,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      if (isCheckoutScreen)
-                        const SizedBox(
-                          width: 16,
-                        ),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon:
-                              SvgPicture.asset("assets/svg/IconStartShift.svg"),
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                          ),
-                          onPressed: () async {
-                            if (checkGps == true) {
-                              // await eventAnalytics.clickButton(
-                              //   button: "Start shift",
-                              //   user: wardensProvider.wardens!.Email,
-                              // );
-                              onStartShift();
-                            } else {
-                              toast.CherryToast.error(
-                                toastDuration: const Duration(seconds: 5),
-                                title: Text(
-                                  'Please allow the app to access your location to continue',
-                                  style: CustomTextStyle.h4.copyWith(
-                                    color: ColorTheme.danger,
-                                  ),
-                                ),
-                                toastPosition: toast.Position.bottom,
-                                borderRadius: 5,
-                              ).show(context);
-                            }
-                          },
-                          label: Text(
-                            "Start shift",
-                            style: CustomTextStyle.h5
-                                .copyWith(color: Colors.white, fontSize: 16),
-                          ),
-                        ),
-                      ),
-                    ],
+                                StateDevice.pending),
+                      ],
+                    ),
                   ),
-                ),
-            ],
+                  if (isPending == false && pendingGetCurrentLocation == false)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      width: double.infinity,
+                      child: Row(
+                        children: [
+                          if (isCheckoutScreen)
+                            Consumer<Auth>(
+                              builder: (context, auth, _) {
+                                return Expanded(
+                                  child: ElevatedButton.icon(
+                                    icon: SvgPicture.asset(
+                                      "assets/svg/IconEndShift.svg",
+                                      width: 18,
+                                      height: 18,
+                                      color: ColorTheme.textPrimary,
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      shadowColor: Colors.transparent,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10),
+                                      backgroundColor: ColorTheme.grey300,
+                                    ),
+                                    onPressed: () {
+                                      onLogout(auth);
+                                    },
+                                    label: Text(
+                                      "Log out",
+                                      style: CustomTextStyle.h5.copyWith(
+                                        color: ColorTheme.textPrimary,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          if (isCheckoutScreen)
+                            const SizedBox(
+                              width: 16,
+                            ),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              icon: SvgPicture.asset(
+                                  "assets/svg/IconStartShift.svg"),
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                shadowColor: Colors.transparent,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                              ),
+                              onPressed: () async {
+                                if (isLocationPermission == true) {
+                                  isDataValid()
+                                      ? onStartShift()
+                                      : toast.CherryToast.error(
+                                          toastDuration:
+                                              const Duration(seconds: 5),
+                                          title: Text(
+                                            'Please turn on the network and sync all necessary data to continue',
+                                            style: CustomTextStyle.h4.copyWith(
+                                              color: ColorTheme.danger,
+                                            ),
+                                          ),
+                                          toastPosition: toast.Position.bottom,
+                                          borderRadius: 5,
+                                        ).show(context);
+                                } else {
+                                  toast.CherryToast.error(
+                                    toastDuration: const Duration(seconds: 5),
+                                    title: Text(
+                                      'Please allow the app to access your location to continue',
+                                      style: CustomTextStyle.h4.copyWith(
+                                        color: ColorTheme.danger,
+                                      ),
+                                    ),
+                                    toastPosition: toast.Position.bottom,
+                                    borderRadius: 5,
+                                  ).show(context);
+                                }
+                              },
+                              label: Text(
+                                "Start shift",
+                                style: CustomTextStyle.h5.copyWith(
+                                    color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
