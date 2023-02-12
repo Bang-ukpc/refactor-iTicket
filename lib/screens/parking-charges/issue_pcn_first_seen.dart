@@ -439,10 +439,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       for (int i = 0; i < dataCache.length; i++) {
         if (dataCache[i].ContraventionReference == contraventionReferenceID) {
-          print("trueeeeeeeeeeeeee");
           check = true;
         } else {
-          print("falseeeeeeeeeee");
           check = false;
         }
       }
@@ -629,7 +627,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
-              "Please wait 1 minute.",
+              "Please wait 1 minute to continue to issue pcn",
               style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
@@ -667,8 +665,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     );
 
     Future<void> createVirtualTicket({bool? step2, bool? step3}) async {
-      // virtualTicket.Plate = _vrnController.text;
-      // virtualTicket.WardenComments = _commentController.text;
       final virtualTicket2 = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
         ContraventionReference:
@@ -818,7 +814,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           CherryToast.error(
             toastDuration: const Duration(seconds: 3),
             title: Text(
-              "Please wait 1 minute.",
+              "Please wait 1 minute to continue to issue pcn",
               style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
             ),
             toastPosition: Position.bottom,
