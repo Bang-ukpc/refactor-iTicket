@@ -1,6 +1,12 @@
+import 'dart:convert';
+
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
+import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
+
 import '../../controllers/index.dart';
 import '../../models/contravention.dart';
 import '../../models/pagination.dart';
+import '../local/issued_pcn_local_service.dart';
 import 'cache_service.dart';
 
 class ContraventionCachedService extends CacheService<Contravention> {
@@ -23,9 +29,58 @@ class ContraventionCachedService extends CacheService<Contravention> {
           totalPages: 1,
           rows: cachedItems);
     });
-    var contraventions =
-        paging.rows.map((e) => Contravention.fromJson(e)).toList();
-    set(contraventions);
-    return contraventions;
+    print('[Contraventions] ${paging.rows.map((e) => json.encode(e))}');
+    set(paging.rows as List<Contravention>);
+    return paging.rows as List<Contravention>;
+  }
+
+  Future<List<Contravention>> getIssuedContraventions() async {
+    var zoneCachedServiceFactory = ZoneCachedServiceFactory(_zoneId);
+    var issuedItems = await issuedPcnLocalService.getAll();
+    var contraventionReasons = await zoneCachedServiceFactory
+        .contraventionReasonCachedService
+        .getAll();
+
+    return issuedItems
+        .map((i) => Contravention(
+              reference: i.ContraventionReference,
+              created: DateTime.now(),
+              id: i.Id,
+              plate: i.Plate,
+              colour: i.VehicleColour,
+              make: i.VehicleMake,
+              eventDateTime: i.EventDateTime,
+              zoneId: i.ZoneId,
+              reason: Reason(
+                code: i.ContraventionReasonCode,
+                contraventionReasonTranslations: contraventionReasons
+                    .where((e) =>
+                        e.contraventionReason!.code ==
+                        i.ContraventionReasonCode)
+                    .toList(),
+              ),
+              contraventionEvents: [
+                ContraventionEvents(
+                  contraventionId: i.Id,
+                  detail: i.WardenComments,
+                )
+              ],
+              contraventionDetailsWarden: ContraventionDetailsWarden(
+                FirstObserved: i.FirstObservedDateTime,
+                ContraventionId: i.Id,
+                WardenId: i.WardenId,
+                IssuedAt: i.EventDateTime,
+              ),
+              type: i.TypePCN,
+              contraventionPhotos: issuedPcnPhotoLocalService
+                  .listByContraventionReference(i.ContraventionReference),
+            ))
+        .toList();
+  }
+
+  Future<List<Contravention>> getAllWithCreatedOnTheOffline() async {
+    var cachedItems = await getAll();
+    var issuedItems = await getIssuedContraventions();
+    return [...cachedItems, ...issuedItems];
   }
 }

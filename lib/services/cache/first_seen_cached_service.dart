@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:iWarden/helpers/time_helper.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
@@ -11,6 +12,42 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
   late int _zoneId;
   FirstSeenCachedService(int zoneId) : super("cacheFirstSeenItems_$zoneId") {
     _zoneId = zoneId;
+  }
+
+  Future<List<VehicleInformation>> getListActive() async {
+    var items = await getAllWithCreatedOnTheOffline();
+    return items.where((i) {
+      return timeHelper.daysBetween(
+            i.Created!.add(
+              Duration(
+                minutes: timeHelper.daysBetween(
+                  i.Created as DateTime,
+                  DateTime.now(),
+                ),
+              ),
+            ),
+            i.ExpiredAt,
+          ) >
+          0;
+    }).toList();
+  }
+
+  Future<List<VehicleInformation>> getListExpired() async {
+    var items = await getAllWithCreatedOnTheOffline();
+    return items.where((i) {
+      return timeHelper.daysBetween(
+            i.Created!.add(
+              Duration(
+                minutes: timeHelper.daysBetween(
+                  i.Created as DateTime,
+                  DateTime.now(),
+                ),
+              ),
+            ),
+            i.ExpiredAt,
+          ) <=
+          0;
+    }).toList();
   }
 
   @override
@@ -30,16 +67,13 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
           totalPages: 1,
           rows: vehicleInfos);
     });
-    var vehicleInfos = paging.rows
-        .map((e) => VehicleInformation.fromJson(json.decode(e)))
-        .toList();
-    set(vehicleInfos);
-    return vehicleInfos;
+    set(paging.rows as List<VehicleInformation>);
+    return paging.rows as List<VehicleInformation>;
   }
 
-  getAllWithCreatedOnTheOffline() async {
+  Future<List<VehicleInformation>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
     var issuedItem = await createdVehicleDataLocalService.getAllFirstSeen();
-    return cachedItems.addAll(issuedItem);
+    return [...cachedItems, ...issuedItem];
   }
 }

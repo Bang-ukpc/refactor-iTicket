@@ -10,6 +10,7 @@ import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
+import 'package:iWarden/helpers/url_helper.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
@@ -36,15 +37,16 @@ class _DetailScreenState extends State<DetailScreen> {
     final args =
         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
     final calculateTime = CalculateTime();
-    final List<String> imgList = [];
-    final List<String> imgListFile = [];
+    final List<String> images = args.EvidencePhotos!.map((photo) {
+      if (urlHelper.isLocalUrl(photo.BlobName)) {
+        return photo.BlobName;
+      } else {
+        return urlHelper.toImageUrl(photo.BlobName);
+      }
+    }).toList();
     final vehicleInfoController = VehicleInfoController();
 
-    for (int i = 0; i < args.EvidencePhotos!.length; i++) {
-      imgList.add(
-          '${ConfigEnvironmentVariable.azureContainerImageUrl}/${args.EvidencePhotos![i].BlobName}');
-      imgListFile.add(args.EvidencePhotos![i].BlobName);
-    }
+    print('Route Image file: ${images.map((e) => e)}');
 
     void onCarLeft() {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(
@@ -211,8 +213,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 AddImage(
                   displayTitle: false,
                   isSlideImage: true,
-                  listImage: imgList,
-                  listImageFile: imgListFile,
+                  listImage: images,
                   isCamera: false,
                   onAddImage: () async {
                     final results =

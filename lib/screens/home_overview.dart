@@ -30,6 +30,7 @@ import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
@@ -68,106 +69,30 @@ class _HomeOverviewState extends State<HomeOverview> {
   bool firstSeenLoading = true;
   bool gracePeriodLoading = true;
   bool contraventionLoading = true;
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
-  Future<void> getContraventionReasonList({int? zoneId}) async {
-    ConnectivityResult connectionStatus =
-        await (Connectivity().checkConnectivity());
+  Future<void> getData() async {
+    var listFirstSeen = await zoneCachedServiceFactory.firstSeenCachedService
+        .getAllWithCreatedOnTheOffline();
+    getFirstSeenActiveAndExpired(listFirstSeen);
 
-    if (connectionStatus == ConnectivityResult.wifi ||
-        connectionStatus == ConnectivityResult.mobile) {
-      final Pagination list = await contraventionController
-          .getContraventionReasonServiceList(zoneId: zoneId);
-      setState(() {
-        contraventionReasonList = list.rows
-            .map((item) => ContraventionReasonTranslations.fromJson(item))
-            .toList();
-      });
-    } else {
-      final Pagination list =
-          await contraventionController.getContraventionReasonServiceList();
-      setState(() {
-        contraventionReasonList = list.rows
-            .map((item) => ContraventionReasonTranslations.fromJson(item))
-            .toList();
-      });
-    }
-  }
+    var gracePeriods = await zoneCachedServiceFactory.gracePeriodCachedService
+        .getAllWithCreatedOnTheOffline();
+    getGracePeriodActiveAndExpired(gracePeriods);
 
-  void getFirstSeenList(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await vehicleInfoController
-        .getVehicleInfoList(
-      vehicleInfoType: VehicleInformationType.FIRST_SEEN.index,
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
-      setState(() {
-        firstSeenLoading = false;
-      });
-      return value;
-    }).catchError((err) {
-      setState(() {
-        firstSeenLoading = false;
-      });
-      print(err);
-      throw Error();
+    var contraventions = await zoneCachedServiceFactory
+        .contraventionCachedService
+        .getAllWithCreatedOnTheOffline();
+    setState(() {
+      contraventionList = contraventions;
     });
-    final firstSeenList =
-        list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
-    getFirstSeenActiveAndExpired(firstSeenList);
-  }
 
-  void getGracePeriodList(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await vehicleInfoController
-        .getVehicleInfoList(
-      vehicleInfoType: VehicleInformationType.GRACE_PERIOD.index,
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
-      setState(() {
-        gracePeriodLoading = false;
-      });
-      return value;
-    }).catchError((err) {
-      setState(() {
-        gracePeriodLoading = false;
-      });
-      print(err);
-      throw Error();
+    var contraventionReasons = await zoneCachedServiceFactory
+        .contraventionReasonCachedService
+        .getAll();
+    setState(() {
+      contraventionReasonList = contraventionReasons;
     });
-    List<VehicleInformation> gracePeriodList =
-        list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
-    getGracePeriodActiveAndExpired(gracePeriodList);
-  }
-
-  Future<List<Contravention>> getContraventionList(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await contraventionController
-        .getContraventionServiceList(
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
-      setState(() {
-        contraventionLoading = false;
-      });
-      return value;
-    }).catchError((err) {
-      setState(() {
-        contraventionLoading = false;
-      });
-      print(err);
-      throw Error();
-    });
-    contraventionList =
-        list.rows.map((item) => Contravention.fromJson(item)).toList();
-    return contraventionList;
   }
 
   void getFirstSeenActiveAndExpired(List<VehicleInformation> vehicleList) {
@@ -239,8 +164,10 @@ class _HomeOverviewState extends State<HomeOverview> {
   }
 
   bool checkHasOverstaying() {
-    var overStaying = contraventionReasonList
-        .firstWhereOrNull((e) => e.contraventionReason?.code == '36');
+    print(
+        'DATA CONTRAVENTION REASON: ${contraventionReasonList.map((e) => e.code)}');
+    var overStaying =
+        contraventionReasonList.firstWhereOrNull((e) => e.code == '36');
     if (overStaying != null) {
       return true;
     }
@@ -251,23 +178,9 @@ class _HomeOverviewState extends State<HomeOverview> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final locations = Provider.of<Locations>(context, listen: false);
-      getContraventionReasonList(zoneId: locations.zone?.Id);
-      getFirstSeenList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
-      getGracePeriodList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
-      getContraventionList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
+      final locationProvider = Provider.of<Locations>(context, listen: false);
+      zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
+      getData();
     });
   }
 
@@ -408,22 +321,7 @@ class _HomeOverviewState extends State<HomeOverview> {
         gracePeriodLoading = true;
         contraventionLoading = true;
       });
-      getContraventionReasonList(zoneId: locations.zone?.Id);
-      getFirstSeenList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
-      getGracePeriodList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
-      getContraventionList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
+      getData();
     }
 
     return WillPopScope(
@@ -470,7 +368,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                   height: 10,
                 ),
                 checkHasOverstaying() == true
-                    ? firstSeenLoading == false
+                    ? firstSeenLoading == true
                         ? CardHome(
                             width: width,
                             assetIcon: "assets/svg/IconFirstSeen.svg",
@@ -493,7 +391,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                         height: 10,
                       )
                     : const SizedBox(),
-                gracePeriodLoading == false
+                gracePeriodLoading == true
                     ? CardHome(
                         width: width,
                         assetIcon: "assets/svg/IconGrace.svg",
@@ -513,7 +411,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                 const SizedBox(
                   height: 10,
                 ),
-                contraventionLoading == false
+                contraventionLoading == true
                     ? CardHome(
                         width: width,
                         assetIcon: "assets/svg/IconParkingChargesHome.svg",

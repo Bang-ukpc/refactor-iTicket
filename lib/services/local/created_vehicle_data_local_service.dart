@@ -10,6 +10,15 @@ import '../../models/vehicle_information.dart';
 class CreatedVehicleDataLocalService
     extends BaseLocalService<VehicleInformation> {
   CreatedVehicleDataLocalService() : super("vehicleInfoUpsertDataLocal");
+
+  @override
+  create(VehicleInformation t) async {
+    for (var photo in (t.EvidencePhotos ?? [])) {
+      await createdVehicleDataPhotoLocalService.create(photo);
+    }
+    return super.create(t);
+  }
+
   @override
   sync(VehicleInformation vehicleInformation) async {
     try {
@@ -28,16 +37,20 @@ class CreatedVehicleDataLocalService
     }
   }
 
-  getAllFirstSeen() async {
+  Future<List<VehicleInformation>> getAllFirstSeen() async {
     var items = await getAll();
-    return items.where(
-        (element) => element.Type == VehicleInformationType.FIRST_SEEN.index);
+    return items
+        .where((element) =>
+            element.Type == VehicleInformationType.FIRST_SEEN.index)
+        .toList();
   }
 
-  getAllGracePeriod() async {
+  Future<List<VehicleInformation>> getAllGracePeriod() async {
     var items = await getAll();
-    return items.where(
-        (element) => element.Type == VehicleInformationType.GRACE_PERIOD.index);
+    return items
+        .where((element) =>
+            element.Type == VehicleInformationType.GRACE_PERIOD.index)
+        .toList();
   }
 
   Future<List<EvidencePhoto>> syncPcnPhotos(

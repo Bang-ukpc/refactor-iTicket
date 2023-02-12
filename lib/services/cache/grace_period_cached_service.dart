@@ -1,13 +1,51 @@
 import 'package:iWarden/models/vehicle_information.dart';
 import '../../controllers/index.dart';
+import '../../helpers/time_helper.dart';
 import '../../models/pagination.dart';
 import '../local/created_vehicle_data_local_service.dart';
 import 'cache_service.dart';
 
 class GracePeriodCachedService extends CacheService<VehicleInformation> {
   late int zoneId;
-  GracePeriodCachedService(int initZoneId) : super("cachedGracePeriodItems_$initZoneId") {
+  GracePeriodCachedService(int initZoneId)
+      : super("cachedGracePeriodItems_$initZoneId") {
     zoneId = initZoneId;
+  }
+
+  Future<List<VehicleInformation>> getListActive() async {
+    var items = await getAllWithCreatedOnTheOffline();
+    return items.where((i) {
+      return timeHelper.daysBetween(
+            i.Created!.add(
+              Duration(
+                minutes: timeHelper.daysBetween(
+                  i.Created as DateTime,
+                  DateTime.now(),
+                ),
+              ),
+            ),
+            i.ExpiredAt,
+          ) >
+          0;
+    }).toList();
+  }
+
+  Future<List<VehicleInformation>> getListExpired() async {
+    var items = await getAllWithCreatedOnTheOffline();
+    return items.where((i) {
+      return timeHelper.daysBetween(
+            i.Created!.add(
+              Duration(
+                minutes: timeHelper.daysBetween(
+                  i.Created as DateTime,
+                  DateTime.now(),
+                ),
+              ),
+            ),
+            i.ExpiredAt,
+          ) <=
+          0;
+    }).toList();
   }
 
   @override
@@ -32,9 +70,9 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
     return vehicleInfos;
   }
 
-  getAllWithCreatedOnTheOffline() async {
+  Future<List<VehicleInformation>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
     var issuedItem = await createdVehicleDataLocalService.getAllGracePeriod();
-    return cachedItems.addAll(issuedItem);
+    return [...cachedItems, ...issuedItem];
   }
 }

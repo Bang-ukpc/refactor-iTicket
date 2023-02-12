@@ -1,5 +1,6 @@
-import 'package:iWarden/controllers/contravention_controller.dart';
+import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/models/contravention.dart';
+
 import 'cache_service.dart';
 
 class ContraventionReasonCachedService
@@ -13,7 +14,7 @@ class ContraventionReasonCachedService
 
   @override
   syncFromServer() async {
-    var paging = await contraventionController
+    var paging = await weakNetworkContraventionController
         .getContraventionReasonServiceList(zoneId: _zoneId);
     var contraventionReasons = paging.rows;
     var contraventionReasonsFromJson = contraventionReasons

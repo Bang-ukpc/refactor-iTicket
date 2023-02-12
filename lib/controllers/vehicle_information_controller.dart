@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:iWarden/factory/json_decode_factory.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/pagination.dart';
@@ -28,6 +29,7 @@ class VehicleInfoController {
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
+      print('[API] with zoneId: ${zoneId}');
       final bodyRequest = jsonEncode({
         "filter": {
           "type": vehicleInfoType,
@@ -42,6 +44,9 @@ class VehicleInfoController {
         final response =
             await dio.post('/vehicleInformation/filter', data: bodyRequest);
         Pagination vehicleInfoPagination = Pagination.fromJson(response.data);
+        var vehicleInfos = jsonDecodeFactory
+            .decodeList<VehicleInformation>(vehicleInfoPagination.rows);
+        vehicleInfoPagination.rows = vehicleInfos;
         Pagination vehicleInfoDataLocal = Pagination.fromJson(response.data);
         print("[DETAIL] ${json.encode(vehicleInfoDataLocal.toJson())}");
         final String? data = await SharedPreferencesHelper.getStringValue(
@@ -81,7 +86,7 @@ class VehicleInfoController {
 
         return vehicleInfoPagination;
       } on DioError catch (error) {
-        print(error.response);
+        print('[API GET VEHICLE INFO] ${error}');
         rethrow;
       }
     } else {

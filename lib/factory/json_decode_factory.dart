@@ -14,6 +14,9 @@ class JsonDecodeFactory {
     if (T == ContraventionCreateWardenCommand) {
       return ContraventionCreateWardenCommand.fromJson(json) as T;
     }
+    if (T == Contravention) {
+      return Contravention.fromJson(json) as T;
+    }
     if (T == ContraventionCreatePhoto) {
       return ContraventionCreatePhoto.fromJson(json) as T;
     }

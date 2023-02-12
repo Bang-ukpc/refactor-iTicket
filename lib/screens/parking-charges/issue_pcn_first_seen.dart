@@ -26,7 +26,6 @@ import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/car_info_data.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
@@ -37,6 +36,7 @@ import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
 import 'package:iWarden/screens/parking-charges/print_issue.dart';
 import 'package:iWarden/screens/parking-charges/print_pcn.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
@@ -68,29 +68,29 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   final _contraventionReasonController = TextEditingController();
   final _commentController = TextEditingController();
   List<ContraventionReasonTranslations> contraventionReasonList = [];
-  List<ContraventionReasonTranslations> fromJsonContraventionList = [];
   List<EvidencePhoto> evidencePhotoList = [];
   final _debouncer = Debouncer(milliseconds: 300);
   SelectModel? _selectedItemTypePCN;
   List<RotaWithLocation> locationWithRotaList = [];
   List<Contravention> contraventionList = [];
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
-  Future<List<Contravention>> getParkingCharges(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await contraventionController
-        .getContraventionServiceList(
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
-      return value;
-    }).catchError((err) {
-      throw Error();
+  Future<void> getContraventions() async {
+    var contraventions = await zoneCachedServiceFactory
+        .contraventionCachedService
+        .getAllWithCreatedOnTheOffline();
+    setState(() {
+      contraventionList = contraventions;
     });
-    contraventionList =
-        list.rows.map((item) => Contravention.fromJson(item)).toList();
-    return contraventionList;
+  }
+
+  Future<void> getContraventionReasonList() async {
+    var contraventionReasons = await zoneCachedServiceFactory
+        .contraventionReasonCachedService
+        .getAll();
+    setState(() {
+      contraventionReasonList = contraventionReasons;
+    });
   }
 
   void setSelectedTypeOfPCN(
@@ -154,46 +154,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       }
     }).catchError((err) {
       print(err);
-    });
-  }
-
-  Future<void> getContraventionReasonList({int? zoneId}) async {
-    ConnectivityResult connectionStatus =
-        await (Connectivity().checkConnectivity());
-
-    if (connectionStatus == ConnectivityResult.wifi ||
-        connectionStatus == ConnectivityResult.mobile) {
-      final Pagination list = await contraventionController
-          .getContraventionReasonServiceList(zoneId: zoneId);
-      setState(() {
-        contraventionReasonList = list.rows
-            .map((item) => ContraventionReasonTranslations.fromJson(item))
-            .toList();
-      });
-    } else {
-      final Pagination list =
-          await contraventionController.getContraventionReasonServiceList();
-      setState(() {
-        contraventionReasonList = list.rows
-            .map((item) => ContraventionReasonTranslations.fromJson(item))
-            .toList();
-      });
-    }
-  }
-
-  Future<void> getAllContraventionReasons() async {
-    final String? allContravention =
-        await SharedPreferencesHelper.getStringValue(
-            'contraventionReasonDataLocalWithNotHaveZoneId');
-
-    final contraventionReason =
-        json.decode(allContravention as String) as Map<String, dynamic>;
-    Pagination fromJsonContraventionReason =
-        Pagination.fromJson(contraventionReason);
-    setState(() {
-      fromJsonContraventionList = fromJsonContraventionReason.rows
-          .map((item) => ContraventionReasonTranslations.fromJson(item))
-          .toList();
     });
   }
 
@@ -293,7 +253,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
     if (isOverStaying) {
       setState(() {
-        contraventionReasonList = fromJsonContraventionList
+        contraventionReasonList = contraventionReasonList
             .where((e) => e.contraventionReason!.code == '36')
             .toList();
       });
@@ -306,7 +266,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               .toList();
         });
       } else {
-        contraventionReasonList = fromJsonContraventionList
+        contraventionReasonList = contraventionReasonList
             .where((e) => e.contraventionReason!.code != '36')
             .toList();
       }
@@ -322,16 +282,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
       final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
+      zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
 
-      await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
-      await getAllContraventionReasons();
+      await getContraventionReasonList();
 
       if (vehicleInfo != null) {
         contraventionProvider.setFirstSeenData(vehicleInfo);
         _vrnController.text = vehicleInfo.Plate;
         if (vehicleInfo.Type == VehicleInformationType.FIRST_SEEN.index) {
           ContraventionReasonTranslations? argsOverstayingTime =
-              fromJsonContraventionList
+              contraventionReasonList
                   .firstWhereOrNull((e) => e.contraventionReason!.code == '36');
           _contraventionReasonController.text = argsOverstayingTime != null
               ? argsOverstayingTime.contraventionReason!.code.toString()
@@ -378,11 +338,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           .then((value) {
         setSelectedTypeOfPCN(locationProvider, contraventionData);
       });
-      getParkingCharges(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locationProvider.zone!.Id as int,
-      );
+      getContraventions();
     });
   }
 
@@ -585,7 +541,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
             code: physicalPCN2.ContraventionReasonCode,
-            contraventionReasonTranslations: fromJsonContraventionList
+            contraventionReasonTranslations: contraventionReasonList
                 .where((e) =>
                     e.contraventionReason!.code ==
                     physicalPCN2.ContraventionReasonCode)
@@ -773,7 +729,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           zoneId: locationProvider.zone?.Id ?? 0,
           reason: Reason(
             code: virtualTicket2.ContraventionReasonCode,
-            contraventionReasonTranslations: fromJsonContraventionList
+            contraventionReasonTranslations: contraventionReasonList
                 .where((e) =>
                     e.contraventionReason!.code ==
                     virtualTicket2.ContraventionReasonCode)
@@ -1110,12 +1066,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         setSelectedTypeOfPCN(
             locationProvider, contraventionProvider.contravention);
       });
-      await getContraventionReasonList(zoneId: locationProvider.zone?.Id);
-      await getAllContraventionReasons();
+      await getContraventionReasonList();
       setContraventionReasons(
           isOverStaying: contraventionProvider.getVehicleInfo?.Type ==
               VehicleInformationType.FIRST_SEEN.index);
-      var contraventionCodeFind = fromJsonContraventionList.firstWhereOrNull(
+      var contraventionCodeFind = contraventionReasonList.firstWhereOrNull(
           (e) =>
               e.contraventionReason?.code ==
               contraventionProvider

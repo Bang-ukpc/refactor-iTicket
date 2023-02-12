@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
+import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/services/local/local_service.dart';
 import '../../controllers/contravention_controller.dart';
 
@@ -10,6 +11,18 @@ class IssuedPcnPhotoLocalService
   final String LOCAL_KEY = 'contraventionPhotoDataLocal';
 
   IssuedPcnPhotoLocalService() : super('contraventionPhotoDataLocal');
+
+  listByContraventionReference(String contraventionReference) async {
+    List<ContraventionCreatePhoto> photos = await getAll();
+    var contraventionCreatePhoto = photos
+        .where(
+            (photo) => photo.contraventionReference == contraventionReference)
+        .toList();
+    return contraventionCreatePhoto
+        .map((e) =>
+            ContraventionPhotos(blobName: e.filePath, contraventionId: e.Id))
+        .toList();
+  }
 
   @override
   syncAll() async {

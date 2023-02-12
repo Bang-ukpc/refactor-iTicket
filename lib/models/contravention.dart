@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:iWarden/models/base_model.dart';
 
 class Contravention extends BaseModel {
@@ -180,10 +182,11 @@ class Reason {
   }
 }
 
-class ContraventionReasonTranslations extends Identifiable{
+class ContraventionReasonTranslations extends Identifiable {
   DateTime? created;
   DateTime? deleted;
   int? id;
+  String? code;
   int? contraventionReasonId;
   String? summary;
   String? detail;
@@ -193,6 +196,7 @@ class ContraventionReasonTranslations extends Identifiable{
     this.created,
     this.deleted,
     this.id,
+    this.code,
     this.contraventionReasonId,
     this.summary,
     this.detail,
@@ -200,14 +204,18 @@ class ContraventionReasonTranslations extends Identifiable{
   });
 
   ContraventionReasonTranslations.fromJson(Map<String, dynamic> json) {
+    print(
+        '[CONTRAVENTION REASON CODE FROM JSON]: ${json['ContraventionReason']?['Code']}');
     created = json['Created'] == null ? null : DateTime.parse(json['Created']);
     deleted = json['Deleted'] == null ? null : DateTime.parse(json['Deleted']);
     id = json['Id'];
     contraventionReasonId = json['ContraventionReasonId'];
     summary = json['Summary'];
     detail = json['Detail'];
-    if (json['ContraventionReason'] != null) {
-      contraventionReason = Reason.fromJson(json['ContraventionReason']);
+    if (json['Code'] != null) {
+      code = json['Code'];
+    } else if (json['ContraventionReason'] != null) {
+      code = json['ContraventionReason']?['Code'];
     }
   }
 
@@ -219,6 +227,9 @@ class ContraventionReasonTranslations extends Identifiable{
     data['ContraventionReasonId'] = contraventionReasonId;
     data['Summary'] = summary;
     data['Detail'] = detail;
+    data['Code'] = code;
+    // TODO: resolve the circle JSON
+    // data['ContraventionReason'] = contraventionReason!.toJson();
     return data;
   }
 }

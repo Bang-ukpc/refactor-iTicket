@@ -1,6 +1,7 @@
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/location_controller.dart';
+import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
+
 import '../../models/location.dart';
 import '../../models/zone.dart';
 import 'cache_service.dart';
@@ -19,8 +20,9 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: _wardenId,
     );
-    var rotaWithLocations =
-        await locationController.getAll(filter).catchError((err) async {
+    var rotaWithLocations = await weakNetworkRotaWithLocationController
+        .getAll(filter)
+        .catchError((err) async {
       return await getAll();
     });
 

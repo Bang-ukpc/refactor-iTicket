@@ -14,7 +14,7 @@ class DioHelper {
   static Dio get weakNetWorkApiClient => ApiClientBuilder()
       .ofUrl(ConfigEnvironmentVariable.serviceURL)
       .addInterceptor(Logging())
-      .setTimeout(6)
+      .setTimeout(6000)
       .create();
 }
 

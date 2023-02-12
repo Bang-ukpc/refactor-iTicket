@@ -21,6 +21,7 @@ import 'package:iWarden/screens/read_regulation_screen.dart';
 import 'package:iWarden/screens/send_form_screen.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/screens/statistics_screen.dart';
+import 'package:iWarden/screens/sync-zone-data/sync_zone_data_screen.dart';
 import '../screens/login_screens.dart';
 
 final Map<String, WidgetBuilder> routes = {
@@ -51,4 +52,5 @@ final Map<String, WidgetBuilder> routes = {
   ReadRegulationScreen.routeName: (context) => const ReadRegulationScreen(),
   LocateCarScreen.routeName: (context) => const LocateCarScreen(),
   StartBreakScreen.routeName: (context) => const StartBreakScreen(),
+  SyncZoneData.routeName: (context) => const SyncZoneData(),
 };

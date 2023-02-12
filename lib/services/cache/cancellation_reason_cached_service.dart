@@ -1,4 +1,4 @@
-import 'package:iWarden/controllers/cancellation_reason_controller.dart';
+import 'package:iWarden/controllers/index.dart';
 
 import '../../models/abort_pcn.dart';
 import 'cache_service.dart';
@@ -8,7 +8,9 @@ class CancellationReasonCachedService extends CacheService<CancellationReason> {
 
   @override
   syncFromServer() async {
-    var cancellationReasons = await cancellationReasonController.all();
+    var cancellationReasons =
+        await weakNetworkCancellationReasonController.all();
+    print('[CANCELLATION REASON LENGTH] $cancellationReasons');
     set(cancellationReasons);
     return cancellationReasons;
   }

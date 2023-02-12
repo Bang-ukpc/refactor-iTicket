@@ -4,7 +4,15 @@ import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 
 class CancellationReasonController {
-  static final dio = DioHelper.defaultApiClient;
+  late Dio dio;
+
+  CancellationReasonController() {
+    dio = DioHelper.defaultApiClient;
+  }
+
+  CancellationReasonController.fromDio(Dio initDio) {
+    dio = initDio;
+  }
 
   Future<List<CancellationReason>> all() async {
     try {

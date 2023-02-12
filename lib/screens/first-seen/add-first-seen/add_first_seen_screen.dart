@@ -19,6 +19,7 @@ import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/evidence_photo_controller.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
+import 'package:iWarden/helpers/IdHelper.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
@@ -27,6 +28,7 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -51,6 +53,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
   List<Contravention> contraventionList = [];
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> getLocationList(Locations locations, int wardenId) async {
     ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
@@ -121,6 +124,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locationProvider = Provider.of<Locations>(context, listen: false);
+      zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
       getParkingCharges(
         page: 1,
         pageSize: 1000,
@@ -144,10 +148,8 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     final wardenProvider = Provider.of<WardensInfo>(context);
 
     Future<bool> saveForm() async {
-      ConnectivityResult connectionStatus =
-          await (Connectivity().checkConnectivity());
       final vehicleInfo = VehicleInformation(
-        Id: 0,
+        Id: idHelper.generateId(),
         ExpiredAt: DateTime.now().add(
           Duration(
             seconds: locationProvider.expiringTimeFirstSeen,
@@ -167,8 +169,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       );
 
       final isValid = _formKey.currentState!.validate();
-
-      bool check = false;
 
       setState(() {
         evidencePhotoList.clear();
@@ -202,147 +202,33 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         return false;
       }
 
-      showCircularProgressIndicator(context: context);
+      vehicleInfo.EvidencePhotos = arrayImage
+          .map((image) => EvidencePhoto(
+              Id: idHelper.generateId(),
+              BlobName: image.path,
+              Created: DateTime.now(),
+              VehicleInformationId: vehicleInfo.Id))
+          .toList();
+      zoneCachedServiceFactory.firstSeenCachedService.create(vehicleInfo);
 
-      if (connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile) {
-        try {
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              await evidencePhotoController
-                  .uploadImage(filePath: arrayImage[i].path)
-                  .then((value) {
-                evidencePhotoList
-                    .add(EvidencePhoto(BlobName: value['blobName']));
-              });
-            }
-          }
+      if (!mounted) return false;
+      Navigator.of(context).pop();
+      CherryToast.success(
+        displayCloseButton: false,
+        title: Text(
+          'First seen added successfully',
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
 
-          await getLocationList(
-                  locationProvider, wardenProvider.wardens?.Id ?? 0)
-              .then((value) async {
-            vehicleInfo.ExpiredAt = DateTime.now().add(
-              Duration(
-                seconds: locationProvider.expiringTimeFirstSeen,
-              ),
-            );
-            await vehicleInfoController
-                .upsertVehicleInfo(vehicleInfo)
-                .then((value) {
-              if (value != null) {
-                check = true;
-              }
-            });
-          });
-
-          if (check == true) {
-            if (!mounted) return false;
-            Navigator.of(context).pop();
-            CherryToast.success(
-              displayCloseButton: false,
-              title: Text(
-                'First seen added successfully',
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-
-            setState(() {
-              _vrnController.text = '';
-              _bayNumberController.text = '';
-              arrayImage.clear();
-              evidencePhotoList.clear();
-            });
-          }
-        } on DioError catch (error) {
-          if (!mounted) return false;
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return false;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return false;
-        }
-      } else {
-        int randomNumber =
-            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-
-        vehicleInfo.Id = randomNumber;
-        vehicleInfo.Created = DateTime.now();
-        if (arrayImage.isNotEmpty) {
-          for (int i = 0; i < arrayImage.length; i++) {
-            int randomNumber2 =
-                (DateTime.now().microsecondsSinceEpoch / (-1003 + i)).ceil();
-            evidencePhotoList.add(
-              EvidencePhoto(
-                Id: randomNumber2,
-                BlobName: arrayImage[i].path,
-                VehicleInformationId: vehicleInfo.Id,
-                Created: DateTime.now(),
-              ),
-            );
-          }
-        }
-        final String encodedData = json.encode(vehicleInfo.toJson());
-        final String? vehicleUpsertData =
-            await SharedPreferencesHelper.getStringValue(
-                'vehicleInfoUpsertDataLocal');
-        if (vehicleUpsertData == null) {
-          List<String> newData = [];
-          newData.add(encodedData);
-          final encodedNewData = json.encode(newData);
-          SharedPreferencesHelper.setStringValue(
-              'vehicleInfoUpsertDataLocal', encodedNewData);
-        } else {
-          final createdData = json.decode(vehicleUpsertData) as List<dynamic>;
-          createdData.add(encodedData);
-          final encodedCreatedData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'vehicleInfoUpsertDataLocal', encodedCreatedData);
-        }
-        if (!mounted) return false;
-        Navigator.of(context).pop();
-        CherryToast.success(
-          displayCloseButton: false,
-          title: Text(
-            'First seen added successfully',
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-
-        setState(() {
-          _vrnController.text = '';
-          _bayNumberController.text = '';
-          arrayImage.clear();
-          evidencePhotoList.clear();
-        });
-      }
+      setState(() {
+        _vrnController.text = '';
+        _bayNumberController.text = '';
+        arrayImage.clear();
+        evidencePhotoList.clear();
+      });
 
       _formKey.currentState!.save();
       return true;
