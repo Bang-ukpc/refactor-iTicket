@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
@@ -7,8 +9,7 @@ import 'cache_service.dart';
 
 class FirstSeenCachedService extends CacheService<VehicleInformation> {
   late int _zoneId;
-  FirstSeenCachedService(int zoneId)
-      : super("cacheFirstSeenItems_$zoneId") {
+  FirstSeenCachedService(int zoneId) : super("cacheFirstSeenItems_$zoneId") {
     _zoneId = zoneId;
   }
 
@@ -29,7 +30,9 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
           totalPages: 1,
           rows: vehicleInfos);
     });
-    var vehicleInfos = paging.rows as List<VehicleInformation>;
+    var vehicleInfos = paging.rows
+        .map((e) => VehicleInformation.fromJson(json.decode(e)))
+        .toList();
     set(vehicleInfos);
     return vehicleInfos;
   }

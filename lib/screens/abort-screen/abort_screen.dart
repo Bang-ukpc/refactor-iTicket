@@ -41,7 +41,7 @@ class _AbortScreenState extends State<AbortScreen> {
   bool isLoading = true;
   late CachedServiceFactory cachedServiceFactory;
 
-  void getCancellationReasons() async {
+  Future<void> getCancellationReasons() async {
     await cachedServiceFactory.cancellationReasonCachedService
         .getAll()
         .then((value) {
@@ -59,7 +59,11 @@ class _AbortScreenState extends State<AbortScreen> {
   @override
   void initState() {
     super.initState();
-    getCancellationReasons();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
+      cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
+      getCancellationReasons();
+    });
   }
 
   @override

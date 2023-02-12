@@ -18,6 +18,7 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
 import 'package:iWarden/screens/read_regulation_screen.dart';
+import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
@@ -44,22 +45,17 @@ class _LocationScreenState extends State<LocationScreen> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   Position? currentLocation;
+  late CachedServiceFactory cachedServiceFactory;
 
   String formatRotaShift(DateTime date) {
     return DateFormat('HH:mm').format(date);
   }
 
-  Future<void> getLocationList(Locations locations, int wardenId) async {
-    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
-        ListLocationOfTheDayByWardenIdProps(
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardenId,
-    );
-
-    await locationController
-        .getAll(listLocationOfTheDayByWardenIdProps)
+  Future<void> getRotas() async {
+    await cachedServiceFactory.rotaWithLocationCachedService
+        .getAll()
         .then((value) {
+      print('ROTAS: ${value.length}');
       setState(() {
         locationWithRotaList = value;
         isLoading = false;
@@ -136,9 +132,11 @@ class _LocationScreenState extends State<LocationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       locations.resetLocationWithZones();
-      final wardersProvider = Provider.of<WardensInfo>(context, listen: false);
+      final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
+      cachedServiceFactory =
+          CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
+      await getRotas();
 
-      await getLocationList(locations, wardersProvider.wardens?.Id ?? 0);
       rotaList(locationWithRotaList);
       if (listFilter.isNotEmpty) {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
@@ -266,7 +264,7 @@ class _LocationScreenState extends State<LocationScreen> {
     print('zone: ${locations.zone?.Name}');
 
     Future<void> refresh() async {
-      await getLocationList(locations, wardensProvider.wardens?.Id ?? 0);
+      await getRotas();
       rotaList(locationWithRotaList);
       if (listFilter.isNotEmpty) {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);

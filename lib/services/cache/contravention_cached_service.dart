@@ -23,7 +23,8 @@ class ContraventionCachedService extends CacheService<Contravention> {
           totalPages: 1,
           rows: cachedItems);
     });
-    var contraventions = paging.rows as List<Contravention>;
+    var contraventions =
+        paging.rows.map((e) => Contravention.fromJson(e)).toList();
     set(contraventions);
     return contraventions;
   }
