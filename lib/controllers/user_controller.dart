@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -42,6 +43,7 @@ class UserController {
       } else {
         wardenEvent.Created = DateTime.now();
       }
+      // wardenEvent.Id = null;
       try {
         final response =
             await dio.post('/wardenEvent', data: wardenEvent.toJson());
@@ -54,6 +56,9 @@ class UserController {
       }
     } else {
       wardenEvent.Created = DateTime.now();
+
+      wardenEvent.Id = Random().nextInt(1000000020);
+
       final String? wardenEventDataLocal =
           await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
       final String encodedNewData = json.encode(wardenEvent.toJson());

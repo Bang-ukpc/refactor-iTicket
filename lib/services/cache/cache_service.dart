@@ -5,6 +5,7 @@ import 'package:iWarden/factory/json_decode_factory.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import '../../helpers/shared_preferences_helper.dart';
 import '../../models/base_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class ICacheService<T extends Identifiable> {
   syncFromServer();
@@ -33,6 +34,7 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
 
   @override
   delete(int id) async {
+    print('[DELETE ${id}]');
     final items = await getAll();
     print(items.map((e) => e.Id));
     final updatedItems = items.where((element) {
@@ -40,6 +42,7 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
       return element.Id != id;
     });
     set(updatedItems.toList());
+    print('[SET]');
   }
 
   @override
@@ -55,6 +58,8 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
 
   @override
   Future<List<T>> getAll() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
     final String? jsonItems =
         await SharedPreferencesHelper.getStringValue(localKey);
     // const jsonItems =

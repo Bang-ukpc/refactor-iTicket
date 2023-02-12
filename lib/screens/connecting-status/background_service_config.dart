@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:developer' as dev;
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -154,6 +155,7 @@ void onStart(ServiceInstance service) async {
       type: TypeWardenEvent.TrackGPS.index,
       detail: "Warden's current location",
       latitude: position.latitude,
+      Id: Random().nextInt(1000000000),
       longitude: position.longitude,
       wardenId: wardenFromJson?.Id ?? 0,
       rotaTimeFrom: rotaShiftSelected?.timeFrom,
@@ -167,7 +169,7 @@ void onStart(ServiceInstance service) async {
         await (Connectivity().checkConnectivity());
     if (connectionStatus == ConnectivityResult.wifi ||
         connectionStatus == ConnectivityResult.mobile) {
-      log('Track GPS online');
+      dev.log('Track GPS online');
       try {
         await dio.post(
           '$serviceUrl/wardenEvent',
@@ -179,13 +181,12 @@ void onStart(ServiceInstance service) async {
         }
       }
     } else {
-      log('Track GPS offline');
+      dev.log('Track GPS offline');
       final String? wardenEventDataLocal =
           await SharedPreferencesHelper.getStringValue(
               'wardenEventCheckGPSDataLocal');
       final String encodedNewData =
           json.encode(wardenEventSendCurrentLocation.toJson());
-
       if (wardenEventDataLocal == null) {
         List<String> newData = [];
         newData.add(encodedNewData);

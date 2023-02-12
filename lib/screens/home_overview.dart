@@ -31,6 +31,8 @@ import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
+import 'package:iWarden/services/local/created_warden_event_local_background_service%20.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
@@ -683,14 +685,16 @@ class _HomeOverviewState extends State<HomeOverview> {
                       ),
                 ElevatedButton(
                     onPressed: () async {
-                      List<VehicleInformation> vehicles =
-                          await createdVehicleDataLocalService.getAll();
-                      log("hehehe ${vehicles[0].EvidencePhotos!.length}");
-                      log("hehehe ${vehicles.map(
-                        (e) {
-                          print(json.encode(e));
-                        },
-                      )}");
+                      List<WardenEvent> wardenEventsLocal =
+                          await createdWardenEventLocalService.getAll();
+                      List<WardenEvent>
+                          CreatedWardenEventLocalBackgroundService =
+                          await createdWardenEventLocalBackgroundService
+                              .getAll();
+                      log("hehehe ${json.encode(CreatedWardenEventLocalBackgroundService)}");
+                      log("hehehe ${CreatedWardenEventLocalBackgroundService.length}");
+                      log("hehehe1 ${wardenEventsLocal.length}");
+
                       // SharedPreferencesHelper.removeStringValue(
                       //     'issuePCNDataLocal');
                       // SharedPreferencesHelper.removeStringValue(
@@ -705,7 +709,9 @@ class _HomeOverviewState extends State<HomeOverview> {
                 ElevatedButton(
                     onPressed: () async {
                       SharedPreferencesHelper.removeStringValue(
-                          'vehicleInfoUpsertDataLocal');
+                          'wardenEventCheckGPSDataLocal');
+                      SharedPreferencesHelper.removeStringValue(
+                          'wardenEventDataLocal');
                     },
                     child: Text("delete")),
               ],
