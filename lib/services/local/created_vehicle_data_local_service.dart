@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
+import 'package:iWarden/services/cache/cache_service.dart';
+import 'package:iWarden/services/cache/first_seen_cached_service.dart';
+import 'package:iWarden/services/cache/grace_period_cached_service.dart';
 import 'package:iWarden/services/local/created_vehicle_data_photo_local_service.dart';
 import 'package:iWarden/services/local/local_service.dart';
 
@@ -52,17 +55,28 @@ class CreatedVehicleDataLocalService
     print(
         '[VEHICLE INFO] syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
     try {
-      syncPcnPhotos(vehicleInformation.EvidencePhotos!).then((evidencePhotos) {
+      await syncPcnPhotos(vehicleInformation.EvidencePhotos!).then((evidencePhotos) async {
         vehicleInformation.EvidencePhotos = evidencePhotos;
         if (vehicleInformation.Id != null && vehicleInformation.Id! < 0) {
           vehicleInformation.Id = null;
         }
-        vehicleInfoController.upsertVehicleInfo(vehicleInformation);
+        await vehicleInfoController.upsertVehicleInfo(vehicleInformation);
+        await createCachedVehicleInformationAfterSync(vehicleInformation);
       });
     } catch (e) {
       print(e.toString());
     } finally {
       await delete(vehicleInformation.Id!);
+    }
+  }
+
+  createCachedVehicleInformationAfterSync(VehicleInformation vehicle) async {
+    if (vehicle.Type == VehicleInformationType.FIRST_SEEN.index) {
+      ICacheService<VehicleInformation> cachedService =
+          vehicle.Type == VehicleInformationType.FIRST_SEEN.index
+              ? FirstSeenCachedService(vehicle.ZoneId)
+              : GracePeriodCachedService(vehicle.ZoneId);
+      await cachedService.create(vehicle);
     }
   }
 

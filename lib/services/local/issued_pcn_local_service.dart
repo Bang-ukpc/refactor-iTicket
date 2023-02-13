@@ -1,7 +1,4 @@
-import 'dart:convert';
-import 'dart:math';
-
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/services/cache/contravention_cached_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/services/local/local_service.dart';
 import '../../controllers/contravention_controller.dart';
@@ -20,12 +17,15 @@ class IssuedPcnLocalService
 
   @override
   syncAll() async {
+    print("[$localKey] start syncing all ....");
+
     if (isSyncing) {
-      print("IssuedPcnLocalService is syncing");
+      print("[$localKey] ignore because the process is syncing!");
       return;
     }
     isSyncing = true;
     List<ContraventionCreateWardenCommand> allPcns = await getAll();
+    print("[$localKey] start syncing ${allPcns.length} items ....");
     allPcnPhotos = await issuedPcnPhotoLocalService.getAll();
     for (var pcn in allPcns) {
       await sync(pcn);
@@ -36,12 +36,20 @@ class IssuedPcnLocalService
 
   @override
   sync(ContraventionCreateWardenCommand pcn) async {
-    print("syn!!!!!!");
+    print("[$localKey] syncing ${pcn.Plate} created at ${pcn.EventDateTime}");
     try {
+      var contraventionCachedService = ContraventionCachedService(pcn.ZoneId);
+      var cachedContravention = await contraventionCachedService
+          .convertIssuesContraventionToCachedContravention(pcn);
+
+      // sync to server
       await contraventionController.createPCN(pcn);
       await syncPcnPhotos(pcn);
+
+      // create cached after sync
+      await contraventionCachedService.create(cachedContravention);
     } catch (e) {
-      print(e.toString());
+      print("[$localKey] syncing ${pcn.Plate} error ${e.toString()}");
     } finally {
       await delete(pcn.Id!);
     }
