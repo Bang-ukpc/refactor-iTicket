@@ -421,21 +421,6 @@ class _HomeOverviewState extends State<HomeOverview> {
                           height: 100,
                         ),
                       ),
-                ElevatedButton(
-                  onPressed: () async {
-                    createdWardenEventLocalService.deleteAll();
-                    createdVehicleDataLocalService.deleteAll();
-                    createdVehicleDataPhotoLocalService.deleteAll();
-                  },
-                  child: const Text("delete"),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    var a = await createdVehicleDataLocalService.getAll();
-                    print(json.encode(a));
-                  },
-                  child: const Text("get list"),
-                ),
               ],
             ),
           ),
