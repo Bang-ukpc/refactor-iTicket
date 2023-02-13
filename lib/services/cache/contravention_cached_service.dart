@@ -1,10 +1,10 @@
 import 'dart:convert';
-
-import 'package:collection/collection.dart';
+import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 
 import '../../controllers/index.dart';
+import '../../models/ContraventionService.dart';
 import '../../models/contravention.dart';
 import '../../models/pagination.dart';
 import '../local/issued_pcn_local_service.dart';
@@ -35,46 +35,51 @@ class ContraventionCachedService extends CacheService<Contravention> {
     return paging.rows as List<Contravention>;
   }
 
-  Future<List<Contravention>> getIssuedContraventions() async {
-    var zoneCachedServiceFactory = ZoneCachedServiceFactory(_zoneId);
-    var issuedItems = await issuedPcnLocalService.getAll();
-    var contraventionReasons = await zoneCachedServiceFactory
-        .contraventionReasonCachedService
-        .getAll();
+  Future<Contravention> convertIssuesContraventionToCachedContravention(
+      ContraventionCreateWardenCommand i) async {
+    var contraventionPhotos = (await issuedPcnPhotoLocalService
+            .listByContraventionReference(i.ContraventionReference))
+        .map((e) => issuedPcnPhotoLocalService.toContraventionPhoto(e))
+        .toList();
+    var contraventionService = ContraventionReasonCachedService(_zoneId);
+    var contraventionReasons = await contraventionService.getAll();
 
-    return await Future.wait(issuedItems.map((i) async => Contravention(
-          reference: i.ContraventionReference,
-          created: DateTime.now(),
-          id: i.Id,
-          plate: i.Plate,
-          colour: i.VehicleColour,
-          make: i.VehicleMake,
-          eventDateTime: i.EventDateTime,
-          zoneId: i.ZoneId,
-          reason: Reason(
-            code: i.ContraventionReasonCode,
-            contraventionReasonTranslations: contraventionReasons
-                .where((e) => e.code == i.ContraventionReasonCode)
-                .toList(),
-          ),
-          contraventionEvents: [
-            ContraventionEvents(
-              contraventionId: i.Id,
-              detail: i.WardenComments,
-            )
-          ],
-          contraventionDetailsWarden: ContraventionDetailsWarden(
-            FirstObserved: i.FirstObservedDateTime,
-            ContraventionId: i.Id,
-            WardenId: i.WardenId,
-            IssuedAt: i.EventDateTime,
-          ),
-          type: i.TypePCN,
-          contraventionPhotos: (await issuedPcnPhotoLocalService
-                  .listByContraventionReference(i.ContraventionReference))
-              .map((e) => issuedPcnPhotoLocalService.toContraventionPhoto(e))
-              .toList(),
-        )));
+    return Contravention(
+      reference: i.ContraventionReference,
+      created: DateTime.now(),
+      id: i.Id,
+      plate: i.Plate,
+      colour: i.VehicleColour,
+      make: i.VehicleMake,
+      eventDateTime: i.EventDateTime,
+      zoneId: i.ZoneId,
+      reason: Reason(
+        code: i.ContraventionReasonCode,
+        contraventionReasonTranslations: contraventionReasons
+            .where((e) => e.code == i.ContraventionReasonCode)
+            .toList(),
+      ),
+      contraventionEvents: [
+        ContraventionEvents(
+          contraventionId: i.Id,
+          detail: i.WardenComments,
+        )
+      ],
+      contraventionDetailsWarden: ContraventionDetailsWarden(
+        FirstObserved: i.FirstObservedDateTime,
+        ContraventionId: i.Id,
+        WardenId: i.WardenId,
+        IssuedAt: i.EventDateTime,
+      ),
+      type: i.TypePCN,
+      contraventionPhotos: contraventionPhotos,
+    );
+  }
+
+  Future<List<Contravention>> getIssuedContraventions() async {
+    var issuedItems = await issuedPcnLocalService.getAll();
+    return await Future.wait(issuedItems.map(
+        (i) async => await convertIssuesContraventionToCachedContravention(i)));
   }
 
   Future<List<Contravention>> getAllWithCreatedOnTheOffline() async {
