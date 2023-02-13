@@ -443,14 +443,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                             style: CustomTextStyle.h3
                                 .copyWith(color: ColorTheme.primary),
                           ),
-                        if (pendingGetCurrentLocation == true)
-                          Container(
-                            margin: const EdgeInsets.only(top: 10, left: 2),
-                            child: SpinKitThreeBounce(
-                              color: ColorTheme.primary,
-                              size: 7,
-                            ),
-                          )
                       ],
                     ),
                   ),

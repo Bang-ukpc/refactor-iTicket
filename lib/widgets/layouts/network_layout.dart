@@ -241,8 +241,8 @@ class _NetworkLayoutState extends State<NetworkLayout> {
 
   void dataSync() async {
     await createdVehicleDataLocalService.syncAll();
-    // await issuedPcnLocalService.syncAll();
-    // await createdWardenEventLocalService.syncAll();
+    await issuedPcnLocalService.syncAll();
+    await createdWardenEventLocalService.syncAll();
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
@@ -255,8 +255,8 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         var pcnLength = 0;
         List<VehicleInformation> dataUpsert2 =
             await createdVehicleDataLocalService.getAll();
-        final String? issuePCNData =
-            await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
+        final String? contraventions =
+            await SharedPreferencesHelper.getStringValue('contraventions');
 
         var firstSeenList = dataUpsert2
             .where((e) => e.Type == VehicleInformationType.FIRST_SEEN.index)
@@ -268,8 +268,8 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         firstSeenLength = firstSeenList.length;
         gracePeriodLength = gracePeriodList.length;
 
-        if (issuePCNData != null) {
-          var decodedData = json.decode(issuePCNData) as List<dynamic>;
+        if (contraventions != null) {
+          var decodedData = json.decode(contraventions) as List<dynamic>;
           pcnLength = decodedData.length;
         }
 
@@ -295,7 +295,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
       final authProvider = Provider.of<Auth>(context, listen: false);
       bool checkIsAuth = await authProvider.isAuth();
       if (checkIsAuth == true) {
-        Timer.periodic(const Duration(seconds: 30), (timer) async {
+        Timer.periodic(const Duration(seconds: 10), (timer) async {
           await currentLocationPosition.getCurrentLocation();
         });
       }
