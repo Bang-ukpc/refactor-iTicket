@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as developer;
+import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -231,6 +232,13 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     super.dispose();
   }
 
+  Future<void> refreshPermissionGPS() async {
+    var check = await permission.Permission.locationWhenInUse.isGranted;
+    setState(() {
+      checkGps = check;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final wardensProvider = Provider.of<WardensInfo>(context);
@@ -343,179 +351,184 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       }
     }
 
+    print('[COnnect]');
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(
-                height: 80,
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (pendingGetCurrentLocation == true)
-                      Text(
-                        "Connecting paired devices",
-                        style: CustomTextStyle.h3
-                            .copyWith(color: ColorTheme.primary),
-                      ),
-                    if (isPending == false &&
-                        pendingGetCurrentLocation == false)
-                      Text(
-                        isCheckoutScreen
-                            ? 'Shift ended successfully'
-                            : "Connected successfully",
-                        style: CustomTextStyle.h3
-                            .copyWith(color: ColorTheme.primary),
-                      ),
-                    if (pendingGetCurrentLocation == true)
-                      Container(
-                        margin: const EdgeInsets.only(top: 10, left: 2),
-                        child: SpinKitThreeBounce(
-                          color: ColorTheme.primary,
-                          size: 7,
-                        ),
-                      )
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Column(
-                  children: [
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect("1. Connect bluetooth",
-                                checkState(checkBluetooth == true))
-                            : _buildConnect(
-                                '1. Connect bluetooth', StateDevice.pending)
-                        : _buildConnect(
-                            '1. Connect bluetooth', StateDevice.pending),
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect(
-                                "2. Connect network",
-                                checkState(
-                                  _connectionStatus ==
-                                          ConnectivityResult.mobile ||
-                                      _connectionStatus ==
-                                          ConnectivityResult.wifi,
-                                ),
-                              )
-                            : _buildConnect(
-                                '2. Connect network', StateDevice.pending)
-                        : _buildConnect(
-                            '2. Connect network', StateDevice.pending),
-                    isPending == false
-                        ? pendingGetCurrentLocation == false
-                            ? _buildConnect(
-                                "3. GPS has been turned on",
-                                checkState(gpsConnectionStatus ==
-                                    ServiceStatus.enabled))
-                            : _buildConnect('3. GPS has been turned on',
-                                StateDevice.pending)
-                        : _buildConnect(
-                            '3. GPS has been turned on', StateDevice.pending),
-                  ],
-                ),
-              ),
-              if (isPending == false && pendingGetCurrentLocation == false)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
-                  width: double.infinity,
-                  child: Row(
-                    children: [
-                      if (isCheckoutScreen)
-                        Consumer<Auth>(
-                          builder: (context, auth, _) {
-                            return Expanded(
-                              child: ElevatedButton.icon(
-                                icon: SvgPicture.asset(
-                                  "assets/svg/IconEndShift.svg",
-                                  width: 18,
-                                  height: 18,
-                                  color: ColorTheme.textPrimary,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  shadowColor: Colors.transparent,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  backgroundColor: ColorTheme.grey300,
-                                ),
-                                onPressed: () {
-                                  // eventAnalytics.clickButton(
-                                  //   button: "Log out",
-                                  //   user: wardensProvider.wardens!.Email,
-                                  // );
-                                  onLogout(auth);
-                                },
-                                label: Text(
-                                  "Log out",
-                                  style: CustomTextStyle.h5.copyWith(
-                                    color: ColorTheme.textPrimary,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      if (isCheckoutScreen)
-                        const SizedBox(
-                          width: 16,
-                        ),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon:
-                              SvgPicture.asset("assets/svg/IconStartShift.svg"),
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                          ),
-                          onPressed: () async {
-                            if (checkGps == true) {
-                              // await eventAnalytics.clickButton(
-                              //   button: "Start shift",
-                              //   user: wardensProvider.wardens!.Email,
-                              // );
-                              onStartShift();
-                            } else {
-                              toast.CherryToast.error(
-                                toastDuration: const Duration(seconds: 5),
-                                title: Text(
-                                  'Please allow the app to access your location to continue',
-                                  style: CustomTextStyle.h4.copyWith(
-                                    color: ColorTheme.danger,
-                                  ),
-                                ),
-                                toastPosition: toast.Position.bottom,
-                                borderRadius: 5,
-                              ).show(context);
-                            }
-                          },
-                          label: Text(
-                            "Start shift",
-                            style: CustomTextStyle.h5
-                                .copyWith(color: Colors.white, fontSize: 16),
-                          ),
-                        ),
-                      ),
-                    ],
+          child: RefreshIndicator(
+            onRefresh: refreshPermissionGPS,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    height: 80,
                   ),
-                ),
-            ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (pendingGetCurrentLocation == true)
+                          Text(
+                            "Connecting paired devices",
+                            style: CustomTextStyle.h3
+                                .copyWith(color: ColorTheme.primary),
+                          ),
+                        if (isPending == false &&
+                            pendingGetCurrentLocation == false)
+                          Text(
+                            isCheckoutScreen
+                                ? 'Shift ended successfully'
+                                : "Connected successfully",
+                            style: CustomTextStyle.h3
+                                .copyWith(color: ColorTheme.primary),
+                          ),
+                        if (pendingGetCurrentLocation == true)
+                          Container(
+                            margin: const EdgeInsets.only(top: 10, left: 2),
+                            child: SpinKitThreeBounce(
+                              color: ColorTheme.primary,
+                              size: 7,
+                            ),
+                          )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Column(
+                      children: [
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect("1. Connect bluetooth",
+                                    checkState(checkBluetooth == true))
+                                : _buildConnect(
+                                    '1. Connect bluetooth', StateDevice.pending)
+                            : _buildConnect(
+                                '1. Connect bluetooth', StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    "2. Connect network",
+                                    checkState(
+                                      _connectionStatus ==
+                                              ConnectivityResult.mobile ||
+                                          _connectionStatus ==
+                                              ConnectivityResult.wifi,
+                                    ),
+                                  )
+                                : _buildConnect(
+                                    '2. Connect network', StateDevice.pending)
+                            : _buildConnect(
+                                '2. Connect network', StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    "3. GPS has been turned on",
+                                    checkState(gpsConnectionStatus ==
+                                        ServiceStatus.enabled))
+                                : _buildConnect('3. GPS has been turned on',
+                                    StateDevice.pending)
+                            : _buildConnect('3. GPS has been turned on',
+                                StateDevice.pending),
+                      ],
+                    ),
+                  ),
+                  if (isPending == false && pendingGetCurrentLocation == false)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      width: double.infinity,
+                      child: Row(
+                        children: [
+                          if (isCheckoutScreen)
+                            Consumer<Auth>(
+                              builder: (context, auth, _) {
+                                return Expanded(
+                                  child: ElevatedButton.icon(
+                                    icon: SvgPicture.asset(
+                                      "assets/svg/IconEndShift.svg",
+                                      width: 18,
+                                      height: 18,
+                                      color: ColorTheme.textPrimary,
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      shadowColor: Colors.transparent,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10),
+                                      backgroundColor: ColorTheme.grey300,
+                                    ),
+                                    onPressed: () {
+                                      // eventAnalytics.clickButton(
+                                      //   button: "Log out",
+                                      //   user: wardensProvider.wardens!.Email,
+                                      // );
+                                      onLogout(auth);
+                                    },
+                                    label: Text(
+                                      "Log out",
+                                      style: CustomTextStyle.h5.copyWith(
+                                        color: ColorTheme.textPrimary,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          if (isCheckoutScreen)
+                            const SizedBox(
+                              width: 16,
+                            ),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              icon: SvgPicture.asset(
+                                  "assets/svg/IconStartShift.svg"),
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                shadowColor: Colors.transparent,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                              ),
+                              onPressed: () async {
+                                if (checkGps == true) {
+                                  onStartShift();
+                                } else {
+                                  permission.Permission.location.request();
+                                  toast.CherryToast.error(
+                                    toastDuration: const Duration(seconds: 5),
+                                    title: Text(
+                                      'Please allow the app to access your location to continue',
+                                      style: CustomTextStyle.h4.copyWith(
+                                        color: ColorTheme.danger,
+                                      ),
+                                    ),
+                                    toastPosition: toast.Position.bottom,
+                                    borderRadius: 5,
+                                  ).show(context);
+                                }
+                              },
+                              label: Text(
+                                "Start shift",
+                                style: CustomTextStyle.h5.copyWith(
+                                    color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
