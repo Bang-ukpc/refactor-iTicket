@@ -14,6 +14,8 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/local/created_warden_event_local_service .dart';
+
 class StartBreakScreen extends StatefulWidget {
   static const routeName = 'start-break';
   const StartBreakScreen({super.key});
@@ -49,8 +51,8 @@ class _StartBreakScreenState extends State<StartBreakScreen> {
         //   user: wardersProvider.wardens!.Email,
         // );
         showCircularProgressIndicator(context: context);
-        await userController
-            .createWardenEvent(wardenEventEndBreak)
+        await createdWardenEventLocalService
+            .create(wardenEventEndBreak)
             .then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(HomeOverview.routeName);

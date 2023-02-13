@@ -16,9 +16,12 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
+import 'package:iWarden/screens/sync-zone-data/sync_zone_data_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
+
+import '../services/local/created_warden_event_local_service .dart';
 
 class ReadRegulationScreen extends StatefulWidget {
   static const routeName = '/read-regulation';
@@ -79,10 +82,12 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           locations.location?.Notes == null) {
         try {
           showCircularProgressIndicator(context: context, text: 'Checking in');
-          await userController.createWardenEvent(wardenEvent).then((value) {
+          await createdWardenEventLocalService
+              .create(wardenEvent)
+              .then((value) {
             Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
-                HomeOverview.routeName, (Route<dynamic> route) => false);
+                SyncZoneData.routeName, (Route<dynamic> route) => false);
           });
         } on DioError catch (error) {
           if (!mounted) return;
@@ -131,10 +136,12 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           try {
             showCircularProgressIndicator(
                 context: context, text: 'Checking in');
-            await userController.createWardenEvent(wardenEvent).then((value) {
+            await createdWardenEventLocalService
+                .create(wardenEvent)
+                .then((value) {
               Navigator.of(context).pop();
               Navigator.of(context).pushNamedAndRemoveUntil(
-                  HomeOverview.routeName, (Route<dynamic> route) => false);
+                  SyncZoneData.routeName, (Route<dynamic> route) => false);
             });
           } on DioError catch (error) {
             if (error.type == DioErrorType.other) {

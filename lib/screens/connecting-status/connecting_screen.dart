@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer' as developer;
-import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -16,17 +15,14 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/abort_controller.dart';
-import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/controllers/user_controller.dart';
-import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
+import 'package:iWarden/services/cache/factory/cache_factory.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
@@ -47,7 +43,6 @@ class ConnectingScreen extends StatefulWidget {
 class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
-  bool checkGps = false;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;
   bool? checkBluetooth;
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
@@ -55,27 +50,43 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   List<ContraventionReasonTranslations> contraventionReasonList = [];
-  List<CancellationReason> cancellationReasonList = [];
+  bool isRotaNotNull = false;
+  bool isCancellationNotNull = false;
+  bool isLocationPermission = false;
+  late CachedServiceFactory cachedServiceFactory;
 
-  _buildConnect(String title, StateDevice state) {
+  _buildConnect(String title, StateDevice state, {bool required = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 19),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: CustomTextStyle.h5,
+          Row(
+            children: [
+              Text(
+                title,
+                style: CustomTextStyle.h5,
+              ),
+              if (required)
+                Text(
+                  "*",
+                  style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                ),
+            ],
           ),
-          if (state == StateDevice.pending)
-            SpinKitCircle(
-              color: ColorTheme.primary,
-              size: 18,
-            ),
-          if (state == StateDevice.disconnect)
-            SvgPicture.asset("assets/svg/IconDotCom.svg"),
-          if (state == StateDevice.connected)
-            SvgPicture.asset("assets/svg/IconCompleteActive.svg")
+          Row(
+            children: [
+              if (state == StateDevice.pending)
+                SpinKitCircle(
+                  color: ColorTheme.primary,
+                  size: 18,
+                ),
+              if (state == StateDevice.disconnect)
+                SvgPicture.asset("assets/svg/IconDotCom.svg"),
+              if (state == StateDevice.connected)
+                SvgPicture.asset("assets/svg/IconCompleteActive.svg")
+            ],
+          ),
         ],
       ),
     );
@@ -153,9 +164,9 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   void checkPermissionGPS() async {
-    var check = await permission.Permission.locationWhenInUse.isGranted;
+    var isGranted = await permission.Permission.locationWhenInUse.isGranted;
     setState(() {
-      checkGps = check;
+      isLocationPermission = isGranted;
     });
   }
 
@@ -167,26 +178,55 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     }
   }
 
-  void getContraventionReasonList() async {
-    final Pagination list =
-        await contraventionController.getContraventionReasonServiceList();
+  Future<void> syncRotaList() async {
+    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+    await getRotas();
+  }
+
+  Future<void> syncCancellationReasonList() async {
+    await cachedServiceFactory.cancellationReasonCachedService.syncFromServer();
+    await getCancellationReasons();
+  }
+
+  Future<void> syncContraventionReasonList() async {
+    await cachedServiceFactory.defaultContraventionReasonCachedService
+        .syncFromServer();
+    await cachedServiceFactory.rotaWithLocationCachedService
+        .syncContraventionReasonForAllZones();
+  }
+
+  Future<void> syncAllRequiredData() async {
+    print('GET ROTA');
+    await syncRotaList();
+    print('GET CANCELLATION REASON');
+    await syncCancellationReasonList();
+    print('GET CONTRAVENTION REASON');
+    await syncContraventionReasonList();
+  }
+
+  Future<void> getRotas() async {
+    var rotas =
+        await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+    print('[Rota length] ${rotas.length}');
     setState(() {
-      contraventionReasonList = list.rows
-          .map((item) => ContraventionReasonTranslations.fromJson(item))
-          .toList();
+      isRotaNotNull = rotas.isNotEmpty;
     });
   }
 
-  void getCancellationReasonList() async {
-    if (!mounted) return;
-    await abortController.getCancellationReasonList().then((value) {
-      setState(() {
-        cancellationReasonList = value;
-      });
-    }).catchError((err) {
-      print(err);
-      throw Error();
+  Future<void> getCancellationReasons() async {
+    var cancellationReasons =
+        await cachedServiceFactory.cancellationReasonCachedService.getAll();
+    print('[Cancellation reason length] ${cancellationReasons.length}');
+    setState(() {
+      isCancellationNotNull = cancellationReasons.isNotEmpty;
     });
+  }
+
+  bool isDataValid() {
+    if (!isRotaNotNull || !isCancellationNotNull) {
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -194,18 +234,17 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     super.initState();
     onStartBackgroundService();
     getCurrentLocationOfWarden();
-    getContraventionReasonList();
-    getCancellationReasonList();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
-      await wardensInfo.getWardensInfoLogging().then((value) {
-        setState(() {
-          isPending = false;
-        });
+      await wardensInfo.getWardensInfoLogging().then((value) async {
+        return;
       }).catchError((err) {
-        setState(() {
-          isPending = false;
-        });
+        return;
+      });
+      cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
+      await syncAllRequiredData();
+      setState(() {
+        isPending = false;
       });
     });
     checkGpsConnectingStatus();
@@ -235,7 +274,12 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   Future<void> refreshPermissionGPS() async {
     var check = await permission.Permission.locationWhenInUse.isGranted;
     setState(() {
-      checkGps = check;
+      isLocationPermission = check;
+      isPending = true;
+    });
+    await syncAllRequiredData();
+    setState(() {
+      isPending = false;
     });
   }
 
@@ -257,8 +301,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     void onStartShift() async {
       try {
         showCircularProgressIndicator(context: context, text: 'Starting shift');
-        await userController
-            .createWardenEvent(wardenEventStartShift)
+        await createdWardenEventLocalService
+            .create(wardenEventStartShift)
             .then((value) async {
           final service = FlutterBackgroundService();
           var isRunning = await service.isRunning();
@@ -351,7 +395,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       }
     }
 
-    print('[COnnect]');
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -365,7 +408,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(
-                    height: 80,
+                    height: 60,
                   ),
                   SizedBox(
                     width: double.infinity,
@@ -373,11 +416,23 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (pendingGetCurrentLocation == true)
-                          Text(
-                            "Connecting paired devices",
-                            style: CustomTextStyle.h3
-                                .copyWith(color: ColorTheme.primary),
+                        if (isPending == true ||
+                            pendingGetCurrentLocation == true)
+                          Row(
+                            children: [
+                              Text(
+                                "Connecting paired devices",
+                                style: CustomTextStyle.h3
+                                    .copyWith(color: ColorTheme.primary),
+                              ),
+                              Container(
+                                margin: const EdgeInsets.only(top: 10, left: 2),
+                                child: SpinKitThreeBounce(
+                                  color: ColorTheme.primary,
+                                  size: 7,
+                                ),
+                              )
+                            ],
                           ),
                         if (isPending == false &&
                             pendingGetCurrentLocation == false)
@@ -408,16 +463,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                       children: [
                         isPending == false
                             ? pendingGetCurrentLocation == false
-                                ? _buildConnect("1. Connect bluetooth",
-                                    checkState(checkBluetooth == true))
-                                : _buildConnect(
-                                    '1. Connect bluetooth', StateDevice.pending)
-                            : _buildConnect(
-                                '1. Connect bluetooth', StateDevice.pending),
-                        isPending == false
-                            ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
-                                    "2. Connect network",
+                                    "1. Connect network",
                                     checkState(
                                       _connectionStatus ==
                                               ConnectivityResult.mobile ||
@@ -426,27 +473,74 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                     ),
                                   )
                                 : _buildConnect(
-                                    '2. Connect network', StateDevice.pending)
+                                    '1. Connect network', StateDevice.pending)
                             : _buildConnect(
-                                '2. Connect network', StateDevice.pending),
+                                '1. Connect network', StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
-                                    "3. GPS has been turned on",
-                                    checkState(gpsConnectionStatus ==
-                                        ServiceStatus.enabled))
-                                : _buildConnect('3. GPS has been turned on',
+                                    required: true,
+                                    "2. Rota shifts and locations",
+                                    checkState(
+                                      isRotaNotNull,
+                                    ),
+                                  )
+                                : _buildConnect(
+                                    required: true,
+                                    '2. Rota shifts and locations',
                                     StateDevice.pending)
-                            : _buildConnect('3. GPS has been turned on',
+                            : _buildConnect(
+                                required: true,
+                                '2. Rota shifts and locations',
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
-                                    "8. Allow GPS access", checkState(checkGps))
+                                    required: true,
+                                    "3. Cancellation reasons",
+                                    checkState(isCancellationNotNull),
+                                  )
                                 : _buildConnect(
-                                    '8. Allow GPS access', StateDevice.pending)
+                                    required: true,
+                                    '3. Cancellation reasons',
+                                    StateDevice.pending)
                             : _buildConnect(
-                                '8. Allow GPS access', StateDevice.pending),
+                                required: true,
+                                '3. Cancellation reasons',
+                                StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    required: true,
+                                    "4. Location permission",
+                                    checkState(isLocationPermission),
+                                  )
+                                : _buildConnect(
+                                    required: true,
+                                    '4. Location permission',
+                                    StateDevice.pending)
+                            : _buildConnect(
+                                required: true,
+                                '4. Location permission',
+                                StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect("5. Connect bluetooth",
+                                    checkState(checkBluetooth == true))
+                                : _buildConnect(
+                                    '5. Connect bluetooth', StateDevice.pending)
+                            : _buildConnect(
+                                '5. Connect bluetooth', StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    "6. GPS has been turned on",
+                                    checkState(gpsConnectionStatus ==
+                                        ServiceStatus.enabled))
+                                : _buildConnect('6. GPS has been turned on',
+                                    StateDevice.pending)
+                            : _buildConnect('6. GPS has been turned on',
+                                StateDevice.pending),
                       ],
                     ),
                   ),
@@ -475,10 +569,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                       backgroundColor: ColorTheme.grey300,
                                     ),
                                     onPressed: () {
-                                      // eventAnalytics.clickButton(
-                                      //   button: "Log out",
-                                      //   user: wardensProvider.wardens!.Email,
-                                      // );
                                       onLogout(auth);
                                     },
                                     label: Text(
@@ -507,21 +597,34 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                     const EdgeInsets.symmetric(vertical: 10),
                               ),
                               onPressed: () async {
-                                if (checkGps == true) {
-                                  onStartShift();
+                                if (isLocationPermission == true) {
+                                  isDataValid()
+                                      ? onStartShift()
+                                      : toast.CherryToast.error(
+                                          toastDuration:
+                                              const Duration(seconds: 5),
+                                          title: Text(
+                                            'Please turn on the network and sync all necessary data to continue',
+                                            style: CustomTextStyle.h4.copyWith(
+                                              color: ColorTheme.danger,
+                                            ),
+                                          ),
+                                          toastPosition: toast.Position.bottom,
+                                          borderRadius: 5,
+                                        ).show(context);
                                 } else {
                                   permission.Permission.location.request();
-                                  toast.CherryToast.error(
-                                    toastDuration: const Duration(seconds: 5),
-                                    title: Text(
-                                      'Please allow the app to access your location to continue',
-                                      style: CustomTextStyle.h4.copyWith(
-                                        color: ColorTheme.danger,
-                                      ),
-                                    ),
-                                    toastPosition: toast.Position.bottom,
-                                    borderRadius: 5,
-                                  ).show(context);
+                                  // toast.CherryToast.error(
+                                  //   toastDuration: const Duration(seconds: 5),
+                                  //   title: Text(
+                                  //     'Please allow the app to access your location to continue',
+                                  //     style: CustomTextStyle.h4.copyWith(
+                                  //       color: ColorTheme.danger,
+                                  //     ),
+                                  //   ),
+                                  //   toastPosition: toast.Position.bottom,
+                                  //   borderRadius: 5,
+                                  // ).show(context);
                                 }
                               },
                               label: Text(

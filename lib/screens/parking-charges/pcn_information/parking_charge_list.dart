@@ -3,13 +3,12 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_detail.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -29,40 +28,24 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
   List<Contravention> contraventionList = [];
   bool contraventionLoading = true;
   bool loadingImage = true;
-  Future<List<Contravention>> getContraventionList(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await contraventionController
-        .getContraventionServiceList(
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
-      setState(() {
-        contraventionLoading = false;
-      });
-      return value;
-    }).catchError((err) {
-      setState(() {
-        contraventionLoading = false;
-      });
-      throw Error();
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
+
+  Future<void> getContraventions() async {
+    var contraventions = await zoneCachedServiceFactory
+        .contraventionCachedService
+        .getAllWithCreatedOnTheOffline();
+    setState(() {
+      contraventionList = contraventions;
     });
-    contraventionList =
-        list.rows.map((item) => Contravention.fromJson(item)).toList();
-    return contraventionList;
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final locations = Provider.of<Locations>(context, listen: false);
-      getContraventionList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
+      final locationProvider = Provider.of<Locations>(context, listen: false);
+      zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
+      getContraventions();
     });
   }
 
@@ -74,15 +57,10 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
 
   @override
   Widget build(BuildContext context) {
-    final locations = Provider.of<Locations>(context, listen: false);
     log('Parking charge list');
 
     Future<void> refresh() async {
-      getContraventionList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
+      getContraventions();
     }
 
     return WillPopScope(
@@ -112,7 +90,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
         ]),
         body: RefreshIndicator(
           onRefresh: refresh,
-          child: contraventionLoading == false
+          child: contraventionLoading == true
               ? contraventionList.isNotEmpty
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),

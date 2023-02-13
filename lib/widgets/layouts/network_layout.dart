@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +13,15 @@ import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
+import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/auth.dart';
+import '../../services/local/created_warden_event_local_service .dart';
 
 Future<void> showLoading({
   required int firstSeenLength,
@@ -238,93 +239,10 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     }
   }
 
-  Future<bool> wardenEventDataSync() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-
-    final String? dataWardenEvent =
-        await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
-    final String? dataWardenEventTrackGPS =
-        await SharedPreferencesHelper.getStringValue(
-            'wardenEventCheckGPSDataLocal');
-
-    if (dataWardenEvent != null) {
-      var decodedWardenEventData =
-          json.decode(dataWardenEvent) as List<dynamic>;
-
-      if (dataWardenEventTrackGPS != null) {
-        var decodedWardenEventTrackGPSData =
-            json.decode(dataWardenEventTrackGPS) as List<dynamic>;
-        decodedWardenEventData = List.from(decodedWardenEventData)
-          ..addAll(decodedWardenEventTrackGPSData);
-        SharedPreferencesHelper.removeStringValue(
-            'wardenEventCheckGPSDataLocal');
-      }
-
-      log(decodedWardenEventData.toString());
-
-      List<WardenEvent> wardenEventList = decodedWardenEventData
-          .map((i) => WardenEvent.fromJson(json.decode(i)))
-          .toList();
-      wardenEventList.sort((i1, i2) => i1.Created!.compareTo(i2.Created!));
-      for (int i = 0; i < wardenEventList.length; i++) {
-        wardenEventList[i].Id = 0;
-        try {
-          await userController.createWardenEvent(wardenEventList[i]);
-        } on DioError catch (e) {
-          print('createWardenEvent: $e');
-          // throw Exception(e.message);
-        }
-      }
-      SharedPreferencesHelper.removeStringValue('wardenEventDataLocal');
-      return true;
-    } else {
-      if (dataWardenEventTrackGPS != null) {
-        var decodedWardenEventTrackGPSData =
-            json.decode(dataWardenEventTrackGPS) as List<dynamic>;
-        List<WardenEvent> wardenEventList = decodedWardenEventTrackGPSData
-            .map((i) => WardenEvent.fromJson(json.decode(i)))
-            .toList();
-        wardenEventList.sort((i1, i2) => i1.Created!.compareTo(i2.Created!));
-        for (int i = 0; i < wardenEventList.length; i++) {
-          wardenEventList[i].Id = 0;
-          try {
-            await userController.createWardenEvent(wardenEventList[i]);
-          } on DioError catch (e) {
-            print('createWardenEvent: $e');
-            // throw Exception(e.message);
-          }
-        }
-        SharedPreferencesHelper.removeStringValue(
-            'wardenEventCheckGPSDataLocal');
-      }
-      return true;
-    }
-  }
-
-  void dataSynch() async {
-    // bool vehicleInfoSynchStatus = false;
-    // bool issuePCNSynchStatus = false;
-    // bool wardenEventSyncStatus = false;
-    // await vehicleInfoDataSynch().then((value) {
-    //   vehicleInfoSynchStatus = value;
-    // });
-    // await parkingChargeDataSynch().then((value) {
-    //   issuePCNSynchStatus = value;
-    // });
-    // await wardenEventDataSync().then((value) {
-    //   wardenEventSyncStatus = value;
-    // });
-    // if (vehicleInfoSynchStatus == true &&
-    //     issuePCNSynchStatus == true &&
-    //     wardenEventSyncStatus == true) {
-    //   await Future.delayed(const Duration(seconds: 1), () {
-    //     NavigationService.navigatorKey.currentState!.pop();
-    //   });
-    // }
-    await vehicleInfoDataSynch();
-    await parkingChargeDataSynch();
-    await wardenEventDataSync();
+  void dataSync() async {
+    await createdVehicleDataLocalService.syncAll();
+    // await issuedPcnLocalService.syncAll();
+    // await createdWardenEventLocalService.syncAll();
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
@@ -335,29 +253,20 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         var firstSeenLength = 0;
         var gracePeriodLength = 0;
         var pcnLength = 0;
-
-        final String? dataUpsert = await SharedPreferencesHelper.getStringValue(
-            'vehicleInfoUpsertDataLocal');
+        List<VehicleInformation> dataUpsert2 =
+            await createdVehicleDataLocalService.getAll();
         final String? issuePCNData =
             await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
 
-        if (dataUpsert != null) {
-          final vehicleInfoUpsertData =
-              json.decode(dataUpsert) as List<dynamic>;
-          List<VehicleInformation> vehicleInfoList = vehicleInfoUpsertData
-              .map((i) => VehicleInformation.fromJson(json.decode(i)))
-              .toList();
+        var firstSeenList = dataUpsert2
+            .where((e) => e.Type == VehicleInformationType.FIRST_SEEN.index)
+            .toList();
+        var gracePeriodList = dataUpsert2
+            .where((e) => e.Type == VehicleInformationType.GRACE_PERIOD.index)
+            .toList();
 
-          var firstSeenList = vehicleInfoList
-              .where((e) => e.Type == VehicleInformationType.FIRST_SEEN.index)
-              .toList();
-          var gracePeriodList = vehicleInfoList
-              .where((e) => e.Type == VehicleInformationType.GRACE_PERIOD.index)
-              .toList();
-
-          firstSeenLength = firstSeenList.length;
-          gracePeriodLength = gracePeriodList.length;
-        }
+        firstSeenLength = firstSeenList.length;
+        gracePeriodLength = gracePeriodList.length;
 
         if (issuePCNData != null) {
           var decodedData = json.decode(issuePCNData) as List<dynamic>;
@@ -365,10 +274,11 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         }
 
         showLoading(
-            firstSeenLength: firstSeenLength,
-            gracePeriodLength: gracePeriodLength,
-            pcnLength: pcnLength);
-        dataSynch();
+          firstSeenLength: firstSeenLength,
+          gracePeriodLength: gracePeriodLength,
+          pcnLength: pcnLength,
+        );
+        dataSync();
 
         await Future.delayed(const Duration(seconds: 3), () {
           NavigationService.navigatorKey.currentState!.pop();

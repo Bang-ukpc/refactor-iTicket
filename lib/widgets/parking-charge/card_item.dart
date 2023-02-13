@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/format_date.dart';
+import 'package:iWarden/helpers/url_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -28,24 +29,12 @@ class CardItemParkingCharge extends StatefulWidget {
 }
 
 class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
-  ConnectivityResult checkConnection = ConnectivityResult.none;
-
-  void checkConnectionStatus() async {
-    ConnectivityResult connectionStatus =
-        await (Connectivity().checkConnectivity());
-    setState(() {
-      checkConnection = connectionStatus;
-    });
-  }
-
-  @override
-  void initState() {
-    checkConnectionStatus();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
+    String image = urlHelper.isLocalUrl(widget.image as String)
+        ? widget.image as String
+        : urlHelper.toImageUrl(widget.image as String);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
       elevation: 0,
@@ -53,8 +42,7 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
         contentPadding: const EdgeInsets.all(16),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(5.0),
-          child: checkConnection == ConnectivityResult.wifi ||
-                  checkConnection == ConnectivityResult.mobile
+          child: urlHelper.isHttpUrl(image)
               ? CachedNetworkImage(
                   memCacheHeight: 80,
                   memCacheWidth: 80,

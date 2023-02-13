@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
@@ -8,7 +7,6 @@ import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/first_seen.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/first-seen/active_detail_first_seen.dart';
@@ -17,6 +15,8 @@ import 'package:iWarden/screens/first-seen/expired_detail_first_seen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
+
+import '../../services/cache/factory/zone_cache_factory.dart';
 
 class ActiveFirstSeenScreen extends StatefulWidget {
   static const routeName = '/first-seen';
@@ -31,64 +31,23 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   List<VehicleInformation> firstSeenExpired = [];
   bool firstSeenLoading = true;
   final calculateTime = CalculateTime();
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
-  void getFirstSeenList(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await vehicleInfoController
-        .getVehicleInfoList(
-      vehicleInfoType: VehicleInformationType.FIRST_SEEN.index,
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
+  getData() {
+    zoneCachedServiceFactory.firstSeenCachedService
+        .getListActive()
+        .then((listActive) {
       setState(() {
-        firstSeenLoading = false;
+        firstSeenActive = listActive;
       });
-      return value;
-    }).catchError((err) {
-      setState(() {
-        firstSeenLoading = false;
-      });
-      print(err);
-      throw Error();
     });
-    final firstSeenList =
-        list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
-    getFirstSeenActiveAndExpired(firstSeenList);
-  }
 
-  void getFirstSeenActiveAndExpired(List<VehicleInformation> vehicleList) {
-    setState(() {
-      firstSeenActive = vehicleList.where((i) {
-        return calculateTime.daysBetween(
-              i.Created!.add(
-                Duration(
-                  minutes: calculateTime.daysBetween(
-                    i.Created as DateTime,
-                    DateTime.now(),
-                  ),
-                ),
-              ),
-              i.ExpiredAt,
-            ) >
-            0;
-      }).toList();
-
-      firstSeenExpired = vehicleList.where((i) {
-        return calculateTime.daysBetween(
-              i.Created!.add(
-                Duration(
-                  minutes: calculateTime.daysBetween(
-                    i.Created as DateTime,
-                    DateTime.now(),
-                  ),
-                ),
-              ),
-              i.ExpiredAt,
-            ) <=
-            0;
-      }).toList();
+    zoneCachedServiceFactory.firstSeenCachedService
+        .getListExpired()
+        .then((listExpired) {
+      setState(() {
+        firstSeenExpired = listExpired;
+      });
     });
   }
 
@@ -97,11 +56,8 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
-      getFirstSeenList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
+      zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
+      getData();
     });
   }
 
@@ -114,10 +70,6 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locations = Provider.of<Locations>(context, listen: false);
-
-    log('Active first seen screen');
-
     void onCarLeft(VehicleInformation vehicleInfo) {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(
         ExpiredAt: vehicleInfo.ExpiredAt,
@@ -162,11 +114,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                     .then((value) {
                   if (value != null) {
                     Navigator.of(context).pop();
-                    getFirstSeenList(
-                      page: 1,
-                      pageSize: 1000,
-                      zoneId: locations.zone!.Id as int,
-                    );
+                    getData();
                   }
                 });
               },
@@ -177,11 +125,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     }
 
     Future<void> refresh() async {
-      getFirstSeenList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
+      getData();
     }
 
     return WillPopScope(
@@ -196,7 +140,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
           },
           tabBarViewTab1: RefreshIndicator(
             onRefresh: refresh,
-            child: firstSeenLoading == false
+            child: firstSeenLoading == true
                 ? firstSeenActive.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -260,7 +204,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
           ),
           tabBarViewTab2: RefreshIndicator(
             onRefresh: refresh,
-            child: firstSeenLoading == false
+            child: firstSeenLoading == true
                 ? firstSeenExpired.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),

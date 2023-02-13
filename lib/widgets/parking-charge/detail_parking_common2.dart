@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
@@ -12,14 +11,14 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/parking-charge/step_issue_pcn.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/url_helper.dart';
+
 class DetailParkingCommon2 extends StatefulWidget {
   final Contravention? contravention;
   final bool? isDisplayBottomNavigate;
-  final bool? imagePreviewStatus;
   const DetailParkingCommon2({
     this.contravention,
     this.isDisplayBottomNavigate = false,
-    this.imagePreviewStatus = false,
     super.key,
   });
 
@@ -30,16 +29,18 @@ class DetailParkingCommon2 extends StatefulWidget {
 class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
   @override
   Widget build(BuildContext context) {
-    final List<String> imgList = [];
-    final List<String> imgListFile = [];
     List<ContraventionPhotos> contraventionImage = widget.contravention != null
         ? widget.contravention!.contraventionPhotos!.toList()
         : [];
-    for (int i = 0; i < contraventionImage.length; i++) {
-      imgList.add(
-          '${ConfigEnvironmentVariable.azureContainerImageUrl}/${contraventionImage[i].blobName}');
-      imgListFile.add(contraventionImage[i].blobName ?? '');
-    }
+
+    final List<String?> images = contraventionImage.map((photo) {
+      if (urlHelper.isLocalUrl(photo.blobName as String)) {
+        return photo.blobName;
+      } else {
+        return urlHelper.toImageUrl(photo.blobName as String);
+      }
+    }).toList();
+
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
 
     return Scaffold(
@@ -191,13 +192,11 @@ class _DetailParkingCommon2State extends State<DetailParkingCommon2> {
                 ),
               ),
               AddImage(
-                listImage: imgList,
-                listImageFile: imgListFile,
+                listImage: images,
                 isCamera: false,
                 onAddImage: () {},
                 isSlideImage: true,
                 displayTitle: false,
-                imagePreview: widget.imagePreviewStatus,
               )
             ],
           ),

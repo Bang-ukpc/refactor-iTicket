@@ -14,6 +14,7 @@ import 'package:iWarden/screens/first-seen/active_detail_first_seen.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/expired_detail_first_seen.dart';
 import 'package:iWarden/screens/grace-period/add_grace_period.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
@@ -32,61 +33,23 @@ class _GracePeriodListState extends State<GracePeriodList> {
   bool gracePeriodLoading = true;
   final calculateTime = CalculateTime();
 
-  void getGracePeriodList(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await vehicleInfoController
-        .getVehicleInfoList(
-      vehicleInfoType: VehicleInformationType.GRACE_PERIOD.index,
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
+
+  getData() {
+    zoneCachedServiceFactory.gracePeriodCachedService
+        .getListActive()
+        .then((listActive) {
       setState(() {
-        gracePeriodLoading = false;
-      });
-      return value;
-    }).catchError((err) {
-      setState(() {
-        gracePeriodLoading = false;
+        gracePeriodActive = listActive;
       });
     });
-    List<VehicleInformation> gracePeriodList =
-        list.rows.map((item) => VehicleInformation.fromJson(item)).toList();
-    getGracePeriodActiveAndExpired(gracePeriodList);
-  }
 
-  void getGracePeriodActiveAndExpired(List<VehicleInformation> vehicleList) {
-    setState(() {
-      gracePeriodActive = vehicleList.where((i) {
-        return calculateTime.daysBetween(
-              i.Created!.add(
-                Duration(
-                  minutes: calculateTime.daysBetween(
-                    i.Created as DateTime,
-                    DateTime.now(),
-                  ),
-                ),
-              ),
-              i.ExpiredAt,
-            ) >
-            0;
-      }).toList();
-
-      gracePeriodExpired = vehicleList.where((i) {
-        return calculateTime.daysBetween(
-              i.Created!.add(
-                Duration(
-                  minutes: calculateTime.daysBetween(
-                    i.Created as DateTime,
-                    DateTime.now(),
-                  ),
-                ),
-              ),
-              i.ExpiredAt,
-            ) <=
-            0;
-      }).toList();
+    zoneCachedServiceFactory.gracePeriodCachedService
+        .getListExpired()
+        .then((listExpired) {
+      setState(() {
+        gracePeriodExpired = listExpired;
+      });
     });
   }
 
@@ -95,11 +58,8 @@ class _GracePeriodListState extends State<GracePeriodList> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final locations = Provider.of<Locations>(context, listen: false);
-      getGracePeriodList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
+      zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
+      getData();
     });
   }
 
@@ -160,11 +120,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
                     .then((value) {
                   if (value != null) {
                     Navigator.of(context).pop();
-                    getGracePeriodList(
-                      page: 1,
-                      pageSize: 1000,
-                      zoneId: locations.zone!.Id as int,
-                    );
+                    getData();
                   }
                 });
               },
@@ -175,11 +131,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
     }
 
     Future<void> refresh() async {
-      getGracePeriodList(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locations.zone!.Id as int,
-      );
+      getData();
     }
 
     return WillPopScope(
@@ -194,7 +146,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
           },
           tabBarViewTab1: RefreshIndicator(
             onRefresh: refresh,
-            child: gracePeriodLoading == false
+            child: gracePeriodLoading == true
                 ? gracePeriodActive.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -258,7 +210,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
           ),
           tabBarViewTab2: RefreshIndicator(
             onRefresh: refresh,
-            child: gracePeriodLoading == false
+            child: gracePeriodLoading == true
                 ? gracePeriodExpired.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),

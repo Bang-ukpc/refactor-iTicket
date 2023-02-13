@@ -4,7 +4,7 @@ enum VehicleInformationType { FIRST_SEEN, GRACE_PERIOD }
 
 class EvidencePhoto extends BaseModel {
   final int? VehicleInformationId;
-  final String BlobName;
+  late String BlobName;
 
   EvidencePhoto({
     int? Id,
@@ -20,14 +20,16 @@ class EvidencePhoto extends BaseModel {
   Map<String, dynamic> toJson() => _$EvidencePhotoToJson(this);
 }
 
-EvidencePhoto _$EvidencePhotoFromJson(Map<String, dynamic> json) =>
-    EvidencePhoto(
-      VehicleInformationId: json['VehicleInformationId'],
-      BlobName: json['BlobName'],
-      Id: json['Id'] ?? 0,
-      Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
-      Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
-    );
+EvidencePhoto _$EvidencePhotoFromJson(Map<String, dynamic> json) {
+  // print('[VEHICLE INFO] to json evident photo $json');
+  return EvidencePhoto(
+    VehicleInformationId: json['VehicleInformationId'],
+    BlobName: json['BlobName'],
+    Id: json['Id'] ?? 0,
+    Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
+    Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
+  );
+}
 
 Map<String, dynamic> _$EvidencePhotoToJson(EvidencePhoto instance) {
   return <String, dynamic>{
@@ -75,16 +77,21 @@ class VehicleInformation extends BaseModel {
 }
 
 VehicleInformation _$VehicleInformationFromJson(Map<String, dynamic> json) {
-  var evidencePhotosFromJson = json['EvidencePhotos'] as List<dynamic>;
-  List<EvidencePhoto> evidencePhotosList = evidencePhotosFromJson
-      .map((model) => EvidencePhoto.fromJson(model))
-      .toList();
+  List<EvidencePhoto> evidencePhotosList = [];
+  if (json['EvidencePhotos'] != null) {
+    var evidencePhotosFromJson = json['EvidencePhotos'] as List<dynamic>;
+    evidencePhotosList = evidencePhotosFromJson
+        .map((model) => EvidencePhoto.fromJson(model))
+        .toList();
+  }
 
   return VehicleInformation(
     Id: json['Id'],
     Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
     Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
-    ExpiredAt: DateTime.parse(json['ExpiredAt']),
+    ExpiredAt: json['ExpiredAt'] == null
+        ? DateTime.now()
+        : DateTime.parse(json['ExpiredAt']),
     Plate: json['Plate'],
     ZoneId: json['ZoneId'],
     LocationId: json['LocationId'],

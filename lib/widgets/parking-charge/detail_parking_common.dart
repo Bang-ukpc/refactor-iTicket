@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
-import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
@@ -10,14 +9,14 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/parking-charge/detail_car.dart';
 
+import '../../helpers/url_helper.dart';
+
 class DetailParkingCommon extends StatefulWidget {
   final Contravention? contravention;
   final bool? isDisplayBottomNavigate;
-  final bool? imagePreviewStatus;
   const DetailParkingCommon({
     this.contravention,
     this.isDisplayBottomNavigate = false,
-    this.imagePreviewStatus = false,
     super.key,
   });
 
@@ -28,15 +27,16 @@ class DetailParkingCommon extends StatefulWidget {
 class _DetailParkingCommonState extends State<DetailParkingCommon> {
   @override
   Widget build(BuildContext context) {
-    final List<String> imgList = [];
-    final List<String> imgListFile = [];
     List<ContraventionPhotos> contraventionImage =
         widget.contravention!.contraventionPhotos!.toList();
-    for (int i = 0; i < contraventionImage.length; i++) {
-      imgList.add(
-          '${ConfigEnvironmentVariable.azureContainerImageUrl}/${contraventionImage[i].blobName}');
-      imgListFile.add(contraventionImage[i].blobName ?? '');
-    }
+
+    final List<String?> images = contraventionImage.map((photo) {
+      if (urlHelper.isLocalUrl(photo.blobName as String)) {
+        return photo.blobName;
+      } else {
+        return urlHelper.toImageUrl(photo.blobName as String);
+      }
+    }).toList();
 
     return Scaffold(
       bottomNavigationBar: widget.isDisplayBottomNavigate == true
@@ -113,13 +113,11 @@ class _DetailParkingCommonState extends State<DetailParkingCommon> {
               ),
             ),
             AddImage(
-              listImage: imgList,
-              listImageFile: imgListFile,
+              listImage: images,
               isCamera: false,
               onAddImage: () {},
               isSlideImage: true,
               displayTitle: false,
-              imagePreview: widget.imagePreviewStatus,
             )
           ],
         ),

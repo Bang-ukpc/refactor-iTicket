@@ -1,9 +1,11 @@
+import 'package:iWarden/models/base_model.dart';
+
 enum TypePCN {
   Physical,
   Virtual,
 }
 
-class ContraventionCreateWardenCommand {
+class ContraventionCreateWardenCommand extends Identifiable {
   String ContraventionReference;
   String Plate;
   String VehicleMake;
@@ -62,6 +64,10 @@ class ContraventionCreateWardenCommand {
         'ZoneId': ZoneId,
         'Id': Id ?? 0,
       };
+
+  // Map<String, dynamic> toJson() => {
+  //       'ContraventionReference': ContraventionReference,
+  //     };
 }
 
 ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
@@ -154,7 +160,7 @@ VehicleDetails _$VehicleDetailsFromJson(Map<String, dynamic> json) {
   );
 }
 
-class ContraventionCreatePhoto {
+class ContraventionCreatePhoto extends Identifiable {
   final String contraventionReference;
   final int photoType;
   final String originalFileName;
@@ -167,6 +173,7 @@ class ContraventionCreatePhoto {
     required this.originalFileName,
     required this.capturedDateTime,
     required this.filePath,
+    super.Id,
   });
 
   factory ContraventionCreatePhoto.fromJson(Map<String, dynamic> json) =>
@@ -178,6 +185,7 @@ class ContraventionCreatePhoto {
 ContraventionCreatePhoto _$ContraventionCreatePhotoFromJson(
     Map<String, dynamic> json) {
   return ContraventionCreatePhoto(
+    Id: json['id'],
     contraventionReference: json['contraventionReference'],
     photoType: json['photoType'],
     originalFileName: json['originalFileName'],
@@ -189,6 +197,7 @@ ContraventionCreatePhoto _$ContraventionCreatePhotoFromJson(
 Map<String, dynamic> _$ContraventionCreatePhotoToJson(
     ContraventionCreatePhoto instance) {
   return <String, dynamic>{
+    'id': instance.Id,
     'contraventionReference': instance.contraventionReference,
     'photoType': instance.photoType,
     'originalFileName': instance.originalFileName,

@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,21 +9,18 @@ import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/label_require.dart';
-import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/controllers/evidence_photo_controller.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -51,6 +45,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
   List<Contravention> contraventionList = [];
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> getLocationList(Locations locations, int wardenId) async {
     ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
@@ -81,22 +76,13 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     });
   }
 
-  Future<List<Contravention>> getParkingCharges(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await contraventionController
-        .getContraventionServiceList(
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
-      return value;
-    }).catchError((err) {
-      throw Error();
+  Future<void> getParkingCharges() async {
+    var contraventions = await zoneCachedServiceFactory
+        .contraventionCachedService
+        .getAllWithCreatedOnTheOffline();
+    setState(() {
+      contraventionList = contraventions;
     });
-    contraventionList =
-        list.rows.map((item) => Contravention.fromJson(item)).toList();
-    return contraventionList;
   }
 
   bool checkVrnExistsWithOverStaying({
@@ -121,11 +107,8 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locationProvider = Provider.of<Locations>(context, listen: false);
-      getParkingCharges(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locationProvider.zone!.Id as int,
-      );
+      zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
+      await getParkingCharges();
     });
   }
 
@@ -144,10 +127,8 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     final wardenProvider = Provider.of<WardensInfo>(context);
 
     Future<bool> saveForm() async {
-      ConnectivityResult connectionStatus =
-          await (Connectivity().checkConnectivity());
       final vehicleInfo = VehicleInformation(
-        Id: 0,
+        Id: idHelper.generateId(),
         ExpiredAt: DateTime.now().add(
           Duration(
             seconds: locationProvider.expiringTimeFirstSeen,
@@ -168,14 +149,11 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
 
       final isValid = _formKey.currentState!.validate();
 
-      bool check = false;
-
       setState(() {
         evidencePhotoList.clear();
       });
 
       if (arrayImage.isEmpty) {
-        if (!mounted) return false;
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -191,8 +169,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         return false;
       }
 
-      if (!mounted) return false;
-
       if (checkVrnExistsWithOverStaying(
             vrn: vehicleInfo.Plate,
             zoneId: vehicleInfo.ZoneId,
@@ -202,143 +178,38 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         return false;
       }
 
-      showCircularProgressIndicator(context: context);
-
-      if (connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile) {
-        try {
-          if (arrayImage.isNotEmpty) {
-            for (int i = 0; i < arrayImage.length; i++) {
-              await evidencePhotoController
-                  .uploadImage(filePath: arrayImage[i].path)
-                  .then((value) {
-                evidencePhotoList
-                    .add(EvidencePhoto(BlobName: value['blobName']));
-              });
-            }
-          }
-
-          await getLocationList(
-                  locationProvider, wardenProvider.wardens?.Id ?? 0)
-              .then((value) async {
-            vehicleInfo.ExpiredAt = DateTime.now().add(
-              Duration(
-                seconds: locationProvider.expiringTimeFirstSeen,
-              ),
-            );
-            await vehicleInfoController
-                .upsertVehicleInfo(vehicleInfo)
-                .then((value) {
-              if (value != null) {
-                check = true;
-              }
-            });
-          });
-
-          if (check == true) {
-            if (!mounted) return false;
-            Navigator.of(context).pop();
-            CherryToast.success(
-              displayCloseButton: false,
-              title: Text(
-                'First seen added successfully',
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-
-            setState(() {
-              _vrnController.text = '';
-              _bayNumberController.text = '';
-              arrayImage.clear();
-              evidencePhotoList.clear();
-            });
-          }
-        } on DioError catch (error) {
-          if (!mounted) return false;
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return false;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+      vehicleInfo.EvidencePhotos = arrayImage
+          .map(
+            (image) => EvidencePhoto(
+              Id: idHelper.generateId(),
+              BlobName: image.path,
+              Created: DateTime.now(),
+              VehicleInformationId: vehicleInfo.Id,
             ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return false;
-        }
-      } else {
-        int randomNumber =
-            (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-        vehicleInfo.Id = randomNumber;
-        vehicleInfo.Created = DateTime.now();
-        if (arrayImage.isNotEmpty) {
-          for (int i = 0; i < arrayImage.length; i++) {
-            evidencePhotoList.add(
-              EvidencePhoto(
-                BlobName: arrayImage[i].path,
-                VehicleInformationId: vehicleInfo.Id,
-                Created: DateTime.now(),
-              ),
-            );
-          }
-        }
-        final String encodedData = json.encode(vehicleInfo.toJson());
-        final String? vehicleUpsertData =
-            await SharedPreferencesHelper.getStringValue(
-                'vehicleInfoUpsertDataLocal');
-        if (vehicleUpsertData == null) {
-          List<String> newData = [];
-          newData.add(encodedData);
-          final encodedNewData = json.encode(newData);
-          SharedPreferencesHelper.setStringValue(
-              'vehicleInfoUpsertDataLocal', encodedNewData);
-        } else {
-          final createdData = json.decode(vehicleUpsertData) as List<dynamic>;
-          createdData.add(encodedData);
-          final encodedCreatedData = json.encode(createdData);
-          SharedPreferencesHelper.setStringValue(
-              'vehicleInfoUpsertDataLocal', encodedCreatedData);
-        }
-        if (!mounted) return false;
-        Navigator.of(context).pop();
-        CherryToast.success(
-          displayCloseButton: false,
-          title: Text(
-            'First seen added successfully',
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
+          )
+          .toList();
+      print(
+          '[FIRST SEEN] vehicle info evidence photos ${vehicleInfo.EvidencePhotos?.length}');
+      await createdVehicleDataLocalService.create(vehicleInfo);
 
-        setState(() {
-          _vrnController.text = '';
-          _bayNumberController.text = '';
-          arrayImage.clear();
-          evidencePhotoList.clear();
-        });
-      }
+      if (!mounted) return false;
+      Navigator.of(context).pop();
+      CherryToast.success(
+        displayCloseButton: false,
+        title: Text(
+          'First seen added successfully',
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+
+      setState(() {
+        _vrnController.text = '';
+        _bayNumberController.text = '';
+        arrayImage.clear();
+        evidencePhotoList.clear();
+      });
 
       _formKey.currentState!.save();
       return true;
