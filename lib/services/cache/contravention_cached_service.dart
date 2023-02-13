@@ -31,7 +31,7 @@ class ContraventionCachedService extends CacheService<Contravention> {
           rows: cachedItems);
     });
     print('[Contraventions] ${paging.rows.map((e) => json.encode(e))}');
-    set(paging.rows as List<Contravention>);
+    await set(paging.rows as List<Contravention>);
     return paging.rows as List<Contravention>;
   }
 

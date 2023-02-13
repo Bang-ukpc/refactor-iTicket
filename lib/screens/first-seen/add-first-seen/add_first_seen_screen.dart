@@ -78,22 +78,13 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     });
   }
 
-  Future<List<Contravention>> getParkingCharges(
-      {required int page, required int pageSize, required int zoneId}) async {
-    final Pagination list = await contraventionController
-        .getContraventionServiceList(
-      zoneId: zoneId,
-      page: page,
-      pageSize: pageSize,
-    )
-        .then((value) {
-      return value;
-    }).catchError((err) {
-      throw Error();
+  Future<void> getParkingCharges() async {
+    var contraventions = await zoneCachedServiceFactory
+        .contraventionCachedService
+        .getAllWithCreatedOnTheOffline();
+    setState(() {
+      contraventionList = contraventions;
     });
-    contraventionList =
-        list.rows.map((item) => Contravention.fromJson(item)).toList();
-    return contraventionList;
   }
 
   bool checkVrnExistsWithOverStaying({
@@ -119,11 +110,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locationProvider = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
-      getParkingCharges(
-        page: 1,
-        pageSize: 1000,
-        zoneId: locationProvider.zone!.Id as int,
-      );
+      await getParkingCharges();
     });
   }
 
@@ -203,8 +190,11 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
             ),
           )
           .toList();
-      createdVehicleDataLocalService.create(vehicleInfo);
+      print(
+          '[FIRST SEEN] vehicle info evidence photos ${vehicleInfo.EvidencePhotos?.length}');
+      await createdVehicleDataLocalService.create(vehicleInfo);
 
+      if (!mounted) return false;
       Navigator.of(context).pop();
       CherryToast.success(
         displayCloseButton: false,

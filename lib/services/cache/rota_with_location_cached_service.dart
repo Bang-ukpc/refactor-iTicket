@@ -27,7 +27,7 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
     });
     print('[ROTA LENGTH] ${rotaWithLocations.length}');
 
-    set(rotaWithLocations);
+    await set(rotaWithLocations);
     return rotaWithLocations;
   }
 

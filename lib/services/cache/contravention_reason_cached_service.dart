@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/models/contravention.dart';
+import 'package:iWarden/models/pagination.dart';
 
 import 'cache_service.dart';
 
@@ -15,12 +18,19 @@ class ContraventionReasonCachedService
   @override
   syncFromServer() async {
     var paging = await weakNetworkContraventionController
-        .getContraventionReasonServiceList(zoneId: _zoneId);
-    var contraventionReasons = paging.rows;
-    var contraventionReasonsFromJson = contraventionReasons
-        .map((item) => ContraventionReasonTranslations.fromJson(item))
-        .toList();
-    set(contraventionReasonsFromJson);
-    return contraventionReasonsFromJson;
+        .getContraventionReasonServiceList(zoneId: _zoneId)
+        .catchError((err) async {
+      var cachedItems = await getAll();
+      return Pagination(
+          page: 0,
+          pageSize: 1000,
+          total: cachedItems.length,
+          totalPages: 1,
+          rows: cachedItems);
+    });
+    print(
+        '[CONTRAVENTION REASON TRANSLATION] ${paging.rows.map((e) => json.encode(e))}');
+    await set(paging.rows as List<ContraventionReasonTranslations>);
+    return paging.rows as List<ContraventionReasonTranslations>;
   }
 }

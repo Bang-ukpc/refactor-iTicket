@@ -1,18 +1,19 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/services/local/created_vehicle_data_photo_local_service.dart';
 import 'package:iWarden/services/local/local_service.dart';
-import '../../helpers/shared_preferences_helper.dart';
+
 import '../../models/vehicle_information.dart';
 
 class CreatedVehicleDataLocalService
     extends BaseLocalService<VehicleInformation> {
-  CreatedVehicleDataLocalService() : super("vehicleInfoUpsertDataLocal");
+  CreatedVehicleDataLocalService() : super("vehicles");
 
   @override
   create(VehicleInformation t) async {
+    print(
+        '[VEHICLE INFO] creating ${t.Plate} with ${t.EvidencePhotos?.length} photos ...');
     if (t.EvidencePhotos!.isNotEmpty) {
       await createdVehicleDataPhotoLocalService
           .bulkCreate(t.EvidencePhotos as List<EvidencePhoto>);
@@ -22,16 +23,16 @@ class CreatedVehicleDataLocalService
 
   @override
   syncAll() async {
-    print("CreatedVehicleDataLocalService syncAll called!");
+    print('[VEHICLE INFO] syncing all ...');
 
     if (isSyncing) {
-      print("CreatedVehicleDataLocalService is syncing ...");
+      print("[VEHICLE INFO] CreatedVehicleDataLocalService is syncing ...");
       return;
     }
     isSyncing = true;
 
     final items = await getAll();
-    print('[SYNC ALL] ${items.map((e) => e.Id)}');
+    print('[VEHICLE INFO SYNC ALL] ${items.map((e) => e.Id)}');
     for (var item in items) {
       await sync(item);
     }
@@ -40,13 +41,19 @@ class CreatedVehicleDataLocalService
   }
 
   @override
+  Future<List<VehicleInformation>> getAll() async {
+    final items = await super.getAll();
+    print('[VEHICLE INFO] get all ${json.encode(items)}');
+    return items;
+  }
+
+  @override
   sync(VehicleInformation vehicleInformation) async {
     print(
-        '[SYNC VEHICLE] syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
+        '[VEHICLE INFO] syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
     try {
       syncPcnPhotos(vehicleInformation.EvidencePhotos!).then((evidencePhotos) {
         vehicleInformation.EvidencePhotos = evidencePhotos;
-        print("[syncPcnPhotos] value ${json.encode(vehicleInformation)}");
         if (vehicleInformation.Id != null && vehicleInformation.Id! < 0) {
           vehicleInformation.Id = null;
         }

@@ -17,6 +17,8 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/local/created_warden_event_local_service .dart';
+
 class InfoDrawer extends StatelessWidget {
   final String name;
   final String assetImage;
@@ -66,7 +68,7 @@ class InfoDrawer extends StatelessWidget {
     void onCheckOut() async {
       try {
         showCircularProgressIndicator(context: context, text: 'Checking out');
-        await userController.createWardenEvent(wardenEvent).then((value) {
+        await createdWardenEventLocalService.create(wardenEvent).then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
         });
@@ -105,8 +107,8 @@ class InfoDrawer extends StatelessWidget {
     void onLogout(Auth auth) async {
       try {
         showCircularProgressIndicator(context: context, text: "Logging out");
-        await userController
-            .createWardenEvent(wardenEventEndShift)
+        await createdWardenEventLocalService
+            .create(wardenEventEndShift)
             .then((value) async {
           await auth.logout().then((value) {
             Navigator.of(context).pop();

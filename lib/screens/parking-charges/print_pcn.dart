@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
@@ -17,7 +15,6 @@ import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_info.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
-import 'package:iWarden/services/local/created_warden_event_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
@@ -25,6 +22,7 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/local/created_warden_event_local_service .dart';
 import '../../widgets/parking-charge/detail_parking_common2.dart';
 
 class PrintPCN extends StatefulWidget {
@@ -115,14 +113,17 @@ class _PrintPCNState extends State<PrintPCN> {
       await issuedPcnLocalService.create(contraventionCreate);
 
       var images = args!.contraventionPhotos!
-          .map((e) => ContraventionCreatePhoto(
-                Id: idHelper.generateId(),
-                contraventionReference:
-                    contraventionCreate.ContraventionReference,
-                originalFileName: e.blobName!.split('/').last,
-                capturedDateTime: DateTime.now(),
-                filePath: e.blobName as String,
-              ))
+          .map(
+            (e) => ContraventionCreatePhoto(
+              Id: idHelper.generateId(),
+              contraventionReference:
+                  contraventionCreate.ContraventionReference,
+              originalFileName: e.blobName!.split('/').last,
+              capturedDateTime: DateTime.now(),
+              filePath: e.blobName as String,
+              photoType: args.type == TypePCN.Physical.index ? 5 : 6,
+            ),
+          )
           .toList();
 
       await issuedPcnPhotoLocalService.bulkCreate(images);

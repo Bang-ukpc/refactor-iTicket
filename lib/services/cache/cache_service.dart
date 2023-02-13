@@ -1,8 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:iWarden/factory/json_decode_factory.dart';
 import 'package:iWarden/models/ContraventionService.dart';
+import '../../helpers/id_helper.dart';
 import '../../helpers/shared_preferences_helper.dart';
 import '../../models/base_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,29 +30,28 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
 
   @override
   create(T t) async {
+    t.Id ??= idHelper.generateId();
     final items = await getAll();
     items.add(t);
-    set(items);
+    await set(items);
   }
 
   @override
   bulkCreate(List<T> listT) async {
     final items = await getAll();
     items.addAll(listT);
-    set(items);
+    await set(items);
   }
 
   @override
   delete(int id) async {
-    print('[DELETE ${id}]');
+    print('[DELETE VEHICLE INFO WITH ID] $id');
     final items = await getAll();
-    print(items.map((e) => e.Id));
+    print('[VEHICLE INFO LIST] ${items.map((e) => e.Id)}');
     final updatedItems = items.where((element) {
-      print("element.Id ${element.Id == null}");
       return element.Id != id;
     });
-    set(updatedItems.toList());
-    print('[SET]');
+    await set(updatedItems.toList());
   }
 
   @override
@@ -75,6 +76,7 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
 
     if (jsonItems == null) return [];
     var decodedItems = json.decode(jsonItems) as List<dynamic>;
+    print('[GET ALL] $decodedItems');
     return decodedItems.map((decodedItem) {
       if (decodedItem is String) {
         return jsonDecodeFactory.decode<T>(json.decode(decodedItem)) as T;
@@ -85,15 +87,15 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   }
 
   @override
-  set(List<T> listT) {
-    SharedPreferencesHelper.setStringValue(localKey, json.encode(listT));
+  set(List<T> listT) async {
+    await SharedPreferencesHelper.setStringValue(localKey, json.encode(listT));
   }
 
   @override
   update(T t) async {
     final items = await getAll();
     items.map((item) => item.Id == t.Id ? t : item);
-    set(items);
+    await set(items);
   }
 
   @override

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
@@ -8,7 +7,6 @@ import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/first_seen.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/first-seen/active_detail_first_seen.dart';
@@ -72,8 +70,6 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
 
   @override
   Widget build(BuildContext context) {
-    log('Active first seen screen');
-
     void onCarLeft(VehicleInformation vehicleInfo) {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(
         ExpiredAt: vehicleInfo.ExpiredAt,

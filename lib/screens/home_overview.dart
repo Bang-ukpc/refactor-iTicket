@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:collection/collection.dart';
@@ -10,6 +11,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -24,6 +26,9 @@ import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
+import 'package:iWarden/services/local/created_vehicle_data_photo_local_service.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -221,7 +226,7 @@ class _HomeOverviewState extends State<HomeOverview> {
         //   button: "Check out",
         //   user: wardensProvider.wardens!.Email,
         // );
-        await userController.createWardenEvent(wardenEvent).then((value) {
+        await createdWardenEventLocalService.create(wardenEvent).then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
         });
@@ -265,8 +270,8 @@ class _HomeOverviewState extends State<HomeOverview> {
       // );
       try {
         showCircularProgressIndicator(context: context);
-        await userController
-            .createWardenEvent(wardenEventStartBreak)
+        await createdWardenEventLocalService
+            .create(wardenEventStartBreak)
             .then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushNamed(StartBreakScreen.routeName);
@@ -416,6 +421,21 @@ class _HomeOverviewState extends State<HomeOverview> {
                           height: 100,
                         ),
                       ),
+                ElevatedButton(
+                  onPressed: () async {
+                    createdWardenEventLocalService.deleteAll();
+                    createdVehicleDataLocalService.deleteAll();
+                    createdVehicleDataPhotoLocalService.deleteAll();
+                  },
+                  child: const Text("delete"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    var a = await createdVehicleDataLocalService.getAll();
+                    print(json.encode(a));
+                  },
+                  child: const Text("get list"),
+                ),
               ],
             ),
           ),

@@ -66,7 +66,7 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
           rows: vehicleInfos);
     });
     var vehicleInfos = paging.rows as List<VehicleInformation>;
-    set(vehicleInfos);
+    await set(vehicleInfos);
     return vehicleInfos;
   }
 

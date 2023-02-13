@@ -11,7 +11,7 @@ class IssuedPcnLocalService
     extends BaseLocalService<ContraventionCreateWardenCommand> {
   late List<ContraventionCreatePhoto> allPcnPhotos;
 
-  IssuedPcnLocalService() : super('issuePCNDataLocal');
+  IssuedPcnLocalService() : super('contraventions');
 
   @override
   create(ContraventionCreateWardenCommand t) {

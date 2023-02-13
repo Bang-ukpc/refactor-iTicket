@@ -240,28 +240,9 @@ class _NetworkLayoutState extends State<NetworkLayout> {
   }
 
   void dataSync() async {
-    // bool vehicleInfoSynchStatus = false;
-    // bool issuePCNSynchStatus = fjlse;
-    // bool wardenEventSyncStatus = false;
-    // await vehicleInfoDataSynch().then((value) {
-    //   vehicleInfoSynchStatus = value;
-    // });
-    // await parkingChargeDataSynch().then((value) {
-    //   issuePCNSynchStatus = value;
-    // });
-    // await wardenEventDataSync().then((value) {
-    //   wardenEventSyncStatus = value;
-    // });
-    // if (vehicleInfoSynchStatus == true &&
-    //     issuePCNSynchStatus == true &&
-    //     wardenEventSyncStatus == true) {
-    //   await Future.delayed(const Duration(seconds: 1), () {
-    //     NavigationService.navigatorKey.currentState!.pop();
-    //   });
-    // }
     await createdVehicleDataLocalService.syncAll();
-    await issuedPcnLocalService.syncAll();
-    await createdWardenEventLocalService.syncAll();
+    // await issuedPcnLocalService.syncAll();
+    // await createdWardenEventLocalService.syncAll();
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
@@ -293,9 +274,10 @@ class _NetworkLayoutState extends State<NetworkLayout> {
         }
 
         showLoading(
-            firstSeenLength: firstSeenLength,
-            gracePeriodLength: gracePeriodLength,
-            pcnLength: pcnLength);
+          firstSeenLength: firstSeenLength,
+          gracePeriodLength: gracePeriodLength,
+          pcnLength: pcnLength,
+        );
         dataSync();
 
         await Future.delayed(const Duration(seconds: 3), () {

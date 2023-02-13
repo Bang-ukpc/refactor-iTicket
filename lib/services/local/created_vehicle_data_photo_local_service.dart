@@ -6,7 +6,7 @@ import '../../models/vehicle_information.dart';
 
 class CreatedVehicleDataPhotoLocalService
     extends BaseLocalService<EvidencePhoto> {
-  CreatedVehicleDataPhotoLocalService() : super("vehicleInfoUpsertDataLocal");
+  CreatedVehicleDataPhotoLocalService() : super("vehiclePhotos");
 
   @override
   Future<EvidencePhoto?> sync(EvidencePhoto evidencePhoto) async {
@@ -35,6 +35,20 @@ class CreatedVehicleDataPhotoLocalService
       print('[finally] ${evidencePhoto.BlobName}');
       // return EvidencePhoto(BlobName: evidencePhoto.BlobName);
     }
+  }
+
+  @override
+  bulkCreate(List<EvidencePhoto> listT) {
+    print(
+        '[VEHICLE INFO] [EVIDENT PHOTO] bulk create with ${listT.length} items');
+    return super.bulkCreate(listT);
+  }
+
+  @override
+  Future<List<EvidencePhoto>> getAll() async {
+    final items = await super.getAll();
+    print('[VEHICLE INFO] [EVIDENT PHOTO] get all ${json.encode(items)}');
+    return items;
   }
 }
 

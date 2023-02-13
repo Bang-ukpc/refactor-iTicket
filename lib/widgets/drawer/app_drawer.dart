@@ -26,6 +26,7 @@ import 'package:iWarden/widgets/drawer/spot_check.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../services/local/created_warden_event_local_service .dart';
 import '../../theme/color.dart';
 import 'info_drawer.dart';
 import 'item_menu_widget.dart';
@@ -107,8 +108,8 @@ class _MyDrawerState extends State<MyDrawer> {
     void onStartBreak() async {
       try {
         showCircularProgressIndicator(context: context);
-        await userController
-            .createWardenEvent(wardenEventStartBreak)
+        await createdWardenEventLocalService
+            .create(wardenEventStartBreak)
             .then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushNamed(StartBreakScreen.routeName);
@@ -153,11 +154,11 @@ class _MyDrawerState extends State<MyDrawer> {
         if (isRunning) {
           service.invoke("stopService");
         }
-        await userController
-            .createWardenEvent(wardenEventCheckOut)
+        await createdWardenEventLocalService
+            .create(wardenEventCheckOut)
             .then((value) async {
-          await userController
-              .createWardenEvent(wardenEventEndShift)
+          await createdWardenEventLocalService
+              .create(wardenEventEndShift)
               .then((value) async {
             SharedPreferencesHelper.removeStringValue(
                 'rotaShiftSelectedByWarden');

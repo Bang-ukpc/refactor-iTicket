@@ -119,7 +119,9 @@ enum TypeWardenEvent {
 WardenEvent _$WardenEventFromJson(Map<String, dynamic> json) {
   return WardenEvent(
     Id: json['Id'],
-    Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
+    Created: json['Created'] == null
+        ? DateTime.now()
+        : DateTime.parse(json['Created']),
     Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
     type: json['Type'],
     detail: json['Detail'],
@@ -139,8 +141,9 @@ WardenEvent _$WardenEventFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$WardenEventToJson(WardenEvent instance) {
   return <String, dynamic>{
-    'Created':
-        instance.Created != null ? instance.Created!.toIso8601String() : null,
+    'Created': instance.Created != null
+        ? instance.Created!.toIso8601String()
+        : DateTime.now(),
     'Type': instance.type,
     'Id': instance.Id,
     'Detail': instance.detail,

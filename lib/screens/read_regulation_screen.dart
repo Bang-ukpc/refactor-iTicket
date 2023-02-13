@@ -21,6 +21,8 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../services/local/created_warden_event_local_service .dart';
+
 class ReadRegulationScreen extends StatefulWidget {
   static const routeName = '/read-regulation';
   const ReadRegulationScreen({super.key});
@@ -80,7 +82,9 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           locations.location?.Notes == null) {
         try {
           showCircularProgressIndicator(context: context, text: 'Checking in');
-          await userController.createWardenEvent(wardenEvent).then((value) {
+          await createdWardenEventLocalService
+              .create(wardenEvent)
+              .then((value) {
             Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
                 SyncZoneData.routeName, (Route<dynamic> route) => false);
@@ -132,7 +136,9 @@ class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
           try {
             showCircularProgressIndicator(
                 context: context, text: 'Checking in');
-            await userController.createWardenEvent(wardenEvent).then((value) {
+            await createdWardenEventLocalService
+                .create(wardenEvent)
+                .then((value) {
               Navigator.of(context).pop();
               Navigator.of(context).pushNamedAndRemoveUntil(
                   SyncZoneData.routeName, (Route<dynamic> route) => false);

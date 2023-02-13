@@ -9,9 +9,7 @@ import '../../controllers/contravention_controller.dart';
 
 class IssuedPcnPhotoLocalService
     extends BaseLocalService<ContraventionCreatePhoto> {
-  final String LOCAL_KEY = 'contraventionPhotoDataLocal';
-
-  IssuedPcnPhotoLocalService() : super('contraventionPhotoDataLocal');
+  IssuedPcnPhotoLocalService() : super('contraventionPhotos');
 
   Future<List<ContraventionCreatePhoto>> listByContraventionReference(
       String contraventionReference) async {

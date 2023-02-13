@@ -19,6 +19,7 @@ import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/services/cache/factory/cache_factory.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
@@ -103,8 +104,8 @@ class _AbortScreenState extends State<AbortScreen> {
 
       try {
         showCircularProgressIndicator(context: context);
-        await userController
-            .createWardenEvent(wardenEventAbortPCN)
+        await createdWardenEventLocalService
+            .create(wardenEventAbortPCN)
             .then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushNamed(ParkingChargeList.routeName);

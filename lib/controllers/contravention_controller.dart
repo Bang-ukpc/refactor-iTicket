@@ -98,70 +98,26 @@ class ContraventionController {
   }
 
   Future<Pagination> getContraventionReasonServiceList({int? zoneId}) async {
-    ConnectivityResult connectionStatus =
-        await (Connectivity().checkConnectivity());
-    if (connectionStatus == ConnectivityResult.wifi ||
-        connectionStatus == ConnectivityResult.mobile) {
-      try {
-        final response = await dio.post(
-          '/contravention-reason-translation/filter',
-          data: {
-            "page": 1,
-            "pageSize": 1000,
-            "ZoneId": zoneId,
-            "filter": {},
-          },
-        );
-        print(response.data);
-        Pagination contraventionReasonPagination =
-            Pagination.fromJson(response.data);
-        final String encodedData =
-            json.encode(contraventionReasonPagination.toJson());
-        if (zoneId != null) {
-          SharedPreferencesHelper.setStringValue(
-              'contraventionReasonDataLocalWithHaveZoneId', encodedData);
-        } else {
-          SharedPreferencesHelper.setStringValue(
-              'contraventionReasonDataLocalWithNotHaveZoneId', encodedData);
-        }
-        return contraventionReasonPagination;
-      } on DioError catch (error) {
-        print(error.response);
-        rethrow;
-      }
-    } else {
-      final String? dataHaveZoneId =
-          await SharedPreferencesHelper.getStringValue(
-              'contraventionReasonDataLocalWithHaveZoneId');
-      final String? dataNotHaveZoneId =
-          await SharedPreferencesHelper.getStringValue(
-              'contraventionReasonDataLocalWithNotHaveZoneId');
-
-      if (zoneId != null) {
-        if (dataHaveZoneId != null) {
-          final contraventionReason =
-              json.decode(dataHaveZoneId) as Map<String, dynamic>;
-          Pagination fromJsonContraventionReason =
-              Pagination.fromJson(contraventionReason);
-          return fromJsonContraventionReason;
-        }
-      } else {
-        if (dataNotHaveZoneId != null) {
-          final contraventionReason =
-              json.decode(dataNotHaveZoneId) as Map<String, dynamic>;
-          Pagination fromJsonContraventionReason =
-              Pagination.fromJson(contraventionReason);
-          return fromJsonContraventionReason;
-        }
-      }
-
-      return Pagination(
-        page: 1,
-        pageSize: 1000,
-        total: 0,
-        totalPages: 1,
-        rows: [],
+    try {
+      final response = await dio.post(
+        '/contravention-reason-translation/filter',
+        data: {
+          "page": 1,
+          "pageSize": 1000,
+          "ZoneId": zoneId,
+          "filter": {},
+        },
       );
+      print('[CONTRAVENTION REASON] ${response.data}');
+      Pagination contraventionReasonPagination =
+          Pagination.fromJson(response.data);
+      contraventionReasonPagination.rows =
+          jsonDecodeFactory.decodeList<ContraventionReasonTranslations>(
+              contraventionReasonPagination.rows);
+      return contraventionReasonPagination;
+    } on DioError catch (error) {
+      print(error.response);
+      rethrow;
     }
   }
 

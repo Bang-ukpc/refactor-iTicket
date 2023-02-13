@@ -27,6 +27,7 @@ import 'package:iWarden/screens/connecting-status/background_service_config.dart
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
@@ -293,8 +294,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     void onStartShift() async {
       try {
         showCircularProgressIndicator(context: context, text: 'Starting shift');
-        await userController
-            .createWardenEvent(wardenEventStartShift)
+        await createdWardenEventLocalService
+            .create(wardenEventStartShift)
             .then((value) async {
           final service = FlutterBackgroundService();
           var isRunning = await service.isRunning();

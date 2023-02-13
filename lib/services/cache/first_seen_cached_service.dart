@@ -67,7 +67,7 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
           totalPages: 1,
           rows: vehicleInfos);
     });
-    set(paging.rows as List<VehicleInformation>);
+    await set(paging.rows as List<VehicleInformation>);
     return paging.rows as List<VehicleInformation>;
   }
 
