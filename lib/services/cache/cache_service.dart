@@ -71,12 +71,9 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
     await prefs.reload();
     final String? jsonItems =
         await SharedPreferencesHelper.getStringValue(localKey);
-    // const jsonItems =
-    //     '[{"Id":1,"ZoneId":1,"ContraventionReference":"123123","Plate":"123123","VehicleMake":"123","VehicleColour":"213","ContraventionReasonCode":"36","EventDateTime":"2023-02-06T00:00:00.000Z","FirstObservedDateTime":"2023-02-06T00:00:00.000Z","WardenId":1,"BadgeNumber":"1","Longitude":0,"Latitude":0,"LocationAccuracy":1,"WardenComments":""}]';
 
     if (jsonItems == null) return [];
     var decodedItems = json.decode(jsonItems) as List<dynamic>;
-    print('[GET ALL] $decodedItems');
     return decodedItems.map((decodedItem) {
       if (decodedItem is String) {
         return jsonDecodeFactory.decode<T>(json.decode(decodedItem)) as T;

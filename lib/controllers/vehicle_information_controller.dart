@@ -61,6 +61,7 @@ class VehicleInfoController {
         final vehicleFromJson = VehicleInformation.fromJson(response.data);
         return vehicleFromJson;
       }
+      return null;
     } on DioError catch (error) {
       print(error.response);
       rethrow;
