@@ -439,6 +439,14 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                     StateDevice.pending)
                             : _buildConnect('3. GPS has been turned on',
                                 StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    "8. Allow GPS access", checkState(checkGps))
+                                : _buildConnect(
+                                    '8. Allow GPS access', StateDevice.pending)
+                            : _buildConnect(
+                                '8. Allow GPS access', StateDevice.pending),
                       ],
                     ),
                   ),
