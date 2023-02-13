@@ -964,7 +964,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                     .copyWith(color: ColorTheme.white),
                               ),
                               onPressed: () {
-                                if (_selectedItemTypePCN!.value == 0) {
+                                if ((_selectedItemTypePCN?.value ?? 0) == 0) {
                                   createPhysicalPCN(isPrinter: true);
                                 } else {
                                   createVirtualTicket();
