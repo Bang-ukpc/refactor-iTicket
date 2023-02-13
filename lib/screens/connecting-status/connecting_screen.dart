@@ -47,7 +47,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
   bool checkGps = false;
-  Position? currentLocationOfWarder;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;
   bool? checkBluetooth;
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
@@ -143,7 +142,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     await currentLocationPosition.getCurrentLocation().then((value) {
       setState(() {
         pendingGetCurrentLocation = false;
-        currentLocationOfWarder = value;
       });
       checkPermissionGPS();
     }).catchError((err) {
@@ -243,8 +241,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     final wardenEventStartShift = WardenEvent(
       type: TypeWardenEvent.StartShift.index,
       detail: 'Warden has started shift',
-      latitude: currentLocationOfWarder?.latitude ?? 0,
-      longitude: currentLocationOfWarder?.longitude ?? 0,
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: wardensProvider.wardens?.Id ?? 0,
     );
 
