@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:collection/collection.dart';
@@ -10,8 +9,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/user_controller.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -26,8 +23,6 @@ import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
-import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
-import 'package:iWarden/services/local/created_vehicle_data_photo_local_service.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
