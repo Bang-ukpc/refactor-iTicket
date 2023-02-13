@@ -98,7 +98,7 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  Timer.periodic(const Duration(seconds: 30), (timer) async {
+  Timer.periodic(const Duration(minutes: 5), (timer) async {
     if (service is AndroidServiceInstance) {
       final prefs = await SharedPreferences.getInstance();
       prefs.reload();
