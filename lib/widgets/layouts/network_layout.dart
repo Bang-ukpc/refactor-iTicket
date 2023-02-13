@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -16,16 +14,14 @@ import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
-import 'package:iWarden/services/local/created_warden_event_local_background_service%20.dart';
-import 'package:iWarden/services/local/created_warden_event_local_service.dart';
 import 'package:iWarden/services/local/issued_pcn_local_service.dart';
-import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/auth.dart';
+import '../../services/local/created_warden_event_local_service .dart';
 
 Future<void> showLoading({
   required int firstSeenLength,
@@ -243,69 +239,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     }
   }
 
-  Future<bool> wardenEventDataSync() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-
-    final String? dataWardenEvent =
-        await SharedPreferencesHelper.getStringValue('wardenEventDataLocal');
-    final String? dataWardenEventTrackGPS =
-        await SharedPreferencesHelper.getStringValue(
-            'wardenEventCheckGPSDataLocal');
-
-    if (dataWardenEvent != null) {
-      var decodedWardenEventData =
-          json.decode(dataWardenEvent) as List<dynamic>;
-
-      if (dataWardenEventTrackGPS != null) {
-        var decodedWardenEventTrackGPSData =
-            json.decode(dataWardenEventTrackGPS) as List<dynamic>;
-        decodedWardenEventData = List.from(decodedWardenEventData)
-          ..addAll(decodedWardenEventTrackGPSData);
-        SharedPreferencesHelper.removeStringValue(
-            'wardenEventCheckGPSDataLocal');
-      }
-
-      List<WardenEvent> wardenEventList = decodedWardenEventData
-          .map((i) => WardenEvent.fromJson(json.decode(i)))
-          .toList();
-      wardenEventList.sort((i1, i2) => i1.Created!.compareTo(i2.Created!));
-      for (int i = 0; i < wardenEventList.length; i++) {
-        wardenEventList[i].Id = 0;
-        try {
-          await userController.createWardenEvent(wardenEventList[i]);
-        } on DioError catch (e) {
-          print('createWardenEvent: $e');
-          // throw Exception(e.message);
-        }
-      }
-      SharedPreferencesHelper.removeStringValue('wardenEventDataLocal');
-      return true;
-    } else {
-      if (dataWardenEventTrackGPS != null) {
-        var decodedWardenEventTrackGPSData =
-            json.decode(dataWardenEventTrackGPS) as List<dynamic>;
-        List<WardenEvent> wardenEventList = decodedWardenEventTrackGPSData
-            .map((i) => WardenEvent.fromJson(json.decode(i)))
-            .toList();
-        wardenEventList.sort((i1, i2) => i1.Created!.compareTo(i2.Created!));
-        for (int i = 0; i < wardenEventList.length; i++) {
-          wardenEventList[i].Id = 0;
-          try {
-            await userController.createWardenEvent(wardenEventList[i]);
-          } on DioError catch (e) {
-            print('createWardenEvent: $e');
-            // throw Exception(e.message);
-          }
-        }
-        SharedPreferencesHelper.removeStringValue(
-            'wardenEventCheckGPSDataLocal');
-      }
-      return true;
-    }
-  }
-
-  void dataSynch() async {
+  void dataSync() async {
     // bool vehicleInfoSynchStatus = false;
     // bool issuePCNSynchStatus = fjlse;
     // bool wardenEventSyncStatus = false;
@@ -326,13 +260,8 @@ class _NetworkLayoutState extends State<NetworkLayout> {
     //   });
     // }
     await createdVehicleDataLocalService.syncAll();
-    // await vehicleInfoDataSynch();
-    // await parkingChargeDataSynch();
     await issuedPcnLocalService.syncAll();
-    await createdWardenEventLocalBackgroundService.syncAll();
-    // await createdWardenEventLocalService.syncAll();
-    // await createdWardenEventLocalService.syncAll();
-    // await wardenEventDataSync();
+    await createdWardenEventLocalService.syncAll();
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
@@ -367,7 +296,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
             firstSeenLength: firstSeenLength,
             gracePeriodLength: gracePeriodLength,
             pcnLength: pcnLength);
-        dataSynch();
+        dataSync();
 
         await Future.delayed(const Duration(seconds: 3), () {
           NavigationService.navigatorKey.currentState!.pop();

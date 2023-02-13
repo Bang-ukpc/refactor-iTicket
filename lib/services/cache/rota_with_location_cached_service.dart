@@ -33,16 +33,19 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
 
   Future<List<Zone>> _getAllZonesFromRotas() async {
     var rotaWithLocations = await getAll();
-    var groupLocations =
-        rotaWithLocations.map((e) => e.locations ?? []).toList();
+    if (rotaWithLocations.isNotEmpty) {
+      var groupLocations =
+          rotaWithLocations.map((e) => e.locations ?? []).toList();
 
-    var locations = groupLocations
-        .reduce((allLocations, locations) => [...allLocations, ...locations]);
+      var locations = groupLocations
+          .reduce((allLocations, locations) => [...allLocations, ...locations]);
 
-    var zones = locations
-        .map((l) => l.Zones ?? [])
-        .reduce((allZones, zones) => [...allZones, ...zones]);
-    return zones;
+      var zones = locations
+          .map((l) => l.Zones ?? [])
+          .reduce((allZones, zones) => [...allZones, ...zones]);
+      return zones;
+    }
+    return [];
   }
 
   syncContraventionReasonForAllZones(

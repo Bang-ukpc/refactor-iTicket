@@ -1,6 +1,6 @@
 class IdHelper {
   int generateId() {
-    return DateTime.now().microsecondsSinceEpoch.toInt();
+    return -(DateTime.now().microsecondsSinceEpoch.toInt());
   }
 }
 

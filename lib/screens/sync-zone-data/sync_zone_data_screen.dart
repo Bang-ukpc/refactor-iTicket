@@ -110,8 +110,7 @@ class _SyncZoneDataState extends State<SyncZoneData> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locationProvider = Provider.of<Locations>(context, listen: false);
       print("[SYNC ZONE DATA] with zoneID is ${locationProvider.zone?.Id}");
-      zoneCachedServiceFactory =
-          ZoneCachedServiceFactory(locationProvider.zone?.Id ?? 0);
+      zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
       await syncZoneData();
       setState(() {
         isPulledData = true;
@@ -122,7 +121,13 @@ class _SyncZoneDataState extends State<SyncZoneData> {
   @override
   Widget build(BuildContext context) {
     Future<void> refresh() async {
+      setState(() {
+        isPulledData = false;
+      });
       await syncZoneData();
+      setState(() {
+        isPulledData = true;
+      });
     }
 
     return WillPopScope(

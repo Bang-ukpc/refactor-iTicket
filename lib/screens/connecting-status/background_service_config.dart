@@ -13,10 +13,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/models/zone.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> initializeService() async {
@@ -96,7 +98,7 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  Timer.periodic(const Duration(minutes: 5), (timer) async {
+  Timer.periodic(const Duration(seconds: 30), (timer) async {
     if (service is AndroidServiceInstance) {
       final prefs = await SharedPreferences.getInstance();
       prefs.reload();
@@ -151,11 +153,11 @@ void onStart(ServiceInstance service) async {
       zoneSelected = Zone.fromJson(json.decode(zone));
     }
 
-    final wardenEventSendCurrentLocation = WardenEvent(
+    final gpsEvent = WardenEvent(
       type: TypeWardenEvent.TrackGPS.index,
       detail: "Warden's current location",
       latitude: position.latitude,
-      Id: Random().nextInt(1000000000),
+      Id: idHelper.generateId(),
       longitude: position.longitude,
       wardenId: wardenFromJson?.Id ?? 0,
       rotaTimeFrom: rotaShiftSelected?.timeFrom,
@@ -165,41 +167,6 @@ void onStart(ServiceInstance service) async {
       Created: DateTime.now(),
     );
 
-    ConnectivityResult connectionStatus =
-        await (Connectivity().checkConnectivity());
-    if (connectionStatus == ConnectivityResult.wifi ||
-        connectionStatus == ConnectivityResult.mobile) {
-      dev.log('Track GPS online');
-      try {
-        await dio.post(
-          '$serviceUrl/wardenEvent',
-          data: wardenEventSendCurrentLocation.toJson(),
-        );
-      } on DioError catch (err) {
-        if (err.type != DioErrorType.other) {
-          service.stopSelf();
-        }
-      }
-    } else {
-      dev.log('Track GPS offline');
-      final String? wardenEventDataLocal =
-          await SharedPreferencesHelper.getStringValue(
-              'wardenEventCheckGPSDataLocal');
-      final String encodedNewData =
-          json.encode(wardenEventSendCurrentLocation.toJson());
-      if (wardenEventDataLocal == null) {
-        List<String> newData = [];
-        newData.add(encodedNewData);
-        final encodedWardenEvent = json.encode(newData);
-        SharedPreferencesHelper.setStringValue(
-            'wardenEventCheckGPSDataLocal', encodedWardenEvent);
-      } else {
-        var createdData = json.decode(wardenEventDataLocal) as List<dynamic>;
-        createdData.add(encodedNewData);
-        final encodedCreatedData = json.encode(createdData);
-        SharedPreferencesHelper.setStringValue(
-            'wardenEventCheckGPSDataLocal', encodedCreatedData);
-      }
-    }
+    createdWardenEventLocalService.create(gpsEvent);
   });
 }

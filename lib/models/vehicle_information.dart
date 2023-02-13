@@ -76,16 +76,21 @@ class VehicleInformation extends BaseModel {
 }
 
 VehicleInformation _$VehicleInformationFromJson(Map<String, dynamic> json) {
-  var evidencePhotosFromJson = json['EvidencePhotos'] as List<dynamic>;
-  List<EvidencePhoto> evidencePhotosList = evidencePhotosFromJson
-      .map((model) => EvidencePhoto.fromJson(model))
-      .toList();
+  List<EvidencePhoto> evidencePhotosList = [];
+  if (json['EvidencePhotos'] != null) {
+    var evidencePhotosFromJson = json['EvidencePhotos'] as List<dynamic>;
+    evidencePhotosList = evidencePhotosFromJson
+        .map((model) => EvidencePhoto.fromJson(model))
+        .toList();
+  }
 
   return VehicleInformation(
     Id: json['Id'],
     Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
     Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
-    ExpiredAt: DateTime.parse(json['ExpiredAt']),
+    ExpiredAt: json['ExpiredAt'] == null
+        ? DateTime.now()
+        : DateTime.parse(json['ExpiredAt']),
     Plate: json['Plate'],
     ZoneId: json['ZoneId'],
     LocationId: json['LocationId'],
