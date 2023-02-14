@@ -21,6 +21,8 @@ import 'package:iWarden/models/zone.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../services/local/sync_factory.dart';
+
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
 
@@ -96,6 +98,10 @@ void onStart(ServiceInstance service) async {
 
   service.on('stopService').listen((event) {
     service.stopSelf();
+  });
+
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
+    syncFactory.syncToServer();
   });
 
   Timer.periodic(const Duration(minutes: 5), (timer) async {

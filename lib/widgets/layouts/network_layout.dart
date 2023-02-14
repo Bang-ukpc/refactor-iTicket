@@ -26,7 +26,7 @@ class _NetworkLayoutState extends State<NetworkLayout> {
       bool checkIsAuth = await authProvider.isAuth();
       if (checkIsAuth == true) {
         _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-          syncFactory.syncToServer();
+          // syncFactory.syncToServer();
           await currentLocationPosition.getCurrentLocation();
         });
       } else {
