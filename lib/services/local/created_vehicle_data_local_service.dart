@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/id_helper.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/services/cache/cache_service.dart';
 import 'package:iWarden/services/cache/first_seen_cached_service.dart';
 import 'package:iWarden/services/cache/grace_period_cached_service.dart';
@@ -12,12 +13,13 @@ import '../../models/vehicle_information.dart';
 
 class CreatedVehicleDataLocalService
     extends BaseLocalService<VehicleInformation> {
+  Logger logger = Logger<CreatedVehicleDataLocalService>();
   CreatedVehicleDataLocalService() : super("vehicles");
 
   @override
   create(VehicleInformation t) async {
-    print(
-        '[$localKey] creating ${t.Plate} with ${t.EvidencePhotos?.length} photos ...');
+    logger.info(
+        'creating ${t.Plate} with ${t.EvidencePhotos?.length} photos ...');
     if (t.EvidencePhotos!.isNotEmpty) {
       await createdVehicleDataPhotoLocalService
           .bulkCreate(t.EvidencePhotos as List<EvidencePhoto>);
@@ -28,16 +30,16 @@ class CreatedVehicleDataLocalService
 
   @override
   syncAll() async {
-    print('[$localKey] syncing all ...');
+    logger.info('syncing all ...');
 
     if (isSyncing) {
-      print("[$localKey] CreatedVehicleDataLocalService is syncing ...");
+      logger.info("CreatedVehicleDataLocalService is syncing ...");
       return;
     }
     isSyncing = true;
 
     final items = await getAll();
-    print('[$localKey] ${items.map((e) => e.Id)}');
+    logger.info('${items.map((e) => e.Id)}');
     for (var item in items) {
       await sync(item);
     }
@@ -48,19 +50,19 @@ class CreatedVehicleDataLocalService
   @override
   Future<List<VehicleInformation>> getAll() async {
     final items = await super.getAll();
-    print('[$localKey] get all ${json.encode(items)}');
+    logger.info('get all ${json.encode(items)}');
     return items;
   }
 
   @override
   sync(VehicleInformation vehicleInformation) async {
-    print(
-        '[$localKey] syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
+    logger.info(
+        'syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
     var vehicleId = vehicleInformation.Id != null
         ? int.tryParse(vehicleInformation.Id.toString())
         : null;
     bool isNewItem = idHelper.isGeneratedByLocal(vehicleInformation.Id);
-    print("[$localKey] syncing isNewItem $isNewItem");
+    logger.info("syncing isNewItem $isNewItem");
     try {
       await syncPcnPhotos(vehicleInformation.EvidencePhotos!)
           .then((evidencePhotos) async {
@@ -73,12 +75,11 @@ class CreatedVehicleDataLocalService
         if (isNewItem) {
           await createCachedVehicleInformationAfterSync(vehicleInformation);
         }
+        await delete(vehicleId ?? 0);
       });
     } catch (e) {
-      print(e.toString());
-    } finally {
-      await delete(vehicleId ?? 0);
-    }
+      logger.info(e.toString());
+    } finally {}
   }
 
   createCachedVehicleInformationAfterSync(VehicleInformation vehicle) async {
@@ -110,14 +111,14 @@ class CreatedVehicleDataLocalService
     List<EvidencePhoto> allVehiclePhotos = [];
     for (var evidencePhoto in evidencePhoto) {
       evidencePhoto.Created = evidencePhoto.Created;
-      print('[UPLOAD] EvidencePhoto');
+      logger.info('[UPLOAD] EvidencePhoto');
       EvidencePhoto? uploadedEvidencePhoto =
           await createdVehicleDataPhotoLocalService.sync(evidencePhoto);
       if (uploadedEvidencePhoto != null) {
         allVehiclePhotos.add(uploadedEvidencePhoto);
       }
     }
-    print("[length] allVehiclePhotos ${allVehiclePhotos.length}");
+    logger.info("[length] allVehiclePhotos ${allVehiclePhotos.length}");
     return allVehiclePhotos;
   }
 }

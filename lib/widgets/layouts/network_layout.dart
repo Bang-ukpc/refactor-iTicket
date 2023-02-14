@@ -1,143 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
+
 import 'package:flutter/material.dart';
-import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/controllers/evidence_photo_controller.dart';
-import 'package:iWarden/controllers/user_controller.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
-import 'package:iWarden/models/ContraventionService.dart';
-import 'package:iWarden/models/vehicle_information.dart';
-import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
-import 'package:iWarden/services/local/issued_pcn_local_service.dart';
-import 'package:iWarden/theme/color.dart';
-import 'package:iWarden/theme/text_theme.dart';
+import 'package:iWarden/services/local/sync_factory.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/auth.dart';
-import '../../services/local/created_warden_event_local_service .dart';
-
-Future<void> showLoading({
-  required int firstSeenLength,
-  required gracePeriodLength,
-  required pcnLength,
-}) async {
-  await showDialog(
-    context: NavigationService.navigatorKey.currentContext as BuildContext,
-    barrierDismissible: false,
-    barrierColor: ColorTheme.mask,
-    builder: (_) {
-      return WillPopScope(
-        onWillPop: () async => false,
-        child: SizedBox(
-          width: MediaQuery.of(NavigationService.navigatorKey.currentContext
-                      as BuildContext)
-                  .size
-                  .width *
-              0.8,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Center(
-                child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: CircularProgressIndicator(
-                    color: ColorTheme.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              Text(
-                'Synchronizing data with the server:',
-                style: CustomTextStyle.h4.copyWith(
-                  fontFamily: 'Lato',
-                  decoration: TextDecoration.none,
-                  color: ColorTheme.white,
-                  overflow: TextOverflow.clip,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (firstSeenLength > 0)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      '$firstSeenLength first seen sent to the server',
-                      style: CustomTextStyle.h4.copyWith(
-                        fontFamily: 'Lato',
-                        decoration: TextDecoration.none,
-                        color: ColorTheme.white,
-                        overflow: TextOverflow.clip,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              if (gracePeriodLength > 0)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      '$gracePeriodLength grace period sent to the server',
-                      style: CustomTextStyle.h4.copyWith(
-                        fontFamily: 'Lato',
-                        decoration: TextDecoration.none,
-                        color: ColorTheme.white,
-                        overflow: TextOverflow.clip,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              if (pcnLength > 0)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      '$pcnLength PCN(s) sent to the server',
-                      style: CustomTextStyle.h4.copyWith(
-                        fontFamily: 'Lato',
-                        decoration: TextDecoration.none,
-                        color: ColorTheme.white,
-                        overflow: TextOverflow.clip,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
-
-Future<bool> isAuth() async {
-  String? token =
-      await SharedPreferencesHelper.getStringValue(PreferencesKeys.accessToken);
-  return token != null ? true : false;
-}
 
 class NetworkLayout extends StatefulWidget {
   final Widget myWidget;
@@ -148,156 +16,23 @@ class NetworkLayout extends StatefulWidget {
 }
 
 class _NetworkLayoutState extends State<NetworkLayout> {
-  final Connectivity _connectivity = Connectivity();
-
-  Future<bool> vehicleInfoDataSynch() async {
-    final String? dataUpsert = await SharedPreferencesHelper.getStringValue(
-        'vehicleInfoUpsertDataLocal');
-    if (dataUpsert != null) {
-      final vehicleInfoUpsertData = json.decode(dataUpsert) as List<dynamic>;
-      List<VehicleInformation> vehicleInfoList = vehicleInfoUpsertData
-          .map((i) => VehicleInformation.fromJson(json.decode(i)))
-          .toList();
-      for (int i = 0; i < vehicleInfoList.length; i++) {
-        for (int j = 0; j < vehicleInfoList[i].EvidencePhotos!.length; j++) {
-          try {
-            await evidencePhotoController
-                .uploadImage(
-                    filePath: vehicleInfoList[i].EvidencePhotos![j].BlobName,
-                    capturedDateTime: vehicleInfoList[i].Created)
-                .then((value) {
-              vehicleInfoList[i].EvidencePhotos![j] =
-                  EvidencePhoto(BlobName: value['blobName']);
-            });
-          } on DioError catch (e) {
-            print('evidencePhotoController: $e');
-            // throw Exception(e.message);
-          }
-        }
-        try {
-          if (vehicleInfoList[i].Id != null && vehicleInfoList[i].Id! < 0) {
-            vehicleInfoList[i].Id = null;
-          }
-          await vehicleInfoController.upsertVehicleInfo(vehicleInfoList[i]);
-        } on DioError catch (e) {
-          print('upsertVehicleInfo: $e');
-          // throw Exception(e.message);
-        }
-      }
-      SharedPreferencesHelper.removeStringValue('vehicleInfoUpsertDataLocal');
-      return true;
-    } else {
-      return true;
-    }
-  }
-
-  Future<bool> parkingChargeDataSynch() async {
-    final String? issuePCNData =
-        await SharedPreferencesHelper.getStringValue('issuePCNDataLocal');
-    final String? contraventionPhotoData =
-        await SharedPreferencesHelper.getStringValue(
-            'contraventionPhotoDataLocal');
-
-    if (issuePCNData != null) {
-      var decodedData = json.decode(issuePCNData) as List<dynamic>;
-      List<ContraventionCreateWardenCommand> physicalPCNList = decodedData
-          .map((e) => ContraventionCreateWardenCommand.fromJson(json.decode(e)))
-          .toList();
-      List<ContraventionCreatePhoto> contraventionCreatePhoto = [];
-
-      if (contraventionPhotoData != null) {
-        var contraventionPhotoDecoded =
-            json.decode(contraventionPhotoData) as List<dynamic>;
-        contraventionCreatePhoto = contraventionPhotoDecoded
-            .map((e) => ContraventionCreatePhoto.fromJson(json.decode(e)))
-            .toList();
-      }
-
-      for (int i = 0; i < physicalPCNList.length; i++) {
-        try {
-          await contraventionController.createPCN(physicalPCNList[i]);
-        } on DioError catch (e) {
-          print('createPCN: $e');
-          // throw Exception(e.message);
-        }
-      }
-      for (int i = 0; i < contraventionCreatePhoto.length; i++) {
-        try {
-          await contraventionController
-              .uploadContraventionImage(contraventionCreatePhoto[i]);
-        } on DioError catch (e) {
-          print('uploadContraventionImage: $e');
-          // throw Exception(e.message);
-        }
-      }
-
-      SharedPreferencesHelper.removeStringValue('issuePCNDataLocal');
-      SharedPreferencesHelper.removeStringValue('contraventionPhotoDataLocal');
-      return true;
-    } else {
-      return true;
-    }
-  }
-
-  void dataSync() async {
-    await createdVehicleDataLocalService.syncAll();
-    await issuedPcnLocalService.syncAll();
-    await createdWardenEventLocalService.syncAll();
-  }
-
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    if (result == ConnectivityResult.wifi ||
-        result == ConnectivityResult.mobile) {
-      bool checkIsAuth = await isAuth();
-      if (checkIsAuth == true) {
-        var firstSeenLength = 0;
-        var gracePeriodLength = 0;
-        var pcnLength = 0;
-        List<VehicleInformation> dataUpsert2 =
-            await createdVehicleDataLocalService.getAll();
-        final String? contraventions =
-            await SharedPreferencesHelper.getStringValue('contraventions');
-
-        var firstSeenList = dataUpsert2
-            .where((e) => e.Type == VehicleInformationType.FIRST_SEEN.index)
-            .toList();
-        var gracePeriodList = dataUpsert2
-            .where((e) => e.Type == VehicleInformationType.GRACE_PERIOD.index)
-            .toList();
-
-        firstSeenLength = firstSeenList.length;
-        gracePeriodLength = gracePeriodList.length;
-
-        if (contraventions != null) {
-          var decodedData = json.decode(contraventions) as List<dynamic>;
-          pcnLength = decodedData.length;
-        }
-
-        showLoading(
-          firstSeenLength: firstSeenLength,
-          gracePeriodLength: gracePeriodLength,
-          pcnLength: pcnLength,
-        );
-        dataSync();
-
-        await Future.delayed(const Duration(seconds: 3), () {
-          NavigationService.navigatorKey.currentState!.pop();
-        });
-      }
-    }
-  }
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final authProvider = Provider.of<Auth>(context, listen: false);
       bool checkIsAuth = await authProvider.isAuth();
       if (checkIsAuth == true) {
-        Timer.periodic(const Duration(seconds: 10), (timer) async {
+        _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+          syncFactory.syncToServer();
           await currentLocationPosition.getCurrentLocation();
         });
+      } else {
+        if (_timer != null) {
+          _timer!.cancel();
+        }
       }
     });
   }

@@ -44,8 +44,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   final _bayNumberController = TextEditingController();
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
-  List<Contravention> contraventionList = [];
-  late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> getLocationList(Locations locations, int wardenId) async {
     ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
@@ -76,42 +74,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     });
   }
 
-  Future<void> getParkingCharges() async {
-    var contraventions = await zoneCachedServiceFactory
-        .contraventionCachedService
-        .getAllWithCreatedOnTheOffline();
-    setState(() {
-      contraventionList = contraventions;
-    });
-  }
-
-  bool checkVrnExistsWithOverStaying({
-    required String vrn,
-    required int zoneId,
-  }) {
-    var findVRNExits = contraventionList.firstWhereOrNull(
-        (e) => e.plate == vrn && e.zoneId == zoneId && e.reason?.code == '36');
-    if (findVRNExits != null) {
-      log('Created At: ${findVRNExits.created}');
-      var date = DateTime.now();
-      var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
-      if (date.isBefore(timeMayIssue)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final locationProvider = Provider.of<Locations>(context, listen: false);
-      zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
-      await getParkingCharges();
-    });
-  }
-
   @override
   void dispose() {
     _vrnController.dispose();
@@ -125,6 +87,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
     final wardenProvider = Provider.of<WardensInfo>(context);
+    var zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
 
     Future<bool> saveForm() async {
       final vehicleInfo = VehicleInformation(
@@ -169,12 +132,32 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         return false;
       }
 
-      if (checkVrnExistsWithOverStaying(
-            vrn: vehicleInfo.Plate,
-            zoneId: vehicleInfo.ZoneId,
-          ) ==
-          false) {
+      var isExistsWithOverStaying = await zoneCachedServiceFactory
+          .firstSeenCachedService
+          .isExistsWithOverStayingInPCNs(
+        vrn: vehicleInfo.Plate,
+        zoneId: vehicleInfo.ZoneId,
+      );
+      var isExisted = await zoneCachedServiceFactory.firstSeenCachedService
+          .isExisted(vehicleInfo.Plate);
+
+      if (!isExistsWithOverStaying) {
+        if (!mounted) return false;
         showAlertCheckVrnExits(context: context, checkAddFirstSeen: true);
+        return false;
+      }
+
+      if (isExisted) {
+        if (!mounted) return false;
+        CherryToast.error(
+          displayCloseButton: false,
+          title: Text(
+            'VRN already existed.',
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
         return false;
       }
 
@@ -188,8 +171,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
             ),
           )
           .toList();
-      print(
-          '[FIRST SEEN] vehicle info evidence photos ${vehicleInfo.EvidencePhotos?.length}');
       await createdVehicleDataLocalService.create(vehicleInfo);
 
       if (!mounted) return false;

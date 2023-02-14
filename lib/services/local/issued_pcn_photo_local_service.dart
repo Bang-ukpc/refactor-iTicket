@@ -40,11 +40,10 @@ class IssuedPcnPhotoLocalService
   sync(ContraventionCreatePhoto pcnPhoto) async {
     try {
       await contraventionController.uploadContraventionImage(pcnPhoto);
+      await delete(pcnPhoto.Id!);
     } catch (e) {
       print(e.toString());
-    } finally {
-      await delete(pcnPhoto.Id!);
-    }
+    } finally {}
   }
 }
 

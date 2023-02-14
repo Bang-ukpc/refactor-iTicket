@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 class Logger<T> {
   late String key;
   Logger() {
-    key = T.runtimeType.toString();
+    key = T.toString();
   }
 
   getTime() {
@@ -27,6 +27,6 @@ class Logger<T> {
   }
 
   _log(Object obj, String level) {
-    print("$level  - ${getTime()} - [$key] - $obj");
+    print("$level - [$key] - $obj");
   }
 }

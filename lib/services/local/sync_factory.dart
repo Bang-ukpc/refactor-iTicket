@@ -24,9 +24,13 @@ class SyncFactory {
     }
 
     isRunning = true;
-    await createdVehicleDataLocalService.syncAll();
-    await issuedPcnLocalService.syncAll();
-    await createdWardenEventLocalService.syncAll();
+    try {
+      await createdVehicleDataLocalService.syncAll();
+      await issuedPcnLocalService.syncAll();
+      await createdWardenEventLocalService.syncAll();
+    } catch (e) {
+      logger.error(e);
+    }
     isRunning = false;
   }
 }
