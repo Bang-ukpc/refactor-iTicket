@@ -15,7 +15,7 @@
 
 - WRDN-469 As a PO, I want to improve the offline flow
 
-[1.0.25-1] - 2023-02-13
+[1.0.25-1] - 2023-02-14
 
 - WRDN-419 As a PO, I want force the users upgrade the application when have new versions.
 - WRDN-469 As a PO, I want to improve the offline flow (Complete the offline flow)
