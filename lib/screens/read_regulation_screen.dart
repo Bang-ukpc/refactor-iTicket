@@ -33,26 +33,6 @@ class ReadRegulationScreen extends StatefulWidget {
 
 class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
   bool checkbox = false;
-  List<ContraventionReasonTranslations> contraventionReasonList = [];
-
-  void getContraventionReasonList({int? zoneId}) async {
-    final Pagination list = await contraventionController
-        .getContraventionReasonServiceList(zoneId: zoneId);
-    setState(() {
-      contraventionReasonList = list.rows
-          .map((item) => ContraventionReasonTranslations.fromJson(item))
-          .toList();
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final locations = Provider.of<Locations>(context, listen: false);
-      getContraventionReasonList(zoneId: locations.zone?.Id);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

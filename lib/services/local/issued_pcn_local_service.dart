@@ -48,11 +48,10 @@ class IssuedPcnLocalService
 
       // create cached after sync
       await contraventionCachedService.create(cachedContravention);
+      await delete(pcn.Id!);
     } catch (e) {
       print("[$localKey] syncing ${pcn.Plate} error ${e.toString()}");
-    } finally {
-      await delete(pcn.Id!);
-    }
+    } finally {}
   }
 
   syncPcnPhotos(ContraventionCreateWardenCommand pcn) async {

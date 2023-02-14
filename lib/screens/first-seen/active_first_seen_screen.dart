@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
 import 'package:iWarden/common/my_dialog.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -17,6 +17,7 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/cache/factory/zone_cache_factory.dart';
+import '../../services/local/created_vehicle_data_local_service.dart';
 
 class ActiveFirstSeenScreen extends StatefulWidget {
   static const routeName = '/first-seen';
@@ -33,8 +34,8 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   final calculateTime = CalculateTime();
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
-  getData() {
-    zoneCachedServiceFactory.firstSeenCachedService
+  Future<void> getData() async {
+    await zoneCachedServiceFactory.firstSeenCachedService
         .getListActive()
         .then((listActive) {
       setState(() {
@@ -42,7 +43,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
       });
     });
 
-    zoneCachedServiceFactory.firstSeenCachedService
+    await zoneCachedServiceFactory.firstSeenCachedService
         .getListExpired()
         .then((listExpired) {
       setState(() {
@@ -54,10 +55,10 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
-      getData();
+      await getData();
     });
   }
 
@@ -109,14 +110,15 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                     color: Colors.white,
                   )),
               onPressed: () async {
-                await VehicleInfoController()
-                    .upsertVehicleInfo(vehicleInfoToUpdate)
-                    .then((value) {
-                  if (value != null) {
-                    Navigator.of(context).pop();
-                    getData();
-                  }
-                });
+                showCircularProgressIndicator(context: context);
+                await createdVehicleDataLocalService
+                    .create(vehicleInfoToUpdate);
+                await zoneCachedServiceFactory.firstSeenCachedService
+                    .delete(vehicleInfoToUpdate.Id!);
+                if (!mounted) return;
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                await getData();
               },
             ),
           );
@@ -125,7 +127,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     }
 
     Future<void> refresh() async {
-      getData();
+      await getData();
     }
 
     return WillPopScope(

@@ -73,6 +73,9 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
   Future<List<VehicleInformation>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
     var issuedItem = await createdVehicleDataLocalService.getAllGracePeriod();
-    return [...cachedItems, ...issuedItem];
+    var cachedAllVehicleInfo = [...issuedItem, ...cachedItems]
+        .where((e) => e.CarLeft != true)
+        .toList();
+    return cachedAllVehicleInfo;
   }
 }

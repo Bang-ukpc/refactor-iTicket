@@ -3,11 +3,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
 import 'package:iWarden/common/my_dialog.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/first_seen.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/first-seen/active_detail_first_seen.dart';
@@ -15,6 +14,7 @@ import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/expired_detail_first_seen.dart';
 import 'package:iWarden/screens/grace-period/add_grace_period.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
@@ -72,8 +72,6 @@ class _GracePeriodListState extends State<GracePeriodList> {
 
   @override
   Widget build(BuildContext context) {
-    final locations = Provider.of<Locations>(context, listen: false);
-
     log('Grace period list screen');
 
     void onCarLeft(VehicleInformation vehicleInfo) {
@@ -115,14 +113,15 @@ class _GracePeriodListState extends State<GracePeriodList> {
                     color: Colors.white,
                   )),
               onPressed: () async {
-                await VehicleInfoController()
-                    .upsertVehicleInfo(vehicleInfoToUpdate)
-                    .then((value) {
-                  if (value != null) {
-                    Navigator.of(context).pop();
-                    getData();
-                  }
-                });
+                showCircularProgressIndicator(context: context);
+                await createdVehicleDataLocalService
+                    .create(vehicleInfoToUpdate);
+                await zoneCachedServiceFactory.gracePeriodCachedService
+                    .delete(vehicleInfoToUpdate.Id!);
+                if (!mounted) return;
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                await getData();
               },
             ),
           );

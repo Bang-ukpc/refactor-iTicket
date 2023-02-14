@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
@@ -7,20 +5,24 @@ import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/locate_car_screen.dart';
 import 'package:iWarden/common/my_dialog.dart';
-import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/configs/const.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/url_helper.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/detail_issue.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/locations.dart';
 
 class DetailScreen extends StatefulWidget {
   final TypeFirstSeen type;
@@ -32,6 +34,17 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
+  late ZoneCachedServiceFactory zoneCachedServiceFactory;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final locations = Provider.of<Locations>(context, listen: false);
+      zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final args =
@@ -44,7 +57,6 @@ class _DetailScreenState extends State<DetailScreen> {
         return urlHelper.toImageUrl(photo.BlobName);
       }
     }).toList();
-    final vehicleInfoController = VehicleInfoController();
 
     void onCarLeft() {
       VehicleInformation vehicleInfoToUpdate = VehicleInformation(
@@ -85,17 +97,21 @@ class _DetailScreenState extends State<DetailScreen> {
                     color: Colors.white,
                   )),
               onPressed: () async {
-                await vehicleInfoController
-                    .upsertVehicleInfo(vehicleInfoToUpdate)
-                    .then((value) {
-                  if (value != null) {
-                    Navigator.of(context).pushReplacementNamed(
-                      args.Type == 0
-                          ? ActiveFirstSeenScreen.routeName
-                          : GracePeriodList.routeName,
-                    );
-                  }
-                });
+                showCircularProgressIndicator(context: context);
+                await createdVehicleDataLocalService
+                    .create(vehicleInfoToUpdate);
+                args.Type == VehicleInformationType.FIRST_SEEN.index
+                    ? await zoneCachedServiceFactory.firstSeenCachedService
+                        .delete(vehicleInfoToUpdate.Id!)
+                    : await zoneCachedServiceFactory.gracePeriodCachedService
+                        .delete(vehicleInfoToUpdate.Id!);
+                if (!mounted) return;
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacementNamed(
+                  args.Type == VehicleInformationType.FIRST_SEEN.index
+                      ? ActiveFirstSeenScreen.routeName
+                      : GracePeriodList.routeName,
+                );
               },
             ),
           );

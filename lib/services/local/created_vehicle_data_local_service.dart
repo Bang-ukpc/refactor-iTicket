@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
+import 'package:iWarden/helpers/id_helper.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/services/cache/cache_service.dart';
 import 'package:iWarden/services/cache/first_seen_cached_service.dart';
 import 'package:iWarden/services/cache/grace_period_cached_service.dart';
@@ -11,31 +13,33 @@ import '../../models/vehicle_information.dart';
 
 class CreatedVehicleDataLocalService
     extends BaseLocalService<VehicleInformation> {
+  Logger logger = Logger<CreatedVehicleDataLocalService>();
   CreatedVehicleDataLocalService() : super("vehicles");
 
   @override
   create(VehicleInformation t) async {
-    print(
-        '[VEHICLE INFO] creating ${t.Plate} with ${t.EvidencePhotos?.length} photos ...');
+    logger.info(
+        'creating ${t.Plate} with ${t.EvidencePhotos?.length} photos ...');
     if (t.EvidencePhotos!.isNotEmpty) {
       await createdVehicleDataPhotoLocalService
           .bulkCreate(t.EvidencePhotos as List<EvidencePhoto>);
     }
-    return super.create(t);
+    var existedItem = await get(t.Id!);
+    return existedItem != null ? update(t) : super.create(t);
   }
 
   @override
   syncAll() async {
-    print('[VEHICLE INFO] syncing all ...');
+    logger.info('syncing all ...');
 
     if (isSyncing) {
-      print("[VEHICLE INFO] CreatedVehicleDataLocalService is syncing ...");
+      logger.info("CreatedVehicleDataLocalService is syncing ...");
       return;
     }
     isSyncing = true;
 
     final items = await getAll();
-    print('[VEHICLE INFO SYNC ALL] ${items.map((e) => e.Id)}');
+    logger.info('${items.map((e) => e.Id)}');
     for (var item in items) {
       await sync(item);
     }
@@ -46,38 +50,44 @@ class CreatedVehicleDataLocalService
   @override
   Future<List<VehicleInformation>> getAll() async {
     final items = await super.getAll();
-    print('[VEHICLE INFO] get all ${json.encode(items)}');
+    logger.info('get all ${json.encode(items)}');
     return items;
   }
 
   @override
   sync(VehicleInformation vehicleInformation) async {
-    print(
-        '[VEHICLE INFO] syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
+    logger.info(
+        'syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
+    var vehicleId = vehicleInformation.Id != null
+        ? int.tryParse(vehicleInformation.Id.toString())
+        : null;
+    bool isNewItem = idHelper.isGeneratedByLocal(vehicleInformation.Id);
+    logger.info("syncing isNewItem $isNewItem");
     try {
-      await syncPcnPhotos(vehicleInformation.EvidencePhotos!).then((evidencePhotos) async {
+      await syncPcnPhotos(vehicleInformation.EvidencePhotos!)
+          .then((evidencePhotos) async {
         vehicleInformation.EvidencePhotos = evidencePhotos;
-        if (vehicleInformation.Id != null && vehicleInformation.Id! < 0) {
+        if (isNewItem) {
           vehicleInformation.Id = null;
         }
         await vehicleInfoController.upsertVehicleInfo(vehicleInformation);
-        await createCachedVehicleInformationAfterSync(vehicleInformation);
+
+        if (isNewItem) {
+          await createCachedVehicleInformationAfterSync(vehicleInformation);
+        }
+        await delete(vehicleId ?? 0);
       });
     } catch (e) {
-      print(e.toString());
-    } finally {
-      await delete(vehicleInformation.Id!);
-    }
+      logger.info(e.toString());
+    } finally {}
   }
 
   createCachedVehicleInformationAfterSync(VehicleInformation vehicle) async {
-    if (vehicle.Type == VehicleInformationType.FIRST_SEEN.index) {
-      ICacheService<VehicleInformation> cachedService =
-          vehicle.Type == VehicleInformationType.FIRST_SEEN.index
-              ? FirstSeenCachedService(vehicle.ZoneId)
-              : GracePeriodCachedService(vehicle.ZoneId);
-      await cachedService.create(vehicle);
-    }
+    ICacheService<VehicleInformation> cachedService =
+        vehicle.Type == VehicleInformationType.FIRST_SEEN.index
+            ? FirstSeenCachedService(vehicle.ZoneId)
+            : GracePeriodCachedService(vehicle.ZoneId);
+    await cachedService.create(vehicle);
   }
 
   Future<List<VehicleInformation>> getAllFirstSeen() async {
@@ -101,14 +111,14 @@ class CreatedVehicleDataLocalService
     List<EvidencePhoto> allVehiclePhotos = [];
     for (var evidencePhoto in evidencePhoto) {
       evidencePhoto.Created = evidencePhoto.Created;
-      print('[UPLOAD] EvidencePhoto');
+      logger.info('[UPLOAD] EvidencePhoto');
       EvidencePhoto? uploadedEvidencePhoto =
           await createdVehicleDataPhotoLocalService.sync(evidencePhoto);
       if (uploadedEvidencePhoto != null) {
         allVehiclePhotos.add(uploadedEvidencePhoto);
       }
     }
-    print("[length] allVehiclePhotos ${allVehiclePhotos.length}");
+    logger.info("[length] allVehiclePhotos ${allVehiclePhotos.length}");
     return allVehiclePhotos;
   }
 }

@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:iWarden/helpers/time_helper.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/services/cache/contravention_cached_service.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 
 import '../../controllers/index.dart';
@@ -50,6 +53,32 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     }).toList();
   }
 
+  Future<bool> isExisted(String plate) async {
+    var cachedItems = await getAll();
+    var issuedItem = await createdVehicleDataLocalService.getAllFirstSeen();
+    var items = [...issuedItem, ...cachedItems];
+    return items.firstWhereOrNull((element) => element.Plate == plate) != null;
+  }
+
+  Future<bool> isExistsWithOverStayingInPCNs({
+    required String vrn,
+    required int zoneId,
+  }) async {
+    var contraventionCachedService = ContraventionCachedService(zoneId);
+    var contraventionList =
+        await contraventionCachedService.getAllWithCreatedOnTheOffline();
+    var findVRNExits = contraventionList.firstWhereOrNull(
+        (e) => e.plate == vrn && e.zoneId == zoneId && e.reason?.code == '36');
+    if (findVRNExits != null) {
+      var date = DateTime.now();
+      var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
+      if (date.isBefore(timeMayIssue)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @override
   syncFromServer() async {
     var paging = await weakNetworkVehicleInfoController
@@ -74,6 +103,10 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
   Future<List<VehicleInformation>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
     var issuedItem = await createdVehicleDataLocalService.getAllFirstSeen();
-    return [...issuedItem, ...cachedItems];
+    var cachedAllVehicleInfo = [...issuedItem, ...cachedItems]
+        .where((e) => e.CarLeft != true)
+        .toList();
+
+    return cachedAllVehicleInfo;
   }
 }
