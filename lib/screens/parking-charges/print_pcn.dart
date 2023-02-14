@@ -91,6 +91,7 @@ class _PrintPCNState extends State<PrintPCN> {
           Id: vehicleInfo.Id,
         );
         await createdVehicleDataLocalService.create(vehicleInfoToUpdate);
+        await createdVehicleDataLocalService.delete(vehicleInfoToUpdate.Id!);
       }
       return;
     }
