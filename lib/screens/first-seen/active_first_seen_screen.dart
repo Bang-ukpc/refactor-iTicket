@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
 import 'package:iWarden/common/my_dialog.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
-import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -110,9 +110,13 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                     color: Colors.white,
                   )),
               onPressed: () async {
+                showCircularProgressIndicator(context: context);
                 await createdVehicleDataLocalService
                     .create(vehicleInfoToUpdate);
+                await zoneCachedServiceFactory.firstSeenCachedService
+                    .delete(vehicleInfoToUpdate.Id!);
                 if (!mounted) return;
+                Navigator.of(context).pop();
                 Navigator.of(context).pop();
                 await getData();
               },

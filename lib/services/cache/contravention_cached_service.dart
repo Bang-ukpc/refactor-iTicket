@@ -1,6 +1,6 @@
 import 'dart:convert';
+
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
-import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 
 import '../../controllers/index.dart';
@@ -75,6 +75,13 @@ class ContraventionCachedService extends CacheService<Contravention> {
       contraventionPhotos: contraventionPhotos,
     );
   }
+
+  // Future<bool> isExistedWithIn24h(String Plate) async {
+  //   var items = await getAllWithCreatedOnTheOffline();
+  //   return items.firstWhereOrNull(
+  //           (element) => element.plate == Plate && element.Created) !=
+  //       null;
+  // }
 
   Future<List<Contravention>> getIssuedContraventions() async {
     var issuedItems = await issuedPcnLocalService.getAll();

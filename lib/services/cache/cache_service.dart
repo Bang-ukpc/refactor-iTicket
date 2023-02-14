@@ -1,13 +1,14 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
-import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:iWarden/factory/json_decode_factory.dart';
 import 'package:iWarden/models/ContraventionService.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../helpers/id_helper.dart';
 import '../../helpers/shared_preferences_helper.dart';
 import '../../models/base_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class ICacheService<T extends Identifiable> {
   syncFromServer();
@@ -45,9 +46,9 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
 
   @override
   delete(int id) async {
-    print('[DELETE VEHICLE INFO WITH ID] $id');
+    print('[$localKey] delete id = $id');
     final items = await getAll();
-    print('[VEHICLE INFO LIST] ${items.map((e) => e.Id)}');
+    print('[$localKey] ${items.map((e) => e.Id)}');
     final updatedItems = items.where((element) {
       return element.Id != id;
     });
@@ -62,7 +63,7 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   @override
   Future<T?> get(int id) async {
     final items = await getAll();
-    return items.firstWhere((element) => element.Id == id);
+    return items.firstWhereOrNull((element) => element.Id == id);
   }
 
   @override
@@ -90,8 +91,8 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
 
   @override
   update(T t) async {
-    final items = await getAll();
-    items.map((item) => item.Id == t.Id ? t : item);
+    var items = await getAll();
+    items = items.map((item) => item.Id == t.Id ? t : item).toList();
     await set(items);
   }
 

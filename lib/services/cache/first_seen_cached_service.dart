@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:collection/collection.dart';
 import 'package:iWarden/helpers/time_helper.dart';
 import 'package:iWarden/models/pagination.dart';
@@ -49,6 +52,13 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     }).toList();
   }
 
+  Future<bool> isExisted(String plate) async {
+    var cachedItems = await getAll();
+    var issuedItem = await createdVehicleDataLocalService.getAllFirstSeen();
+    var items = [...issuedItem, ...cachedItems];
+    return items.firstWhereOrNull((element) => element.Plate == plate) != null;
+  }
+
   @override
   syncFromServer() async {
     var paging = await weakNetworkVehicleInfoController
@@ -73,11 +83,10 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
   Future<List<VehicleInformation>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
     var issuedItem = await createdVehicleDataLocalService.getAllFirstSeen();
-    var issuedItemWithCarLeftIsTrue =
-        issuedItem.firstWhereOrNull((element) => false);
     var cachedAllVehicleInfo = [...issuedItem, ...cachedItems]
         .where((e) => e.CarLeft != true)
         .toList();
+
     return cachedAllVehicleInfo;
   }
 }
