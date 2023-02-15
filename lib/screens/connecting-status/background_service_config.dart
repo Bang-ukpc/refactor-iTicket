@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as dev;
-import 'dart:math';
 import 'dart:ui';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -13,6 +10,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/location.dart';
@@ -77,8 +75,6 @@ void onStart(ServiceInstance service) async {
     PreferencesKeys.accessToken,
   );
 
-  final serviceUrl = ConfigEnvironmentVariable.serviceURL;
-
   final dio = Dio();
   dio.options.headers['content-Type'] = 'application/json';
   dio.options.headers["authorization"] = accessToken;
@@ -102,6 +98,7 @@ void onStart(ServiceInstance service) async {
 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
     syncFactory.syncToServer();
+    await currentLocationPosition.getCurrentLocation();
   });
 
   Timer.periodic(const Duration(minutes: 5), (timer) async {
