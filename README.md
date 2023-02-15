@@ -27,3 +27,10 @@
 - WRDN-529 [Online]Parking charges Issued data not updating after issue PCN
 - WRDN-527 [Online][first seen] Can't check duplicate VRN
 - WRDN-468 As a POM, I want the time date in OFFLINE MODE and ONLINE MODE must be the same each other.
+
+
+[1.0.28] - 2023-02-15
+
+- WRDN-547 [Online] Data should be sorted by expiration time
+- WRDN-539 [Online] Can't auto sync data after issue PCN
+
