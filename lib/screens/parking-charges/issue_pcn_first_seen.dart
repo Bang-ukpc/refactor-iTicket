@@ -228,25 +228,6 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
-  bool checkVrnExists(
-      {required String vrn,
-      required int zoneId,
-      required String contraventionType}) {
-    var findVRNExits = contraventionList.firstWhereOrNull((e) =>
-        e.plate == vrn &&
-        e.zoneId == zoneId &&
-        e.reason?.code == contraventionType);
-    if (findVRNExits != null) {
-      log('Created At: ${findVRNExits.created}');
-      var date = DateTime.now();
-      var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
-      if (date.isBefore(timeMayIssue)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   void setContraventionReasons({required bool isOverStaying}) async {
     ConnectivityResult connectionStatus =
         await (Connectivity().checkConnectivity());
@@ -430,12 +411,14 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         return;
       }
 
-      if (checkVrnExists(
-            vrn: physicalPCN.Plate,
-            zoneId: physicalPCN.ZoneId,
-            contraventionType: physicalPCN.ContraventionReasonCode,
-          ) ==
-          false) {
+      var isVrnExisted = await zoneCachedServiceFactory
+          .contraventionCachedService
+          .isExistedWithIn24h(
+              vrn: physicalPCN.Plate,
+              zoneId: physicalPCN.ZoneId,
+              contraventionType: physicalPCN.ContraventionReasonCode);
+      if (!isVrnExisted) {
+        if (!mounted) return;
         showAlertCheckVrnExits(context: context);
         return;
       }
@@ -507,6 +490,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           toastPosition: Position.bottom,
           borderRadius: 5,
         ).show(context);
+        return;
       }
 
       _formKey.currentState!.save();
@@ -564,12 +548,14 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         return;
       }
 
-      if (checkVrnExists(
-            vrn: virtualTicket.Plate,
-            zoneId: virtualTicket.ZoneId,
-            contraventionType: virtualTicket.ContraventionReasonCode,
-          ) ==
-          false) {
+      var isVrnExisted = await zoneCachedServiceFactory
+          .contraventionCachedService
+          .isExistedWithIn24h(
+              vrn: virtualTicket.Plate,
+              zoneId: virtualTicket.ZoneId,
+              contraventionType: virtualTicket.ContraventionReasonCode);
+      if (!isVrnExisted) {
+        if (!mounted) return;
         showAlertCheckVrnExits(context: context);
         return;
       }
@@ -640,6 +626,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           toastPosition: Position.bottom,
           borderRadius: 5,
         ).show(context);
+        return;
       }
 
       _formKey.currentState!.save();
@@ -1197,6 +1184,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                       Flexible(
                                         flex: 8,
                                         child: TextFormField(
+                                          enabled: contraventionProvider
+                                                  .getVehicleInfo ==
+                                              null,
                                           inputFormatters: [
                                             FilteringTextInputFormatter.allow(
                                               RegExp(r'[a-zA-Z0-9]'),
@@ -1381,6 +1371,10 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                   SizedBox(
                                     child: DropdownSearch<
                                         ContraventionReasonTranslations>(
+                                      enabled: contraventionProvider
+                                              .getVehicleInfo?.Type !=
+                                          VehicleInformationType
+                                              .FIRST_SEEN.index,
                                       dropdownBuilder: (context, selectedItem) {
                                         return Text(
                                           selectedItem == null
