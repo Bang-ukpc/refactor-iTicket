@@ -41,6 +41,7 @@ class _PrintPCNState extends State<PrintPCN> {
     final wardensProvider = Provider.of<WardensInfo>(context);
     var args = contraventionProvider.contravention;
     final printIssue = Provider.of<PrintIssueProviders>(context);
+    var zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
 
     print('[CONTRAVENTION REFERENCE] ${args?.reference}');
 
@@ -91,7 +92,13 @@ class _PrintPCNState extends State<PrintPCN> {
           Id: vehicleInfo.Id,
         );
         await createdVehicleDataLocalService.create(vehicleInfoToUpdate);
-        await createdVehicleDataLocalService.delete(vehicleInfoToUpdate.Id!);
+        if (vehicleInfo.Type == VehicleInformationType.FIRST_SEEN.index) {
+          await await zoneCachedServiceFactory.firstSeenCachedService
+              .delete(vehicleInfoToUpdate.Id!);
+        } else {
+          await await zoneCachedServiceFactory.gracePeriodCachedService
+              .delete(vehicleInfoToUpdate.Id!);
+        }
       }
       return;
     }
@@ -130,7 +137,7 @@ class _PrintPCNState extends State<PrintPCN> {
 
       await createdWardenEventLocalService.create(wardenEventIssuePCN);
 
-      onRemoveFromVehicleInfo().then((value) {
+      await onRemoveFromVehicleInfo().then((value) {
         Navigator.of(context).pop();
         Navigator.of(context).pushNamed(ParkingChargeInfo.routeName,
             arguments: contraventionProvider.contravention);
