@@ -37,7 +37,6 @@ class UserController {
       final response =
           await dio.post('/wardenEvent', data: wardenEvent.toJson());
       final wardenEventFromJson = WardenEvent.fromJson(response.data);
-      print(response.data);
       return wardenEventFromJson;
     } on DioError catch (error) {
       print('[WARDEN EVENT] ${error.response}');
