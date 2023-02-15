@@ -1,14 +1,18 @@
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
+import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_detail.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
+import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -29,13 +33,17 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
   bool contraventionLoading = true;
   bool loadingImage = true;
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
-
+  List<ContraventionCreateWardenCommand> issuedContraventions = [];
   Future<void> getContraventions() async {
     var contraventions = await zoneCachedServiceFactory
         .contraventionCachedService
         .getAllWithCreatedOnTheOffline();
+
+    var localIssuedContraventions = await issuedPcnLocalService.getAll();
+
     setState(() {
       contraventionList = contraventions;
+      issuedContraventions = localIssuedContraventions;
     });
   }
 
@@ -57,7 +65,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
 
   @override
   Widget build(BuildContext context) {
-    log('Parking charge list');
+    log('[offline] ${issuedContraventions.map((e) => e.Id)}');
 
     Future<void> refresh() async {
       getContraventions();
@@ -107,6 +115,10 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
                                     );
                                   },
                                   child: CardItemParkingCharge(
+                                    isOffline: issuedContraventions
+                                            .firstWhereOrNull((element) =>
+                                                element.Id == item.id) !=
+                                        null,
                                     image: item.contraventionPhotos!.isNotEmpty
                                         ? item.contraventionPhotos![0].blobName
                                         : "",

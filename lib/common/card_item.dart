@@ -9,21 +9,25 @@ import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
+import '../widgets/parking-charge/tag_onl_off.dart';
+
 class CardItem extends StatelessWidget {
   final VehicleInformation vehicleInfo;
   final int expiring;
   final TypeFirstSeen type;
   final String route;
   final Function onCarLeft;
+  final bool isOffline;
 
-  const CardItem({
-    Key? key,
-    required this.vehicleInfo,
-    required this.expiring,
-    required this.type,
-    required this.route,
-    required this.onCarLeft,
-  }) : super(key: key);
+  const CardItem(
+      {Key? key,
+      required this.vehicleInfo,
+      required this.expiring,
+      required this.type,
+      required this.route,
+      required this.onCarLeft,
+      required this.isOffline})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +48,19 @@ class CardItem extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  vehicleInfo.Plate.toUpperCase(),
-                  style: CustomTextStyle.h4.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      vehicleInfo.Plate.toUpperCase(),
+                      style: CustomTextStyle.h4.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    TagOnOff(offline: isOffline),
+                  ],
                 ),
                 const SizedBox(
                   height: 4,
