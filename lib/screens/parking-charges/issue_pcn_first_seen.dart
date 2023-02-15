@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui';
 
@@ -23,7 +22,6 @@ import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/helpers/contravention_reference_helper.dart';
 import 'package:iWarden/helpers/debouncer.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
