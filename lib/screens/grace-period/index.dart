@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -30,12 +31,13 @@ class GracePeriodList extends StatefulWidget {
 class _GracePeriodListState extends State<GracePeriodList> {
   List<VehicleInformation> gracePeriodActive = [];
   List<VehicleInformation> gracePeriodExpired = [];
+  List<VehicleInformation> graceGracePeriodLocal = [];
   bool gracePeriodLoading = true;
   final calculateTime = CalculateTime();
 
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
-  getData() {
+  getData() async {
     zoneCachedServiceFactory.gracePeriodCachedService
         .getListActive()
         .then((listActive) {
@@ -43,7 +45,11 @@ class _GracePeriodListState extends State<GracePeriodList> {
         gracePeriodActive = listActive;
       });
     });
-
+    var localVehicleData =
+        await createdVehicleDataLocalService.getAllGracePeriod();
+    setState(() {
+      graceGracePeriodLocal = localVehicleData;
+    });
     zoneCachedServiceFactory.gracePeriodCachedService
         .getListExpired()
         .then((listExpired) {
@@ -159,6 +165,10 @@ class _GracePeriodListState extends State<GracePeriodList> {
                             children: gracePeriodActive
                                 .map(
                                   (item) => CardItem(
+                                    isOffline: graceGracePeriodLocal
+                                            .firstWhereOrNull((element) =>
+                                                element.Id == item.Id) !=
+                                        null,
                                     vehicleInfo: item,
                                     type: TypeFirstSeen.Active,
                                     expiring: calculateTime.daysBetween(
@@ -223,6 +233,10 @@ class _GracePeriodListState extends State<GracePeriodList> {
                             children: gracePeriodExpired
                                 .map(
                                   (item) => CardItem(
+                                    isOffline: graceGracePeriodLocal
+                                            .firstWhereOrNull((element) =>
+                                                element.Id == item.Id) !=
+                                        null,
                                     vehicleInfo: item,
                                     type: TypeFirstSeen.Expired,
                                     expiring: calculateTime.daysBetween(
