@@ -11,7 +11,7 @@ class TagOnOff extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = !offline ? ColorTheme.success : ColorTheme.grey600;
+    Color color = !offline ? ColorTheme.primary : ColorTheme.secondary;
     Widget dot() {
       return Container(
         height: 8,
@@ -27,7 +27,8 @@ class TagOnOff extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(3),
-        color: !offline ? ColorTheme.lightSuccess : ColorTheme.grey200,
+        color:
+            !offline ? ColorTheme.lighterPrimary : ColorTheme.lighterSecondary,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
