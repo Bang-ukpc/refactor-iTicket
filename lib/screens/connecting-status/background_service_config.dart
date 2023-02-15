@@ -16,6 +16,7 @@ import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/models/zone.dart';
+import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -126,14 +127,8 @@ void onStart(ServiceInstance service) async {
     print('latitude: ${position.latitude}');
     print('longitude: ${position.longitude}');
 
-    Wardens? wardenFromJson;
-    final String? warden =
-        await SharedPreferencesHelper.getStringValue('wardenDataLocal');
-    if (warden != null) {
-      final decodedWarden = json.decode(warden) as Map<String, dynamic>;
-      wardenFromJson = Wardens.fromJson(decodedWarden);
-    }
-
+    var userCachedService = UserCachedService();
+    final Wardens? warden = await userCachedService.get();
     final String? rotaShift = await SharedPreferencesHelper.getStringValue(
         'rotaShiftSelectedByWarden');
     final String? locations = await SharedPreferencesHelper.getStringValue(
@@ -162,7 +157,7 @@ void onStart(ServiceInstance service) async {
       latitude: position.latitude,
       Id: idHelper.generateId(),
       longitude: position.longitude,
-      wardenId: wardenFromJson?.Id ?? 0,
+      wardenId: warden?.Id ?? 0,
       rotaTimeFrom: rotaShiftSelected?.timeFrom,
       rotaTimeTo: rotaShiftSelected?.timeTo,
       locationId: locationSelected?.Id,

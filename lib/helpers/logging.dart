@@ -44,7 +44,6 @@ class Logging extends Interceptor {
 
       await oauth.logout();
       SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
-      SharedPreferencesHelper.removeStringValue('wardenDataLocal');
       SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
       SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
       SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');

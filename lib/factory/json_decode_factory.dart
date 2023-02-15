@@ -34,9 +34,9 @@ class JsonDecodeFactory {
     throw Exception("$className is not register to the factory");
   }
 
-  T decodeJsonStr<T>(String jsonStr) {
+  T? decodeJsonStr<T>(String jsonStr) {
     var decodedData = json.decode(jsonStr) as Map<String, dynamic>;
-    return decode(decodedData);
+    return decode<T>(decodedData);
   }
 
   List<T> decodeList<T>(List<dynamic> decodedItems) {

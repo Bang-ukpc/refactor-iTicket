@@ -43,7 +43,9 @@ class Auth with ChangeNotifier {
     try {
       await userController.getMe().then((value) async {
         await userCachedService.set(value);
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pop();
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacementNamed(ConnectingScreen.routeName);
       });
     } on DioError catch (error) {
@@ -91,7 +93,6 @@ class Auth with ChangeNotifier {
     await oauth.logout();
 
     SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
-    SharedPreferencesHelper.removeStringValue('wardenDataLocal');
     SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
     SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
     SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');

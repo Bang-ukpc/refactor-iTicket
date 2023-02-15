@@ -17,13 +17,13 @@ class UserCachedService {
     var strJson = await SharedPreferencesHelper.getStringValue(localKey);
     if (strJson == null) return null;
     var warden = jsonDecodeFactory.decodeJsonStr<Wardens>(strJson);
-    logger.info("get user ${warden.FullName}");
+    logger.info("get user ${warden?.FullName}");
     return warden;
   }
 
   Future<Wardens> set(Wardens user) async {
     logger.info("set user ${user.FullName}");
-    await SharedPreferencesHelper.getStringValue(json.encode(user));
+    await SharedPreferencesHelper.setStringValue(localKey, json.encode(user));
     var savedUser = await get();
     if (savedUser == null) throw Exception("Save user is not successfully");
     return savedUser;

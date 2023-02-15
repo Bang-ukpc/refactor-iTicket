@@ -114,7 +114,7 @@ class _SyncZoneDataState extends State<SyncZoneData> {
       });
     } catch (e) {
       setState(() {
-        isLatestContraventions = true;
+        isLatestContraventions = false;
       });
     }
   }
