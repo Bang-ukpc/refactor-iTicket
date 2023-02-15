@@ -59,7 +59,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
   bool checkBluetooth = false;
   bool checkCamera = false;
   late CameraController controller;
-
+  Stream<BluetoothState> bluetoothStateStream =
+      FlutterBluePlus.instance.state.asBroadcastStream();
   // check GPS
   void _checkDeviceLocationIsOn() async {
     var check = await Permission.locationWhenInUse.isGranted;
@@ -125,7 +126,9 @@ class _StatisticScreenState extends State<StatisticScreen> {
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     _checkDeviceBluetoothIsOn();
     checkCameraPermission();
-
+    bluetoothStateStream.listen((bluetoothState) {
+      _checkDeviceBluetoothIsOn();
+    });
     super.initState();
   }
 

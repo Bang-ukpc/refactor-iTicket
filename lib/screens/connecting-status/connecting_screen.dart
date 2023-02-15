@@ -54,7 +54,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isCancellationNotNull = false;
   bool isLocationPermission = false;
   late CachedServiceFactory cachedServiceFactory;
-
+  Stream<BluetoothState> bluetoothStateStream =
+      FlutterBluePlus.instance.state.asBroadcastStream();
   _buildConnect(String title, StateDevice state, {bool required = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 19),
@@ -250,9 +251,13 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     checkGpsConnectingStatus();
     serviceStatusStreamSubscription =
         Geolocator.getServiceStatusStream().listen(_updateConnectionGpsStatus);
+
     initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    bluetoothStateStream.listen((bluetoothState) {
+      _checkDeviceBluetoothIsOn();
+    });
     _checkDeviceBluetoothIsOn();
   }
 
