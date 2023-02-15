@@ -5,8 +5,11 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/login_screens.dart';
+import 'package:iWarden/services/cache/user_cached_service.dart';
 
 class Logging extends Interceptor {
+  var userCachedService = UserCachedService();
+
   @override
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
@@ -45,7 +48,7 @@ class Logging extends Interceptor {
       SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
       SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
       SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');
-
+      userCachedService.remove();
       NavigationService.navigatorKey.currentState!.pushNamedAndRemoveUntil(
           LoginScreen.routeName, (Route<dynamic> route) => false);
     }

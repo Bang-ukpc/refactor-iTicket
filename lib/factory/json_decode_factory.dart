@@ -17,6 +17,9 @@ class JsonDecodeFactory {
     if (T == Contravention) {
       return Contravention.fromJson(json) as T;
     }
+    if (T == Wardens) {
+      return Wardens.fromJson(json) as T;
+    }
     if (T == ContraventionCreatePhoto) {
       return ContraventionCreatePhoto.fromJson(json) as T;
     }
@@ -29,6 +32,11 @@ class JsonDecodeFactory {
     if (T == RotaWithLocation) return RotaWithLocation.fromJson(json) as T;
     final className = T.toString();
     throw Exception("$className is not register to the factory");
+  }
+
+  T decodeJsonStr<T>(String jsonStr) {
+    var decodedData = json.decode(jsonStr) as Map<String, dynamic>;
+    return decode(decodedData);
   }
 
   List<T> decodeList<T>(List<dynamic> decodedItems) {

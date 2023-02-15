@@ -11,10 +11,13 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
+import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 class Auth with ChangeNotifier {
+  UserCachedService userCachedService = UserCachedService();
+
   Future<bool> isAuth() async {
     String? token = await SharedPreferencesHelper.getStringValue(
         PreferencesKeys.accessToken);
@@ -38,7 +41,8 @@ class Auth with ChangeNotifier {
   Future<void> loginWithJwt(String jwt, BuildContext context) async {
     log('Logged in successfully, your access token: Bearer $jwt');
     try {
-      await userController.getMe().then((value) {
+      await userController.getMe().then((value) async {
+        await userCachedService.set(value);
         Navigator.of(context).pop();
         Navigator.of(context).pushReplacementNamed(ConnectingScreen.routeName);
       });
@@ -91,7 +95,7 @@ class Auth with ChangeNotifier {
     SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
     SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
     SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');
-
+    userCachedService.remove;
     log('Logout successfully');
   }
 }
