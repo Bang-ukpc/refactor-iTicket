@@ -45,9 +45,9 @@ class _SyncZoneDataState extends State<SyncZoneData> {
                   color: ColorTheme.primary,
                   size: 18,
                 ),
-              if (state == StateDevice.disconnect)
+              if ((state == StateDevice.disconnect))
                 SvgPicture.asset(
-                  "assets/svg/IconDotCom.svg",
+                  "assets/svg/IconDotYellow.svg",
                 ),
               if (state == StateDevice.connected)
                 SvgPicture.asset("assets/svg/IconCompleteActive.svg")
