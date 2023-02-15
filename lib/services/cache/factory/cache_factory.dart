@@ -17,13 +17,3 @@ class CachedServiceFactory {
         ContraventionReasonCachedService(0);
   }
 }
-
-// TODO: Example to sync the data from server
-// Future<void> main(List<String> args) async {
-//   final cachedServiceFactory = CachedServiceFactory(1);
-//   await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-//   await cachedServiceFactory.cancellationReasonCachedService.syncFromServer();
-
-//   await cachedServiceFactory.defaultContraventionReasonCachedService.syncFromServer();
-//   await cachedServiceFactory.rotaWithLocationCachedService.syncContraventionReasonForAllZones();
-// }

@@ -20,9 +20,9 @@ class SyncZoneData extends StatefulWidget {
 class _SyncZoneDataState extends State<SyncZoneData> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   bool isPulledData = false;
-  bool isListFirstSeenNotNull = false;
-  bool isGracePeriodsNotNull = false;
-  bool isContraventionsNotNull = false;
+  bool isLatestFirstSeen = false;
+  bool isLatestGracePeriod = false;
+  bool isLatestContraventions = false;
 
   _buildConnect(String title, StateDevice state) {
     return Container(
@@ -67,41 +67,56 @@ class _SyncZoneDataState extends State<SyncZoneData> {
   }
 
   Future<void> syncZoneData() async {
-    await zoneCachedServiceFactory.contraventionCachedService.syncFromServer();
     await getContraventions();
 
-    await zoneCachedServiceFactory.contraventionReasonCachedService
-        .syncFromServer();
+    try {
+      await zoneCachedServiceFactory.contraventionReasonCachedService
+          .syncFromServer();
+    } catch (e) {}
 
-    await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
     await getListFirstSeen();
 
-    await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     await getGracePeriods();
   }
 
   Future<void> getListFirstSeen() async {
-    var listFirstSeen =
-        await zoneCachedServiceFactory.firstSeenCachedService.getAll();
-    setState(() {
-      isListFirstSeenNotNull = listFirstSeen.isNotEmpty;
-    });
+    try {
+      await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
+      setState(() {
+        isLatestFirstSeen = true;
+      });
+    } catch (e) {
+      setState(() {
+        isLatestFirstSeen = false;
+      });
+    }
   }
 
   Future<void> getGracePeriods() async {
-    var gracePeriods =
-        await zoneCachedServiceFactory.gracePeriodCachedService.getAll();
-    setState(() {
-      isGracePeriodsNotNull = gracePeriods.isNotEmpty;
-    });
+    try {
+      await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
+      setState(() {
+        isLatestGracePeriod = true;
+      });
+    } catch (e) {
+      setState(() {
+        isLatestGracePeriod = false;
+      });
+    }
   }
 
   Future<void> getContraventions() async {
-    var contraventions =
-        await zoneCachedServiceFactory.contraventionCachedService.getAll();
-    setState(() {
-      isContraventionsNotNull = contraventions.isNotEmpty;
-    });
+    try {
+      await zoneCachedServiceFactory.contraventionCachedService
+          .syncFromServer();
+      setState(() {
+        isLatestContraventions = true;
+      });
+    } catch (e) {
+      setState(() {
+        isLatestContraventions = true;
+      });
+    }
   }
 
   @override
@@ -169,21 +184,21 @@ class _SyncZoneDataState extends State<SyncZoneData> {
                         isPulledData
                             ? _buildConnect(
                                 "1. First seen list",
-                                checkState(isListFirstSeenNotNull),
+                                checkState(isLatestFirstSeen),
                               )
                             : _buildConnect(
                                 '1. First seen list', StateDevice.pending),
                         isPulledData
                             ? _buildConnect(
                                 "2. Consideration period list",
-                                checkState(isGracePeriodsNotNull),
+                                checkState(isLatestGracePeriod),
                               )
                             : _buildConnect('2. Consideration period list',
                                 StateDevice.pending),
                         isPulledData
                             ? _buildConnect(
                                 "3. Contravention list",
-                                checkState(isContraventionsNotNull),
+                                checkState(isLatestContraventions),
                               )
                             : _buildConnect(
                                 '3. Contravention list', StateDevice.pending),
