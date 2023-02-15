@@ -490,6 +490,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           toastPosition: Position.bottom,
           borderRadius: 5,
         ).show(context);
+        return;
       }
 
       _formKey.currentState!.save();
@@ -625,6 +626,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           toastPosition: Position.bottom,
           borderRadius: 5,
         ).show(context);
+        return;
       }
 
       _formKey.currentState!.save();
