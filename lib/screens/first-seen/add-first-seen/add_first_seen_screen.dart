@@ -174,7 +174,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       await createdVehicleDataLocalService.create(vehicleInfo);
 
       if (!mounted) return false;
-      Navigator.of(context).pop();
       CherryToast.success(
         displayCloseButton: false,
         title: Text(

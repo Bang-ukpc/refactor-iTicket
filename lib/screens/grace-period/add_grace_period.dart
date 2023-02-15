@@ -154,7 +154,6 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
           .toList();
       await createdVehicleDataLocalService.create(vehicleInfo);
       if (!mounted) return false;
-      Navigator.of(context).pop();
       CherryToast.success(
         displayCloseButton: false,
         title: Text(
