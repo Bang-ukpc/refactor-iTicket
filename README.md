@@ -18,3 +18,12 @@
 [1.0.25-1] - 2023-02-14
 
 - WRDN-469 As a PO, I want to improve the offline flow (Complete the offline flow)
+
+[1.0.26-1] - 2023-02-15
+
+- WRDN-525 [Online][first seen] After issue PCN by First seen, don't delete this first seen
+- WRDN-494 Disabled VRN and Contravention Type when Issue PCN from First Seen
+- WRDN-531 [Online]Do not send any GPS to Warden admin
+- WRDN-529 [Online]Parking charges Issued data not updating after issue PCN
+- WRDN-527 [Online][first seen] Can't check duplicate VRN
+- WRDN-468 As a POM, I want the time date in OFFLINE MODE and ONLINE MODE must be the same each other.
