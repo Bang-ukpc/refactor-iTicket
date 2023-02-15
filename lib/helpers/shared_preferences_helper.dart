@@ -12,7 +12,7 @@ class SharedPreferencesHelper {
     return value;
   }
 
-  static void removeStringValue(String key) async {
+  static Future<void> removeStringValue(String key) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(key);
   }
