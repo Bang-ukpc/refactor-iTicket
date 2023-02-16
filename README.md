@@ -47,3 +47,12 @@
 - WRDN-569 Real time type pcn when refresh, rate when add first seen
 - WRDN-524 [Print] Can't get rates value from Stella
 - WRDN-566 [Weak network] Wrong data when changing location/zone
+
+[1.0.30] - 2023-02-16
+
+- WRDN-557 Wrong status of check GPS although turn off GPS
+- WRDN-552 [Weak network]Unable to display static
+- WRDN-530 [Print]Distorted content when printing many times.
+- WRDN-542 [Weak network] Can't issue PCN
+- WRDN-555 [Weak network] Notify error when issue PCN
+- WRDN-544 [Weak network] Can't find information by VRN
