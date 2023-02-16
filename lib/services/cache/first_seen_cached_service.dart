@@ -55,7 +55,8 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
 
   Future<bool> isExisted(String plate) async {
     var cachedItems = await getAll();
-    var issuedItem = await createdVehicleDataLocalService.getAllFirstSeen();
+    var issuedItem =
+        await createdVehicleDataLocalService.getAllFirstSeen(_zoneId);
     var items = [...issuedItem, ...cachedItems];
     return items.firstWhereOrNull((element) => element.Plate == plate) != null;
   }
@@ -93,7 +94,8 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
 
   Future<List<VehicleInformation>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
-    var issuedItem = await createdVehicleDataLocalService.getAllFirstSeen();
+    var issuedItem =
+        await createdVehicleDataLocalService.getAllFirstSeen(_zoneId);
     var cachedAllVehicleInfo = [...issuedItem, ...cachedItems]
         .where((e) => e.CarLeft != true)
         .toList();
