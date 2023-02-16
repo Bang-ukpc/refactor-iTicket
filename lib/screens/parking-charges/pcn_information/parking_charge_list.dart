@@ -30,13 +30,19 @@ class ParkingChargeList extends StatefulWidget {
 
 class _ParkingChargeListState extends State<ParkingChargeList> {
   List<Contravention> contraventionList = [];
-  bool contraventionLoading = true;
+  bool contraventionLoading = false;
   bool loadingImage = true;
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<ContraventionCreateWardenCommand> issuedContraventions = [];
 
   Future<void> getContraventions() async {
-    await zoneCachedServiceFactory.contraventionCachedService.syncFromServer();
+    setState(() {
+      contraventionLoading = true;
+    });
+    try {
+      await zoneCachedServiceFactory.contraventionCachedService
+          .syncFromServer();
+    } catch (e) {}
     var contraventions = await zoneCachedServiceFactory
         .contraventionCachedService
         .getAllWithCreatedOnTheOffline();
@@ -46,6 +52,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
     setState(() {
       contraventionList = contraventions;
       issuedContraventions = localIssuedContraventions;
+      contraventionLoading = false;
     });
   }
 
@@ -100,7 +107,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
         ]),
         body: RefreshIndicator(
           onRefresh: refresh,
-          child: contraventionLoading == true
+          child: contraventionLoading == false
               ? contraventionList.isNotEmpty
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
