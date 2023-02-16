@@ -50,21 +50,11 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
 
   @override
   syncFromServer() async {
-    var paging = await weakNetworkVehicleInfoController
-        .getVehicleInfoList(
-            vehicleInfoType: VehicleInformationType.GRACE_PERIOD.index,
-            zoneId: zoneId,
-            page: 1,
-            pageSize: 1000)
-        .catchError((err) async {
-      var vehicleInfos = await getAll();
-      return Pagination(
-          page: 0,
-          pageSize: 1000,
-          total: vehicleInfos.length,
-          totalPages: 1,
-          rows: vehicleInfos);
-    });
+    var paging = await weakNetworkVehicleInfoController.getVehicleInfoList(
+        vehicleInfoType: VehicleInformationType.GRACE_PERIOD.index,
+        zoneId: zoneId,
+        page: 1,
+        pageSize: 1000);
     var vehicleInfos = paging.rows as List<VehicleInformation>;
     await set(vehicleInfos);
     return vehicleInfos;

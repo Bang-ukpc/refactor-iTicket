@@ -3,11 +3,9 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
-
 import '../../controllers/index.dart';
 import '../../models/ContraventionService.dart';
 import '../../models/contravention.dart';
-import '../../models/pagination.dart';
 import '../local/issued_pcn_local_service.dart';
 import 'cache_service.dart';
 
@@ -21,16 +19,7 @@ class ContraventionCachedService extends CacheService<Contravention> {
   @override
   syncFromServer() async {
     var paging = await weakNetworkContraventionController
-        .getContraventionServiceList(zoneId: _zoneId, page: 1, pageSize: 1000)
-        .catchError((err) async {
-      var cachedItems = await getAll();
-      return Pagination(
-          page: 0,
-          pageSize: 1000,
-          total: cachedItems.length,
-          totalPages: 1,
-          rows: cachedItems);
-    });
+        .getContraventionServiceList(zoneId: _zoneId, page: 1, pageSize: 1000);
     print('[Contraventions] ${paging.rows.map((e) => json.encode(e))}');
     await set(paging.rows as List<Contravention>);
     return paging.rows as List<Contravention>;

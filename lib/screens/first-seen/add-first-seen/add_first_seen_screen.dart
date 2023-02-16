@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
@@ -13,13 +12,11 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/id_helper.dart';
-import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
-import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -174,7 +171,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       await createdVehicleDataLocalService.create(vehicleInfo);
 
       if (!mounted) return false;
-      Navigator.of(context).pop();
       CherryToast.success(
         displayCloseButton: false,
         title: Text(

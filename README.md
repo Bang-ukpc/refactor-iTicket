@@ -27,3 +27,12 @@
 - WRDN-529 [Online]Parking charges Issued data not updating after issue PCN
 - WRDN-527 [Online][first seen] Can't check duplicate VRN
 - WRDN-468 As a POM, I want the time date in OFFLINE MODE and ONLINE MODE must be the same each other.
+
+[1.0.27-1] - 2023-02-15
+
+- WRDN-528 [Online][overstaying] Can't check permit of VRN
+- WRDN-535 [Online]Should sync data after every refresh
+- WRDN-550 Display wrong status when sync the first seen, grace period and contravention before checking to the zone
+- WRDN-553 Can't display the warden name if have no network
+- WRDN-558 [Check in] [Online] Can not get the last updated shift
+- WRDN-559 [ONLINE] [Create First seen] Black screen when I click Complete & add

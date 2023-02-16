@@ -47,7 +47,7 @@ Zone _$ZoneFromJson(Map<String, dynamic> json) {
     Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
     Deleted: json['Deleted'] == null ? null : DateTime.parse(json['Deleted']),
     LocationId: json['LocationId'],
-    Name: json['PublicName'],
+    Name: json['Name'],
     PublicName: json['PublicName'],
     Services: servicesList,
     ExternalReference: json['ExternalReference'],
