@@ -8,6 +8,7 @@ import 'package:iWarden/common/Camera/camera_picker.dart';
 import 'package:iWarden/common/add_image.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/label_require.dart';
+import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
@@ -17,15 +18,13 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
+import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
-
-import '../../../controllers/location_controller.dart';
-import '../../../models/location.dart';
 
 class AddFirstSeenScreen extends StatefulWidget {
   static const routeName = '/add-first-seen';
@@ -41,34 +40,34 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   final _bayNumberController = TextEditingController();
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
+  late CachedServiceFactory cachedServiceFactory;
 
-  Future<void> getLocationList(Locations locations, int wardenId) async {
-    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
-        ListLocationOfTheDayByWardenIdProps(
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardenId,
-    );
+  Future<void> getLocationList(Locations locations) async {
+    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+    var rotas =
+        await cachedServiceFactory.rotaWithLocationCachedService.getAll();
 
-    await locationController
-        .getAll(listLocationOfTheDayByWardenIdProps)
-        .then((value) {
-      for (int i = 0; i < value.length; i++) {
-        for (int j = 0; j < value.length; j++) {
-          if (value[i].locations![j].Id == locations.location!.Id) {
-            locations.onSelectedLocation(value[i].locations![j]);
-            var zoneSelected = value[i]
-                .locations![j]
-                .Zones!
-                .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
-            locations.onSelectedZone(zoneSelected);
-            return;
-          }
+    for (int i = 0; i < rotas.length; i++) {
+      for (int j = 0; j < rotas.length; j++) {
+        if (rotas[i].locations![j].Id == locations.location!.Id) {
+          locations.onSelectedLocation(rotas[i].locations![j]);
+          var zoneSelected = rotas[i]
+              .locations![j]
+              .Zones!
+              .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
+          locations.onSelectedZone(zoneSelected);
+          return;
         }
       }
-    }).catchError((err) {
-      print(err);
-    });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
+    cachedServiceFactory =
+        CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
   }
 
   @override
@@ -158,6 +157,9 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         return false;
       }
 
+      if (!mounted) return false;
+      showCircularProgressIndicator(context: context);
+
       vehicleInfo.EvidencePhotos = arrayImage
           .map(
             (image) => EvidencePhoto(
@@ -168,9 +170,17 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
             ),
           )
           .toList();
+      await getLocationList(locationProvider).then((value) {
+        vehicleInfo.ExpiredAt = DateTime.now().add(
+          Duration(
+            seconds: locationProvider.expiringTimeFirstSeen,
+          ),
+        );
+      });
       await createdVehicleDataLocalService.create(vehicleInfo);
 
       if (!mounted) return false;
+      Navigator.of(context).pop();
       CherryToast.success(
         displayCloseButton: false,
         title: Text(

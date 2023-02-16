@@ -93,8 +93,8 @@ class BluetoothPrinterHelper {
   Future printReceiveTest() async {
     int xAxis = 175;
     int xAxis2 = 30;
-    int xAxis3 = 135;
-    int referenceNo = 85;
+    int xAxis3 = 145;
+    int referenceNo = 75;
     int date = referenceNo + 55;
     int plate = date + 70;
     int make = plate + 65;
@@ -148,7 +148,7 @@ class BluetoothPrinterHelper {
       required String externalId}) async {
     int xAxis = 175;
     int xAxis2 = 30;
-    int xAxis3 = 135;
+    int xAxis3 = 145;
     int referenceNo = 75;
     int date = referenceNo + 55;
     int plate = date + 70;

@@ -90,18 +90,20 @@ class CreatedVehicleDataLocalService
     await cachedService.create(vehicle);
   }
 
-  Future<List<VehicleInformation>> getAllFirstSeen() async {
+  Future<List<VehicleInformation>> getAllFirstSeen(int zoneId) async {
     var items = await getAll();
     return items
         .where((element) =>
+            element.ZoneId == zoneId &&
             element.Type == VehicleInformationType.FIRST_SEEN.index)
         .toList();
   }
 
-  Future<List<VehicleInformation>> getAllGracePeriod() async {
+  Future<List<VehicleInformation>> getAllGracePeriod(int zoneId) async {
     var items = await getAll();
     return items
         .where((element) =>
+            element.ZoneId == zoneId &&
             element.Type == VehicleInformationType.GRACE_PERIOD.index)
         .toList();
   }

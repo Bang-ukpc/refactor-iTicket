@@ -1,5 +1,6 @@
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/index.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
 
 import '../../models/location.dart';
@@ -8,6 +9,7 @@ import 'cache_service.dart';
 
 class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
   late int _wardenId;
+  Logger logger = Logger<RotaWithLocationCachedService>();
   RotaWithLocationCachedService(int wardenId)
       : super("cachedRotaWithLocations") {
     _wardenId = wardenId;
@@ -23,10 +25,9 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
     var rotaWithLocations = await weakNetworkRotaWithLocationController
         .getAll(filter)
         .catchError((err) async {
+      logger.error(err);
       return await getAll();
     });
-    print('[ROTA LENGTH] ${rotaWithLocations.length}');
-
     await set(rotaWithLocations);
     return rotaWithLocations;
   }

@@ -121,6 +121,8 @@ class LocationWithZones extends Location {
         'Notes': Notes,
         'Zones': Zones != null ? Zones!.map((v) => v.toJson()).toList() : [],
         'Distance': Distance,
+        'UpperAmount': UpperAmount,
+        'LowerAmount': LowerAmount,
         'OperationalPeriodHistories': operationalPeriodHistories != null
             ? operationalPeriodHistories!.map((e) => e.toJson()).toList()
             : []
@@ -152,6 +154,14 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
         .map((model) => OperationalPeriodHistories.fromJson(model))
         .toList();
   }
+  double upperAmount = 0;
+  double lowerAmount = 0;
+  if (json['Rates'] != null && (json['Rates'] as List<dynamic>).isNotEmpty) {
+    var rate = json['Rates']?[0];
+    upperAmount = json['UpperAmount'] ?? rate['UpperAmount'].toDouble();
+    lowerAmount = json['LowerAmount'] ?? rate['LowerAmount'].toDouble();
+  }
+
   return LocationWithZones(
     Id: json['Id'],
     Created: json['Created'] == null ? null : DateTime.parse(json['Created']),
@@ -174,16 +184,8 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Distance: json['Distance'].toDouble(),
     Zones: zonesList,
     operationalPeriodHistories: operationalPeriodsList,
-    UpperAmount: json['Rates'] != null
-        ? (json['Rates'] as List<dynamic>).isNotEmpty
-            ? json['Rates'][0]['UpperAmount'].toDouble()
-            : 0
-        : 0,
-    LowerAmount: json['Rates'] != null
-        ? (json['Rates'] as List<dynamic>).isNotEmpty
-            ? json['Rates'][0]['LowerAmount'].toDouble()
-            : 0
-        : 0,
+    UpperAmount: json['UpperAmount'] ?? double.tryParse(upperAmount.toString()),
+    LowerAmount: json['LowerAmount'] ?? double.tryParse(lowerAmount.toString()),
   );
 }
 

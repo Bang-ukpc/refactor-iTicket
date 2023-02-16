@@ -85,15 +85,17 @@ class ContraventionCachedService extends CacheService<Contravention> {
     return true;
   }
 
-  Future<List<Contravention>> getIssuedContraventions() async {
+  Future<List<Contravention>> getIssuedContraventions(int zoneId) async {
     var issuedItems = await issuedPcnLocalService.getAll();
+    issuedItems =
+        issuedItems.where((element) => element.ZoneId == zoneId).toList();
     return await Future.wait(issuedItems.map(
         (i) async => await convertIssuesContraventionToCachedContravention(i)));
   }
 
   Future<List<Contravention>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
-    var issuedItems = await getIssuedContraventions();
+    var issuedItems = await getIssuedContraventions(_zoneId);
     var items = [...issuedItems, ...cachedItems];
     // TODO: sort by created as desc
     var itemSort = items..sort((i1, i2) => i2.created!.compareTo(i1.created!));
