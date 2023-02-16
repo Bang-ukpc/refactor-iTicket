@@ -62,6 +62,9 @@ class _HomeOverviewState extends State<HomeOverview> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> getData() async {
+    await zoneCachedServiceFactory.contraventionCachedService.syncFromServer();
+    await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
+    await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     var listFirstSeen = await zoneCachedServiceFactory.firstSeenCachedService
         .getAllWithCreatedOnTheOffline();
     getFirstSeenActiveAndExpired(listFirstSeen);

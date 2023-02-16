@@ -482,7 +482,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         CherryToast.error(
           toastDuration: const Duration(seconds: 3),
           title: Text(
-            "Please wait 1 minute to continue to issue pcn",
+            "Please wait 1 minute to continue to issue PCN",
             style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
