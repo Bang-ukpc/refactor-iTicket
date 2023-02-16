@@ -9,19 +9,21 @@ import 'package:iWarden/helpers/url_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:iWarden/widgets/parking-charge/tag_onl_off.dart';
 
 class CardItemParkingCharge extends StatefulWidget {
   final String? image;
   final String plate;
   final List<ContraventionReasonTranslations> contraventions;
   final DateTime created;
-
+  final bool isOffline;
   const CardItemParkingCharge({
     Key? key,
     required this.image,
     required this.plate,
     required this.contraventions,
     required this.created,
+    required this.isOffline,
   }) : super(key: key);
 
   @override
@@ -84,11 +86,19 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
                   ),
                 ),
         ),
-        title: Text(
-          widget.plate.toUpperCase(),
-          style: CustomTextStyle.h4.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        title: Row(
+          children: [
+            Text(
+              widget.plate.toUpperCase(),
+              style: CustomTextStyle.h4.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            TagOnOff(offline: widget.isOffline),
+          ],
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

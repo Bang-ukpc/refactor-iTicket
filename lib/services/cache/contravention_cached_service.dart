@@ -96,6 +96,9 @@ class ContraventionCachedService extends CacheService<Contravention> {
   Future<List<Contravention>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
     var issuedItems = await getIssuedContraventions(_zoneId);
-    return [...issuedItems, ...cachedItems];
+    var items = [...issuedItems, ...cachedItems];
+    // TODO: sort by created as desc
+    var itemSort = items..sort((i1, i2) => i2.created!.compareTo(i1.created!));
+    return itemSort;
   }
 }

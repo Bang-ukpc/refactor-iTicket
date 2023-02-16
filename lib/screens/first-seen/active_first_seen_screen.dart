@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:iWarden/common/card_item.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -33,7 +34,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   bool firstSeenLoading = true;
   final calculateTime = CalculateTime();
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
-
+  List<VehicleInformation> cacheFirstSeenActive = [];
   Future<void> getData() async {
     await zoneCachedServiceFactory.firstSeenCachedService
         .getListActive()
@@ -41,6 +42,11 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
       setState(() {
         firstSeenActive = listActive;
       });
+    });
+
+    var localVehicleData = await createdVehicleDataLocalService.getAll();
+    setState(() {
+      cacheFirstSeenActive = localVehicleData;
     });
 
     await zoneCachedServiceFactory.firstSeenCachedService
@@ -156,6 +162,10 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                             children: firstSeenActive
                                 .map(
                                   (item) => CardItem(
+                                    isOffline: cacheFirstSeenActive
+                                            .firstWhereOrNull((element) =>
+                                                element.Id == item.Id) !=
+                                        null,
                                     vehicleInfo: item,
                                     type: TypeFirstSeen.Active,
                                     expiring: calculateTime.daysBetween(
@@ -220,6 +230,10 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                             children: firstSeenExpired
                                 .map(
                                   (item) => CardItem(
+                                    isOffline: cacheFirstSeenActive
+                                            .firstWhereOrNull((element) =>
+                                                element.Id == item.Id) !=
+                                        null,
                                     vehicleInfo: item,
                                     type: TypeFirstSeen.Expired,
                                     expiring: calculateTime.daysBetween(
