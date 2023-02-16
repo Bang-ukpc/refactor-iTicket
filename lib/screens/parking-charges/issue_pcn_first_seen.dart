@@ -205,7 +205,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         CherryToast.error(
           toastDuration: const Duration(seconds: 3),
           title: Text(
-            'Poor network connection',
+            'Search vehicle info failed because poor connection',
             style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -998,7 +998,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           CherryToast.error(
                             toastDuration: const Duration(seconds: 3),
                             title: Text(
-                              'Poor network connection',
+                              'Check permit failed because poor connection',
                               style: CustomTextStyle.h4
                                   .copyWith(color: ColorTheme.danger),
                             ),
@@ -1077,7 +1077,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           CherryToast.error(
                             toastDuration: const Duration(seconds: 3),
                             title: Text(
-                              'Poor network connection',
+                              'Check permit failed because poor connection',
                               style: CustomTextStyle.h4
                                   .copyWith(color: ColorTheme.danger),
                             ),
