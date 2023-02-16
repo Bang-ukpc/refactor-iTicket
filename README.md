@@ -36,3 +36,8 @@
 - WRDN-553 Can't display the warden name if have no network
 - WRDN-558 [Check in] [Online] Can not get the last updated shift
 - WRDN-559 [ONLINE] [Create First seen] Black screen when I click Complete & add
+
+[1.0.28] - 2023-02-15
+
+- WRDN-547 [Online] Data should be sorted by expiration time
+- WRDN-539 [Online] Can't auto sync data after issue PCN
