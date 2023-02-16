@@ -522,22 +522,27 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
-                                ? _buildConnect("5. Connect bluetooth",
-                                    checkState(checkBluetooth == true))
-                                : _buildConnect(
-                                    '5. Connect bluetooth', StateDevice.pending)
-                            : _buildConnect(
-                                '5. Connect bluetooth', StateDevice.pending),
-                        isPending == false
-                            ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
-                                    "6. GPS has been turned on",
+                                    required: true,
+                                    "5. GPS has been turned on",
                                     checkState(gpsConnectionStatus ==
                                         ServiceStatus.enabled))
-                                : _buildConnect('6. GPS has been turned on',
+                                : _buildConnect(
+                                    required: true,
+                                    '5. GPS has been turned on',
                                     StateDevice.pending)
-                            : _buildConnect('6. GPS has been turned on',
+                            : _buildConnect(
+                                required: true,
+                                '5. GPS has been turned on',
                                 StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect("6. Connect bluetooth",
+                                    checkState(checkBluetooth == true))
+                                : _buildConnect(
+                                    '6. Connect bluetooth', StateDevice.pending)
+                            : _buildConnect(
+                                '6. Connect bluetooth', StateDevice.pending),
                       ],
                     ),
                   ),
@@ -595,33 +600,62 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                               ),
                               onPressed: () async {
                                 if (isLocationPermission == true) {
-                                  isDataValid()
-                                      ? onStartShift()
-                                      : toast.CherryToast.error(
-                                          toastDuration:
-                                              const Duration(seconds: 5),
-                                          title: Text(
-                                            'Data sync error, please refresh the screen to sync again',
-                                            style: CustomTextStyle.h4.copyWith(
-                                              color: ColorTheme.danger,
-                                            ),
+                                  if (gpsConnectionStatus ==
+                                      ServiceStatus.enabled) {
+                                    if (isDataValid()) {
+                                      onStartShift();
+                                    } else {
+                                      toast.CherryToast.error(
+                                        toastDuration:
+                                            const Duration(seconds: 5),
+                                        title: Text(
+                                          'Data sync error, please refresh the screen to sync again',
+                                          style: CustomTextStyle.h4.copyWith(
+                                            color: ColorTheme.danger,
                                           ),
-                                          toastPosition: toast.Position.bottom,
-                                          borderRadius: 5,
-                                        ).show(context);
-                                } else {
-                                  permission.Permission.location.request();
-                                  toast.CherryToast.error(
-                                    toastDuration: const Duration(seconds: 5),
-                                    title: Text(
-                                      'Please allow the app to access your location to continue',
-                                      style: CustomTextStyle.h4.copyWith(
-                                        color: ColorTheme.danger,
+                                        ),
+                                        toastPosition: toast.Position.bottom,
+                                        borderRadius: 5,
+                                      ).show(context);
+                                    }
+                                  } else {
+                                    toast.CherryToast.error(
+                                      toastDuration: const Duration(seconds: 5),
+                                      title: Text(
+                                        'Please enable GPS',
+                                        style: CustomTextStyle.h4.copyWith(
+                                          color: ColorTheme.danger,
+                                        ),
                                       ),
-                                    ),
-                                    toastPosition: toast.Position.bottom,
-                                    borderRadius: 5,
-                                  ).show(context);
+                                      toastPosition: toast.Position.bottom,
+                                      borderRadius: 5,
+                                    ).show(context);
+                                  }
+                                } else {
+                                  permission.Permission.location
+                                      .request()
+                                      .then((value) {
+                                    if (permission.PermissionStatus.granted ==
+                                        value) {
+                                      getCurrentLocationOfWarden();
+                                      setState(() {
+                                        isLocationPermission = true;
+                                      });
+                                    } else {
+                                      toast.CherryToast.error(
+                                        toastDuration:
+                                            const Duration(seconds: 5),
+                                        title: Text(
+                                          'Please allow the app to access your location to continue',
+                                          style: CustomTextStyle.h4.copyWith(
+                                            color: ColorTheme.danger,
+                                          ),
+                                        ),
+                                        toastPosition: toast.Position.bottom,
+                                        borderRadius: 5,
+                                      ).show(context);
+                                    }
+                                  });
                                 }
                               },
                               label: Text(

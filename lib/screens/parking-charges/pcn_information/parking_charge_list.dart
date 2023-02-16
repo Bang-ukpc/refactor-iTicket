@@ -36,6 +36,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
   List<ContraventionCreateWardenCommand> issuedContraventions = [];
 
   Future<void> getContraventions() async {
+    await zoneCachedServiceFactory.contraventionCachedService.syncFromServer();
     var contraventions = await zoneCachedServiceFactory
         .contraventionCachedService
         .getAllWithCreatedOnTheOffline();
