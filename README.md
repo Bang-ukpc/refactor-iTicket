@@ -41,3 +41,9 @@
 
 - WRDN-547 [Online] Data should be sorted by expiration time
 - WRDN-539 [Online] Can't auto sync data after issue PCN
+
+[1.0.29] - 2023-02-16
+
+- WRDN-569 Real time type pcn when refresh, rate when add first seen
+- WRDN-524 [Print] Can't get rates value from Stella
+- WRDN-566 [Weak network] Wrong data when changing location/zone
