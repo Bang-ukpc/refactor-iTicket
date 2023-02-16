@@ -25,9 +25,9 @@ class SyncFactory {
 
     isRunning = true;
     try {
+      await createdWardenEventLocalService.syncAll();
       await createdVehicleDataLocalService.syncAll();
       await issuedPcnLocalService.syncAll();
-      await createdWardenEventLocalService.syncAll();
     } catch (e) {
       logger.error(e);
     }
