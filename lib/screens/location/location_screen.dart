@@ -7,7 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/location_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
@@ -245,11 +244,6 @@ class _LocationScreenState extends State<LocationScreen> {
       //   ),
       // );
     }
-
-    print(
-        'from: ${locations.rotaShift?.timeFrom}, to: ${locations.rotaShift?.timeTo}');
-    print('location: ${locations.location?.Name}');
-    print('zone: ${locations.zone?.Name}');
 
     Future<void> refresh() async {
       await getRotas();
@@ -561,7 +555,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           return Text(
                                               selectedItem == null
                                                   ? "Select zone"
-                                                  : selectedItem.Name,
+                                                  : selectedItem.PublicName,
                                               style: TextStyle(
                                                   fontSize: 16,
                                                   color: selectedItem == null
@@ -580,7 +574,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         ),
                                         items: locations.location?.Zones ?? [],
                                         selectedItem: locations.zone,
-                                        itemAsString: (item) => item.Name,
+                                        itemAsString: (item) => item.PublicName,
                                         popupProps: PopupProps.menu(
                                           fit: FlexFit.loose,
                                           constraints: const BoxConstraints(
@@ -589,7 +583,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           itemBuilder:
                                               (context, item, isSelected) =>
                                                   DropDownItem(
-                                            title: item.Name,
+                                            title: item.PublicName,
                                             isSelected:
                                                 item.Id == locations.zone!.Id,
                                           ),

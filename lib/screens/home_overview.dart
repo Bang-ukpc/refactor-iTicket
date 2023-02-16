@@ -353,7 +353,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                       "assets/images/userAvatar.png",
                   name: "Hi ${wardensProvider.wardens?.FullName ?? ""}",
                   location: locations.location?.Name ?? 'Empty name',
-                  zone: locations.zone?.Name ?? 'Empty name',
+                  zone: locations.zone?.PublicName ?? 'Empty name',
                 ),
                 const SizedBox(
                   height: 10,

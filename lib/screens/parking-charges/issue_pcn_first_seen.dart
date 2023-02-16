@@ -41,6 +41,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/location.dart';
 import '../../providers/print_issue_providers.dart' as prefix;
+import '../../services/cache/factory/cache_factory.dart';
 import '../../widgets/parking-charge/step_issue_pcn.dart';
 
 List<SelectModel> typeOfPCN = [
@@ -72,6 +73,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   List<RotaWithLocation> locationWithRotaList = [];
   List<Contravention> contraventionList = [];
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
+  late CachedServiceFactory cachedServiceFactory;
 
   Future<void> getContraventions() async {
     var contraventions = await zoneCachedServiceFactory
@@ -126,33 +128,24 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
-  Future<void> getLocationList(Locations locations, int wardenId) async {
-    ListLocationOfTheDayByWardenIdProps listLocationOfTheDayByWardenIdProps =
-        ListLocationOfTheDayByWardenIdProps(
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardenId,
-    );
+  Future<void> getLocationList(Locations locations) async {
+    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+    var rotas =
+        await cachedServiceFactory.rotaWithLocationCachedService.getAll();
 
-    await locationController
-        .getAll(listLocationOfTheDayByWardenIdProps)
-        .then((value) {
-      for (int i = 0; i < value.length; i++) {
-        for (int j = 0; j < value.length; j++) {
-          if (value[i].locations![j].Id == locations.location!.Id) {
-            locations.onSelectedLocation(value[i].locations![j]);
-            var zoneSelected = value[i]
-                .locations![j]
-                .Zones!
-                .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
-            locations.onSelectedZone(zoneSelected);
-            return;
-          }
+    for (int i = 0; i < rotas.length; i++) {
+      for (int j = 0; j < rotas.length; j++) {
+        if (rotas[i].locations![j].Id == locations.location!.Id) {
+          locations.onSelectedLocation(rotas[i].locations![j]);
+          var zoneSelected = rotas[i]
+              .locations![j]
+              .Zones!
+              .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
+          locations.onSelectedZone(zoneSelected);
+          return;
         }
       }
-    }).catchError((err) {
-      print(err);
-    });
+    }
   }
 
   List<String> arrMake = DataInfoCar().make;
@@ -259,6 +252,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           Provider.of<ContraventionProvider>(context, listen: false);
       final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
       zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
+      cachedServiceFactory =
+          CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
 
       await getContraventionReasonList();
 
@@ -308,8 +303,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
             .replaceAll(')', '');
       }
       setSelectedTypeOfPCN(locationProvider, contraventionData);
-      await getLocationList(locationProvider, wardensProvider.wardens?.Id ?? 0)
-          .then((value) {
+      await getLocationList(locationProvider).then((value) {
         setSelectedTypeOfPCN(locationProvider, contraventionData);
       });
       getContraventions();
@@ -909,8 +903,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
 
     Future<void> refresh() async {
-      await getLocationList(locationProvider, wardensProvider.wardens?.Id ?? 0)
-          .then((value) {
+      await getLocationList(locationProvider).then((value) {
         setSelectedTypeOfPCN(
             locationProvider, contraventionProvider.contravention);
       });

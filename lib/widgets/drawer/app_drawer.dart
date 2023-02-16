@@ -345,7 +345,7 @@ class _MyDrawerState extends State<MyDrawer> {
                             "assets/images/userAvatar.png",
                         name: "Hi ${wardensProvider.wardens?.FullName ?? ""}",
                         location: locations.location?.Name ?? 'Empty name',
-                        zone: locations.zone?.Name ?? 'Empty name',
+                        zone: locations.zone?.PublicName ?? 'Empty name',
                       ),
                     ),
                     const SizedBox(

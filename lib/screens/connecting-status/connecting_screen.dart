@@ -609,7 +609,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                         toastDuration:
                                             const Duration(seconds: 5),
                                         title: Text(
-                                          'Please turn on the network and sync all necessary data to continue',
+                                          'Data sync error, please refresh the screen to sync again',
                                           style: CustomTextStyle.h4.copyWith(
                                             color: ColorTheme.danger,
                                           ),
