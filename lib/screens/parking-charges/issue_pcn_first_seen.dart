@@ -1229,18 +1229,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                           .getVehicleInfo ==
                                                       null
                                                   ? ColorTheme.textPrimary
-                                                  : ColorTheme.grey400),
+                                                  : ColorTheme.grey600),
                                           onChanged: (value) {
                                             setState(() {});
                                           },
-                                          decoration: InputDecoration(
+                                          decoration: const InputDecoration(
                                               label: LabelRequire(
-                                                  enabled: contraventionProvider
-                                                          .getVehicleInfo !=
-                                                      null,
                                                   labelText: "VRN"),
                                               hintText: "Enter VRN",
-                                              hintStyle: const TextStyle(
+                                              hintStyle: TextStyle(
                                                 fontSize: 16,
                                                 color: ColorTheme.grey400,
                                               )),
@@ -1421,7 +1418,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                         .getVehicleInfo?.Type ==
                                                     VehicleInformationType
                                                         .FIRST_SEEN.index
-                                                ? ColorTheme.grey400
+                                                ? ColorTheme.grey600
                                                 : selectedItem == null
                                                     ? ColorTheme.grey400
                                                     : ColorTheme.textPrimary,
@@ -1437,11 +1434,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                   .getVehicleInfo?.Type ==
                                               VehicleInformationType
                                                   .FIRST_SEEN.index,
-                                          labelText: LabelRequire(
-                                            enabled: contraventionProvider
-                                                    .getVehicleInfo?.Type ==
-                                                VehicleInformationType
-                                                    .FIRST_SEEN.index,
+                                          labelText: const LabelRequire(
                                             labelText: 'Contravention',
                                           ),
                                           hintText: 'Select contravention',
