@@ -601,7 +601,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                           toastDuration:
                                               const Duration(seconds: 5),
                                           title: Text(
-                                            'Please turn on the network and sync all necessary data to continue',
+                                            'Data sync error, please refresh the screen to sync again',
                                             style: CustomTextStyle.h4.copyWith(
                                               color: ColorTheme.danger,
                                             ),
@@ -611,17 +611,17 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                         ).show(context);
                                 } else {
                                   permission.Permission.location.request();
-                                  // toast.CherryToast.error(
-                                  //   toastDuration: const Duration(seconds: 5),
-                                  //   title: Text(
-                                  //     'Please allow the app to access your location to continue',
-                                  //     style: CustomTextStyle.h4.copyWith(
-                                  //       color: ColorTheme.danger,
-                                  //     ),
-                                  //   ),
-                                  //   toastPosition: toast.Position.bottom,
-                                  //   borderRadius: 5,
-                                  // ).show(context);
+                                  toast.CherryToast.error(
+                                    toastDuration: const Duration(seconds: 5),
+                                    title: Text(
+                                      'Please allow the app to access your location to continue',
+                                      style: CustomTextStyle.h4.copyWith(
+                                        color: ColorTheme.danger,
+                                      ),
+                                    ),
+                                    toastPosition: toast.Position.bottom,
+                                    borderRadius: 5,
+                                  ).show(context);
                                 }
                               },
                               label: Text(
