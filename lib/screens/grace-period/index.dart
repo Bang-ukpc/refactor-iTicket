@@ -37,7 +37,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
 
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
-  getData() async {
+  Future<void> getData(int zoneId) async {
     zoneCachedServiceFactory.gracePeriodCachedService
         .getListActive()
         .then((listActive) {
@@ -46,7 +46,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
       });
     });
     var localVehicleData =
-        await createdVehicleDataLocalService.getAllGracePeriod();
+        await createdVehicleDataLocalService.getAllGracePeriod(zoneId);
     setState(() {
       graceGracePeriodLocal = localVehicleData;
     });
@@ -62,10 +62,10 @@ class _GracePeriodListState extends State<GracePeriodList> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
-      getData();
+      await getData(locations.zone?.Id ?? 0);
     });
   }
 
@@ -78,6 +78,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
 
   @override
   Widget build(BuildContext context) {
+    final locations = Provider.of<Locations>(context, listen: false);
     log('Grace period list screen');
 
     void onCarLeft(VehicleInformation vehicleInfo) {
@@ -127,7 +128,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
-                await getData();
+                await getData(locations.zone?.Id ?? 0);
               },
             ),
           );
@@ -136,7 +137,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
     }
 
     Future<void> refresh() async {
-      getData();
+      await getData(locations.zone?.Id ?? 0);
     }
 
     return WillPopScope(
