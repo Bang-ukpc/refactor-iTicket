@@ -78,7 +78,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
 
   @override
   Widget build(BuildContext context) {
-    final locations = Provider.of<Locations>(context, listen: false);
+    final locations = Provider.of<Locations>(context);
     log('Grace period list screen');
 
     void onCarLeft(VehicleInformation vehicleInfo) {
