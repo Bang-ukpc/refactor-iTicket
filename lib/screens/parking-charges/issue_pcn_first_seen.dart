@@ -1194,16 +1194,23 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               TextCapitalization.characters,
                                           controller: _vrnController,
                                           style: CustomTextStyle.h5.copyWith(
-                                            fontSize: 16,
-                                          ),
+                                              fontSize: 16,
+                                              color: contraventionProvider
+                                                          .getVehicleInfo ==
+                                                      null
+                                                  ? ColorTheme.textPrimary
+                                                  : ColorTheme.grey400),
                                           onChanged: (value) {
                                             setState(() {});
                                           },
-                                          decoration: const InputDecoration(
+                                          decoration: InputDecoration(
                                               label: LabelRequire(
+                                                  enabled: contraventionProvider
+                                                          .getVehicleInfo !=
+                                                      null,
                                                   labelText: "VRN"),
                                               hintText: "Enter VRN",
-                                              hintStyle: TextStyle(
+                                              hintStyle: const TextStyle(
                                                 fontSize: 16,
                                                 color: ColorTheme.grey400,
                                               )),
@@ -1380,9 +1387,14 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               : selectedItem.summary as String,
                                           style: TextStyle(
                                             fontSize: 16,
-                                            color: selectedItem == null
+                                            color: contraventionProvider
+                                                        .getVehicleInfo?.Type ==
+                                                    VehicleInformationType
+                                                        .FIRST_SEEN.index
                                                 ? ColorTheme.grey400
-                                                : ColorTheme.textPrimary,
+                                                : selectedItem == null
+                                                    ? ColorTheme.grey400
+                                                    : ColorTheme.textPrimary,
                                           ),
                                         );
                                       },
@@ -1391,7 +1403,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                         dropdownSearchDecoration:
                                             dropDownButtonStyle
                                                 .getInputDecorationCustom(
-                                          labelText: const LabelRequire(
+                                          enabled: contraventionProvider
+                                                  .getVehicleInfo?.Type ==
+                                              VehicleInformationType
+                                                  .FIRST_SEEN.index,
+                                          labelText: LabelRequire(
+                                            enabled: contraventionProvider
+                                                    .getVehicleInfo?.Type ==
+                                                VehicleInformationType
+                                                    .FIRST_SEEN.index,
                                             labelText: 'Contravention',
                                           ),
                                           hintText: 'Select contravention',
