@@ -998,7 +998,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           CherryToast.error(
                             toastDuration: const Duration(seconds: 3),
                             title: Text(
-                              'Check permit failed because poor connection',
+                              'Check permit failed because poor connection. Please check your network before issue the PCN.',
                               style: CustomTextStyle.h4
                                   .copyWith(color: ColorTheme.danger),
                             ),
@@ -1077,7 +1077,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           CherryToast.error(
                             toastDuration: const Duration(seconds: 3),
                             title: Text(
-                              'Check permit failed because poor connection',
+                              'Check permit failed because poor connection. Please check your network before issue the PCN.',
                               style: CustomTextStyle.h4
                                   .copyWith(color: ColorTheme.danger),
                             ),
