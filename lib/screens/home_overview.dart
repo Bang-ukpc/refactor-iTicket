@@ -56,15 +56,19 @@ class _HomeOverviewState extends State<HomeOverview> {
   List<VehicleInformation> gracePeriodExpired = [];
   List<Contravention> contraventionList = [];
   final calculateTime = CalculateTime();
-  bool firstSeenLoading = true;
-  bool gracePeriodLoading = true;
-  bool contraventionLoading = true;
+  bool loading = false;
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> getData() async {
-    await zoneCachedServiceFactory.contraventionCachedService.syncFromServer();
-    await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
-    await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
+    setState(() {
+      loading = true;
+    });
+    try {
+      await zoneCachedServiceFactory.contraventionCachedService
+          .syncFromServer();
+      await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
+      await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
+    } catch (e) {}
     var listFirstSeen = await zoneCachedServiceFactory.firstSeenCachedService
         .getAllWithCreatedOnTheOffline();
     getFirstSeenActiveAndExpired(listFirstSeen);
@@ -78,6 +82,7 @@ class _HomeOverviewState extends State<HomeOverview> {
         .getAllWithCreatedOnTheOffline();
     setState(() {
       contraventionList = contraventions;
+      loading = false;
     });
 
     var contraventionReasons = await zoneCachedServiceFactory
@@ -307,12 +312,7 @@ class _HomeOverviewState extends State<HomeOverview> {
     }
 
     Future<void> refresh() async {
-      setState(() {
-        firstSeenLoading = true;
-        gracePeriodLoading = true;
-        contraventionLoading = true;
-      });
-      getData();
+      await getData();
     }
 
     return WillPopScope(
@@ -359,7 +359,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                   height: 10,
                 ),
                 checkHasOverstaying() == true
-                    ? firstSeenLoading == true
+                    ? loading == false
                         ? CardHome(
                             width: width,
                             assetIcon: "assets/svg/IconFirstSeen.svg",
@@ -382,7 +382,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                         height: 10,
                       )
                     : const SizedBox(),
-                gracePeriodLoading == true
+                loading == false
                     ? CardHome(
                         width: width,
                         assetIcon: "assets/svg/IconGrace.svg",
@@ -402,7 +402,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                 const SizedBox(
                   height: 10,
                 ),
-                contraventionLoading == true
+                loading == false
                     ? CardHome(
                         width: width,
                         assetIcon: "assets/svg/IconParkingChargesHome.svg",

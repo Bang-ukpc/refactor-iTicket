@@ -34,6 +34,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
   bool loadingImage = true;
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<ContraventionCreateWardenCommand> issuedContraventions = [];
+
   Future<void> getContraventions() async {
     await zoneCachedServiceFactory.contraventionCachedService.syncFromServer();
     var contraventions = await zoneCachedServiceFactory

@@ -3,12 +3,14 @@ import 'dart:developer' as developer;
 
 import 'package:camera/camera.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
+import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/controllers/statistic_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/date_filter.dart';
@@ -61,6 +63,10 @@ class _StatisticScreenState extends State<StatisticScreen> {
   late CameraController controller;
   Stream<BluetoothState> bluetoothStateStream =
       FlutterBluePlus.instance.state.asBroadcastStream();
+  final dataList = DataDateFilter().data.toList();
+  StatisticWardenPropsData? statisticWardenData;
+  String? selectedValue = DataDateFilter().data[0].value;
+  bool isLoaded = true;
   // check GPS
   void _checkDeviceLocationIsOn() async {
     var check = await Permission.locationWhenInUse.isGranted;
@@ -108,6 +114,24 @@ class _StatisticScreenState extends State<StatisticScreen> {
     });
   }
 
+  getDataStatistic(int zoneId, DateTime from, DateTime to, int wardenId) {
+    weakNetworkStatisticController
+        .getDataStatistic(
+      StatisticWardenPropsFilter(
+        zoneId: zoneId,
+        timeEnd: to,
+        timeStart: from,
+        WardenId: wardenId,
+      ),
+    )
+        .then((value) {
+      setState(() {
+        statisticWardenData = value;
+        isLoaded = false;
+      });
+    });
+  }
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -130,27 +154,6 @@ class _StatisticScreenState extends State<StatisticScreen> {
       _checkDeviceBluetoothIsOn();
     });
     super.initState();
-  }
-
-  final dataList = DataDateFilter().data.toList();
-  StatisticWardenPropsData? statisticWardenData;
-  String? selectedValue = DataDateFilter().data[0].value;
-
-  getDataStatistic(int zoneId, DateTime from, DateTime to, int wardenId) {
-    statisticController
-        .getDataStatistic(
-      StatisticWardenPropsFilter(
-        zoneId: zoneId,
-        timeEnd: to,
-        timeStart: from,
-        WardenId: wardenId,
-      ),
-    )
-        .then((value) {
-      setState(() {
-        statisticWardenData = value;
-      });
-    });
   }
 
   @override
@@ -220,135 +223,141 @@ class _StatisticScreenState extends State<StatisticScreen> {
               const SizedBox(
                 height: 8,
               ),
-              if (statisticWardenData != null)
-                Container(
-                  color: Colors.white,
-                  height: MediaQuery.of(context).size.width < 450
-                      ? MediaQuery.of(context).size.height -
-                          (58 + 8 + 16 + 55 + 24)
-                      : null,
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      Row(
+              Container(
+                color: Colors.white,
+                height: MediaQuery.of(context).size.width < 450
+                    ? MediaQuery.of(context).size.height -
+                        (58 + 8 + 16 + 55 + 24)
+                    : null,
+                padding: const EdgeInsets.all(24),
+                child: !isLoaded
+                    ? Column(
                         children: [
-                          Expanded(
-                              flex: 1,
-                              child: Text(
-                                "My statistic",
-                                style: CustomTextStyle.h5
-                                    .copyWith(fontWeight: FontWeight.w600),
-                              )),
-                          Expanded(
-                            flex: 1,
-                            child: DropdownSearch<DateFilter>(
-                              dropdownBuilder: (context, selectedItem) {
-                                return Text(
-                                    selectedItem == null
-                                        ? "Date filter"
-                                        : selectedItem.label,
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: selectedItem == null
-                                            ? ColorTheme.grey400
-                                            : ColorTheme.textPrimary));
-                              },
-                              dropdownDecoratorProps: DropDownDecoratorProps(
-                                dropdownSearchDecoration: dropDownButtonStyle
-                                    .getInputDecorationCustom(
-                                  hintText: 'Date filter',
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Text(
+                                  "My statistic",
+                                  style: CustomTextStyle.h5
+                                      .copyWith(fontWeight: FontWeight.w600),
                                 ),
                               ),
-                              items: dataList,
-                              selectedItem: dataList[0],
-                              itemAsString: (item) => item.label,
-                              popupProps: PopupProps.menu(
-                                fit: FlexFit.loose,
-                                constraints: const BoxConstraints(
-                                  maxHeight: 200,
-                                ),
-                                itemBuilder: (context, item, isSelected) =>
-                                    DropDownItem(
-                                  isSelected: item.value == selectedValue,
-                                  title: item.label,
+                              Expanded(
+                                flex: 1,
+                                child: DropdownSearch<DateFilter>(
+                                  dropdownBuilder: (context, selectedItem) {
+                                    return Text(
+                                        selectedItem == null
+                                            ? "Date filter"
+                                            : selectedItem.label,
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            color: selectedItem == null
+                                                ? ColorTheme.grey400
+                                                : ColorTheme.textPrimary));
+                                  },
+                                  dropdownDecoratorProps:
+                                      DropDownDecoratorProps(
+                                    dropdownSearchDecoration:
+                                        dropDownButtonStyle
+                                            .getInputDecorationCustom(
+                                      hintText: 'Date filter',
+                                    ),
+                                  ),
+                                  items: dataList,
+                                  selectedItem: dataList[0],
+                                  itemAsString: (item) => item.label,
+                                  popupProps: PopupProps.menu(
+                                    fit: FlexFit.loose,
+                                    constraints: const BoxConstraints(
+                                      maxHeight: 200,
+                                    ),
+                                    itemBuilder: (context, item, isSelected) =>
+                                        DropDownItem(
+                                      isSelected: item.value == selectedValue,
+                                      title: item.label,
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    String testa = value!.value;
+                                    String from = testa.split(',')[0];
+                                    String to = testa.split(',')[1];
+                                    getDataStatistic(
+                                        Provider.of<Locations>(context,
+                                                listen: false)
+                                            .zone!
+                                            .Id as int,
+                                        DateTime.parse(
+                                            from.substring(7, from.length)),
+                                        DateTime.parse(
+                                            to.substring(5, to.length - 1)),
+                                        warden.wardens?.Id ?? 0);
+                                    setState(() {
+                                      selectedValue = value.value;
+                                    });
+                                  },
                                 ),
                               ),
-                              onChanged: (value) {
-                                String testa = value!.value;
-                                String from = testa.split(',')[0];
-                                String to = testa.split(',')[1];
-                                getDataStatistic(
-                                    Provider.of<Locations>(context,
-                                            listen: false)
-                                        .zone!
-                                        .Id as int,
-                                    DateTime.parse(
-                                        from.substring(7, from.length)),
-                                    DateTime.parse(
-                                        to.substring(5, to.length - 1)),
-                                    warden.wardens?.Id ?? 0);
-                                setState(() {
-                                  selectedValue = value.value;
-                                });
-                              },
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: StatisticItem(
-                              assetIcon: "assets/svg/IconFirstSeen.svg",
-                              background: ColorTheme.lighterPrimary,
-                              quantity: statisticWardenData!.firstSeen,
-                              title: "First seen",
-                            ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: StatisticItem(
+                                  assetIcon: "assets/svg/IconFirstSeen.svg",
+                                  background: ColorTheme.lighterPrimary,
+                                  quantity: statisticWardenData!.firstSeen,
+                                  title: "First seen",
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 32,
+                              ),
+                              Expanded(
+                                child: StatisticItem(
+                                  assetIcon: "assets/svg/IconGrace.svg",
+                                  background: ColorTheme.lightDanger,
+                                  quantity: statisticWardenData!.gracePeriod,
+                                  title: "Grace period",
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(
-                            width: 32,
+                            height: 16,
                           ),
-                          Expanded(
-                            child: StatisticItem(
-                              assetIcon: "assets/svg/IconGrace.svg",
-                              background: ColorTheme.lightDanger,
-                              quantity: statisticWardenData!.gracePeriod,
-                              title: "Grace period",
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: StatisticItem(
-                              assetIcon:
-                                  "assets/svg/IconParkingChargesHome.svg",
-                              background: ColorTheme.lighterSecondary,
-                              quantity: statisticWardenData!.issuedPCN,
-                              title: "Issued PCN",
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 32,
-                          ),
-                          Expanded(
-                            child: StatisticItem(
-                              assetIcon: "assets/svg/IconWarning.svg",
-                              background: ColorTheme.grey200,
-                              quantity: statisticWardenData!.abortedPCN,
-                              title: "Aborted PCN",
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: StatisticItem(
+                                  assetIcon:
+                                      "assets/svg/IconParkingChargesHome.svg",
+                                  background: ColorTheme.lighterSecondary,
+                                  quantity: statisticWardenData!.issuedPCN,
+                                  title: "Issued PCN",
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 32,
+                              ),
+                              Expanded(
+                                child: StatisticItem(
+                                  assetIcon: "assets/svg/IconWarning.svg",
+                                  background: ColorTheme.grey200,
+                                  quantity: statisticWardenData!.abortedPCN,
+                                  title: "Aborted PCN",
+                                ),
+                              ),
+                            ],
                           ),
                         ],
+                      )
+                    : const Center(
+                        child: CircularProgressIndicator(),
                       ),
-                    ],
-                  ),
-                ),
+              ),
             ],
           ),
         ),

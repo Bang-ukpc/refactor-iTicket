@@ -19,7 +19,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/controllers/location_controller.dart';
+import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/helpers/contravention_reference_helper.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/ContraventionService.dart';
@@ -155,7 +155,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       String plate, ContraventionProvider contraventionProvider) async {
     showCircularProgressIndicator(context: context);
     try {
-      await contraventionController
+      await weakNetworkContraventionController
           .getVehicleDetailByPlate(plate: plate)
           .then((value) {
         if (value?.Make != null) {
@@ -200,8 +200,21 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
           borderRadius: 5,
         ).show(context);
         return;
+      } else if (error.type == DioErrorType.connectTimeout) {
+        Navigator.of(context).pop();
+        CherryToast.error(
+          toastDuration: const Duration(seconds: 3),
+          title: Text(
+            'Search vehicle info failed because poor connection',
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+        return;
       }
       Navigator.of(context).pop();
+      print(error.response);
       CherryToast.error(
         toastDuration: const Duration(seconds: 3),
         displayCloseButton: true,
@@ -953,7 +966,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                       try {
                         if (!mounted) return;
                         showCircularProgressIndicator(context: context);
-                        await contraventionController
+                        await weakNetworkContraventionController
                             .checkHasPermit(virtualTicket)
                             .then((value) {
                           Navigator.of(context).pop();
@@ -964,8 +977,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           }
                         });
                       } on DioError catch (error) {
+                        if (!mounted) return;
                         if (error.type == DioErrorType.other) {
-                          if (!mounted) return;
                           Navigator.of(context).pop();
                           CherryToast.error(
                             toastDuration: const Duration(seconds: 3),
@@ -980,8 +993,20 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                             borderRadius: 5,
                           ).show(context);
                           return;
+                        } else if (error.type == DioErrorType.connectTimeout) {
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            toastDuration: const Duration(seconds: 3),
+                            title: Text(
+                              'Check permit failed because poor connection',
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
                         }
-                        if (!mounted) return;
                         Navigator.of(context).pop();
                         CherryToast.error(
                           displayCloseButton: false,
@@ -1020,7 +1045,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                       try {
                         if (!mounted) return;
                         showCircularProgressIndicator(context: context);
-                        await contraventionController
+                        await weakNetworkContraventionController
                             .checkHasPermit(physicalPCN)
                             .then((value) {
                           Navigator.of(context).pop();
@@ -1031,8 +1056,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           }
                         });
                       } on DioError catch (error) {
+                        if (!mounted) return;
                         if (error.type == DioErrorType.other) {
-                          if (!mounted) return;
                           Navigator.of(context).pop();
                           CherryToast.error(
                             toastDuration: const Duration(seconds: 3),
@@ -1047,8 +1072,20 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                             borderRadius: 5,
                           ).show(context);
                           return;
+                        } else if (error.type == DioErrorType.connectTimeout) {
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            toastDuration: const Duration(seconds: 3),
+                            title: Text(
+                              'Check permit failed because poor connection',
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
                         }
-                        if (!mounted) return;
                         Navigator.of(context).pop();
                         CherryToast.error(
                           displayCloseButton: false,
@@ -1192,18 +1229,15 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                           .getVehicleInfo ==
                                                       null
                                                   ? ColorTheme.textPrimary
-                                                  : ColorTheme.grey400),
+                                                  : ColorTheme.grey600),
                                           onChanged: (value) {
                                             setState(() {});
                                           },
-                                          decoration: InputDecoration(
+                                          decoration: const InputDecoration(
                                               label: LabelRequire(
-                                                  enabled: contraventionProvider
-                                                          .getVehicleInfo !=
-                                                      null,
                                                   labelText: "VRN"),
                                               hintText: "Enter VRN",
-                                              hintStyle: const TextStyle(
+                                              hintStyle: TextStyle(
                                                 fontSize: 16,
                                                 color: ColorTheme.grey400,
                                               )),
@@ -1384,7 +1418,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                         .getVehicleInfo?.Type ==
                                                     VehicleInformationType
                                                         .FIRST_SEEN.index
-                                                ? ColorTheme.grey400
+                                                ? ColorTheme.grey600
                                                 : selectedItem == null
                                                     ? ColorTheme.grey400
                                                     : ColorTheme.textPrimary,
@@ -1400,11 +1434,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                   .getVehicleInfo?.Type ==
                                               VehicleInformationType
                                                   .FIRST_SEEN.index,
-                                          labelText: LabelRequire(
-                                            enabled: contraventionProvider
-                                                    .getVehicleInfo?.Type ==
-                                                VehicleInformationType
-                                                    .FIRST_SEEN.index,
+                                          labelText: const LabelRequire(
                                             labelText: 'Contravention',
                                           ),
                                           hintText: 'Select contravention',
