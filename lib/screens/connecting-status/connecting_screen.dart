@@ -58,7 +58,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       FlutterBluePlus.instance.state.asBroadcastStream();
   _buildConnect(String title, StateDevice state, {bool required = false}) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 19),
+      margin: const EdgeInsets.only(bottom: 15),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -118,6 +118,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   Future<void> _updateConnectionGpsStatus(ServiceStatus result) async {
+    print('[gpsConnectionStatus] result:  $result');
     if (!mounted) {
       return Future.value(null);
     }
@@ -400,6 +401,13 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       }
     }
 
+    Color connectivityStatus =
+        gpsConnectionStatus == ServiceStatus.enabled && isLocationPermission
+            ? ColorTheme.success
+            : ColorTheme.danger;
+    Color dataDownload = isRotaNotNull && isCancellationNotNull
+        ? ColorTheme.success
+        : ColorTheme.danger;
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -442,9 +450,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                         if (isPending == false &&
                             pendingGetCurrentLocation == false)
                           Text(
-                            isCheckoutScreen
-                                ? 'Shift ended successfully'
-                                : "Connected successfully",
+                            "Configuration status",
                             style: CustomTextStyle.h3
                                 .copyWith(color: ColorTheme.primary),
                           ),
@@ -457,11 +463,21 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 28),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          "Connectivity status",
+                          style: CustomTextStyle.h4.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: connectivityStatus),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
-                                    "1. Connect network",
+                                    "1. Network (Mobile or WiFi)",
                                     checkState(
                                       _connectionStatus ==
                                               ConnectivityResult.mobile ||
@@ -469,80 +485,92 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                               ConnectivityResult.wifi,
                                     ),
                                   )
-                                : _buildConnect(
-                                    '1. Connect network', StateDevice.pending)
-                            : _buildConnect(
-                                '1. Connect network', StateDevice.pending),
+                                : _buildConnect('1. Network (Mobile or WiFi)',
+                                    StateDevice.pending)
+                            : _buildConnect('1. Network (Mobile or WiFi)',
+                                StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "2. Rota shifts and locations",
+                                    "2. GPS",
+                                    checkState(gpsConnectionStatus ==
+                                            ServiceStatus.enabled &&
+                                        isLocationPermission))
+                                : _buildConnect(
+                                    required: true,
+                                    '2. GPS',
+                                    StateDevice.pending)
+                            : _buildConnect(
+                                required: true, '2. GPS', StateDevice.pending),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect("3. Bluetooth",
+                                    checkState(checkBluetooth == true))
+                                : _buildConnect(
+                                    '3. Bluetooth', StateDevice.pending)
+                            : _buildConnect(
+                                '3. Bluetooth', StateDevice.pending),
+
+                        // isPending == false
+                        //     ? pendingGetCurrentLocation == false
+                        //         ? _buildConnect(
+                        //             required: true,
+                        //             "4. Location permission",
+                        //             checkState(isLocationPermission),
+                        //           )
+                        //         : _buildConnect(
+                        //             required: true,
+                        //             '4. Location permission',
+                        //             StateDevice.pending)
+                        //     : _buildConnect(
+                        //         required: true,
+                        //         '4. Location permission',
+                        //         StateDevice.pending),
+                        const Divider(),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          "Data download",
+                          style: CustomTextStyle.h4.copyWith(
+                              fontWeight: FontWeight.w500, color: dataDownload),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        isPending == false
+                            ? pendingGetCurrentLocation == false
+                                ? _buildConnect(
+                                    required: true,
+                                    "1. Rota shifts and locations",
                                     checkState(
                                       isRotaNotNull,
                                     ),
                                   )
                                 : _buildConnect(
                                     required: true,
-                                    '2. Rota shifts and locations',
+                                    '1. Rota shifts and locations',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '2. Rota shifts and locations',
+                                '1. Rota shifts and locations',
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "3. Cancellation reasons",
+                                    "2. Cancellation reasons",
                                     checkState(isCancellationNotNull),
                                   )
                                 : _buildConnect(
                                     required: true,
-                                    '3. Cancellation reasons',
+                                    '2. Cancellation reasons',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '3. Cancellation reasons',
+                                '2. Cancellation reasons',
                                 StateDevice.pending),
-                        isPending == false
-                            ? pendingGetCurrentLocation == false
-                                ? _buildConnect(
-                                    required: true,
-                                    "4. Location permission",
-                                    checkState(isLocationPermission),
-                                  )
-                                : _buildConnect(
-                                    required: true,
-                                    '4. Location permission',
-                                    StateDevice.pending)
-                            : _buildConnect(
-                                required: true,
-                                '4. Location permission',
-                                StateDevice.pending),
-                        isPending == false
-                            ? pendingGetCurrentLocation == false
-                                ? _buildConnect(
-                                    required: true,
-                                    "5. GPS has been turned on",
-                                    checkState(gpsConnectionStatus ==
-                                        ServiceStatus.enabled))
-                                : _buildConnect(
-                                    required: true,
-                                    '5. GPS has been turned on',
-                                    StateDevice.pending)
-                            : _buildConnect(
-                                required: true,
-                                '5. GPS has been turned on',
-                                StateDevice.pending),
-                        isPending == false
-                            ? pendingGetCurrentLocation == false
-                                ? _buildConnect("6. Connect bluetooth",
-                                    checkState(checkBluetooth == true))
-                                : _buildConnect(
-                                    '6. Connect bluetooth', StateDevice.pending)
-                            : _buildConnect(
-                                '6. Connect bluetooth', StateDevice.pending),
                       ],
                     ),
                   ),
@@ -600,8 +628,11 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                               ),
                               onPressed: () async {
                                 if (isLocationPermission == true) {
+                                  getCurrentLocationOfWarden();
                                   if (gpsConnectionStatus ==
                                       ServiceStatus.enabled) {
+                                    getCurrentLocationOfWarden();
+
                                     if (isDataValid()) {
                                       onStartShift();
                                     } else {
@@ -634,10 +665,11 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 } else {
                                   permission.Permission.location
                                       .request()
-                                      .then((value) {
+                                      .then((value) async {
                                     if (permission.PermissionStatus.granted ==
                                         value) {
                                       getCurrentLocationOfWarden();
+
                                       setState(() {
                                         isLocationPermission = true;
                                       });

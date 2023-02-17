@@ -93,12 +93,28 @@ class ContraventionCachedService extends CacheService<Contravention> {
         (i) async => await convertIssuesContraventionToCachedContravention(i)));
   }
 
+  Future<List<Contravention>> getUniqueFromList(
+      List<Contravention> list) async {
+    List<Contravention> uniqueFromList = [];
+    for (int i = 0; i < list.length; i++) {
+      if (i < list.length - 1) {
+        if (list[i].reference != list[i + 1].reference) {
+          uniqueFromList.add(list[i]);
+        }
+      } else {
+        uniqueFromList.add(list[i]);
+      }
+    }
+    return uniqueFromList;
+  }
+
   Future<List<Contravention>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
     var issuedItems = await getIssuedContraventions(_zoneId);
     var items = [...issuedItems, ...cachedItems];
-    // TODO: sort by created as desc
-    var itemSort = items..sort((i1, i2) => i2.created!.compareTo(i1.created!));
+    var uniqueFromList = await getUniqueFromList(items);
+    var itemSort = uniqueFromList
+      ..sort((i1, i2) => i2.created!.compareTo(i1.created!));
     return itemSort;
   }
 }

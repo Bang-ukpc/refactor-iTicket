@@ -84,7 +84,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
       onWillPop: () async => false,
       child: Scaffold(
         appBar: MyAppBar(
-          title: 'Parking changes',
+          title: 'Parking charges',
           automaticallyImplyLeading: true,
           onRedirect: () {
             Navigator.of(context).pushNamed(HomeOverview.routeName);
@@ -156,7 +156,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
                             ),
                           ),
                           Text(
-                            'Your Parking changes list is empty',
+                            'Your Parking charges list is empty',
                             style: CustomTextStyle.body1.copyWith(
                               color: ColorTheme.grey600,
                             ),
