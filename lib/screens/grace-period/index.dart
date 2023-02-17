@@ -91,7 +91,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
         Type: vehicleInfo.Type,
         Latitude: vehicleInfo.Latitude,
         Longitude: vehicleInfo.Longitude,
-        CarLeft: true,
+        CarLeftAt: DateTime.now(),
         EvidencePhotos: [],
         Id: vehicleInfo.Id,
       );

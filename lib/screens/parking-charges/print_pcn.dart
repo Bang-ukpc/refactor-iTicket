@@ -87,7 +87,7 @@ class _PrintPCNState extends State<PrintPCN> {
           Type: vehicleInfo.Type,
           Latitude: vehicleInfo.Latitude,
           Longitude: vehicleInfo.Longitude,
-          CarLeft: true,
+          CarLeftAt: DateTime.now(),
           EvidencePhotos: [],
           Id: vehicleInfo.Id,
         );

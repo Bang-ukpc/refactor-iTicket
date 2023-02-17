@@ -97,11 +97,10 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     var issuedItem =
         await createdVehicleDataLocalService.getAllFirstSeen(_zoneId);
     var cachedAllVehicleInfo = [...issuedItem, ...cachedItems]
-        .where((e) => e.CarLeft != true)
+        .where((e) => e.CarLeftAt == null)
         .toList();
     var cachedAllVehicleInfoSort = cachedAllVehicleInfo
       ..sort((i1, i2) => i2.Created!.compareTo(i1.Created!));
-    // TODO: sort by created as desc
     return cachedAllVehicleInfoSort;
   }
 }

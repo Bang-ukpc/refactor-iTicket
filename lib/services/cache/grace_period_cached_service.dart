@@ -65,9 +65,8 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
     var issuedItem =
         await createdVehicleDataLocalService.getAllGracePeriod(_zoneId);
     var cachedAllVehicleInfo = [...issuedItem, ...cachedItems]
-        .where((e) => e.CarLeft != true)
+        .where((e) => e.CarLeftAt == null)
         .toList();
-    // TODO: sort by created as desc
     var cachedAllVehicleInfoSort = cachedAllVehicleInfo
       ..sort((i1, i2) => i2.Created!.compareTo(i1.Created!));
     return cachedAllVehicleInfoSort;

@@ -100,7 +100,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         Type: VehicleInformationType.FIRST_SEEN.index,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        CarLeft: false,
+        CarLeftAt: null,
         EvidencePhotos: evidencePhotoList,
         Created: DateTime.now(),
         CreatedBy: wardenProvider.wardens?.Id ?? 0,

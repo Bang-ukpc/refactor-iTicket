@@ -68,7 +68,7 @@ class _DetailScreenState extends State<DetailScreen> {
         Type: args.Type,
         Latitude: args.Latitude,
         Longitude: args.Longitude,
-        CarLeft: true,
+        CarLeftAt: DateTime.now(),
         EvidencePhotos: [],
         Id: args.Id,
       );

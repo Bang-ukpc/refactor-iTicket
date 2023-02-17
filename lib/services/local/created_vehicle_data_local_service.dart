@@ -79,7 +79,8 @@ class CreatedVehicleDataLocalService
       });
     } catch (e) {
       logger.info(e.toString());
-    } finally {}
+    }
+    return null;
   }
 
   createCachedVehicleInformationAfterSync(VehicleInformation vehicle) async {
@@ -109,9 +110,10 @@ class CreatedVehicleDataLocalService
   }
 
   Future<List<EvidencePhoto>> syncPcnPhotos(
-      List<EvidencePhoto> evidencePhoto) async {
+    List<EvidencePhoto> evidencePhotos,
+  ) async {
     List<EvidencePhoto> allVehiclePhotos = [];
-    for (var evidencePhoto in evidencePhoto) {
+    for (var evidencePhoto in evidencePhotos) {
       evidencePhoto.Created = evidencePhoto.Created;
       logger.info('[UPLOAD] EvidencePhoto');
       EvidencePhoto? uploadedEvidencePhoto =

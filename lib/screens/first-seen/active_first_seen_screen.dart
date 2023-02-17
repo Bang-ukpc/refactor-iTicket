@@ -87,7 +87,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
         Type: vehicleInfo.Type,
         Latitude: vehicleInfo.Latitude,
         Longitude: vehicleInfo.Longitude,
-        CarLeft: true,
+        CarLeftAt: DateTime.now(),
         EvidencePhotos: [],
         Id: vehicleInfo.Id,
       );
