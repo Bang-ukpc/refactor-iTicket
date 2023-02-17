@@ -31,11 +31,16 @@ class ActiveFirstSeenScreen extends StatefulWidget {
 class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   List<VehicleInformation> firstSeenActive = [];
   List<VehicleInformation> firstSeenExpired = [];
-  bool firstSeenLoading = true;
+  bool isLoading = false;
   final calculateTime = CalculateTime();
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<VehicleInformation> cacheFirstSeenActive = [];
+
   Future<void> getData() async {
+    setState(() {
+      isLoading = true;
+    });
+    await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
     await zoneCachedServiceFactory.firstSeenCachedService
         .getListActive()
         .then((listActive) {
@@ -55,6 +60,10 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
       setState(() {
         firstSeenExpired = listExpired;
       });
+    });
+
+    setState(() {
+      isLoading = false;
     });
   }
 
@@ -131,7 +140,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
           },
           tabBarViewTab1: RefreshIndicator(
             onRefresh: refresh,
-            child: firstSeenLoading == true
+            child: isLoading == false
                 ? firstSeenActive.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -199,7 +208,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
           ),
           tabBarViewTab2: RefreshIndicator(
             onRefresh: refresh,
-            child: firstSeenLoading == true
+            child: isLoading == false
                 ? firstSeenExpired.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),

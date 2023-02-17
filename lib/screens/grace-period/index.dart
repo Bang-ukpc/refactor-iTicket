@@ -32,12 +32,16 @@ class _GracePeriodListState extends State<GracePeriodList> {
   List<VehicleInformation> gracePeriodActive = [];
   List<VehicleInformation> gracePeriodExpired = [];
   List<VehicleInformation> graceGracePeriodLocal = [];
-  bool gracePeriodLoading = true;
+  bool isLoading = false;
   final calculateTime = CalculateTime();
 
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> getData(int zoneId) async {
+    setState(() {
+      isLoading = true;
+    });
+    await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     zoneCachedServiceFactory.gracePeriodCachedService
         .getListActive()
         .then((listActive) {
@@ -56,6 +60,10 @@ class _GracePeriodListState extends State<GracePeriodList> {
       setState(() {
         gracePeriodExpired = listExpired;
       });
+    });
+
+    setState(() {
+      isLoading = false;
     });
   }
 
@@ -135,7 +143,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
           },
           tabBarViewTab1: RefreshIndicator(
             onRefresh: refresh,
-            child: gracePeriodLoading == true
+            child: isLoading == false
                 ? gracePeriodActive.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -203,7 +211,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
           ),
           tabBarViewTab2: RefreshIndicator(
             onRefresh: refresh,
-            child: gracePeriodLoading == true
+            child: isLoading == false
                 ? gracePeriodExpired.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
