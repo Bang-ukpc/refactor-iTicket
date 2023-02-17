@@ -94,18 +94,17 @@ class ContraventionCachedService extends CacheService<Contravention> {
   }
 
   Future<List<Contravention>> getUniqueFromList(
-      List<Contravention> list) async {
-    List<Contravention> uniqueFromList = [];
-    for (int i = 0; i < list.length; i++) {
-      if (i < list.length - 1) {
-        if (list[i].reference != list[i + 1].reference) {
-          uniqueFromList.add(list[i]);
-        }
-      } else {
-        uniqueFromList.add(list[i]);
+      List<Contravention> contraventions) async {
+    List<Contravention> uniqueContraventions = [];
+    for (var contravention in contraventions) {
+      var isExisted = uniqueContraventions.lastWhereOrNull(
+              (element) => element.reference == contravention.reference) !=
+          null;
+      if (!isExisted) {
+        uniqueContraventions.add(contravention);
       }
     }
-    return uniqueFromList;
+    return uniqueContraventions;
   }
 
   Future<List<Contravention>> getAllWithCreatedOnTheOffline() async {
