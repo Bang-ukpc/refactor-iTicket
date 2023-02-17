@@ -148,7 +148,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
-            'VRN already existed.',
+            'It is not permitted to issue more than one First seen per VRN.',
             style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
