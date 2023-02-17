@@ -81,7 +81,11 @@ class _SyncZoneDataState extends State<SyncZoneData> {
 
   Future<void> getListFirstSeen() async {
     try {
-      await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
+      await zoneCachedServiceFactory.firstSeenCachedService
+          .syncFromServer()
+          .then((value) {
+        print("[value.length] ${value.length}");
+      });
       setState(() {
         isLatestFirstSeen = true;
       });

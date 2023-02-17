@@ -125,6 +125,8 @@ class _LocationScreenState extends State<LocationScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await currentLocationPosition.getCurrentLocation();
+      if (!mounted) return;
       final locations = Provider.of<Locations>(context, listen: false);
       locations.resetLocationWithZones();
       final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
