@@ -248,6 +248,7 @@ class _LocationScreenState extends State<LocationScreen> {
     Future<void> refresh() async {
       await getRotas();
       rotaList(locationWithRotaList);
+      await currentLocationPosition.getCurrentLocation();
       if (listFilter.isNotEmpty) {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
         locations.onSelectedRotaShift(listFilter[0]);
