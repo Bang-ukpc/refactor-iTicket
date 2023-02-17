@@ -401,13 +401,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       }
     }
 
-    Color connectivityStatus =
-        gpsConnectionStatus == ServiceStatus.enabled && isLocationPermission
-            ? ColorTheme.success
-            : ColorTheme.danger;
-    Color dataDownload = isRotaNotNull && isCancellationNotNull
-        ? ColorTheme.success
-        : ColorTheme.danger;
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -458,7 +451,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                     ),
                   ),
                   const SizedBox(
-                    height: 30,
+                    height: 32,
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -467,12 +460,13 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                       children: [
                         Text(
                           "Connectivity status",
-                          style: CustomTextStyle.h4.copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: connectivityStatus),
+                          style: CustomTextStyle.h5.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: ColorTheme.textPrimary,
+                          ),
                         ),
                         const SizedBox(
-                          height: 10,
+                          height: 12,
                         ),
                         isPending == false
                             ? pendingGetCurrentLocation == false
@@ -527,17 +521,17 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                         //         required: true,
                         //         '4. Location permission',
                         //         StateDevice.pending),
-                        const Divider(),
                         const SizedBox(
-                          height: 10,
+                          height: 8,
                         ),
                         Text(
                           "Data download",
-                          style: CustomTextStyle.h4.copyWith(
-                              fontWeight: FontWeight.w500, color: dataDownload),
+                          style: CustomTextStyle.h5.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: ColorTheme.textPrimary),
                         ),
                         const SizedBox(
-                          height: 10,
+                          height: 12,
                         ),
                         isPending == false
                             ? pendingGetCurrentLocation == false
@@ -573,6 +567,9 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 StateDevice.pending),
                       ],
                     ),
+                  ),
+                  const SizedBox(
+                    height: 16,
                   ),
                   if (isPending == false && pendingGetCurrentLocation == false)
                     Container(
