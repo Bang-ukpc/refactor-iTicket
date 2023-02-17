@@ -46,9 +46,7 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
 
   @override
   delete(int id) async {
-    print('[$localKey] delete id = $id');
     final items = await getAll();
-    print('[$localKey] ${items.map((e) => e.Id)}');
     final updatedItems = items.where((element) {
       return element.Id != id;
     });

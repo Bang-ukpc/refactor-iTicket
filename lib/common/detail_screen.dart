@@ -59,20 +59,6 @@ class _DetailScreenState extends State<DetailScreen> {
     }).toList();
 
     void onCarLeft() {
-      VehicleInformation vehicleInfoToUpdate = VehicleInformation(
-        ExpiredAt: args.ExpiredAt,
-        Plate: args.Plate,
-        ZoneId: args.ZoneId,
-        LocationId: args.LocationId,
-        BayNumber: args.BayNumber,
-        Type: args.Type,
-        Latitude: args.Latitude,
-        Longitude: args.Longitude,
-        CarLeftAt: DateTime.now(),
-        EvidencePhotos: [],
-        Id: args.Id,
-      );
-
       showDialog<void>(
         context: context,
         barrierDismissible: true,
@@ -98,13 +84,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   )),
               onPressed: () async {
                 showCircularProgressIndicator(context: context);
-                await createdVehicleDataLocalService
-                    .create(vehicleInfoToUpdate);
-                args.Type == VehicleInformationType.FIRST_SEEN.index
-                    ? await zoneCachedServiceFactory.firstSeenCachedService
-                        .delete(vehicleInfoToUpdate.Id!)
-                    : await zoneCachedServiceFactory.gracePeriodCachedService
-                        .delete(vehicleInfoToUpdate.Id!);
+                await createdVehicleDataLocalService.onCarLeft(args);
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 Navigator.of(context).pushReplacementNamed(

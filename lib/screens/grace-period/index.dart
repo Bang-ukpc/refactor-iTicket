@@ -82,20 +82,6 @@ class _GracePeriodListState extends State<GracePeriodList> {
     log('Grace period list screen');
 
     void onCarLeft(VehicleInformation vehicleInfo) {
-      VehicleInformation vehicleInfoToUpdate = VehicleInformation(
-        ExpiredAt: vehicleInfo.ExpiredAt,
-        Plate: vehicleInfo.Plate,
-        ZoneId: vehicleInfo.ZoneId,
-        LocationId: vehicleInfo.LocationId,
-        BayNumber: vehicleInfo.BayNumber,
-        Type: vehicleInfo.Type,
-        Latitude: vehicleInfo.Latitude,
-        Longitude: vehicleInfo.Longitude,
-        CarLeftAt: DateTime.now(),
-        EvidencePhotos: [],
-        Id: vehicleInfo.Id,
-      );
-
       showDialog<void>(
         context: context,
         barrierDismissible: true,
@@ -121,10 +107,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
                   )),
               onPressed: () async {
                 showCircularProgressIndicator(context: context);
-                await createdVehicleDataLocalService
-                    .create(vehicleInfoToUpdate);
-                await zoneCachedServiceFactory.gracePeriodCachedService
-                    .delete(vehicleInfoToUpdate.Id!);
+                await createdVehicleDataLocalService.onCarLeft(vehicleInfo);
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();

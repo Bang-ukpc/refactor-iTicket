@@ -77,28 +77,7 @@ class _PrintPCNState extends State<PrintPCN> {
       if (contraventionProvider.getVehicleInfo != null) {
         var vehicleInfo =
             contraventionProvider.getVehicleInfo as VehicleInformation;
-
-        VehicleInformation vehicleInfoToUpdate = VehicleInformation(
-          ExpiredAt: vehicleInfo.ExpiredAt,
-          Plate: vehicleInfo.Plate,
-          ZoneId: vehicleInfo.ZoneId,
-          LocationId: vehicleInfo.LocationId,
-          BayNumber: vehicleInfo.BayNumber,
-          Type: vehicleInfo.Type,
-          Latitude: vehicleInfo.Latitude,
-          Longitude: vehicleInfo.Longitude,
-          CarLeftAt: DateTime.now().add(const Duration(seconds: 3)),
-          EvidencePhotos: [],
-          Id: vehicleInfo.Id,
-        );
-        await createdVehicleDataLocalService.create(vehicleInfoToUpdate);
-        if (vehicleInfo.Type == VehicleInformationType.FIRST_SEEN.index) {
-          await await zoneCachedServiceFactory.firstSeenCachedService
-              .delete(vehicleInfoToUpdate.Id!);
-        } else {
-          await await zoneCachedServiceFactory.gracePeriodCachedService
-              .delete(vehicleInfoToUpdate.Id!);
-        }
+        await createdVehicleDataLocalService.onCarLeft(vehicleInfo);
       }
       return;
     }

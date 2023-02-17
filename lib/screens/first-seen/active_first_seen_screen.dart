@@ -78,20 +78,6 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   @override
   Widget build(BuildContext context) {
     void onCarLeft(VehicleInformation vehicleInfo) {
-      VehicleInformation vehicleInfoToUpdate = VehicleInformation(
-        ExpiredAt: vehicleInfo.ExpiredAt,
-        Plate: vehicleInfo.Plate,
-        ZoneId: vehicleInfo.ZoneId,
-        LocationId: vehicleInfo.LocationId,
-        BayNumber: vehicleInfo.BayNumber,
-        Type: vehicleInfo.Type,
-        Latitude: vehicleInfo.Latitude,
-        Longitude: vehicleInfo.Longitude,
-        CarLeftAt: DateTime.now(),
-        EvidencePhotos: [],
-        Id: vehicleInfo.Id,
-      );
-
       showDialog<void>(
         context: context,
         barrierDismissible: true,
@@ -117,10 +103,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                   )),
               onPressed: () async {
                 showCircularProgressIndicator(context: context);
-                await createdVehicleDataLocalService
-                    .create(vehicleInfoToUpdate);
-                await zoneCachedServiceFactory.firstSeenCachedService
-                    .delete(vehicleInfoToUpdate.Id!);
+                await createdVehicleDataLocalService.onCarLeft(vehicleInfo);
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();

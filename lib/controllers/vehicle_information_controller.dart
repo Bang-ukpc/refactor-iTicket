@@ -40,7 +40,7 @@ class VehicleInfoController {
       var vehicleInfos = jsonDecodeFactory
           .decodeList<VehicleInformation>(vehicleInfoPagination.rows);
       vehicleInfoPagination.rows = vehicleInfos;
-
+      print("CarLeftAt ${vehicleInfos.map((e) => e.CarLeftAt)}");
       return vehicleInfoPagination;
     } on DioError catch (error) {
       print('[API GET VEHICLE INFO] $error');
