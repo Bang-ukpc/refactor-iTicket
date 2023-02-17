@@ -56,3 +56,14 @@
 - WRDN-542 [Weak network] Can't issue PCN
 - WRDN-555 [Weak network] Notify error when issue PCN
 - WRDN-544 [Weak network] Can't find information by VRN
+
+[1.0.31] - 2023-02-17
+
+- WRDN-530 [Print]Distorted content when printing many times.
+- WRDN-583 [List Parking charges] Duplicate on refresh during sync data
+- WRDN-568 [Avatar] Cannot get avatar of PO
+- WRDN-452 [Printer issue] - Multiple pages printed & misalignment
+- WRDN-573 Change of information message
+- WRDN-574 Error message
+- WRDN-576 Heading change
+-
