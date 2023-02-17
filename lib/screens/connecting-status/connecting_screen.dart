@@ -58,7 +58,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       FlutterBluePlus.instance.state.asBroadcastStream();
   _buildConnect(String title, StateDevice state, {bool required = false}) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 19),
+      margin: const EdgeInsets.only(bottom: 15),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -118,6 +118,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   Future<void> _updateConnectionGpsStatus(ServiceStatus result) async {
+    print('[gpsConnectionStatus] result:  $result');
     if (!mounted) {
       return Future.value(null);
     }
@@ -442,9 +443,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                         if (isPending == false &&
                             pendingGetCurrentLocation == false)
                           Text(
-                            isCheckoutScreen
-                                ? 'Shift ended successfully'
-                                : "Connected successfully",
+                            "Configuration status",
                             style: CustomTextStyle.h3
                                 .copyWith(color: ColorTheme.primary),
                           ),
@@ -457,7 +456,16 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 28),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          "Connectivity status",
+                          style: CustomTextStyle.h4
+                              .copyWith(fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
@@ -475,35 +483,26 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 '1. Connect network', StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
-                                ? _buildConnect(
-                                    required: true,
-                                    "2. Rota shifts and locations",
-                                    checkState(
-                                      isRotaNotNull,
-                                    ),
-                                  )
+                                ? _buildConnect("2. Connect bluetooth",
+                                    checkState(checkBluetooth == true))
                                 : _buildConnect(
-                                    required: true,
-                                    '2. Rota shifts and locations',
-                                    StateDevice.pending)
+                                    '2. Connect bluetooth', StateDevice.pending)
                             : _buildConnect(
-                                required: true,
-                                '2. Rota shifts and locations',
-                                StateDevice.pending),
+                                '2. Connect bluetooth', StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "3. Cancellation reasons",
-                                    checkState(isCancellationNotNull),
-                                  )
+                                    "3. GPS has been turned on",
+                                    checkState(gpsConnectionStatus ==
+                                        ServiceStatus.enabled))
                                 : _buildConnect(
                                     required: true,
-                                    '3. Cancellation reasons',
+                                    '3. GPS has been turned on',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '3. Cancellation reasons',
+                                '3. GPS has been turned on',
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
@@ -520,29 +519,49 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 required: true,
                                 '4. Location permission',
                                 StateDevice.pending),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          "Data download",
+                          style: CustomTextStyle.h4
+                              .copyWith(fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "5. GPS has been turned on",
-                                    checkState(gpsConnectionStatus ==
-                                        ServiceStatus.enabled))
+                                    "1. Rota shifts and locations",
+                                    checkState(
+                                      isRotaNotNull,
+                                    ),
+                                  )
                                 : _buildConnect(
                                     required: true,
-                                    '5. GPS has been turned on',
+                                    '1. Rota shifts and locations',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '5. GPS has been turned on',
+                                '1. Rota shifts and locations',
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
-                                ? _buildConnect("6. Connect bluetooth",
-                                    checkState(checkBluetooth == true))
+                                ? _buildConnect(
+                                    required: true,
+                                    "2. Cancellation reasons",
+                                    checkState(isCancellationNotNull),
+                                  )
                                 : _buildConnect(
-                                    '6. Connect bluetooth', StateDevice.pending)
+                                    required: true,
+                                    '2. Cancellation reasons',
+                                    StateDevice.pending)
                             : _buildConnect(
-                                '6. Connect bluetooth', StateDevice.pending),
+                                required: true,
+                                '2. Cancellation reasons',
+                                StateDevice.pending),
                       ],
                     ),
                   ),
