@@ -87,7 +87,7 @@ class _PrintPCNState extends State<PrintPCN> {
           Type: vehicleInfo.Type,
           Latitude: vehicleInfo.Latitude,
           Longitude: vehicleInfo.Longitude,
-          CarLeftAt: DateTime.now(),
+          CarLeftAt: DateTime.now().add(const Duration(seconds: 3)),
           EvidencePhotos: [],
           Id: vehicleInfo.Id,
         );
