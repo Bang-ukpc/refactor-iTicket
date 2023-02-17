@@ -18,7 +18,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/contravention_controller.dart';
 import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/helpers/contravention_reference_helper.dart';
 import 'package:iWarden/helpers/debouncer.dart';
@@ -74,6 +73,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   List<Contravention> contraventionList = [];
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   late CachedServiceFactory cachedServiceFactory;
+  final Connectivity _connectivity = Connectivity();
+  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   Future<void> getContraventions() async {
     var contraventions = await zoneCachedServiceFactory
@@ -255,9 +257,35 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     }
   }
 
+  // Check network connection
+  Future<void> initConnectivity() async {
+    late ConnectivityResult result;
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      log('Couldn\'t check connectivity status', error: e);
+      return;
+    }
+
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    setState(() {
+      _connectionStatus = result;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    initConnectivity();
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final vehicleInfo = ModalRoute.of(context)!.settings.arguments as dynamic;
       final locationProvider = Provider.of<Locations>(context, listen: false);
@@ -325,6 +353,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
   @override
   void dispose() {
+    _connectivitySubscription.cancel();
     _vrnController.dispose();
     _vehicleMakeController.dispose();
     _vehicleColorController.dispose();
@@ -1255,7 +1284,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                               .onUserInteraction,
                                         ),
                                       ),
-                                      Flexible(
+                                      if (_connectionStatus ==
+                                              ConnectivityResult.mobile ||
+                                          _connectionStatus ==
+                                              ConnectivityResult.wifi)
+                                        Flexible(
                                           flex: 2,
                                           child: ButtonScan(
                                             color:
@@ -1269,7 +1302,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                       _vrnController.text,
                                                       contraventionProvider);
                                             },
-                                          ))
+                                          ),
+                                        ),
                                     ],
                                   ),
                                   const SizedBox(

@@ -167,7 +167,7 @@ class _SyncZoneDataState extends State<SyncZoneData> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Pull location’s data",
+                          "Data synchronisation",
                           style: CustomTextStyle.h3
                               .copyWith(color: ColorTheme.primary),
                         ),
