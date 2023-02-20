@@ -189,7 +189,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
       var rotas =
           await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-      print('[Rota] ${rotas.length}');
       setState(() {
         isSyncedRota = rotas.isNotEmpty;
         errorMessage = rotas.isEmpty
@@ -197,8 +196,10 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
             : errorMessage;
       });
     } catch (e) {
+      var rotas =
+          await cachedServiceFactory.rotaWithLocationCachedService.getAll();
       setState(() {
-        isSyncedRota = false;
+        isSyncedRota = rotas.isNotEmpty;
       });
     }
   }
@@ -579,6 +580,21 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 StateDevice.pending),
                       ],
                     ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '*',
+                        style: TextStyle(color: ColorTheme.danger),
+                      ),
+                      const Text(
+                        'Mandatory service and data required to operate iTicket.',
+                      ),
+                    ],
                   ),
                   const SizedBox(
                     height: 16,

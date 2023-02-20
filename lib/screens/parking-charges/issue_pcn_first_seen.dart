@@ -131,9 +131,14 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   }
 
   Future<void> getLocationList(Locations locations) async {
-    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-    var rotas =
-        await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+    List<RotaWithLocation> rotas = [];
+
+    try {
+      await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+    } catch (e) {
+      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+    }
 
     for (int i = 0; i < rotas.length; i++) {
       for (int j = 0; j < rotas.length; j++) {

@@ -50,13 +50,22 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   Future<void> getRotas() async {
-    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-    var rotas =
-        await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    setState(() {
-      locationWithRotaList = rotas;
-      isLoading = false;
-    });
+    try {
+      await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+      var rotas =
+          await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+      setState(() {
+        locationWithRotaList = rotas;
+        isLoading = false;
+      });
+    } catch (e) {
+      var rotas =
+          await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+      setState(() {
+        locationWithRotaList = rotas;
+        isLoading = false;
+      });
+    }
   }
 
   getLocalDate(DateTime date) {

@@ -13,6 +13,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/id_helper.dart';
+import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -43,9 +44,14 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   late CachedServiceFactory cachedServiceFactory;
 
   Future<void> getLocationList(Locations locations) async {
-    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-    var rotas =
-        await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+    List<RotaWithLocation> rotas = [];
+
+    try {
+      await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+    } catch (e) {
+      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+    }
 
     for (int i = 0; i < rotas.length; i++) {
       for (int j = 0; j < rotas.length; j++) {
