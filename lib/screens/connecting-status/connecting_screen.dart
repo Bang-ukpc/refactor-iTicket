@@ -40,6 +40,9 @@ class ConnectingScreen extends StatefulWidget {
   State<ConnectingScreen> createState() => _ConnectingScreenState();
 }
 
+String defaultErrorMessage =
+    "Can't sync the data. Please check your network and try to refresh the app again.";
+
 class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
@@ -50,7 +53,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   List<ContraventionReasonTranslations> contraventionReasonList = [];
-  bool isRotaNotNull = false;
+  bool isSyncedRota = false;
+  String errorMessage = defaultErrorMessage;
   bool isCancellationNotNull = false;
   bool isLocationPermission = false;
   late CachedServiceFactory cachedServiceFactory;
@@ -181,8 +185,22 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   Future<void> syncRotaList() async {
-    await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-    await getRotas();
+    try {
+      await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
+      var rotas =
+          await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+      print('[Rota] ${rotas.length}');
+      setState(() {
+        isSyncedRota = rotas.isNotEmpty;
+        errorMessage = rotas.isEmpty
+            ? "Check with systems admin, that rota shift has been allocated."
+            : errorMessage;
+      });
+    } catch (e) {
+      setState(() {
+        isSyncedRota = false;
+      });
+    }
   }
 
   Future<void> syncCancellationReasonList() async {
@@ -198,21 +216,15 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   Future<void> syncAllRequiredData() async {
+    setState(() {
+      errorMessage = defaultErrorMessage;
+    });
     print('GET ROTA');
     await syncRotaList();
     print('GET CANCELLATION REASON');
     await syncCancellationReasonList();
     print('GET CONTRAVENTION REASON');
     await syncContraventionReasonList();
-  }
-
-  Future<void> getRotas() async {
-    var rotas =
-        await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    print('[Rota length] ${rotas.length}');
-    setState(() {
-      isRotaNotNull = rotas.isNotEmpty;
-    });
   }
 
   Future<void> getCancellationReasons() async {
@@ -225,7 +237,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   bool isDataValid() {
-    if (!isRotaNotNull || !isCancellationNotNull) {
+    if (!isSyncedRota || !isCancellationNotNull) {
       return false;
     }
     return true;
@@ -539,7 +551,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                     required: true,
                                     "1. Rota shifts and locations",
                                     checkState(
-                                      isRotaNotNull,
+                                      isSyncedRota,
                                     ),
                                   )
                                 : _buildConnect(
@@ -637,7 +649,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                         toastDuration:
                                             const Duration(seconds: 5),
                                         title: Text(
-                                          'Data sync error, please refresh the screen to sync again',
+                                          errorMessage,
                                           style: CustomTextStyle.h4.copyWith(
                                             color: ColorTheme.danger,
                                           ),
