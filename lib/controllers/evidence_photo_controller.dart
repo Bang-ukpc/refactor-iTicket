@@ -6,7 +6,6 @@ class EvidencePhotoController {
   static final dio = DioHelper.defaultApiClient;
   Future<dynamic> uploadImage(
       {required String filePath, DateTime? capturedDateTime}) async {
-    print('filePath: $filePath');
     var formData = FormData.fromMap({
       'photo': await MultipartFile.fromFile(
         filePath,

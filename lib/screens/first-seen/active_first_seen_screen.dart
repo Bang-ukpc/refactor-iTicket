@@ -31,10 +31,11 @@ class ActiveFirstSeenScreen extends StatefulWidget {
 class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   List<VehicleInformation> firstSeenActive = [];
   List<VehicleInformation> firstSeenExpired = [];
-  bool firstSeenLoading = true;
+  bool isLoading = false;
   final calculateTime = CalculateTime();
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<VehicleInformation> cacheFirstSeenActive = [];
+
   Future<void> getData() async {
     await zoneCachedServiceFactory.firstSeenCachedService
         .getListActive()
@@ -78,20 +79,6 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   @override
   Widget build(BuildContext context) {
     void onCarLeft(VehicleInformation vehicleInfo) {
-      VehicleInformation vehicleInfoToUpdate = VehicleInformation(
-        ExpiredAt: vehicleInfo.ExpiredAt,
-        Plate: vehicleInfo.Plate,
-        ZoneId: vehicleInfo.ZoneId,
-        LocationId: vehicleInfo.LocationId,
-        BayNumber: vehicleInfo.BayNumber,
-        Type: vehicleInfo.Type,
-        Latitude: vehicleInfo.Latitude,
-        Longitude: vehicleInfo.Longitude,
-        CarLeft: true,
-        EvidencePhotos: [],
-        Id: vehicleInfo.Id,
-      );
-
       showDialog<void>(
         context: context,
         barrierDismissible: true,
@@ -117,10 +104,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                   )),
               onPressed: () async {
                 showCircularProgressIndicator(context: context);
-                await createdVehicleDataLocalService
-                    .create(vehicleInfoToUpdate);
-                await zoneCachedServiceFactory.firstSeenCachedService
-                    .delete(vehicleInfoToUpdate.Id!);
+                await createdVehicleDataLocalService.onCarLeft(vehicleInfo);
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
@@ -148,7 +132,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
           },
           tabBarViewTab1: RefreshIndicator(
             onRefresh: refresh,
-            child: firstSeenLoading == true
+            child: isLoading == false
                 ? firstSeenActive.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -216,7 +200,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
           ),
           tabBarViewTab2: RefreshIndicator(
             onRefresh: refresh,
-            child: firstSeenLoading == true
+            child: isLoading == false
                 ? firstSeenExpired.isNotEmpty
                     ? SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),

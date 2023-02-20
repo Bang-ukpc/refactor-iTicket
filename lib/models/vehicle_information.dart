@@ -50,7 +50,7 @@ class VehicleInformation extends BaseModel {
   int Type;
   double Latitude;
   double Longitude;
-  bool CarLeft;
+  DateTime? CarLeftAt;
   List<EvidencePhoto>? EvidencePhotos;
 
   VehicleInformation({
@@ -66,7 +66,7 @@ class VehicleInformation extends BaseModel {
     required this.Type,
     required this.Latitude,
     required this.Longitude,
-    required this.CarLeft,
+    this.CarLeftAt,
     this.EvidencePhotos,
   }) : super(Id: Id, Created: Created, Deleted: Deleted, CreatedBy: CreatedBy);
 
@@ -99,7 +99,8 @@ VehicleInformation _$VehicleInformationFromJson(Map<String, dynamic> json) {
     Type: json['Type'],
     Latitude: json['Latitude'].toDouble(),
     Longitude: json['Longitude'].toDouble(),
-    CarLeft: json['CarLeft'] as bool,
+    CarLeftAt:
+        json['CarLeftAt'] == null ? null : DateTime.parse(json['CarLeftAt']),
     EvidencePhotos: evidencePhotosList,
   );
 }
@@ -121,7 +122,9 @@ Map<String, dynamic> _$VehicleInformationToJson(VehicleInformation instance) {
     'Type': instance.Type,
     'Latitude': instance.Latitude,
     'Longitude': instance.Longitude,
-    'CarLeft': instance.CarLeft,
+    'CarLeftAt': instance.CarLeftAt != null
+        ? instance.CarLeftAt!.toIso8601String()
+        : null,
     'EvidencePhotos': evidencePhotosToJson,
   };
 }

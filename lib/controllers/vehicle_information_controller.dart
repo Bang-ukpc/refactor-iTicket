@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:iWarden/factory/json_decode_factory.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 
@@ -23,11 +22,10 @@ class VehicleInfoController {
       required int zoneId,
       required int page,
       required pageSize}) async {
-    print('[API] with zoneId: $zoneId');
     final bodyRequest = jsonEncode({
       "filter": {
         "type": vehicleInfoType,
-        "CarLeft": false,
+        "CarLeftAt": null,
         "zoneId": zoneId,
       },
       "page": page,
@@ -41,7 +39,6 @@ class VehicleInfoController {
       var vehicleInfos = jsonDecodeFactory
           .decodeList<VehicleInformation>(vehicleInfoPagination.rows);
       vehicleInfoPagination.rows = vehicleInfos;
-
       return vehicleInfoPagination;
     } on DioError catch (error) {
       print('[API GET VEHICLE INFO] $error');

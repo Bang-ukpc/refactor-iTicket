@@ -4,6 +4,7 @@ import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/services/cache/cache_service.dart';
+import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/services/cache/first_seen_cached_service.dart';
 import 'package:iWarden/services/cache/grace_period_cached_service.dart';
 import 'package:iWarden/services/local/created_vehicle_data_photo_local_service.dart';
@@ -33,7 +34,7 @@ class CreatedVehicleDataLocalService
     logger.info('syncing all ...');
 
     if (isSyncing) {
-      logger.info("CreatedVehicleDataLocalService is syncing ...");
+      logger.info("the process to sync is running => IGNORE");
       return;
     }
     isSyncing = true;
@@ -62,7 +63,6 @@ class CreatedVehicleDataLocalService
         ? int.tryParse(vehicleInformation.Id.toString())
         : null;
     bool isNewItem = idHelper.isGeneratedByLocal(vehicleInformation.Id);
-    logger.info("syncing isNewItem $isNewItem");
     try {
       await syncPcnPhotos(vehicleInformation.EvidencePhotos!)
           .then((evidencePhotos) async {
@@ -79,7 +79,8 @@ class CreatedVehicleDataLocalService
       });
     } catch (e) {
       logger.info(e.toString());
-    } finally {}
+    }
+    return null;
   }
 
   createCachedVehicleInformationAfterSync(VehicleInformation vehicle) async {
@@ -109,11 +110,12 @@ class CreatedVehicleDataLocalService
   }
 
   Future<List<EvidencePhoto>> syncPcnPhotos(
-      List<EvidencePhoto> evidencePhoto) async {
+    List<EvidencePhoto> evidencePhotos,
+  ) async {
     List<EvidencePhoto> allVehiclePhotos = [];
-    for (var evidencePhoto in evidencePhoto) {
+    for (var evidencePhoto in evidencePhotos) {
       evidencePhoto.Created = evidencePhoto.Created;
-      logger.info('[UPLOAD] EvidencePhoto');
+      logger.info('[UPLOAD] ${evidencePhotos.length} evident photos');
       EvidencePhoto? uploadedEvidencePhoto =
           await createdVehicleDataPhotoLocalService.sync(evidencePhoto);
       if (uploadedEvidencePhoto != null) {
@@ -122,6 +124,29 @@ class CreatedVehicleDataLocalService
     }
     logger.info("[length] allVehiclePhotos ${allVehiclePhotos.length}");
     return allVehiclePhotos;
+  }
+
+  onCarLeft(VehicleInformation vehicleInfo) async {
+    vehicleInfo.CarLeftAt = DateTime.now().add(const Duration(seconds: 3));
+    // cerate sync to server
+    if (await get(vehicleInfo.Id!) == null) {
+      await create(vehicleInfo);
+    } else {
+      await update(vehicleInfo);
+    }
+
+    //delete from cache
+    var zoneCachedServiceFactory = ZoneCachedServiceFactory(vehicleInfo.ZoneId);
+    if (vehicleInfo.Type == VehicleInformationType.FIRST_SEEN.index) {
+      await zoneCachedServiceFactory.firstSeenCachedService
+          .delete(vehicleInfo.Id!);
+    } else {
+      await zoneCachedServiceFactory.gracePeriodCachedService
+          .delete(vehicleInfo.Id!);
+    }
+
+    var items = await getAll();
+    logger.info('items ${items.map((e) => e.Id)}');
   }
 }
 
