@@ -38,10 +38,6 @@ class _GracePeriodListState extends State<GracePeriodList> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> getData(int zoneId) async {
-    setState(() {
-      isLoading = true;
-    });
-    await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     zoneCachedServiceFactory.gracePeriodCachedService
         .getListActive()
         .then((listActive) {
@@ -60,10 +56,6 @@ class _GracePeriodListState extends State<GracePeriodList> {
       setState(() {
         gracePeriodExpired = listExpired;
       });
-    });
-
-    setState(() {
-      isLoading = false;
     });
   }
 

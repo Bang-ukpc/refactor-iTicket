@@ -37,10 +37,6 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   List<VehicleInformation> cacheFirstSeenActive = [];
 
   Future<void> getData() async {
-    setState(() {
-      isLoading = true;
-    });
-    await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
     await zoneCachedServiceFactory.firstSeenCachedService
         .getListActive()
         .then((listActive) {
@@ -60,10 +56,6 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
       setState(() {
         firstSeenExpired = listExpired;
       });
-    });
-
-    setState(() {
-      isLoading = false;
     });
   }
 
