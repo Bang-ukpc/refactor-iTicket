@@ -1,45 +1,37 @@
 import 'dart:convert';
-
 import 'package:iWarden/services/local/local_service.dart';
 import '../../controllers/evidence_photo_controller.dart';
+import '../../helpers/logger.dart';
 import '../../models/vehicle_information.dart';
 
 class CreatedVehicleDataPhotoLocalService
     extends BaseLocalService<EvidencePhoto> {
   CreatedVehicleDataPhotoLocalService() : super("vehiclePhotos");
+  Logger logger = Logger<CreatedVehicleDataPhotoLocalService>();
 
   @override
   Future<EvidencePhoto?> sync(EvidencePhoto evidencePhoto) async {
-    print('[EVIDENCE PHOTO] syncing ${evidencePhoto.Id} to sever ... ');
+    logger.info('syncing ${evidencePhoto.Id} to sever ... ');
     try {
-      return evidencePhotoController
+      var uploadedEvidentPhoto = await evidencePhotoController
           .uploadImage(
               filePath: evidencePhoto.BlobName,
               capturedDateTime: evidencePhoto.Created)
           .then((value) async {
-        print("[THEN] ${json.encode(value)}");
-        if (value['blobName'] != null) {
-          evidencePhoto.BlobName = value['blobName'];
-          await delete(evidencePhoto.Id!);
-
-          return EvidencePhoto(BlobName: evidencePhoto.BlobName);
-        } else {
-          print("NULL $value");
-        }
+        evidencePhoto.BlobName = value['blobName'];
+        return EvidencePhoto(BlobName: evidencePhoto.BlobName);
       });
+      await delete(evidencePhoto.Id!);
+      return uploadedEvidentPhoto;
     } catch (e) {
-      print("err ${e.toString()}");
-      print('[catch]${evidencePhoto.BlobName}');
+      logger.error('SYNC ERROR ${e.toString()}');
       return EvidencePhoto(BlobName: evidencePhoto.BlobName);
-    } finally {
-      print('[finally] ${evidencePhoto.BlobName}');
-      // return EvidencePhoto(BlobName: evidencePhoto.BlobName);
     }
   }
 
   @override
   bulkCreate(List<EvidencePhoto> listT) {
-    print(
+    logger.info(
         '[VEHICLE INFO] [EVIDENT PHOTO] bulk create with ${listT.length} items');
     return super.bulkCreate(listT);
   }
@@ -47,7 +39,7 @@ class CreatedVehicleDataPhotoLocalService
   @override
   Future<List<EvidencePhoto>> getAll() async {
     final items = await super.getAll();
-    print('[VEHICLE INFO] [EVIDENT PHOTO] get all ${json.encode(items)}');
+    logger.info('[VEHICLE INFO] [EVIDENT PHOTO] get all ${json.encode(items)}');
     return items;
   }
 }
