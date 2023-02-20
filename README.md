@@ -72,3 +72,4 @@
 - WRDN-586 The data is still not synchronized when the car has been carLeft in the Grace period
 - WRDN-565 Can't get First seen/Grace period image when issue PCN
 - WRDN-439 [Physical PCN] some printers start print garbage
+- WRDN-590 [SHOWSTOPPER] Sync error
