@@ -22,12 +22,9 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
       longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: _wardenId,
     );
-    var rotaWithLocations = await weakNetworkRotaWithLocationController
-        .getAll(filter)
-        .catchError((err) async {
-      logger.error(err);
-      return await getAll();
-    });
+    var rotaWithLocations =
+        await weakNetworkRotaWithLocationController.getAll(filter);
+    print('[Rota] ${rotaWithLocations.length}');
     await set(rotaWithLocations);
     return rotaWithLocations;
   }
