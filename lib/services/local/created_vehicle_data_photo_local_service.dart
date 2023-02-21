@@ -12,16 +12,21 @@ class CreatedVehicleDataPhotoLocalService
   @override
   Future<EvidencePhoto?> sync(EvidencePhoto evidencePhoto) async {
     logger.info('syncing ${evidencePhoto.Id} to sever ... ');
-    var uploadedEvidentPhoto = await evidencePhotoController
-        .uploadImage(
-            filePath: evidencePhoto.BlobName,
-            capturedDateTime: evidencePhoto.Created)
-        .then((value) async {
-      evidencePhoto.BlobName = value['blobName'];
+    try {
+      var uploadedEvidentPhoto = await evidencePhotoController
+          .uploadImage(
+              filePath: evidencePhoto.BlobName,
+              capturedDateTime: evidencePhoto.Created)
+          .then((value) async {
+        evidencePhoto.BlobName = value['blobName'];
+        return EvidencePhoto(BlobName: evidencePhoto.BlobName);
+      });
+      await delete(evidencePhoto.Id!);
+      return uploadedEvidentPhoto;
+    } catch (e) {
+      logger.error('SYNC ERROR ${e.toString()}');
       return EvidencePhoto(BlobName: evidencePhoto.BlobName);
-    });
-    await delete(evidencePhoto.Id!);
-    return uploadedEvidentPhoto;
+    }
   }
 
   @override
