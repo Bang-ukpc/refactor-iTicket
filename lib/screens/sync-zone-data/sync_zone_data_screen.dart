@@ -179,7 +179,7 @@ class _SyncZoneDataState extends State<SyncZoneData> {
                     ),
                   ),
                   const SizedBox(
-                    height: 30,
+                    height: 32,
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -210,7 +210,7 @@ class _SyncZoneDataState extends State<SyncZoneData> {
                     ),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 16,
                   ),
                   if (isPulledData)
                     Container(

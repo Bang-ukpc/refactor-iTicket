@@ -593,11 +593,12 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                       ),
                       const Text(
                         'Mandatory service and data required to operate iTicket.',
+                        style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                     ],
                   ),
                   const SizedBox(
-                    height: 16,
+                    height: 32,
                   ),
                   if (isPending == false && pendingGetCurrentLocation == false)
                     Container(

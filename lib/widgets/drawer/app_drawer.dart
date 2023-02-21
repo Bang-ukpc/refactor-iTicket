@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
@@ -40,14 +40,32 @@ class MyDrawer extends StatefulWidget {
 
 class _MyDrawerState extends State<MyDrawer> {
   bool check = false;
+  bool? checkBluetooth;
   final _debouncer = Debouncer(milliseconds: 3000);
   final _debouncer2 = Debouncer(milliseconds: 4000);
+  Stream<BluetoothState> bluetoothStateStream =
+      FlutterBluePlus.instance.state.asBroadcastStream();
+
+  void onConnectPrinter() {
+    bluetoothPrinterHelper.scan();
+    bluetoothPrinterHelper.initConnect();
+  }
+
+  // Check bluetooth connection
+  void _checkDeviceBluetoothIsOn() async {
+    var check = await FlutterBluePlus.instance.isOn;
+    setState(() {
+      checkBluetooth = check;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    bluetoothPrinterHelper.scan();
-    bluetoothPrinterHelper.initConnect();
+    bluetoothStateStream.listen((bluetoothState) {
+      _checkDeviceBluetoothIsOn();
+    });
+    _checkDeviceBluetoothIsOn();
   }
 
   @override
@@ -64,7 +82,6 @@ class _MyDrawerState extends State<MyDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final heightScreen = MediaQuery.of(context).size.height;
     final widthScreen = MediaQuery.of(context).size.width;
     final wardensProvider = Provider.of<WardensInfo>(context);
     final locations = Provider.of<Locations>(context);
@@ -228,33 +245,15 @@ class _MyDrawerState extends State<MyDrawer> {
                       }
                     : e.route == 'testPrinter'
                         ? () async {
-                            if (bluetoothPrinterHelper.selectedPrinter ==
-                                null) {
-                              showCircularProgressIndicator(
-                                context: context,
-                                text: 'Connecting to printer',
-                              );
-                              _debouncer.run(() {
-                                Navigator.of(context).pop();
-                                CherryToast.error(
-                                  toastDuration: const Duration(seconds: 5),
-                                  title: Text(
-                                    "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
-                                    style: CustomTextStyle.h4
-                                        .copyWith(color: ColorTheme.danger),
-                                  ),
-                                  toastPosition: Position.bottom,
-                                  borderRadius: 5,
-                                ).show(context);
-                              });
-                            } else {
-                              showCircularProgressIndicator(
+                            if (checkBluetooth == true) {
+                              onConnectPrinter();
+                              if (bluetoothPrinterHelper.selectedPrinter ==
+                                  null) {
+                                showCircularProgressIndicator(
                                   context: context,
-                                  text: 'Connecting to printer');
-                              bluetoothPrinterHelper.printReceiveTest();
-                              _debouncer2.run(() {
-                                if (bluetoothPrinterHelper.isConnected ==
-                                    false) {
+                                  text: 'Connecting to printer',
+                                );
+                                _debouncer.run(() {
                                   Navigator.of(context).pop();
                                   CherryToast.error(
                                     toastDuration: const Duration(seconds: 5),
@@ -266,10 +265,46 @@ class _MyDrawerState extends State<MyDrawer> {
                                     toastPosition: Position.bottom,
                                     borderRadius: 5,
                                   ).show(context);
-                                } else {
-                                  Navigator.of(context).pop();
-                                }
-                              });
+                                });
+                                bluetoothPrinterHelper.subscriptionBtStatus!
+                                    .cancel();
+                              } else {
+                                showCircularProgressIndicator(
+                                    context: context,
+                                    text: 'Connecting to printer');
+                                bluetoothPrinterHelper.printReceiveTest();
+                                _debouncer2.run(() {
+                                  if (bluetoothPrinterHelper.isConnected ==
+                                      false) {
+                                    Navigator.of(context).pop();
+                                    CherryToast.error(
+                                      toastDuration: const Duration(seconds: 5),
+                                      title: Text(
+                                        "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                                        style: CustomTextStyle.h4
+                                            .copyWith(color: ColorTheme.danger),
+                                      ),
+                                      toastPosition: Position.bottom,
+                                      borderRadius: 5,
+                                    ).show(context);
+                                    bluetoothPrinterHelper.subscriptionBtStatus!
+                                        .cancel();
+                                  } else {
+                                    Navigator.of(context).pop();
+                                  }
+                                });
+                              }
+                            } else {
+                              CherryToast.error(
+                                toastDuration: const Duration(seconds: 2),
+                                title: Text(
+                                  "Please turn on bluetooth",
+                                  style: CustomTextStyle.h4
+                                      .copyWith(color: ColorTheme.danger),
+                                ),
+                                toastPosition: Position.bottom,
+                                borderRadius: 5,
+                              ).show(context);
                             }
                           }
                         : () => Navigator.of(context).pushReplacementNamed(
