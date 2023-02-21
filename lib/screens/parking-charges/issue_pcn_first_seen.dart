@@ -506,10 +506,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         contraventionPhotos: contraventionImageList,
       );
 
-      bool check = await checkDuplicateContravention(
+      bool isExitedReference = await checkDuplicateContravention(
           physicalPCN2.ContraventionReference);
+
       if (!mounted) return;
-      if (!check) {
+      if (!isExitedReference) {
         contraventionProvider.upDateContravention(contravention);
         step2 == true
             ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName,
