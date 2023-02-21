@@ -30,89 +30,108 @@ class MyTabBar extends StatefulWidget {
   State<MyTabBar> createState() => _MyTabBarState();
 }
 
-class _MyTabBarState extends State<MyTabBar> {
+class _MyTabBarState extends State<MyTabBar>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  @override
+  void initState() {
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabSelection);
+    super.initState();
+    print('Selected tab index: ${_tabController.index}');
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabSelection);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _handleTabSelection() {
+    setState(() {
+      currentIndexTab = _tabController.index;
+      print('Selected tab index: ${_tabController.index}');
+    });
+  }
+
   int currentIndexTab = 0;
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      initialIndex: currentIndexTab,
-      length: 2,
-      child: Scaffold(
-        appBar: MyAppBar(
-          title: widget.titleAppBar,
-          automaticallyImplyLeading: true,
-          onRedirect: () {
-            Navigator.of(context).pushNamed(HomeOverview.routeName);
+    return Scaffold(
+      appBar: MyAppBar(
+        title: widget.titleAppBar,
+        automaticallyImplyLeading: true,
+        onRedirect: () {
+          Navigator.of(context).pushNamed(HomeOverview.routeName);
+        },
+      ),
+      bottomNavigationBar: BottomSheet2(buttonList: [
+        BottomNavyBarItem(
+          onPressed: () {
+            widget.funcAdd();
           },
-        ),
-        bottomNavigationBar: BottomSheet2(buttonList: [
-          BottomNavyBarItem(
-            onPressed: () {
-              widget.funcAdd();
-            },
-            icon: SvgPicture.asset(
-              'assets/svg/IconPlus.svg',
-              width: 18,
-              height: 18,
-              color: Colors.white,
-            ),
-            label: widget.labelFuncAdd,
+          icon: SvgPicture.asset(
+            'assets/svg/IconPlus.svg',
+            width: 18,
+            height: 18,
+            color: Colors.white,
           ),
-        ]),
-        drawer: const MyDrawer(),
-        body: Column(
-          children: <Widget>[
-            Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: ColorTheme.boxShadow,
-                    spreadRadius: 5,
-                    blurRadius: 15,
-                    offset: Offset(0, 3), // changes position of shadow
-                  ),
-                ],
-              ),
-              child: TabBar(
-                onTap: (index) {
-                  setState(() {
-                    currentIndexTab = index;
-                  });
-                },
-                tabs: <Widget>[
-                  Tab(
-                    child: Text(
-                      "Active (${widget.quantityActive})",
-                      style: CustomTextStyle.h5.copyWith(
-                          color: currentIndexTab == 0
-                              ? ColorTheme.success
-                              : ColorTheme.grey600),
-                    ),
-                  ),
-                  Tab(
-                    child: Text(
-                      "Expired  (${widget.quantityExpired})",
-                      style: CustomTextStyle.h5.copyWith(
-                          color: currentIndexTab == 1
-                              ? ColorTheme.success
-                              : ColorTheme.grey600),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: TabBarView(
-                children: <Widget>[
-                  widget.tabBarViewTab1,
-                  widget.tabBarViewTab2
-                ],
-              ),
-            )
-          ],
+          label: widget.labelFuncAdd,
         ),
+      ]),
+      drawer: const MyDrawer(),
+      body: Column(
+        children: <Widget>[
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: ColorTheme.boxShadow,
+                  spreadRadius: 5,
+                  blurRadius: 15,
+                  offset: Offset(0, 3), // changes position of shadow
+                ),
+              ],
+            ),
+            child: TabBar(
+              // onTap: (index) {
+              //   setState(() {
+              //     currentIndexTab = index;
+              //   });
+              // },
+              controller: _tabController,
+              tabs: <Widget>[
+                Tab(
+                  child: Text(
+                    "Active (${widget.quantityActive})",
+                    style: CustomTextStyle.h5.copyWith(
+                        color: currentIndexTab == 0
+                            ? ColorTheme.success
+                            : ColorTheme.grey600),
+                  ),
+                ),
+                Tab(
+                  child: Text(
+                    "Expired  (${widget.quantityExpired})",
+                    style: CustomTextStyle.h5.copyWith(
+                        color: currentIndexTab == 1
+                            ? ColorTheme.success
+                            : ColorTheme.grey600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: <Widget>[widget.tabBarViewTab1, widget.tabBarViewTab2],
+            ),
+          )
+        ],
       ),
     );
   }
