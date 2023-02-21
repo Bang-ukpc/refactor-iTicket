@@ -38,7 +38,6 @@ class _MyTabBarState extends State<MyTabBar>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabSelection);
     super.initState();
-    print('Selected tab index: ${_tabController.index}');
   }
 
   @override
@@ -51,7 +50,6 @@ class _MyTabBarState extends State<MyTabBar>
   void _handleTabSelection() {
     setState(() {
       currentIndexTab = _tabController.index;
-      print('Selected tab index: ${_tabController.index}');
     });
   }
 
