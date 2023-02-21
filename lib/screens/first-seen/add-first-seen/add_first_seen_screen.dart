@@ -42,6 +42,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
   List<File> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
   late CachedServiceFactory cachedServiceFactory;
+  AutovalidateMode validateMode = AutovalidateMode.disabled;
 
   Future<void> getLocationList(Locations locations) async {
     List<RotaWithLocation> rotas = [];
@@ -197,13 +198,6 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         borderRadius: 5,
       ).show(context);
 
-      setState(() {
-        _vrnController.text = '';
-        _bayNumberController.text = '';
-        arrayImage.clear();
-        evidencePhotoList.clear();
-      });
-
       _formKey.currentState!.save();
       return true;
     }
@@ -246,7 +240,19 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
             label: 'Complete',
           ),
           BottomNavyBarItem(
-            onPressed: saveForm,
+            onPressed: () async {
+              await saveForm().then((value) {
+                if (value == true) {
+                  setState(() {
+                    _vrnController.text = '';
+                    _bayNumberController.text = '';
+                    arrayImage.clear();
+                    evidencePhotoList.clear();
+                    validateMode = AutovalidateMode.disabled;
+                  });
+                }
+              });
+            },
             icon: SvgPicture.asset(
               'assets/svg/IconSave2.svg',
               width: 20,
@@ -311,8 +317,13 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                                       return null;
                                     }
                                   }),
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      validateMode =
+                                          AutovalidateMode.onUserInteraction;
+                                    });
+                                  },
+                                  autovalidateMode: validateMode,
                                 ),
                               ),
                             ],
