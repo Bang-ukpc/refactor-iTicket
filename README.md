@@ -73,3 +73,8 @@
 - WRDN-565 Can't get First seen/Grace period image when issue PCN
 - WRDN-439 [Physical PCN] some printers start print garbage
 - WRDN-590 [SHOWSTOPPER] Sync error
+
+[1.0.33-1] - 2023-02-21
+
+- WRDN-575 Bluetooth enable question
+- WRDN-487 [Tabs Active- Expired] Wrong style
