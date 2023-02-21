@@ -506,10 +506,11 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         contraventionPhotos: contraventionImageList,
       );
 
-      bool check = await checkDuplicateContravention(
+      bool isExitedReference = await checkDuplicateContravention(
           physicalPCN2.ContraventionReference);
+
       if (!mounted) return;
-      if (!check) {
+      if (!isExitedReference) {
         contraventionProvider.upDateContravention(contravention);
         step2 == true
             ? Navigator.of(context).pushReplacementNamed(PrintIssue.routeName,
@@ -832,6 +833,90 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       );
     }
 
+    Future<void> checkPermitFailed() async {
+      return showDialog<void>(
+        context: context,
+        barrierColor: ColorTheme.backdrop,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+            child: AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    5.0,
+                  ),
+                ),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+              contentPadding: EdgeInsets.zero,
+              title: Center(
+                  child: Column(
+                children: [
+                  Text(
+                    "Check permit failed",
+                    style: CustomTextStyle.h4.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: ColorTheme.danger,
+                    ),
+                  ),
+                  const Divider(),
+                ],
+              )),
+              content: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      const Text(
+                        'Check permit failed because poor connection. Please check your network to check permit.',
+                        style: CustomTextStyle.h4,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.grey300,
+                              ),
+                              child: Text(
+                                "OK",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.textPrimary),
+                              ),
+                              onPressed: () {
+                                if ((_selectedItemTypePCN?.value ?? 0) == 0) {
+                                  createPhysicalPCN(isPrinter: true);
+                                } else {
+                                  createVirtualTicket();
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     List<SelectModel> getSelectedTypeOfPCN() {
       return typeOfPCN.where((e) {
         if (locationProvider
@@ -1029,16 +1114,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           return;
                         } else if (error.type == DioErrorType.connectTimeout) {
                           Navigator.of(context).pop();
-                          CherryToast.error(
-                            toastDuration: const Duration(seconds: 3),
-                            title: Text(
-                              'Check permit failed because poor connection. Please check your network before issue the PCN.',
-                              style: CustomTextStyle.h4
-                                  .copyWith(color: ColorTheme.danger),
-                            ),
-                            toastPosition: Position.bottom,
-                            borderRadius: 5,
-                          ).show(context);
+                          checkPermitFailed();
                           return;
                         }
                         Navigator.of(context).pop();
@@ -1108,16 +1184,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           return;
                         } else if (error.type == DioErrorType.connectTimeout) {
                           Navigator.of(context).pop();
-                          CherryToast.error(
-                            toastDuration: const Duration(seconds: 3),
-                            title: Text(
-                              'Check permit failed because poor connection. Please check your network before issue the PCN.',
-                              style: CustomTextStyle.h4
-                                  .copyWith(color: ColorTheme.danger),
-                            ),
-                            toastPosition: Position.bottom,
-                            borderRadius: 5,
-                          ).show(context);
+                          checkPermitFailed();
                           return;
                         }
                         Navigator.of(context).pop();
