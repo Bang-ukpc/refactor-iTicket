@@ -78,3 +78,8 @@
 
 - WRDN-575 Bluetooth enable question
 - WRDN-487 [Tabs Active- Expired] Wrong style
+
+[1.0.34-1] - 2023-02-21
+
+- WRDN-589 [Weak network] Can't next to step 2 when issue PCN
+- WRDN-570 [Create First seen/Consideration] Should not validate VRN after click Complete & Add
