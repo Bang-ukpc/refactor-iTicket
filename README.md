@@ -83,3 +83,7 @@
 
 - WRDN-589 [Weak network] Can't next to step 2 when issue PCN
 - WRDN-570 [Create First seen/Consideration] Should not validate VRN after click Complete & Add
+
+[1.0.35-1] - 2023-02-21
+
+- WRDN-602 Go to step 2 when the license cannot be checked
