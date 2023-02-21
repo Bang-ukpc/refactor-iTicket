@@ -43,7 +43,7 @@ class IssuedPcnPhotoLocalService
       await delete(pcnPhoto.Id!);
     } catch (e) {
       print(e.toString());
-    } finally {}
+    }
   }
 }
 
