@@ -985,32 +985,58 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               if (_selectedItemTypePCN?.value == 1)
                 BottomNavyBarItem(
                   onPressed: () async {
-                    virtualTicket.Plate = _vrnController.text;
-                    virtualTicket.WardenComments = _commentController.text;
-                    try {
-                      if (!mounted) return;
-                      showCircularProgressIndicator(context: context);
-                      await weakNetworkContraventionController
-                          .checkHasPermit(virtualTicket)
-                          .then((value) {
-                        Navigator.of(context).pop();
-                        if (value?.hasPermit == true) {
-                          showDialogPermitExists(value);
-                        } else {
+                    ConnectivityResult connectionStatus =
+                        await (Connectivity().checkConnectivity());
+                    if (connectionStatus == ConnectivityResult.wifi ||
+                        connectionStatus == ConnectivityResult.mobile) {
+                      virtualTicket.Plate = _vrnController.text;
+                      virtualTicket.WardenComments = _commentController.text;
+                      try {
+                        if (!mounted) return;
+                        showCircularProgressIndicator(context: context);
+                        await weakNetworkContraventionController
+                            .checkHasPermit(virtualTicket)
+                            .then((value) {
+                          Navigator.of(context).pop();
+                          if (value?.hasPermit == true) {
+                            showDialogPermitExists(value);
+                          } else {
+                            createVirtualTicket();
+                          }
+                        });
+                      } on DioError catch (error) {
+                        if (!mounted) return;
+                        if (error.type == DioErrorType.other) {
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            displayCloseButton: false,
+                            toastDuration: const Duration(seconds: 3),
+                            title: Text(
+                              error.response!.data['message']
+                                          .toString()
+                                          .length >
+                                      Constant.errorMaxLength
+                                  ? 'Something went wrong, please try again'
+                                  : error.response!.data['message'],
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        } else if (error.type == DioErrorType.connectTimeout) {
+                          Navigator.of(context).pop();
                           createVirtualTicket();
+                          return;
                         }
-                      });
-                    } on DioError catch (error) {
-                      if (!mounted) return;
-                      if (error.type == DioErrorType.other) {
                         Navigator.of(context).pop();
                         CherryToast.error(
                           displayCloseButton: false,
-                          toastDuration: const Duration(seconds: 3),
                           title: Text(
                             error.response!.data['message'].toString().length >
                                     Constant.errorMaxLength
-                                ? 'Something went wrong, please try again'
+                                ? 'Internal server error'
                                 : error.response!.data['message'],
                             style: CustomTextStyle.h4
                                 .copyWith(color: ColorTheme.danger),
@@ -1019,26 +1045,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           borderRadius: 5,
                         ).show(context);
                         return;
-                      } else if (error.type == DioErrorType.connectTimeout) {
-                        Navigator.of(context).pop();
-                        createVirtualTicket();
-                        return;
                       }
-                      Navigator.of(context).pop();
-                      CherryToast.error(
-                        displayCloseButton: false,
-                        title: Text(
-                          error.response!.data['message'].toString().length >
-                                  Constant.errorMaxLength
-                              ? 'Internal server error'
-                              : error.response!.data['message'],
-                          style: CustomTextStyle.h4
-                              .copyWith(color: ColorTheme.danger),
-                        ),
-                        toastPosition: Position.bottom,
-                        borderRadius: 5,
-                      ).show(context);
-                      return;
+                    } else {
+                      createVirtualTicket();
                     }
                   },
                   icon: SvgPicture.asset(
@@ -1050,32 +1059,58 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
               if (_selectedItemTypePCN?.value == 0)
                 BottomNavyBarItem(
                   onPressed: () async {
-                    physicalPCN.Plate = _vrnController.text;
-                    physicalPCN.WardenComments = _commentController.text;
-                    try {
-                      if (!mounted) return;
-                      showCircularProgressIndicator(context: context);
-                      await weakNetworkContraventionController
-                          .checkHasPermit(physicalPCN)
-                          .then((value) {
-                        Navigator.of(context).pop();
-                        if (value?.hasPermit == true) {
-                          showDialogPermitExists(value);
-                        } else {
+                    ConnectivityResult connectionStatus =
+                        await (Connectivity().checkConnectivity());
+                    if (connectionStatus == ConnectivityResult.wifi ||
+                        connectionStatus == ConnectivityResult.mobile) {
+                      physicalPCN.Plate = _vrnController.text;
+                      physicalPCN.WardenComments = _commentController.text;
+                      try {
+                        if (!mounted) return;
+                        showCircularProgressIndicator(context: context);
+                        await weakNetworkContraventionController
+                            .checkHasPermit(physicalPCN)
+                            .then((value) {
+                          Navigator.of(context).pop();
+                          if (value?.hasPermit == true) {
+                            showDialogPermitExists(value);
+                          } else {
+                            createPhysicalPCN(isPrinter: true);
+                          }
+                        });
+                      } on DioError catch (error) {
+                        if (!mounted) return;
+                        if (error.type == DioErrorType.other) {
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            displayCloseButton: false,
+                            toastDuration: const Duration(seconds: 3),
+                            title: Text(
+                              error.response!.data['message']
+                                          .toString()
+                                          .length >
+                                      Constant.errorMaxLength
+                                  ? 'Something went wrong, please try again'
+                                  : error.response!.data['message'],
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          return;
+                        } else if (error.type == DioErrorType.connectTimeout) {
+                          Navigator.of(context).pop();
                           createPhysicalPCN(isPrinter: true);
+                          return;
                         }
-                      });
-                    } on DioError catch (error) {
-                      if (!mounted) return;
-                      if (error.type == DioErrorType.other) {
                         Navigator.of(context).pop();
                         CherryToast.error(
                           displayCloseButton: false,
-                          toastDuration: const Duration(seconds: 3),
                           title: Text(
                             error.response!.data['message'].toString().length >
                                     Constant.errorMaxLength
-                                ? 'Something went wrong, please try again'
+                                ? 'Internal server error'
                                 : error.response!.data['message'],
                             style: CustomTextStyle.h4
                                 .copyWith(color: ColorTheme.danger),
@@ -1084,26 +1119,9 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                           borderRadius: 5,
                         ).show(context);
                         return;
-                      } else if (error.type == DioErrorType.connectTimeout) {
-                        Navigator.of(context).pop();
-                        createPhysicalPCN(isPrinter: true);
-                        return;
                       }
-                      Navigator.of(context).pop();
-                      CherryToast.error(
-                        displayCloseButton: false,
-                        title: Text(
-                          error.response!.data['message'].toString().length >
-                                  Constant.errorMaxLength
-                              ? 'Internal server error'
-                              : error.response!.data['message'],
-                          style: CustomTextStyle.h4
-                              .copyWith(color: ColorTheme.danger),
-                        ),
-                        toastPosition: Position.bottom,
-                        borderRadius: 5,
-                      ).show(context);
-                      return;
+                    } else {
+                      createPhysicalPCN(isPrinter: true);
                     }
                   },
                   icon: SvgPicture.asset(
