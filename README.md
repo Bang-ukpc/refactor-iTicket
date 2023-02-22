@@ -92,3 +92,4 @@
 
 - WRDN-610 If make the "Car Left", it still display on the expired list
 - WRDN-603 Real time contravention reason when refresh home page
+- WRDN-608 The way to calculate the expire time of first seen is not correct
