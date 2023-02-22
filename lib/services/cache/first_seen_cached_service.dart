@@ -1,18 +1,17 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:collection/collection.dart';
+import 'package:iWarden/helpers/list_helper.dart';
 import 'package:iWarden/helpers/time_helper.dart';
-import 'package:iWarden/models/pagination.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/services/cache/contravention_cached_service.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 
 import '../../controllers/index.dart';
+import '../../helpers/logger.dart';
 import 'cache_service.dart';
 
 class FirstSeenCachedService extends CacheService<VehicleInformation> {
   late int _zoneId;
+  Logger logger = Logger<FirstSeenCachedService>();
   FirstSeenCachedService(int zoneId) : super("cacheFirstSeenItems_$zoneId") {
     _zoneId = zoneId;
   }
@@ -94,13 +93,14 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
 
   Future<List<VehicleInformation>> getAllWithCreatedOnTheOffline() async {
     var cachedItems = await getAll();
-    var issuedItem =
+    var issuedItems =
         await createdVehicleDataLocalService.getAllFirstSeen(_zoneId);
-    var cachedAllVehicleInfo = [...issuedItem, ...cachedItems]
-        .where((e) => e.CarLeftAt == null)
-        .toList();
-    var cachedAllVehicleInfoSort = cachedAllVehicleInfo
+    var allItems = [...issuedItems, ...cachedItems];
+    allItems = ListHelper.uniqBy<VehicleInformation>(allItems, (t) => t.Id);
+
+    allItems = allItems.where((e) => e.CarLeftAt == null).toList();
+    var sortedAllItems = allItems
       ..sort((i1, i2) => i2.Created!.compareTo(i1.Created!));
-    return cachedAllVehicleInfoSort;
+    return sortedAllItems;
   }
 }
