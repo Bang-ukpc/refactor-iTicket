@@ -67,11 +67,9 @@ class CreatedVehicleDataLocalService
         if (isNewItem) {
           vehicleInformation.Id = null;
         }
-        if (vehicleInformation.Id != null) {
-          var latestItem = await get(vehicleInformation.Id!);
-          if (latestItem != null && latestItem.CarLeftAt != null) {
-            vehicleInformation.CarLeftAt = latestItem.CarLeftAt!;
-          }
+        var latestItem = await get(vehicleInformation.Id ?? 0);
+        if (latestItem != null && latestItem.CarLeftAt != null) {
+          vehicleInformation.CarLeftAt = latestItem.CarLeftAt!;
         }
         await vehicleInfoController.upsertVehicleInfo(vehicleInformation);
 
