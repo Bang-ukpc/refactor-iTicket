@@ -1005,11 +1005,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                       if (error.type == DioErrorType.other) {
                         Navigator.of(context).pop();
                         CherryToast.error(
+                          displayCloseButton: false,
                           toastDuration: const Duration(seconds: 3),
                           title: Text(
-                            error.message.length > Constant.errorTypeOther
+                            error.response!.data['message'].toString().length >
+                                    Constant.errorMaxLength
                                 ? 'Something went wrong, please try again'
-                                : error.message,
+                                : error.response!.data['message'],
                             style: CustomTextStyle.h4
                                 .copyWith(color: ColorTheme.danger),
                           ),
@@ -1068,11 +1070,13 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                       if (error.type == DioErrorType.other) {
                         Navigator.of(context).pop();
                         CherryToast.error(
+                          displayCloseButton: false,
                           toastDuration: const Duration(seconds: 3),
                           title: Text(
-                            error.message.length > Constant.errorTypeOther
+                            error.response!.data['message'].toString().length >
+                                    Constant.errorMaxLength
                                 ? 'Something went wrong, please try again'
-                                : error.message,
+                                : error.response!.data['message'],
                             style: CustomTextStyle.h4
                                 .copyWith(color: ColorTheme.danger),
                           ),
