@@ -37,8 +37,13 @@ class _GracePeriodListState extends State<GracePeriodList> {
 
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
+  Future<void> syncAndGetData(int zoneId) async {
+    await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
+    getData(zoneId);
+  }
+
   Future<void> getData(int zoneId) async {
-    zoneCachedServiceFactory.gracePeriodCachedService
+    await zoneCachedServiceFactory.gracePeriodCachedService
         .getListActive()
         .then((listActive) {
       setState(() {
@@ -65,7 +70,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
-      await getData(locations.zone?.Id ?? 0);
+      await syncAndGetData(locations.zone?.Id ?? 0);
     });
   }
 
@@ -120,7 +125,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
     }
 
     Future<void> refresh() async {
-      await getData(locations.zone?.Id ?? 0);
+      await syncAndGetData(locations.zone?.Id ?? 0);
     }
 
     return WillPopScope(

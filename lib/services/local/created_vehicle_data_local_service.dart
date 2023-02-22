@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/helpers/logger.dart';
@@ -51,7 +49,6 @@ class CreatedVehicleDataLocalService
   @override
   Future<List<VehicleInformation>> getAll() async {
     final items = await super.getAll();
-    logger.info('get all ${json.encode(items)}');
     return items;
   }
 
@@ -113,9 +110,9 @@ class CreatedVehicleDataLocalService
     List<EvidencePhoto> evidencePhotos,
   ) async {
     List<EvidencePhoto> allVehiclePhotos = [];
+    logger.info('[UPLOAD] ${evidencePhotos.length} evident photos');
     for (var evidencePhoto in evidencePhotos) {
       evidencePhoto.Created = evidencePhoto.Created;
-      logger.info('[UPLOAD] ${evidencePhotos.length} evident photos');
       EvidencePhoto? uploadedEvidencePhoto =
           await createdVehicleDataPhotoLocalService.sync(evidencePhoto);
       if (uploadedEvidencePhoto != null) {

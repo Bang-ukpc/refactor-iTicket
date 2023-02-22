@@ -36,7 +36,12 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<VehicleInformation> cacheFirstSeenActive = [];
 
-  Future<void> getData() async {
+  Future<void> syncAndGetData(int zoneId) async {
+    await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
+    await getData(zoneId);
+  }
+
+  Future<void> getData(int zoneId) async {
     await zoneCachedServiceFactory.firstSeenCachedService
         .getListActive()
         .then((listActive) {
@@ -45,7 +50,8 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
       });
     });
 
-    var localVehicleData = await createdVehicleDataLocalService.getAll();
+    var localVehicleData =
+        await createdVehicleDataLocalService.getAllFirstSeen(zoneId);
     setState(() {
       cacheFirstSeenActive = localVehicleData;
     });
@@ -65,7 +71,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
-      await getData();
+      await syncAndGetData(locations.zone?.Id ?? 0);
     });
   }
 
@@ -78,6 +84,8 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locations = Provider.of<Locations>(context);
+
     void onCarLeft(VehicleInformation vehicleInfo) {
       showDialog<void>(
         context: context,
@@ -108,7 +116,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
-                await getData();
+                await getData(locations.zone?.Id ?? 0);
               },
             ),
           );
@@ -117,7 +125,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     }
 
     Future<void> refresh() async {
-      await getData();
+      await syncAndGetData(locations.zone?.Id ?? 0);
     }
 
     return WillPopScope(

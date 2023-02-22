@@ -1,7 +1,8 @@
 import 'package:iWarden/models/vehicle_information.dart';
+
 import '../../controllers/index.dart';
+import '../../helpers/list_helper.dart';
 import '../../helpers/time_helper.dart';
-import '../../models/pagination.dart';
 import '../local/created_vehicle_data_local_service.dart';
 import 'cache_service.dart';
 
@@ -64,11 +65,12 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
     var cachedItems = await getAll();
     var issuedItem =
         await createdVehicleDataLocalService.getAllGracePeriod(_zoneId);
-    var cachedAllVehicleInfo = [...issuedItem, ...cachedItems]
-        .where((e) => e.CarLeftAt == null)
-        .toList();
-    var cachedAllVehicleInfoSort = cachedAllVehicleInfo
+    var allItems = [...issuedItem, ...cachedItems];
+    allItems = ListHelper.uniqBy<VehicleInformation>(allItems, (t) => t.Id);
+
+    allItems = allItems.where((e) => e.CarLeftAt == null).toList();
+    var sortedAllItems = allItems
       ..sort((i1, i2) => i2.Created!.compareTo(i1.Created!));
-    return cachedAllVehicleInfoSort;
+    return sortedAllItems;
   }
 }
