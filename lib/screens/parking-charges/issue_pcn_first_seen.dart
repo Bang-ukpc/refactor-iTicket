@@ -87,6 +87,8 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
   }
 
   Future<void> getContraventionReasonList() async {
+    await zoneCachedServiceFactory.contraventionReasonCachedService
+        .syncFromServer();
     var contraventionReasons = await zoneCachedServiceFactory
         .contraventionReasonCachedService
         .getAll();

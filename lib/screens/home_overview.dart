@@ -64,6 +64,8 @@ class _HomeOverviewState extends State<HomeOverview> {
       loading = true;
     });
     try {
+      await zoneCachedServiceFactory.contraventionReasonCachedService
+          .syncFromServer();
       await zoneCachedServiceFactory.contraventionCachedService
           .syncFromServer();
       await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
