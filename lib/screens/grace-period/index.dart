@@ -41,7 +41,9 @@ class _GracePeriodListState extends State<GracePeriodList> {
     setState(() {
       isLoading = true;
     });
-    await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
+    try {
+      await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
+    } catch (e) {}
     getData(zoneId);
     setState(() {
       isLoading = false;
@@ -76,7 +78,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
-      await syncAndGetData(locations.zone?.Id ?? 0);
+      await getData(locations.zone?.Id ?? 0);
     });
   }
 
