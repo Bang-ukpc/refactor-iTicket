@@ -38,8 +38,14 @@ class _GracePeriodListState extends State<GracePeriodList> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> syncAndGetData(int zoneId) async {
+    setState(() {
+      isLoading = true;
+    });
     await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     getData(zoneId);
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> getData(int zoneId) async {
