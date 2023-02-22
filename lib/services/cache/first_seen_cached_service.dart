@@ -95,12 +95,19 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     var cachedItems = await getAll();
     var issuedItems =
         await createdVehicleDataLocalService.getAllFirstSeen(_zoneId);
+
+    logger.info('items 1 ${cachedItems.map((e) => e.CarLeftAt)}');
+    logger.info('items 2 ${issuedItems.map((e) => e.CarLeftAt)}');
     var allItems = [...issuedItems, ...cachedItems];
-    allItems = ListHelper.uniqBy<VehicleInformation>(allItems, (t) => t.Id);
+    allItems = ListHelper.uniqBy<VehicleInformation>(allItems,
+        (t) => '${t.ZoneId}_${t.Plate}_${t.Created?.toIso8601String()}');
+    logger.info('items 3 ${allItems.map((e) => e.CarLeftAt)}');
 
     allItems = allItems.where((e) => e.CarLeftAt == null).toList();
     var sortedAllItems = allItems
       ..sort((i1, i2) => i2.Created!.compareTo(i1.Created!));
+    logger.info('items 4 ${sortedAllItems.map((e) => e.CarLeftAt)}');
+
     return sortedAllItems;
   }
 }

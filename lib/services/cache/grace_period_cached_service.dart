@@ -66,7 +66,8 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
     var issuedItem =
         await createdVehicleDataLocalService.getAllGracePeriod(_zoneId);
     var allItems = [...issuedItem, ...cachedItems];
-    allItems = ListHelper.uniqBy<VehicleInformation>(allItems, (t) => t.Id);
+    allItems = ListHelper.uniqBy<VehicleInformation>(allItems,
+        (t) => '${t.ZoneId}_${t.Plate}_${t.Created?.toIso8601String()}');
 
     allItems = allItems.where((e) => e.CarLeftAt == null).toList();
     var sortedAllItems = allItems
