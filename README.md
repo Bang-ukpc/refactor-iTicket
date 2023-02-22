@@ -87,3 +87,8 @@
 [1.0.35-1] - 2023-02-21
 
 - WRDN-602 Go to step 2 when the license cannot be checked
+
+[1.0.36-1] - 2023-02-21
+
+- WRDN-610 If make the "Car Left", it still display on the expired list
+- WRDN-603 Real time contravention reason when refresh home page
