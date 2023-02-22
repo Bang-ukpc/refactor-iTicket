@@ -57,7 +57,9 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     var issuedItem =
         await createdVehicleDataLocalService.getAllFirstSeen(_zoneId);
     var items = [...issuedItem, ...cachedItems];
-    return items.firstWhereOrNull((element) => element.Plate == plate) != null;
+    return items.firstWhereOrNull(
+            (element) => element.Plate == plate && element.CarLeftAt == null) !=
+        null;
   }
 
   Future<bool> isExistsWithOverStayingInPCNs({
