@@ -37,8 +37,14 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
   List<VehicleInformation> cacheFirstSeenActive = [];
 
   Future<void> syncAndGetData(int zoneId) async {
+    setState(() {
+      isLoading = true;
+    });
     await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
     await getData(zoneId);
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> getData(int zoneId) async {
