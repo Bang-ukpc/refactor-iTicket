@@ -93,3 +93,7 @@
 - WRDN-610 If make the "Car Left", it still display on the expired list
 - WRDN-603 Real time contravention reason when refresh home page
 - WRDN-608 The way to calculate the expire time of first seen is not correct
+
+[1.0.37-1] - 2023-02-21
+
+- WRDN-613 After create the first seen we do the car left immediatly => the UI still appear item with synced status
