@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/my_dialog.dart';
@@ -33,7 +32,6 @@ class AddImage extends StatefulWidget {
 
 class _AddImageState extends State<AddImage> {
   final CarouselController _controller = CarouselController();
-  ConnectivityResult checkConnection = ConnectivityResult.none;
 
   void remove(int index) {
     showDialog<void>(
@@ -75,23 +73,8 @@ class _AddImageState extends State<AddImage> {
     );
   }
 
-  void checkConnectionStatus() async {
-    ConnectivityResult connectionStatus =
-        await (Connectivity().checkConnectivity());
-    setState(() {
-      checkConnection = connectionStatus;
-    });
-  }
-
-  @override
-  void initState() {
-    checkConnectionStatus();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    print(checkConnection);
     return SingleChildScrollView(
       child: Column(
         children: [

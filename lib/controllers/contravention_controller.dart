@@ -1,11 +1,7 @@
-import 'dart:convert';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:iWarden/factory/json_decode_factory.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
-import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/pagination.dart';
@@ -34,38 +30,6 @@ class ContraventionController {
     } on DioError catch (error) {
       print(error.response);
       rethrow;
-    }
-  }
-
-  Future<Contravention?> getContraventionDetail(int id) async {
-    ConnectivityResult connectionStatus =
-        await (Connectivity().checkConnectivity());
-    if (connectionStatus == ConnectivityResult.wifi ||
-        connectionStatus == ConnectivityResult.mobile) {
-      try {
-        final response = await dio.get(
-          '/contravention/$id',
-        );
-        Contravention contraventionResult =
-            Contravention.fromJson(response.data);
-        return contraventionResult;
-      } on DioError catch (error) {
-        print(error.response);
-        rethrow;
-      }
-    } else {
-      final String? data = await SharedPreferencesHelper.getStringValue(
-          'contraventionDataLocal');
-      if (data != null) {
-        final contraventions = json.decode(data) as Map<String, dynamic>;
-        Pagination fromJsonContravention = Pagination.fromJson(contraventions);
-        List<Contravention> contraventionList = fromJsonContravention.rows
-            .map((item) => Contravention.fromJson(item))
-            .toList();
-        var index = contraventionList.indexWhere((i) => i.id == id);
-        return contraventionList[index];
-      }
-      return null;
     }
   }
 
