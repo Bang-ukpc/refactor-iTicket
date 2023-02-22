@@ -64,12 +64,12 @@ class CreatedVehicleDataLocalService
       await syncPcnPhotos(vehicleInformation.EvidencePhotos!)
           .then((evidencePhotos) async {
         vehicleInformation.EvidencePhotos = evidencePhotos;
-        if (isNewItem) {
-          vehicleInformation.Id = null;
-        }
-        var latestItem = await get(vehicleInformation.Id!);
+        var latestItem = await get(vehicleInformation.Id ?? 0);
         if (latestItem != null && latestItem.CarLeftAt != null) {
           vehicleInformation.CarLeftAt = latestItem.CarLeftAt!;
+        }
+        if (isNewItem) {
+          vehicleInformation.Id = null;
         }
         await vehicleInfoController.upsertVehicleInfo(vehicleInformation);
 

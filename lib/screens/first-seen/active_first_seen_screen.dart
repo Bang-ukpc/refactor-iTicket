@@ -40,7 +40,9 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     setState(() {
       isLoading = true;
     });
-    await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
+    try {
+      await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
+    } catch (e) {}
     await getData(zoneId);
     setState(() {
       isLoading = false;
@@ -77,7 +79,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
-      await syncAndGetData(locations.zone?.Id ?? 0);
+      await getData(locations.zone?.Id ?? 0);
     });
   }
 
