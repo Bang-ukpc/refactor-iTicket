@@ -30,16 +30,14 @@ class Locations with ChangeNotifier {
 
   int get expiringTimeFirstSeen {
     final secondsOfLocations =
-        ((zoneSelected?.Services?[0].ServiceConfig.FirstSeenPeriod ?? 0) +
-                (zoneSelected?.Services?[0].ServiceConfig.GracePeriod ?? 0)) *
-            60;
+        (zoneSelected?.Services?[0].ServiceConfig.FirstSeenPeriod ?? 0) * 60;
 
     return secondsOfLocations;
   }
 
   int get expiringTimeGracePeriod {
     final secondsOfLocations =
-        ((zoneSelected?.Services?[0].ServiceConfig.GracePeriod ?? 0)) * 60;
+        (zoneSelected?.Services?[0].ServiceConfig.GracePeriod ?? 0) * 60;
 
     return secondsOfLocations;
   }
