@@ -108,5 +108,10 @@
 
 [1.0.40-1] - 2023-02-23
 
-- WRDN-615 Only sync data from the server when the user refreshes the page
 - WRDN-617 VRN field validation can only enter up to 10 characters
+- WRDN-605 Change Warden event create PCN from APP to BE
+
+[1.0.41-1] - 2023-02-23
+
+- WRDN-622 [Connect device] text is over than screen
+- WRDN-625 Show all assigned rota for the day
