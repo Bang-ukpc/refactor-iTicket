@@ -200,9 +200,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
         CherryToast.error(
           toastDuration: const Duration(seconds: 3),
           title: Text(
-            error.message.length > Constant.errorTypeOther
-                ? 'Something went wrong, please try again'
-                : error.message,
+            'Search vehicle info failed because poor connection',
             style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
           ),
           toastPosition: Position.bottom,
@@ -1008,22 +1006,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                         if (!mounted) return;
                         if (error.type == DioErrorType.other) {
                           Navigator.of(context).pop();
-                          CherryToast.error(
-                            displayCloseButton: false,
-                            toastDuration: const Duration(seconds: 3),
-                            title: Text(
-                              error.response!.data['message']
-                                          .toString()
-                                          .length >
-                                      Constant.errorMaxLength
-                                  ? 'Something went wrong, please try again'
-                                  : error.response!.data['message'],
-                              style: CustomTextStyle.h4
-                                  .copyWith(color: ColorTheme.danger),
-                            ),
-                            toastPosition: Position.bottom,
-                            borderRadius: 5,
-                          ).show(context);
+                          createVirtualTicket();
                           return;
                         } else if (error.type == DioErrorType.connectTimeout) {
                           Navigator.of(context).pop();
@@ -1082,22 +1065,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                         if (!mounted) return;
                         if (error.type == DioErrorType.other) {
                           Navigator.of(context).pop();
-                          CherryToast.error(
-                            displayCloseButton: false,
-                            toastDuration: const Duration(seconds: 3),
-                            title: Text(
-                              error.response!.data['message']
-                                          .toString()
-                                          .length >
-                                      Constant.errorMaxLength
-                                  ? 'Something went wrong, please try again'
-                                  : error.response!.data['message'],
-                              style: CustomTextStyle.h4
-                                  .copyWith(color: ColorTheme.danger),
-                            ),
-                            toastPosition: Position.bottom,
-                            borderRadius: 5,
-                          ).show(context);
+                          createPhysicalPCN(isPrinter: true);
                           return;
                         } else if (error.type == DioErrorType.connectTimeout) {
                           Navigator.of(context).pop();
