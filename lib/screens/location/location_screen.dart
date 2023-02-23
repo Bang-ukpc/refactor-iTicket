@@ -73,23 +73,23 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
-    DateTime date = DateTime.parse(getLocalDate(DateTime.now()));
-    final filterRotaShiftByNow = list.where(
-      (location) {
-        DateTime timeFrom =
-            DateTime.parse(getLocalDate(location.timeFrom as DateTime));
-        DateTime timeTo =
-            DateTime.parse(getLocalDate(location.timeTo as DateTime));
-        return timeFrom.isAfter(date) ||
-            (date.isAfter(timeFrom) && date.isBefore(timeTo));
-      },
-    ).toList();
-    filterRotaShiftByNow.sort(
+    // DateTime date = DateTime.parse(getLocalDate(DateTime.now()));
+    // final filterRotaShiftByNow = list.where(
+    //   (location) {
+    //     DateTime timeFrom =
+    //         DateTime.parse(getLocalDate(location.timeFrom as DateTime));
+    //     DateTime timeTo =
+    //         DateTime.parse(getLocalDate(location.timeTo as DateTime));
+    //     return timeFrom.isAfter(date) ||
+    //         (date.isAfter(timeFrom) && date.isBefore(timeTo));
+    //   },
+    // ).toList();
+    list.sort(
       (i1, i2) => DateTime.parse(getLocalDate(i1.timeFrom as DateTime))
           .compareTo(DateTime.parse(getLocalDate(i2.timeFrom as DateTime))),
     );
     setState(() {
-      listFilter = filterRotaShiftByNow;
+      listFilter = list;
     });
     return listFilter;
   }
