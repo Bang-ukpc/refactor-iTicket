@@ -584,18 +584,25 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                   const SizedBox(
                     height: 16,
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '*',
-                        style: TextStyle(color: ColorTheme.danger),
-                      ),
-                      const Text(
-                        'Mandatory service and data required to operate iTicket.',
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '*',
+                          style: TextStyle(color: ColorTheme.danger),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Mandatory service and data required to operate iTicket.',
+                            style: TextStyle(fontStyle: FontStyle.italic),
+                            overflow: TextOverflow.clip,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(
                     height: 32,
