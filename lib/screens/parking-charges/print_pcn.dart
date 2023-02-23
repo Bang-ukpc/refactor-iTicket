@@ -83,19 +83,6 @@ class _PrintPCNState extends State<PrintPCN> {
     }
 
     Future<void> issuePCN() async {
-      final wardenEventIssuePCN = WardenEvent(
-        type: TypeWardenEvent.IssuePCN.index,
-        detail:
-            '{"TicketNumber": "${contraventionCreate.ContraventionReference}"}',
-        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-        wardenId: wardensProvider.wardens?.Id ?? 0,
-        zoneId: locationProvider.zone?.Id ?? 0,
-        locationId: locationProvider.location?.Id ?? 0,
-        rotaTimeFrom: locationProvider.rotaShift?.timeFrom,
-        rotaTimeTo: locationProvider.rotaShift?.timeTo,
-      );
-
       await issuedPcnLocalService.create(contraventionCreate);
 
       var images = args!.contraventionPhotos!
@@ -113,8 +100,6 @@ class _PrintPCNState extends State<PrintPCN> {
           .toList();
 
       await issuedPcnPhotoLocalService.bulkCreate(images);
-
-      await createdWardenEventLocalService.create(wardenEventIssuePCN);
 
       await onRemoveFromVehicleInfo().then((value) {
         Navigator.of(context).pop();

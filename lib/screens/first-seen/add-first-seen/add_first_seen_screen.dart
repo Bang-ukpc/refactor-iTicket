@@ -313,6 +313,8 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
                                     } else {
                                       if (value.length < 2) {
                                         return 'Please enter at least 2 characters';
+                                      } else if (value.length > 10) {
+                                        return 'You can only enter up to 10 characters';
                                       }
                                       return null;
                                     }

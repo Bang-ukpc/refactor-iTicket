@@ -97,3 +97,16 @@
 [1.0.37-1] - 2023-02-21
 
 - WRDN-613 After create the first seen we do the car left immediatly => the UI still appear item with synced status
+
+[1.0.38-1] - 2023-02-22
+
+- WRDN-609 Should be possible to raise an another First seen within 24 hours if: car already left and have no PCN issued with 24 hours
+
+[1.0.39-1] - 2023-02-22
+
+- WRDN-619 Can't create PCN if have no network
+
+[1.0.40-1] - 2023-02-23
+
+- WRDN-615 Only sync data from the server when the user refreshes the page
+- WRDN-617 VRN field validation can only enter up to 10 characters

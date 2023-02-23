@@ -21,7 +21,7 @@ class ContraventionController {
   Future<Contravention> createPCN(ContraventionCreateWardenCommand pcn) async {
     try {
       final response = await dio.post(
-        '/contravention/create-pcn',
+        '/contravention/create-pcn-v2',
         data: pcn.toJson(),
       );
       Contravention contraventionResult = Contravention.fromJson(response.data);
