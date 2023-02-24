@@ -115,3 +115,7 @@
 
 - WRDN-622 [Connect device] text is over than screen
 - WRDN-625 Show all assigned rota for the day
+
+[1.0.42-1] - 2023-02-24
+
+- WRDN-615 Only sync data from the server when the user refreshes the page
