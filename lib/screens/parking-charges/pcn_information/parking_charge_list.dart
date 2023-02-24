@@ -35,7 +35,7 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<ContraventionCreateWardenCommand> issuedContraventions = [];
 
-  Future<void> getContraventions() async {
+  Future<void> syncAndGetData() async {
     setState(() {
       contraventionLoading = true;
     });
@@ -43,6 +43,13 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
       await zoneCachedServiceFactory.contraventionCachedService
           .syncFromServer();
     } catch (e) {}
+    await getData();
+    setState(() {
+      contraventionLoading = false;
+    });
+  }
+
+  Future<void> getData() async {
     var contraventions = await zoneCachedServiceFactory
         .contraventionCachedService
         .getAllWithCreatedOnTheOffline();
@@ -52,17 +59,16 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
     setState(() {
       contraventionList = contraventions;
       issuedContraventions = localIssuedContraventions;
-      contraventionLoading = false;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locationProvider = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
-      getContraventions();
+      await getData();
     });
   }
 
@@ -74,10 +80,8 @@ class _ParkingChargeListState extends State<ParkingChargeList> {
 
   @override
   Widget build(BuildContext context) {
-    log('[offline] ${issuedContraventions.map((e) => e.Id)}');
-
     Future<void> refresh() async {
-      getContraventions();
+      await syncAndGetData();
     }
 
     return WillPopScope(

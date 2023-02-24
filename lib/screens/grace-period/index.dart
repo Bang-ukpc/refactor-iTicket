@@ -44,7 +44,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
     try {
       await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     } catch (e) {}
-    getData(zoneId);
+    await getData(zoneId);
     setState(() {
       isLoading = false;
     });
