@@ -59,7 +59,7 @@ class _HomeOverviewState extends State<HomeOverview> {
   bool loading = false;
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
-  Future<void> getData() async {
+  Future<void> syncAndGetData() async {
     setState(() {
       loading = true;
     });
@@ -71,22 +71,24 @@ class _HomeOverviewState extends State<HomeOverview> {
       await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
       await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     } catch (e) {}
+    setState(() {
+      loading = false;
+    });
+  }
+
+  Future<void> getData() async {
     var listFirstSeen = await zoneCachedServiceFactory.firstSeenCachedService
         .getAllWithCreatedOnTheOffline();
     getFirstSeenActiveAndExpired(listFirstSeen);
-
     var gracePeriods = await zoneCachedServiceFactory.gracePeriodCachedService
         .getAllWithCreatedOnTheOffline();
     getGracePeriodActiveAndExpired(gracePeriods);
-
     var contraventions = await zoneCachedServiceFactory
         .contraventionCachedService
         .getAllWithCreatedOnTheOffline();
     setState(() {
       contraventionList = contraventions;
-      loading = false;
     });
-
     var contraventionReasons = await zoneCachedServiceFactory
         .contraventionReasonCachedService
         .getAll();
@@ -175,10 +177,10 @@ class _HomeOverviewState extends State<HomeOverview> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locationProvider = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
-      getData();
+      await getData();
     });
   }
 
@@ -314,7 +316,7 @@ class _HomeOverviewState extends State<HomeOverview> {
     }
 
     Future<void> refresh() async {
-      await getData();
+      await syncAndGetData();
     }
 
     return WillPopScope(
