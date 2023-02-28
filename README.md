@@ -119,3 +119,15 @@
 [1.0.42-1] - 2023-02-24
 
 - WRDN-615 Only sync data from the server when the user refreshes the page
+
+[1.0.43-1] - 2023-02-24
+
+- WRDN-419 As a PO, I want force the users upgrade the application when have new versions. (Test)
+
+[1.0.44-1] - 2023-02-28
+
+- WRDN-322 Can't login when installing a new app over an existing app
+
+[1.0.45-1] - 2023-02-28
+
+- WRDN-623 As a PO, I want to upgrade the new version without uninstall & clean the local data

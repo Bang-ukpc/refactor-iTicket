@@ -25,7 +25,7 @@ jobs:
       - name: Replace build version
         run: |
           ${{ env.CMD_EXPORT_BRANCH_NAME }}
-          # sed -i "s/version: .*/version: $BRANCH_NAME+1/" pubspec.yaml
+          sed -i "s/version: .*/version: $BRANCH_NAME+1/" pubspec.yaml
 
       - name: Use Flutter ${{ env.FLUTTER_VERSION }}
         uses: subosito/flutter-action@v1
