@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_kronos/flutter_kronos.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/common/circle.dart';
@@ -15,9 +16,11 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
@@ -57,6 +60,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   String errorMessage = defaultErrorMessage;
   bool isCancellationNotNull = false;
   bool isLocationPermission = false;
+  bool loadingNTPTime = false;
+  bool isNTPTimeNotNull = false;
   late CachedServiceFactory cachedServiceFactory;
   Stream<BluetoothState> bluetoothStateStream =
       FlutterBluePlus.instance.state.asBroadcastStream();
@@ -237,11 +242,31 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     });
   }
 
+  Logger logger = Logger<ConnectingScreen>();
+  Future<void> syncTime() async {
+    DateTime? a = await FlutterKronos.getNtpDateTime;
+    logger.info("TEST ${a.toString()}");
+    setState(() {
+      loadingNTPTime = true;
+    });
+    timeNTP.sync().then((value) async {
+      DateTime? values = await FlutterKronos.getNtpDateTime;
+      logger.info(values.toString());
+      setState(() {
+        isNTPTimeNotNull = values != null;
+      });
+    });
+    setState(() {
+      loadingNTPTime = false;
+    });
+  }
+
   bool isDataValid() {
-    if (!isSyncedRota || !isCancellationNotNull) {
+    if (!isSyncedRota || !isCancellationNotNull || !isNTPTimeNotNull) {
       return false;
+    } else {
+      return true;
     }
-    return true;
   }
 
   @override
@@ -249,6 +274,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     super.initState();
     onStartBackgroundService();
     getCurrentLocationOfWarden();
+    syncTime();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
       await wardensInfo.getWardensInfoLogging().then((value) async {
@@ -297,6 +323,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       isPending = true;
     });
     await syncAllRequiredData();
+    await syncTime();
+
     setState(() {
       isPending = false;
     });
@@ -577,6 +605,21 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                             : _buildConnect(
                                 required: true,
                                 '2. Cancellation reasons',
+                                StateDevice.pending),
+                        isPending == false
+                            ? loadingNTPTime == false
+                                ? _buildConnect(
+                                    required: true,
+                                    "3. Server time",
+                                    checkState(isNTPTimeNotNull),
+                                  )
+                                : _buildConnect(
+                                    required: true,
+                                    '3. Server time',
+                                    StateDevice.pending)
+                            : _buildConnect(
+                                required: true,
+                                '3. Server time',
                                 StateDevice.pending),
                       ],
                     ),

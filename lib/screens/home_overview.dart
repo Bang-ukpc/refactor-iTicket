@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_kronos/flutter_kronos.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/show_loading.dart';
@@ -13,6 +15,7 @@ import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
@@ -79,10 +82,12 @@ class _HomeOverviewState extends State<HomeOverview> {
   Future<void> getData() async {
     var listFirstSeen = await zoneCachedServiceFactory.firstSeenCachedService
         .getAllWithCreatedOnTheOffline();
-    getFirstSeenActiveAndExpired(listFirstSeen);
+    DateTime nowNTP = await timeNTP.get();
+    print('[HomeOverview] $nowNTP');
+    getFirstSeenActiveAndExpired(listFirstSeen, nowNTP);
     var gracePeriods = await zoneCachedServiceFactory.gracePeriodCachedService
         .getAllWithCreatedOnTheOffline();
-    getGracePeriodActiveAndExpired(gracePeriods);
+    getGracePeriodActiveAndExpired(gracePeriods, nowNTP);
     var contraventions = await zoneCachedServiceFactory
         .contraventionCachedService
         .getAllWithCreatedOnTheOffline();
@@ -97,7 +102,8 @@ class _HomeOverviewState extends State<HomeOverview> {
     });
   }
 
-  void getFirstSeenActiveAndExpired(List<VehicleInformation> vehicleList) {
+  getFirstSeenActiveAndExpired(
+      List<VehicleInformation> vehicleList, DateTime now) {
     setState(() {
       firstSeenActive = vehicleList.where((i) {
         return calculateTime.daysBetween(
@@ -105,7 +111,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                 Duration(
                   minutes: calculateTime.daysBetween(
                     i.Created as DateTime,
-                    DateTime.now(),
+                    now,
                   ),
                 ),
               ),
@@ -120,7 +126,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                 Duration(
                   minutes: calculateTime.daysBetween(
                     i.Created as DateTime,
-                    DateTime.now(),
+                    now,
                   ),
                 ),
               ),
@@ -131,7 +137,8 @@ class _HomeOverviewState extends State<HomeOverview> {
     });
   }
 
-  void getGracePeriodActiveAndExpired(List<VehicleInformation> vehicleList) {
+  getGracePeriodActiveAndExpired(
+      List<VehicleInformation> vehicleList, DateTime now) {
     setState(() {
       gracePeriodActive = vehicleList.where((i) {
         return calculateTime.daysBetween(
@@ -139,7 +146,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                 Duration(
                   minutes: calculateTime.daysBetween(
                     i.Created as DateTime,
-                    DateTime.now(),
+                    now,
                   ),
                 ),
               ),
@@ -154,7 +161,7 @@ class _HomeOverviewState extends State<HomeOverview> {
                 Duration(
                   minutes: calculateTime.daysBetween(
                     i.Created as DateTime,
-                    DateTime.now(),
+                    now,
                   ),
                 ),
               ),
@@ -423,6 +430,17 @@ class _HomeOverviewState extends State<HomeOverview> {
                           height: 100,
                         ),
                       ),
+                // ElevatedButton(
+                //     onPressed: () async {
+                //       DateTime now = await timeNTP.get();
+                //       print('[NTP] ${now}');
+                //     },
+                //     child: Text("geaâat")),
+                // ElevatedButton(
+                //     onPressed: () async {
+                //       FlutterKronos.sync();
+                //     },
+                //     child: Text("get")),
               ],
             ),
           ),

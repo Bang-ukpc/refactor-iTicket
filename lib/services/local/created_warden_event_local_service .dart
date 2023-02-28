@@ -1,6 +1,7 @@
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/services/local/local_service.dart';
 
 class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
@@ -9,7 +10,8 @@ class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
 
   @override
   create(WardenEvent t) async {
-    t.Created ??= DateTime.now();
+    DateTime now = await timeNTP.get();
+    t.Created ??= now;
     logger.info(
         'creating event with type ${TypeWardenEvent.values[t.type].name}');
     await super.create(t);

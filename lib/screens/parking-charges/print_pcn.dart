@@ -11,6 +11,7 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_info.dart';
@@ -45,34 +46,6 @@ class _PrintPCNState extends State<PrintPCN> {
 
     print('[CONTRAVENTION REFERENCE] ${args?.reference}');
 
-    final contraventionCreate = ContraventionCreateWardenCommand(
-      ZoneId: args?.zoneId ?? 0,
-      ContraventionReference: args?.reference ?? "",
-      Plate: args?.plate ?? "",
-      VehicleMake: contraventionProvider.getMakeNullProvider ?? "",
-      VehicleColour: contraventionProvider.getColorNullProvider ?? "",
-      ContraventionReasonCode:
-          contraventionProvider.getContraventionCode?.code ?? "",
-      EventDateTime: DateTime.now(),
-      FirstObservedDateTime:
-          args?.contraventionDetailsWarden?.FirstObserved ?? DateTime.now(),
-      WardenId: args?.contraventionDetailsWarden?.WardenId ?? 0,
-      Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      WardenComments: args != null
-          ? args.contraventionEvents!.isNotEmpty
-              ? args.contraventionEvents!
-                  .map((item) => item.detail)
-                  .toString()
-                  .replaceAll('(', '')
-                  .replaceAll(')', '')
-              : ''
-          : '',
-      BadgeNumber: 'test',
-      LocationAccuracy: 0, // missing
-      TypePCN: args != null ? args.type : 1,
-    );
-
     Future<void> onRemoveFromVehicleInfo() async {
       if (contraventionProvider.getVehicleInfo != null) {
         var vehicleInfo =
@@ -83,6 +56,34 @@ class _PrintPCNState extends State<PrintPCN> {
     }
 
     Future<void> issuePCN() async {
+      DateTime now = await timeNTP.get();
+      final contraventionCreate = ContraventionCreateWardenCommand(
+        ZoneId: args?.zoneId ?? 0,
+        ContraventionReference: args?.reference ?? "",
+        Plate: args?.plate ?? "",
+        VehicleMake: contraventionProvider.getMakeNullProvider ?? "",
+        VehicleColour: contraventionProvider.getColorNullProvider ?? "",
+        ContraventionReasonCode:
+            contraventionProvider.getContraventionCode?.code ?? "",
+        EventDateTime: now,
+        FirstObservedDateTime:
+            args?.contraventionDetailsWarden?.FirstObserved ?? now,
+        WardenId: args?.contraventionDetailsWarden?.WardenId ?? 0,
+        Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        WardenComments: args != null
+            ? args.contraventionEvents!.isNotEmpty
+                ? args.contraventionEvents!
+                    .map((item) => item.detail)
+                    .toString()
+                    .replaceAll('(', '')
+                    .replaceAll(')', '')
+                : ''
+            : '',
+        BadgeNumber: 'test',
+        LocationAccuracy: 0, // missing
+        TypePCN: args != null ? args.type : 1,
+      );
       await issuedPcnLocalService.create(contraventionCreate);
 
       var images = args!.contraventionPhotos!
@@ -92,7 +93,7 @@ class _PrintPCNState extends State<PrintPCN> {
               contraventionReference:
                   contraventionCreate.ContraventionReference,
               originalFileName: e.blobName!.split('/').last,
-              capturedDateTime: DateTime.now(),
+              capturedDateTime: now,
               filePath: e.blobName as String,
               photoType: args.type == TypePCN.Physical.index ? 5 : 6,
             ),

@@ -10,6 +10,7 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/screens/first-seen/active_detail_first_seen.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/expired_detail_first_seen.dart';
@@ -73,10 +74,19 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
     });
   }
 
+  DateTime nowNTP = DateTime.now();
+  void getTimeNTP() async {
+    DateTime now = await timeNTP.get();
+    setState(() {
+      nowNTP = now;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      getTimeNTP();
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
       await getData(locations.zone?.Id ?? 0);
@@ -173,7 +183,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                                         Duration(
                                           minutes: calculateTime.daysBetween(
                                             item.Created as DateTime,
-                                            DateTime.now(),
+                                            nowNTP,
                                           ),
                                         ),
                                       ),
@@ -238,7 +248,7 @@ class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
                                     type: TypeFirstSeen.Expired,
                                     expiring: calculateTime.daysBetween(
                                       item.ExpiredAt,
-                                      DateTime.now(),
+                                      nowNTP,
                                     ),
                                     onCarLeft: () {
                                       onCarLeft(item);

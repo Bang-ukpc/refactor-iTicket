@@ -13,6 +13,7 @@ import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/operational_period.dart';
 import 'package:iWarden/models/zone.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
 import 'package:iWarden/screens/read_regulation_screen.dart';
@@ -73,7 +74,11 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
-    DateTime date = DateTime.parse(getLocalDate(DateTime.now()));
+    DateTime now = DateTime.now();
+    Future.delayed(const Duration(seconds: 0), () async {
+      now = await timeNTP.get();
+    });
+    DateTime date = DateTime.parse(getLocalDate(now));
     final filterRotaShiftByNow = list.where(
       (location) {
         DateTime timeFrom =
@@ -760,7 +765,7 @@ class DropDownItem extends StatelessWidget {
   }
 }
 
-class DropDownItem2 extends StatelessWidget {
+class DropDownItem2 extends StatefulWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
@@ -774,9 +779,27 @@ class DropDownItem2 extends StatelessWidget {
   });
 
   @override
+  State<DropDownItem2> createState() => _DropDownItem2State();
+}
+
+class _DropDownItem2State extends State<DropDownItem2> {
+  DateTime getNowNTP = DateTime.now();
+  void setTimeNTP() async {
+    DateTime now = await timeNTP.get();
+    setState(() {
+      getNowNTP = now;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setTimeNTP();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    DateTime startDay = formatDate.startOfDay(DateTime.now());
-    var date = DateTime.now();
+    var date = getNowNTP;
     int currentMinutes = date.hour * 60 + date.minute;
 
     String formatOperationalPeriods(DateTime date) {
@@ -803,7 +826,7 @@ class DropDownItem2 extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: 12,
-          vertical: subTitle != null ? 10 : 15,
+          vertical: widget.subTitle != null ? 10 : 15,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -816,9 +839,9 @@ class DropDownItem2 extends StatelessWidget {
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
-                    title,
+                    widget.title,
                     style: CustomTextStyle.body1.copyWith(
-                        color: isSelected == false
+                        color: widget.isSelected == false
                             ? ColorTheme.textPrimary
                             : ColorTheme.primary,
                         overflow: TextOverflow.ellipsis,
@@ -828,16 +851,16 @@ class DropDownItem2 extends StatelessWidget {
                 const SizedBox(
                   height: 2,
                 ),
-                if (subTitle != null)
+                if (widget.subTitle != null)
                   Text(
-                    subTitle ?? '',
+                    widget.subTitle ?? '',
                     style: CustomTextStyle.body2,
                   ),
               ],
             ),
-            if (operationalPeriodsList.isNotEmpty)
+            if (widget.operationalPeriodsList.isNotEmpty)
               Column(
-                children: operationalPeriodsList.map((e) {
+                children: widget.operationalPeriodsList.map((e) {
                   return Column(
                     children: [
                       Text(

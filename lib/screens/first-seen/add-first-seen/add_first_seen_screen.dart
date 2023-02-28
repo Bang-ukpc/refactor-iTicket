@@ -16,6 +16,7 @@ import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
@@ -91,11 +92,11 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
     final locationProvider = Provider.of<Locations>(context);
     final wardenProvider = Provider.of<WardensInfo>(context);
     var zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
-
     Future<bool> saveForm() async {
+      DateTime now = await timeNTP.get();
       final vehicleInfo = VehicleInformation(
         Id: idHelper.generateId(),
-        ExpiredAt: DateTime.now().add(
+        ExpiredAt: now.add(
           Duration(
             seconds: locationProvider.expiringTimeFirstSeen,
           ),
@@ -109,7 +110,7 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         CarLeftAt: null,
         EvidencePhotos: evidencePhotoList,
-        Created: DateTime.now(),
+        Created: now,
         CreatedBy: wardenProvider.wardens?.Id ?? 0,
       );
 
@@ -118,8 +119,8 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
       setState(() {
         evidencePhotoList.clear();
       });
-
       if (arrayImage.isEmpty) {
+        // ignore: use_build_context_synchronously
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -172,18 +173,20 @@ class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
             (image) => EvidencePhoto(
               Id: idHelper.generateId(),
               BlobName: image.path,
-              Created: DateTime.now(),
+              Created: now,
               VehicleInformationId: vehicleInfo.Id,
             ),
           )
           .toList();
       await getLocationList(locationProvider).then((value) {
-        vehicleInfo.ExpiredAt = DateTime.now().add(
+        vehicleInfo.ExpiredAt = now.add(
           Duration(
             seconds: locationProvider.expiringTimeFirstSeen,
           ),
         );
       });
+      print(
+          '[showCircularProgressIndicator] ${locationProvider.expiringTimeFirstSeen}');
       await createdVehicleDataLocalService.create(vehicleInfo);
 
       if (!mounted) return false;

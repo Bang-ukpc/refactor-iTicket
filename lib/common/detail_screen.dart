@@ -10,6 +10,7 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/helpers/url_helper.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
 import 'package:iWarden/screens/parking-charges/issue_pcn_first_seen.dart';
@@ -35,11 +36,19 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
+  DateTime nowNTP = DateTime.now();
+  void getTimeNTP() async {
+    DateTime now = await timeNTP.get();
+    setState(() {
+      nowNTP = now;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      getTimeNTP();
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
     });
@@ -186,7 +195,7 @@ class _DetailScreenState extends State<DetailScreen> {
                               Duration(
                                 minutes: calculateTime.daysBetween(
                                   args.Created as DateTime,
-                                  DateTime.now(),
+                                  nowNTP,
                                 ),
                               ),
                             ),
@@ -194,7 +203,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           )))}"
                         : "Expired: ${calculateTime.getDurationExpiredIn(Duration(minutes: calculateTime.daysBetween(
                             args.ExpiredAt,
-                            DateTime.now(),
+                            nowNTP,
                           )))}",
                     textAlign: TextAlign.center,
                     style: CustomTextStyle.h5.copyWith(

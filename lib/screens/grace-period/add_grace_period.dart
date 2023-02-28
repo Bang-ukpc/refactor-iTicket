@@ -26,6 +26,7 @@ import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
 import '../../helpers/id_helper.dart';
+import '../../providers/time_ntp.dart';
 
 class AddGracePeriod extends StatefulWidget {
   static const routeName = '/add-grace-period';
@@ -94,9 +95,10 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
     final wardensProvider = Provider.of<WardensInfo>(context);
 
     Future<bool> saveForm() async {
+      DateTime now = await timeNTP.get();
       final vehicleInfo = VehicleInformation(
         Id: idHelper.generateId(),
-        ExpiredAt: DateTime.now().add(
+        ExpiredAt: now.add(
           Duration(
             seconds: locationProvider.expiringTimeGracePeriod,
           ),
@@ -110,7 +112,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         CarLeftAt: null,
         EvidencePhotos: evidencePhotoList,
-        Created: DateTime.now(),
+        Created: now,
         CreatedBy: wardensProvider.wardens?.Id ?? 0,
       );
       final isValid = _formKey.currentState!.validate();
@@ -118,6 +120,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
         evidencePhotoList.clear();
       });
       if (arrayImage.isEmpty) {
+        // ignore: use_build_context_synchronously
         CherryToast.error(
           displayCloseButton: false,
           title: Text(
@@ -140,18 +143,19 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
             (image) => EvidencePhoto(
               Id: idHelper.generateId(),
               BlobName: image.path,
-              Created: DateTime.now(),
+              Created: now,
               VehicleInformationId: vehicleInfo.Id,
             ),
           )
           .toList();
       await getLocationList(locationProvider).then((value) {
-        vehicleInfo.ExpiredAt = DateTime.now().add(
+        vehicleInfo.ExpiredAt = now.add(
           Duration(
             seconds: locationProvider.expiringTimeGracePeriod,
           ),
         );
       });
+
       await createdVehicleDataLocalService.create(vehicleInfo);
       if (!mounted) return false;
       Navigator.of(context).pop();

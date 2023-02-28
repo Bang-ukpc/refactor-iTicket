@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+import 'package:flutter_kronos/flutter_kronos.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import '../../controllers/index.dart';
@@ -25,18 +27,22 @@ class ContraventionCachedService extends CacheService<Contravention> {
     return paging.rows as List<Contravention>;
   }
 
+  DateTime now = DateTime.now();
   Future<Contravention> convertIssuesContraventionToCachedContravention(
       ContraventionCreateWardenCommand i) async {
+    FlutterKronos.sync();
+
+    DateTime? now = await FlutterKronos.getNtpDateTime;
     var contraventionPhotos = (await issuedPcnPhotoLocalService
             .listByContraventionReference(i.ContraventionReference))
         .map((e) => issuedPcnPhotoLocalService.toContraventionPhoto(e))
         .toList();
     var contraventionService = ContraventionReasonCachedService(_zoneId);
     var contraventionReasons = await contraventionService.getAll();
-
+    print('[DateTime] ntp ${now} ');
     return Contravention(
       reference: i.ContraventionReference,
-      created: DateTime.now(),
+      created: now ?? DateTime.now(),
       id: i.Id,
       plate: i.Plate,
       colour: i.VehicleColour,
@@ -76,7 +82,7 @@ class ContraventionCachedService extends CacheService<Contravention> {
         e.zoneId == zoneId &&
         e.reason?.code == contraventionType);
     if (findVRNExits != null) {
-      var date = DateTime.now();
+      var date = await timeNTP.get();
       var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
       if (date.isBefore(timeMayIssue)) {
         return false;

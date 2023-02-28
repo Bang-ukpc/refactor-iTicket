@@ -20,6 +20,7 @@ import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../providers/time_ntp.dart';
 import '../../services/local/sync_factory.dart';
 
 Future<void> initializeService() async {
@@ -164,7 +165,11 @@ void onStart(ServiceInstance service) async {
       zoneId: zoneSelected?.Id,
       Created: DateTime.now(),
     );
-
+    DateTime now = await timeNTP.get();
+    if (now == null) {
+      print('[WardenEvent] NOW NULL');
+    }
+    gpsEvent.Created = now;
     createdWardenEventLocalService.create(gpsEvent);
   });
 }
