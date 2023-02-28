@@ -138,6 +138,13 @@ class _LocationScreenState extends State<LocationScreen> {
 
 //    _mapController.moveCamera(update);
 //  }
+  DateTime getNowNTP = DateTime.now();
+  void setTimeNTP() async {
+    DateTime now = await timeNTP.get();
+    setState(() {
+      getNowNTP = now;
+    });
+  }
 
   @override
   void initState() {
@@ -530,6 +537,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           itemBuilder:
                                               (context, item, isSelected) {
                                             return DropDownItem2(
+                                              now: getNowNTP,
                                               title: item.Name,
                                               subTitle:
                                                   '${(handelDistanceInMeters(endLatitude: item.Latitude ?? 0, endLongitude: item.Longitude ?? 0) / 1000).toStringAsFixed(3)}km',
@@ -765,42 +773,24 @@ class DropDownItem extends StatelessWidget {
   }
 }
 
-class DropDownItem2 extends StatefulWidget {
+class DropDownItem2 extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
+  final DateTime now;
   final List<OperationalPeriodHistories> operationalPeriodsList;
   const DropDownItem2({
     required this.title,
     this.subTitle,
+    required this.now,
     this.isSelected = false,
     required this.operationalPeriodsList,
     super.key,
   });
 
   @override
-  State<DropDownItem2> createState() => _DropDownItem2State();
-}
-
-class _DropDownItem2State extends State<DropDownItem2> {
-  DateTime getNowNTP = DateTime.now();
-  void setTimeNTP() async {
-    DateTime now = await timeNTP.get();
-    setState(() {
-      getNowNTP = now;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    setTimeNTP();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    var date = getNowNTP;
-    int currentMinutes = date.hour * 60 + date.minute;
+    int currentMinutes = now.hour * 60 + now.minute;
 
     String formatOperationalPeriods(DateTime date) {
       return DateFormat('HH:mm').format(date);
@@ -826,7 +816,7 @@ class _DropDownItem2State extends State<DropDownItem2> {
       child: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: 12,
-          vertical: widget.subTitle != null ? 10 : 15,
+          vertical: subTitle != null ? 10 : 15,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -839,9 +829,9 @@ class _DropDownItem2State extends State<DropDownItem2> {
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: Text(
-                    widget.title,
+                    title,
                     style: CustomTextStyle.body1.copyWith(
-                        color: widget.isSelected == false
+                        color: isSelected == false
                             ? ColorTheme.textPrimary
                             : ColorTheme.primary,
                         overflow: TextOverflow.ellipsis,
@@ -851,16 +841,16 @@ class _DropDownItem2State extends State<DropDownItem2> {
                 const SizedBox(
                   height: 2,
                 ),
-                if (widget.subTitle != null)
+                if (subTitle != null)
                   Text(
-                    widget.subTitle ?? '',
+                    subTitle ?? '',
                     style: CustomTextStyle.body2,
                   ),
               ],
             ),
-            if (widget.operationalPeriodsList.isNotEmpty)
+            if (operationalPeriodsList.isNotEmpty)
               Column(
-                children: widget.operationalPeriodsList.map((e) {
+                children: operationalPeriodsList.map((e) {
                   return Column(
                     children: [
                       Text(

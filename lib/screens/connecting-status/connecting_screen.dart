@@ -61,7 +61,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   bool isCancellationNotNull = false;
   bool isLocationPermission = false;
   bool loadingNTPTime = false;
-  bool isNTPTimeNotNull = false;
+  bool isNTPTimeNull = true;
   late CachedServiceFactory cachedServiceFactory;
   Stream<BluetoothState> bluetoothStateStream =
       FlutterBluePlus.instance.state.asBroadcastStream();
@@ -253,7 +253,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       DateTime? values = await FlutterKronos.getNtpDateTime;
       logger.info(values.toString());
       setState(() {
-        isNTPTimeNotNull = values != null;
+        isNTPTimeNull = values == null;
       });
     });
     setState(() {
@@ -262,7 +262,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   bool isDataValid() {
-    if (!isSyncedRota || !isCancellationNotNull || !isNTPTimeNotNull) {
+    if (!isSyncedRota || !isCancellationNotNull || isNTPTimeNull) {
       return false;
     } else {
       return true;
@@ -611,7 +611,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 ? _buildConnect(
                                     required: true,
                                     "3. Server time",
-                                    checkState(isNTPTimeNotNull),
+                                    checkState(isNTPTimeNull),
                                   )
                                 : _buildConnect(
                                     required: true,
