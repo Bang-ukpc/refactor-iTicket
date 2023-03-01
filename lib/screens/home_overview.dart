@@ -36,6 +36,8 @@ import 'package:iWarden/widgets/home/card_home.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
 
+import '../helpers/my_navigator_observer.dart';
+
 List<String> fakeImages = [
   '/data/user/0/com.example.iWarden/cache/CAP1317129956677019721.jpg',
   '/data/user/0/com.example.iWarden/cache/CAP505075306031560444.jpg',
@@ -48,10 +50,10 @@ class HomeOverview extends StatefulWidget {
   const HomeOverview({Key? key}) : super(key: key);
 
   @override
-  State<HomeOverview> createState() => _HomeOverviewState();
+  BaseStatefulState<HomeOverview> createState() => _HomeOverviewState();
 }
 
-class _HomeOverviewState extends State<HomeOverview> {
+class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
   List<ContraventionReasonTranslations> contraventionReasonList = [];
   List<VehicleInformation> firstSeenActive = [];
   List<VehicleInformation> firstSeenExpired = [];

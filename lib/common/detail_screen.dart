@@ -23,6 +23,7 @@ import 'package:iWarden/widgets/detail_issue.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/my_navigator_observer.dart';
 import '../providers/locations.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -31,10 +32,10 @@ class DetailScreen extends StatefulWidget {
   const DetailScreen({Key? key, required this.type}) : super(key: key);
 
   @override
-  State<DetailScreen> createState() => _DetailScreenState();
+  BaseStatefulState<DetailScreen> createState() => _DetailScreenState();
 }
 
-class _DetailScreenState extends State<DetailScreen> {
+class _DetailScreenState extends BaseStatefulState<DetailScreen> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   DateTime nowNTP = DateTime.now();
   void getTimeNTP() async {

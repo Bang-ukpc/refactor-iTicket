@@ -25,16 +25,17 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../common/my_dialog.dart';
+import '../../helpers/my_navigator_observer.dart';
 
 class LocationScreen extends StatefulWidget {
   static const routeName = '/location';
   const LocationScreen({super.key});
 
   @override
-  State<LocationScreen> createState() => _LocationScreenState();
+  BaseStatefulState<LocationScreen> createState() => _LocationScreenState();
 }
 
-class _LocationScreenState extends State<LocationScreen> {
+class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<RotaWithLocation> locationWithRotaList = [];
   List<RotaWithLocation> listFilter = [];

@@ -25,15 +25,17 @@ import 'package:iWarden/widgets/parking-charge/step_issue_pcn.dart';
 import 'package:iWarden/widgets/parking-charge/take_photo_item.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
+
 class PrintIssue extends StatefulWidget {
   static const routeName = '/print-issue';
   const PrintIssue({super.key});
 
   @override
-  State<PrintIssue> createState() => _PrintIssueState();
+  BaseStatefulState<PrintIssue> createState() => _PrintIssueState();
 }
 
-class _PrintIssueState extends State<PrintIssue> {
+class _PrintIssueState extends BaseStatefulState<PrintIssue> {
   final _debouncer = Debouncer(milliseconds: 3000);
   bool isLoading = false;
 

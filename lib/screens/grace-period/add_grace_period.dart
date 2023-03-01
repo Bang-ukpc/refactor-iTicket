@@ -26,6 +26,7 @@ import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
 import '../../helpers/id_helper.dart';
+import '../../helpers/my_navigator_observer.dart';
 import '../../providers/time_ntp.dart';
 
 class AddGracePeriod extends StatefulWidget {
@@ -33,10 +34,10 @@ class AddGracePeriod extends StatefulWidget {
   const AddGracePeriod({super.key});
 
   @override
-  State<AddGracePeriod> createState() => _AddGracePeriodState();
+  BaseStatefulState<AddGracePeriod> createState() => _AddGracePeriodState();
 }
 
-class _AddGracePeriodState extends State<AddGracePeriod> {
+class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _vrnController = TextEditingController();
   final _bayNumberController = TextEditingController();

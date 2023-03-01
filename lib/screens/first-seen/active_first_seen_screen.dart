@@ -18,6 +18,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
 import '../../services/cache/factory/zone_cache_factory.dart';
 import '../../services/local/created_vehicle_data_local_service.dart';
 
@@ -26,10 +27,12 @@ class ActiveFirstSeenScreen extends StatefulWidget {
   const ActiveFirstSeenScreen({Key? key}) : super(key: key);
 
   @override
-  State<ActiveFirstSeenScreen> createState() => _ActiveFirstSeenScreenState();
+  BaseStatefulState<ActiveFirstSeenScreen> createState() =>
+      _ActiveFirstSeenScreenState();
 }
 
-class _ActiveFirstSeenScreenState extends State<ActiveFirstSeenScreen> {
+class _ActiveFirstSeenScreenState
+    extends BaseStatefulState<ActiveFirstSeenScreen> {
   List<VehicleInformation> firstSeenActive = [];
   List<VehicleInformation> firstSeenExpired = [];
   bool isLoading = false;

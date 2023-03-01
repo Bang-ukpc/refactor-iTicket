@@ -31,6 +31,7 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
 import '../login_screens.dart';
 
 enum StateDevice { connected, pending, disconnect }
@@ -40,13 +41,13 @@ class ConnectingScreen extends StatefulWidget {
   const ConnectingScreen({super.key});
 
   @override
-  State<ConnectingScreen> createState() => _ConnectingScreenState();
+  BaseStatefulState<ConnectingScreen> createState() => _ConnectingScreenState();
 }
 
 String defaultErrorMessage =
     "Can't sync the data. Please check your network and try to refresh the app again.";
 
-class _ConnectingScreenState extends State<ConnectingScreen> {
+class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;

@@ -38,6 +38,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
 import '../../models/location.dart';
 import '../../providers/print_issue_providers.dart' as prefix;
 import '../../providers/time_ntp.dart';
@@ -55,11 +56,12 @@ class IssuePCNFirstSeenScreen extends StatefulWidget {
   const IssuePCNFirstSeenScreen({Key? key}) : super(key: key);
 
   @override
-  State<IssuePCNFirstSeenScreen> createState() =>
+  BaseStatefulState<IssuePCNFirstSeenScreen> createState() =>
       _IssuePCNFirstSeenScreenState();
 }
 
-class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
+class _IssuePCNFirstSeenScreenState
+    extends BaseStatefulState<IssuePCNFirstSeenScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _vrnController = TextEditingController();
   final _vehicleMakeController = TextEditingController();

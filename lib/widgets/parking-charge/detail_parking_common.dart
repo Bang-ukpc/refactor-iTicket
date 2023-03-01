@@ -9,6 +9,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/parking-charge/detail_car.dart';
 
+import '../../helpers/my_navigator_observer.dart';
 import '../../helpers/url_helper.dart';
 
 class DetailParkingCommon extends StatefulWidget {
@@ -21,10 +22,11 @@ class DetailParkingCommon extends StatefulWidget {
   });
 
   @override
-  State<DetailParkingCommon> createState() => _DetailParkingCommonState();
+  BaseStatefulState<DetailParkingCommon> createState() =>
+      _DetailParkingCommonState();
 }
 
-class _DetailParkingCommonState extends State<DetailParkingCommon> {
+class _DetailParkingCommonState extends BaseStatefulState<DetailParkingCommon> {
   @override
   Widget build(BuildContext context) {
     List<ContraventionPhotos> contraventionImage =

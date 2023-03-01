@@ -27,15 +27,17 @@ import 'package:iWarden/widgets/statistic/statistic_item.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../helpers/my_navigator_observer.dart';
+
 class StatisticScreen extends StatefulWidget {
   static const routeName = '/statistic';
   const StatisticScreen({super.key});
 
   @override
-  State<StatisticScreen> createState() => _StatisticScreenState();
+  BaseStatefulState<StatisticScreen> createState() => _StatisticScreenState();
 }
 
-class _StatisticScreenState extends State<StatisticScreen> {
+class _StatisticScreenState extends BaseStatefulState<StatisticScreen> {
   _buildDevice(String nameDevice, bool stateDevice) {
     return Row(
       children: [

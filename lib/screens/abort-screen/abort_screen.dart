@@ -25,15 +25,17 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
+
 class AbortScreen extends StatefulWidget {
   static const routeName = '/abort';
   const AbortScreen({super.key});
 
   @override
-  State<AbortScreen> createState() => _AbortScreenState();
+  BaseStatefulState<AbortScreen> createState() => _AbortScreenState();
 }
 
-class _AbortScreenState extends State<AbortScreen> {
+class _AbortScreenState extends BaseStatefulState<AbortScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<CancellationReason> cancellationReasons = [];
   final TextEditingController _cancellationReasonController =

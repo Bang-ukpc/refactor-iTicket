@@ -20,6 +20,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
 import '../../providers/time_ntp.dart';
 
 class GracePeriodList extends StatefulWidget {
@@ -27,10 +28,10 @@ class GracePeriodList extends StatefulWidget {
   const GracePeriodList({super.key});
 
   @override
-  State<GracePeriodList> createState() => _GracePeriodListState();
+  BaseStatefulState<GracePeriodList> createState() => _GracePeriodListState();
 }
 
-class _GracePeriodListState extends State<GracePeriodList> {
+class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
   List<VehicleInformation> gracePeriodActive = [];
   List<VehicleInformation> gracePeriodExpired = [];
   List<VehicleInformation> graceGracePeriodLocal = [];
