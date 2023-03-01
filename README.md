@@ -131,3 +131,12 @@
 [1.0.45-1] - 2023-02-28
 
 - WRDN-623 As a PO, I want to upgrade the new version without uninstall & clean the local data
+
+[1.0.46-1] - 2023-02-28
+
+- WRDN-601 As a PO, I want to sync the server time to the client side when the user login to the app.
+
+[1.0.47-1] - 2023-03-01
+
+- WRDN-637 The correct time zone is not displayed when changing the machine's time zone
+- WRDN-638 Timezone format is wrong when sending to the server
