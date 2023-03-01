@@ -155,6 +155,8 @@ void onStart(ServiceInstance service) async {
     FlutterKronos.sync();
 
     DateTime? now = await FlutterKronos.getNtpDateTime;
+    now ??= DateTime.now().toUtc();
+
     final gpsEvent = WardenEvent(
       type: TypeWardenEvent.TrackGPS.index,
       detail: "Warden's current location",
