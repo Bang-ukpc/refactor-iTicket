@@ -140,3 +140,7 @@
 
 - WRDN-637 The correct time zone is not displayed when changing the machine's time zone
 - WRDN-638 Timezone format is wrong when sending to the server
+
+[1.0.48-1] - 2023-03-01
+
+- WRDN-648 Can't send gps to warden admin
