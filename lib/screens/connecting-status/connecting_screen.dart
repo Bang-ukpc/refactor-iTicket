@@ -251,7 +251,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       DateTime? values = await FlutterKronos.getNtpDateTime;
       logger.info(values.toString());
       setState(() {
-        isNTPTimeNull = (values != null);
+        isNTPTimeNull = values == null;
       });
     });
     setState(() {
@@ -260,7 +260,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   bool isDataValid() {
-    if (!isSyncedRota || !isCancellationNotNull || !isNTPTimeNull) {
+    if (!isSyncedRota || !isCancellationNotNull || isNTPTimeNull) {
       return false;
     } else {
       return true;
@@ -610,7 +610,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
                                 ? _buildConnect(
                                     required: true,
                                     "3. Server time",
-                                    checkState(isNTPTimeNull),
+                                    checkState(!isNTPTimeNull),
                                   )
                                 : _buildConnect(
                                     required: true,
