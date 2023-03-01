@@ -244,8 +244,6 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
 
   Logger logger = Logger<ConnectingScreen>();
   Future<void> syncTime() async {
-    DateTime? a = await FlutterKronos.getNtpDateTime;
-    logger.info("TEST ${a.toString()}");
     setState(() {
       loadingNTPTime = true;
     });
@@ -253,7 +251,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       DateTime? values = await FlutterKronos.getNtpDateTime;
       logger.info(values.toString());
       setState(() {
-        isNTPTimeNull = values == null;
+        isNTPTimeNull = (values != null);
       });
     });
     setState(() {
@@ -322,8 +320,8 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
       isLocationPermission = check;
       isPending = true;
     });
-    await syncAllRequiredData();
     await syncTime();
+    await syncAllRequiredData();
 
     setState(() {
       isPending = false;
@@ -334,6 +332,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   Widget build(BuildContext context) {
     final wardensProvider = Provider.of<WardensInfo>(context);
     //check is route from checkout screen
+    logger.info(isNTPTimeNull);
     final data = ModalRoute.of(context)!.settings.arguments as dynamic;
     final isCheckoutScreen = (data == null) ? false : true;
 
