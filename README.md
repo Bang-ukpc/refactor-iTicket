@@ -144,3 +144,4 @@
 [1.0.48-1] - 2023-03-01
 
 - WRDN-648 Can't send gps to warden admin
+- WRDN-636 It is still possible to start a shift even if the required field is showing an error
