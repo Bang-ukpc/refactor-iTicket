@@ -1,10 +1,11 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:flutter_kronos/flutter_kronos.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/services/cache/contravention_reason_cached_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
+
 import '../../controllers/index.dart';
 import '../../models/ContraventionService.dart';
 import '../../models/contravention.dart';
@@ -17,32 +18,28 @@ class ContraventionCachedService extends CacheService<Contravention> {
       : super("cachedContraventions_$zoneId") {
     _zoneId = zoneId;
   }
+  Logger logger = Logger<ContraventionCachedService>();
 
   @override
   syncFromServer() async {
     var paging = await weakNetworkContraventionController
         .getContraventionServiceList(zoneId: _zoneId, page: 1, pageSize: 1000);
-    print('[Contraventions] ${paging.rows.map((e) => json.encode(e))}');
+    logger.info('${paging.rows.map((e) => json.encode(e))}');
     await set(paging.rows as List<Contravention>);
     return paging.rows as List<Contravention>;
   }
 
-  DateTime now = DateTime.now();
   Future<Contravention> convertIssuesContraventionToCachedContravention(
       ContraventionCreateWardenCommand i) async {
-    FlutterKronos.sync();
-
-    DateTime? now = await FlutterKronos.getNtpDateTime;
     var contraventionPhotos = (await issuedPcnPhotoLocalService
             .listByContraventionReference(i.ContraventionReference))
         .map((e) => issuedPcnPhotoLocalService.toContraventionPhoto(e))
         .toList();
     var contraventionService = ContraventionReasonCachedService(_zoneId);
     var contraventionReasons = await contraventionService.getAll();
-    print('[DateTime] ntp ${now} ');
     return Contravention(
       reference: i.ContraventionReference,
-      created: now ?? DateTime.now(),
+      created: i.EventDateTime,
       id: i.Id,
       plate: i.Plate,
       colour: i.VehicleColour,

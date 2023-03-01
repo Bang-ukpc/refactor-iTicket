@@ -50,8 +50,7 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
                   memCacheWidth: 80,
                   width: 72,
                   height: 72,
-                  imageUrl:
-                      "${ConfigEnvironmentVariable.azureContainerImageUrl}/${widget.image}",
+                  imageUrl: image,
                   fit: BoxFit.cover,
                   progressIndicatorBuilder: (context, url, downloadProgress) =>
                       Center(
@@ -67,7 +66,7 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
                       Image.asset('assets/images/No-Image-Icon.png'),
                 )
               : Image.file(
-                  File(widget.image as String),
+                  File(image),
                   fit: BoxFit.cover,
                   cacheWidth: 80,
                   cacheHeight: 80,
