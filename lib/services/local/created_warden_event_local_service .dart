@@ -37,9 +37,8 @@ class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
 
   @override
   sync(WardenEvent wardenEvent) async {
-    var eventId = int.tryParse(wardenEvent.Id.toString());
-
     try {
+    var eventId = int.tryParse(wardenEvent.Id.toString());
       wardenEvent.Id = null;
       logger.info(
           'Syncing event ${TypeWardenEvent.values[wardenEvent.type].name} created at ${wardenEvent.Created}');
