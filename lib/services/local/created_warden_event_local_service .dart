@@ -12,6 +12,7 @@ class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
   create(WardenEvent t) async {
     DateTime now = await timeNTP.get();
     t.Created ??= now;
+    logger.info('[Time server] creating event with created at ${t.Created}');
     logger.info(
         'creating event with type ${TypeWardenEvent.values[t.type].name}');
     await super.create(t);
@@ -38,7 +39,7 @@ class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
   @override
   sync(WardenEvent wardenEvent) async {
     try {
-    var eventId = int.tryParse(wardenEvent.Id.toString());
+      var eventId = int.tryParse(wardenEvent.Id.toString());
       wardenEvent.Id = null;
       logger.info(
           'Syncing event ${TypeWardenEvent.values[wardenEvent.type].name} created at ${wardenEvent.Created}');
