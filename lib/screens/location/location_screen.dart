@@ -13,6 +13,7 @@ import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/operational_period.dart';
 import 'package:iWarden/models/zone.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
 import 'package:iWarden/screens/read_regulation_screen.dart';
@@ -73,7 +74,11 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
-    DateTime date = DateTime.parse(getLocalDate(DateTime.now()));
+    DateTime now = DateTime.now();
+    Future.delayed(const Duration(seconds: 0), () async {
+      now = await timeNTP.get();
+    });
+    DateTime date = DateTime.parse(getLocalDate(now));
     final filterRotaShiftByNow = list.where(
       (location) {
         DateTime timeFrom =
@@ -133,6 +138,13 @@ class _LocationScreenState extends State<LocationScreen> {
 
 //    _mapController.moveCamera(update);
 //  }
+  DateTime getNowNTP = DateTime.now();
+  void setTimeNTP() async {
+    DateTime now = await timeNTP.get();
+    setState(() {
+      getNowNTP = now;
+    });
+  }
 
   @override
   void initState() {
@@ -525,6 +537,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           itemBuilder:
                                               (context, item, isSelected) {
                                             return DropDownItem2(
+                                              now: getNowNTP,
                                               title: item.Name,
                                               subTitle:
                                                   '${(handelDistanceInMeters(endLatitude: item.Latitude ?? 0, endLongitude: item.Longitude ?? 0) / 1000).toStringAsFixed(3)}km',
@@ -764,10 +777,12 @@ class DropDownItem2 extends StatelessWidget {
   final String title;
   final String? subTitle;
   final bool? isSelected;
+  final DateTime now;
   final List<OperationalPeriodHistories> operationalPeriodsList;
   const DropDownItem2({
     required this.title,
     this.subTitle,
+    required this.now,
     this.isSelected = false,
     required this.operationalPeriodsList,
     super.key,
@@ -775,9 +790,7 @@ class DropDownItem2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime startDay = formatDate.startOfDay(DateTime.now());
-    var date = DateTime.now();
-    int currentMinutes = date.hour * 60 + date.minute;
+    int currentMinutes = now.hour * 60 + now.minute;
 
     String formatOperationalPeriods(DateTime date) {
       return DateFormat('HH:mm').format(date);

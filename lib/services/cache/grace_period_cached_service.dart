@@ -1,4 +1,5 @@
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 
 import '../../controllers/index.dart';
 import '../../helpers/list_helper.dart';
@@ -14,6 +15,7 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
   }
 
   Future<List<VehicleInformation>> getListActive() async {
+    DateTime now = await timeNTP.get();
     var items = await getAllWithCreatedOnTheOffline();
     return items.where((i) {
       return timeHelper.daysBetween(
@@ -21,7 +23,7 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
               Duration(
                 minutes: timeHelper.daysBetween(
                   i.Created as DateTime,
-                  DateTime.now(),
+                  now,
                 ),
               ),
             ),
@@ -33,13 +35,14 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
 
   Future<List<VehicleInformation>> getListExpired() async {
     var items = await getAllWithCreatedOnTheOffline();
+    DateTime now = await timeNTP.get();
     return items.where((i) {
       return timeHelper.daysBetween(
             i.Created!.add(
               Duration(
                 minutes: timeHelper.daysBetween(
                   i.Created as DateTime,
-                  DateTime.now(),
+                  now,
                 ),
               ),
             ),

@@ -69,6 +69,7 @@ dependencies:
   firebase_core: ^2.4.1
   esc_pos_utils: ^1.1.0
   uuid: ^3.0.7
+  flutter_kronos: ^0.1.0+1
 
 dev_dependencies:
   flutter_test:

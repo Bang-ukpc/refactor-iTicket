@@ -1,6 +1,7 @@
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
 import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/helpers/logger.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/services/cache/cache_service.dart';
 import 'package:iWarden/services/cache/factory/zone_cache_factory.dart';
 import 'package:iWarden/services/cache/first_seen_cached_service.dart';
@@ -128,7 +129,8 @@ class CreatedVehicleDataLocalService
   }
 
   onCarLeft(VehicleInformation vehicleInfo) async {
-    vehicleInfo.CarLeftAt = DateTime.now().add(const Duration(seconds: 3));
+    DateTime now = await timeNTP.get();
+    vehicleInfo.CarLeftAt = now.add(const Duration(seconds: 3));
     // cerate sync to server
     if (await get(vehicleInfo.Id!) == null) {
       await create(vehicleInfo);

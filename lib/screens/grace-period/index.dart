@@ -20,6 +20,8 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/time_ntp.dart';
+
 class GracePeriodList extends StatefulWidget {
   static const routeName = '/grace-period-list';
   const GracePeriodList({super.key});
@@ -72,10 +74,19 @@ class _GracePeriodListState extends State<GracePeriodList> {
     });
   }
 
+  DateTime nowNTP = DateTime.now();
+  void getTimeNTP() async {
+    DateTime now = await timeNTP.get();
+    setState(() {
+      nowNTP = now;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      getTimeNTP();
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
       await getData(locations.zone?.Id ?? 0);
@@ -173,7 +184,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
                                         Duration(
                                           minutes: calculateTime.daysBetween(
                                             item.Created as DateTime,
-                                            DateTime.now(),
+                                            nowNTP,
                                           ),
                                         ),
                                       ),
@@ -238,7 +249,7 @@ class _GracePeriodListState extends State<GracePeriodList> {
                                     type: TypeFirstSeen.Expired,
                                     expiring: calculateTime.daysBetween(
                                       item.ExpiredAt,
-                                      DateTime.now(),
+                                      nowNTP,
                                     ),
                                     onCarLeft: () {
                                       onCarLeft(item);

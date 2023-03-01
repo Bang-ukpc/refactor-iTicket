@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:iWarden/helpers/list_helper.dart';
 import 'package:iWarden/helpers/time_helper.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/services/cache/contravention_cached_service.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 
@@ -18,13 +19,14 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
 
   Future<List<VehicleInformation>> getListActive() async {
     var items = await getAllWithCreatedOnTheOffline();
+    DateTime now = await timeNTP.get();
     return items.where((i) {
       return timeHelper.daysBetween(
             i.Created!.add(
               Duration(
                 minutes: timeHelper.daysBetween(
                   i.Created as DateTime,
-                  DateTime.now(),
+                  now,
                 ),
               ),
             ),
@@ -36,13 +38,14 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
 
   Future<List<VehicleInformation>> getListExpired() async {
     var items = await getAllWithCreatedOnTheOffline();
+    DateTime now = await timeNTP.get();
     return items.where((i) {
       return timeHelper.daysBetween(
             i.Created!.add(
               Duration(
                 minutes: timeHelper.daysBetween(
                   i.Created as DateTime,
-                  DateTime.now(),
+                  now,
                 ),
               ),
             ),
@@ -72,7 +75,7 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     var findVRNExits = contraventionList.firstWhereOrNull(
         (e) => e.plate == vrn && e.zoneId == zoneId && e.reason?.code == '36');
     if (findVRNExits != null) {
-      var date = DateTime.now();
+      var date = await timeNTP.get();
       var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
       if (date.isBefore(timeMayIssue)) {
         return false;

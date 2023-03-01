@@ -40,6 +40,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/location.dart';
 import '../../providers/print_issue_providers.dart' as prefix;
+import '../../providers/time_ntp.dart';
 import '../../services/cache/factory/cache_factory.dart';
 import '../../widgets/parking-charge/step_issue_pcn.dart';
 
@@ -276,9 +277,18 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     });
   }
 
+  DateTime getNow = DateTime.now();
+  getTimeNowNtp() async {
+    DateTime now = await timeNTP.get();
+    setState(() {
+      getNow = now;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    getTimeNowNtp();
     initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
@@ -371,7 +381,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     final vehicleInfo = ModalRoute.of(context)!.settings.arguments as dynamic;
     final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
 
-    log('issue pcn screen');
+    log('issue pcn screen $getNow');
 
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
 
@@ -392,15 +402,16 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       ZoneId: locationProvider.zone?.Id ?? 0,
       ContraventionReference:
           contraventionReferenceHelper.getContraventionReference(
-              prefixNumber: 2, wardenID: wardensProvider.wardens?.Id ?? 0),
+              prefixNumber: 2,
+              wardenID: wardensProvider.wardens?.Id ?? 0,
+              dateTime: getNow),
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
       VehicleColour: _vehicleColorController.text,
       ContraventionReasonCode:
           contraventionProvider.getContraventionCode?.code ?? '',
-      EventDateTime: DateTime.now(),
-      FirstObservedDateTime:
-          vehicleInfo != null ? vehicleInfo.Created : DateTime.now(),
+      EventDateTime: getNow,
+      FirstObservedDateTime: vehicleInfo != null ? vehicleInfo.Created : getNow,
       WardenId: wardensProvider.wardens?.Id ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -413,18 +424,20 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
     Future<void> createPhysicalPCN(
         {bool? step2, bool? step3, required bool isPrinter}) async {
+      DateTime now = await timeNTP.get();
       final physicalPCN2 = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
         ContraventionReference:
             contraventionReferenceHelper.getContraventionReference(
-                prefixNumber: 2, wardenID: wardensProvider.wardens?.Id ?? 0),
+                prefixNumber: 2,
+                wardenID: wardensProvider.wardens?.Id ?? 0,
+                dateTime: now),
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
         ContraventionReasonCode: _contraventionReasonController.text,
-        EventDateTime: DateTime.now(),
-        FirstObservedDateTime:
-            vehicleInfo != null ? vehicleInfo.Created : DateTime.now(),
+        EventDateTime: now,
+        FirstObservedDateTime: vehicleInfo != null ? vehicleInfo.Created : now,
         WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -467,7 +480,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       Contravention contravention = Contravention(
         reference: physicalPCN2.ContraventionReference,
-        created: DateTime.now(),
+        created: getNow,
         id: physicalPCN2.Id,
         plate: physicalPCN2.Plate,
         colour: physicalPCN2.VehicleColour,
@@ -527,20 +540,21 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
       _formKey.currentState!.save();
     }
 
-    int randomNumber2 = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
+    int randomNumber2 = (getNow.microsecondsSinceEpoch / -1000).ceil();
     final virtualTicket = ContraventionCreateWardenCommand(
       ZoneId: locationProvider.zone?.Id ?? 0,
       ContraventionReference:
           contraventionReferenceHelper.getContraventionReference(
-              prefixNumber: 3, wardenID: wardensProvider.wardens?.Id ?? 0),
+              prefixNumber: 3,
+              wardenID: wardensProvider.wardens?.Id ?? 0,
+              dateTime: getNow),
       Plate: _vrnController.text,
       VehicleMake: _vehicleMakeController.text,
       VehicleColour: _vehicleColorController.text,
       ContraventionReasonCode:
           contraventionProvider.getContraventionCode?.code ?? '',
-      EventDateTime: DateTime.now(),
-      FirstObservedDateTime:
-          vehicleInfo != null ? vehicleInfo.Created : DateTime.now(),
+      EventDateTime: getNow,
+      FirstObservedDateTime: vehicleInfo != null ? vehicleInfo.Created : getNow,
       WardenId: wardensProvider.wardens?.Id ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -552,18 +566,20 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
     );
 
     Future<void> createVirtualTicket({bool? step2, bool? step3}) async {
+      DateTime now = await timeNTP.get();
       final virtualTicket2 = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
         ContraventionReference:
-            contraventionReferenceHelper.getContraventionReference(
-                prefixNumber: 3, wardenID: wardensProvider.wardens?.Id ?? 0),
+            await contraventionReferenceHelper.getContraventionReference(
+                prefixNumber: 3,
+                wardenID: wardensProvider.wardens?.Id ?? 0,
+                dateTime: now),
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
         ContraventionReasonCode: _contraventionReasonController.text,
-        EventDateTime: DateTime.now(),
-        FirstObservedDateTime:
-            vehicleInfo != null ? vehicleInfo.Created : DateTime.now(),
+        EventDateTime: now,
+        FirstObservedDateTime: vehicleInfo != null ? vehicleInfo.Created : now,
         WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -605,7 +621,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
 
       Contravention contravention = Contravention(
         reference: virtualTicket2.ContraventionReference,
-        created: DateTime.now(),
+        created: now,
         id: virtualTicket2.Id,
         plate: virtualTicket2.Plate,
         colour: virtualTicket2.VehicleColour,
@@ -1488,7 +1504,7 @@ class _IssuePCNFirstSeenScreenState extends State<IssuePCNFirstSeenScreen> {
                                                     : ColorTheme.textPrimary));
                                       },
                                       key: Key(
-                                          '${DateTime.now().microsecondsSinceEpoch / 1000}'),
+                                          '${getNow.microsecondsSinceEpoch / 1000}'),
                                       dropdownDecoratorProps:
                                           DropDownDecoratorProps(
                                         dropdownSearchDecoration:

@@ -1,4 +1,5 @@
 import 'package:iWarden/helpers/logger.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/services/cache/contravention_cached_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/services/local/local_service.dart';
@@ -8,7 +9,7 @@ import '../../models/ContraventionService.dart';
 class IssuedPcnLocalService
     extends BaseLocalService<ContraventionCreateWardenCommand> {
   late List<ContraventionCreatePhoto> allPcnPhotos;
-  Logger logger = Logger();
+  Logger logger = Logger<IssuedPcnLocalService>();
 
   IssuedPcnLocalService() : super('contraventions');
 
@@ -44,11 +45,14 @@ class IssuedPcnLocalService
       var cachedContravention = await contraventionCachedService
           .convertIssuesContraventionToCachedContravention(pcn);
 
+      logger.info("sync continue");
+
       // sync to server
       await contraventionController.createPCN(pcn);
       await syncPcnPhotos(pcn);
 
       // create cached after sync
+      // cachedContravention.created = now;
       await contraventionCachedService.create(cachedContravention);
       await delete(pcn.Id!);
     } catch (e) {
