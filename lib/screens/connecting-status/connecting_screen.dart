@@ -247,16 +247,22 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
     setState(() {
       loadingNTPTime = true;
     });
-    timeNTP.sync().then((value) async {
+
+    try {
+      await timeNTP.sync();
       DateTime? values = await FlutterKronos.getNtpDateTime;
       logger.info(values.toString());
       setState(() {
         isNTPTimeNull = values == null;
+        loadingNTPTime = false;
       });
-    });
-    setState(() {
-      loadingNTPTime = false;
-    });
+    } catch (e) {
+      setState(() {
+        loadingNTPTime = false;
+        errorMessage =
+            "Can't get the server time. Please pull to refresh to get the server time.";
+      });
+    }
   }
 
   bool isDataValid() {
