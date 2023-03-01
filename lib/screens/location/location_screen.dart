@@ -45,6 +45,7 @@ class _LocationScreenState extends State<LocationScreen> {
       Completer<GoogleMapController>();
   Position? currentLocation;
   late CachedServiceFactory cachedServiceFactory;
+  DateTime getNowNTP = DateTime.now();
 
   String formatRotaShift(DateTime date) {
     return DateFormat('HH:mm').format(date);
@@ -62,6 +63,7 @@ class _LocationScreenState extends State<LocationScreen> {
     } catch (e) {
       var rotas =
           await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+
       setState(() {
         locationWithRotaList = rotas;
         isLoading = false;
@@ -73,12 +75,15 @@ class _LocationScreenState extends State<LocationScreen> {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
   }
 
-  List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
-    DateTime now = DateTime.now();
-    Future.delayed(const Duration(seconds: 0), () async {
-      now = await timeNTP.get();
+  setTimeNTP() async {
+    DateTime now = await timeNTP.get();
+    setState(() {
+      getNowNTP = now;
     });
-    DateTime date = DateTime.parse(getLocalDate(now));
+  }
+
+  List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
+    DateTime date = DateTime.parse(getLocalDate(getNowNTP));
     final filterRotaShiftByNow = list.where(
       (location) {
         DateTime timeFrom =
@@ -125,31 +130,11 @@ class _LocationScreenState extends State<LocationScreen> {
     return listFilterByRota;
   }
 
-//   _getLocation() async {
-//    currentLocation = await Geolocator()
-//        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-
-//    var newPosition = CameraPosition(
-//        target: LatLng(currentLocation.latitude, currentLocation.longitude),
-//        zoom: 16);
-
-//    CameraUpdate update =CameraUpdate.newCameraPosition(newPosition);
-//    CameraUpdate zoom = CameraUpdate.zoomTo(16);
-
-//    _mapController.moveCamera(update);
-//  }
-  DateTime getNowNTP = DateTime.now();
-  void setTimeNTP() async {
-    DateTime now = await timeNTP.get();
-    setState(() {
-      getNowNTP = now;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await setTimeNTP();
       await currentLocationPosition.getCurrentLocation();
       if (!mounted) return;
       final locations = Provider.of<Locations>(context, listen: false);
@@ -158,7 +143,6 @@ class _LocationScreenState extends State<LocationScreen> {
       cachedServiceFactory =
           CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
       await getRotas();
-
       rotaList(locationWithRotaList);
       if (listFilter.isNotEmpty) {
         locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
