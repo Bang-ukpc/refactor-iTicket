@@ -29,8 +29,8 @@ class ContraventionReferenceHelper {
       required DateTime dateTime}) {
     String prefix = prefixNumber.toString();
     String y = getLastTwoDigitsOfYear();
-    String hh = DateFormat('HH').format(dateTime);
-    String mm = DateFormat('mm').format(dateTime);
+    String hh = DateFormat('HH').format(dateTime.toUtc());
+    String mm = DateFormat('mm').format(dateTime.toUtc());
     String yearOfDay = paddedDataYear(Jiffy().dayOfYear);
     return prefix + paddedWardenIDr(wardenID) + y + yearOfDay + hh + mm;
   }

@@ -61,7 +61,7 @@ class TimeNTP with ChangeNotifier {
       return;
     } else {
       print('[NTP] not null');
-      return now;
+      return now.toUtc();
     }
   }
 

@@ -260,7 +260,7 @@ class _ConnectingScreenState extends State<ConnectingScreen> {
   }
 
   bool isDataValid() {
-    if (!isSyncedRota || !isCancellationNotNull || isNTPTimeNull) {
+    if (!isSyncedRota || !isCancellationNotNull || !isNTPTimeNull) {
       return false;
     } else {
       return true;

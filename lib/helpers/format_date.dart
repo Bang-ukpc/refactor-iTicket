@@ -33,11 +33,12 @@ class FormatDate {
 
   //06/09/2022 08:55 AM
   getLocalDate(DateTime date) {
-    return DateFormat('dd/MM/yyyy hh:mm a').format(date);
+    // return date.toIso8601String();
+    return DateFormat('dd/MM/yyyy hh:mm a').format(date.toLocal());
   }
 
   getLocalDate2(DateTime date) {
-    return DateFormat('HH:mm:ss dd/MM/yyyy').format(date);
+    return DateFormat('HH:mm:ss dd/MM/yyyy').format(date.toLocal());
   }
 
   startOfDay(DateTime date) {
