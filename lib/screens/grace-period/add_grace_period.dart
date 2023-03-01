@@ -56,7 +56,7 @@ class _AddGracePeriodState extends State<AddGracePeriod> {
     }
 
     for (int i = 0; i < rotas.length; i++) {
-      for (int j = 0; j < rotas.length; j++) {
+      for (int j = 0; j < rotas[i].locations!.length; j++) {
         if (rotas[i].locations![j].Id == locations.location!.Id) {
           locations.onSelectedLocation(rotas[i].locations![j]);
           var zoneSelected = rotas[i]
