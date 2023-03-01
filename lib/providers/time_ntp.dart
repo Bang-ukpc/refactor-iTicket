@@ -22,12 +22,12 @@ class TimeNTP with ChangeNotifier {
           child: MyDialog(
             buttonCancel: false,
             title: Text(
-              "Waring",
+              "Security alert!",
               style: CustomTextStyle.h4.copyWith(
                   color: ColorTheme.danger, fontWeight: FontWeight.w600),
             ),
             subTitle: Text(
-              "Please do not adjust the time to avoid any potential errors.",
+              "You will be logged out of iTicket for security reasons as the device time has changed. Please log back in to continue.",
               style: CustomTextStyle.h5.copyWith(fontSize: 16),
               textAlign: TextAlign.center,
             ),
