@@ -163,3 +163,7 @@
 
 - WRDN-656 Wrong display of server time sync status when first installing the app
 - WRDN-655 Change the display of the time change notification when the user taps out and back into the app
+
+[1.0.53-1] - 2023-03-01
+
+- WRDN-662 Edit contravention display time to event date time
