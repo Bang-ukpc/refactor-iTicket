@@ -80,7 +80,8 @@ class ContraventionCachedService extends CacheService<Contravention> {
         e.reason?.code == contraventionType);
     if (findVRNExits != null) {
       var date = await timeNTP.get();
-      var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
+      var timeMayIssue =
+          findVRNExits.eventDateTime!.add(const Duration(hours: 24));
       if (date.isBefore(timeMayIssue)) {
         return false;
       }

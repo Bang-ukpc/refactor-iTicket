@@ -142,7 +142,7 @@ class _ParkingChargeListState extends BaseStatefulState<ParkingChargeList> {
                                     contraventions: item.reason
                                             ?.contraventionReasonTranslations ??
                                         [],
-                                    created: item.created as DateTime,
+                                    created: item.eventDateTime as DateTime,
                                   ),
                                 ),
                               )
