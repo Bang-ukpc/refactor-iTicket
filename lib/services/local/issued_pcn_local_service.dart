@@ -39,8 +39,8 @@ class IssuedPcnLocalService
 
   @override
   sync(ContraventionCreateWardenCommand pcn) async {
-    logger.info("syncing ${pcn.Plate} created at ${pcn.EventDateTime}");
     try {
+    logger.info("syncing ${pcn.Plate} created at ${pcn.EventDateTime}");
       var contraventionCachedService = ContraventionCachedService(pcn.ZoneId);
       var cachedContravention = await contraventionCachedService
           .convertIssuesContraventionToCachedContravention(pcn);

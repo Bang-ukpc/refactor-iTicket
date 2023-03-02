@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_kronos/flutter_kronos.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
@@ -21,7 +20,6 @@ import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../providers/time_ntp.dart';
 import '../../services/local/sync_factory.dart';
 
 Future<void> initializeService() async {
@@ -152,10 +150,6 @@ void onStart(ServiceInstance service) async {
     if (zone != null) {
       zoneSelected = Zone.fromJson(json.decode(zone));
     }
-    FlutterKronos.sync();
-
-    DateTime? now = await FlutterKronos.getNtpDateTime;
-    now ??= DateTime.now().toUtc();
 
     final gpsEvent = WardenEvent(
       type: TypeWardenEvent.TrackGPS.index,
@@ -168,7 +162,7 @@ void onStart(ServiceInstance service) async {
       rotaTimeTo: rotaShiftSelected?.timeTo,
       locationId: locationSelected?.Id,
       zoneId: zoneSelected?.Id,
-      Created: now,
+      Created: null,
     );
 
     createdWardenEventLocalService.create(gpsEvent);

@@ -1505,8 +1505,7 @@ class _IssuePCNFirstSeenScreenState
                                                     ? ColorTheme.grey400
                                                     : ColorTheme.textPrimary));
                                       },
-                                      key: Key(
-                                          '${getNow.microsecondsSinceEpoch / 1000}'),
+                                      key: Key('$randomNumber'),
                                       dropdownDecoratorProps:
                                           DropDownDecoratorProps(
                                         dropdownSearchDecoration:

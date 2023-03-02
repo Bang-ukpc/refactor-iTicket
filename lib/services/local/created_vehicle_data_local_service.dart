@@ -55,13 +55,13 @@ class CreatedVehicleDataLocalService
 
   @override
   sync(VehicleInformation vehicleInformation) async {
-    logger.info(
-        'syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
-    var vehicleId = vehicleInformation.Id != null
-        ? int.tryParse(vehicleInformation.Id.toString())
-        : null;
-    bool isNewItem = idHelper.isGeneratedByLocal(vehicleInformation.Id);
     try {
+      logger.info(
+          'syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
+      var vehicleId = vehicleInformation.Id != null
+          ? int.tryParse(vehicleInformation.Id.toString())
+          : null;
+      bool isNewItem = idHelper.isGeneratedByLocal(vehicleInformation.Id);
       await syncPcnPhotos(vehicleInformation.EvidencePhotos!)
           .then((evidencePhotos) async {
         vehicleInformation.EvidencePhotos = evidencePhotos;

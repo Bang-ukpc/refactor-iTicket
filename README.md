@@ -140,3 +140,13 @@
 
 - WRDN-637 The correct time zone is not displayed when changing the machine's time zone
 - WRDN-638 Timezone format is wrong when sending to the server
+
+[1.0.48-1] - 2023-03-01
+
+- WRDN-648 Can't send gps to warden admin
+- WRDN-636 It is still possible to start a shift even if the required field is showing an error
+
+[1.0.49-1] - 2023-03-01
+
+- WRDN-651 As a developer, I want to refactor the sync process to make sure when one item break. The other data still can send to the server
+- WRDN-650 Wrong time displaying pcn's creation date when not in sync
