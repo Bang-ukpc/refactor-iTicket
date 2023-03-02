@@ -157,5 +157,9 @@
 
 [1.0.51-1] - 2023-03-01
 
+- WRDN-653 The expired time is display negative on the first seen and grace period page
+
+[1.0.52-1] - 2023-03-01
+
 - WRDN-656 Wrong display of server time sync status when first installing the app
 - WRDN-655 Change the display of the time change notification when the user taps out and back into the app
