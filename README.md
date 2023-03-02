@@ -150,3 +150,12 @@
 
 - WRDN-651 As a developer, I want to refactor the sync process to make sure when one item break. The other data still can send to the server
 - WRDN-650 Wrong time displaying pcn's creation date when not in sync
+
+[1.0.50-1] - 2023-03-01
+
+- re-build version 1.0.49
+
+[1.0.51-1] - 2023-03-01
+
+- WRDN-656 Wrong display of server time sync status when first installing the app
+- WRDN-655 Change the display of the time change notification when the user taps out and back into the app
