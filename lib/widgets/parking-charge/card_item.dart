@@ -108,7 +108,7 @@ class _CardItemParkingChargeState extends State<CardItemParkingCharge> {
             ),
             const SizedBox(height: 5),
             Text(
-              "Created: ${FormatDate().getLocalDate(widget.created)}",
+              "Issued: ${FormatDate().getLocalDate(widget.created)}",
               style: CustomTextStyle.h6.copyWith(color: ColorTheme.grey600),
             ),
           ],
