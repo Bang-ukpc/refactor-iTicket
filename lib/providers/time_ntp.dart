@@ -53,13 +53,10 @@ class TimeNTP with ChangeNotifier {
     );
   }
 
+  Future<DateTime?> getTimeNTP() async => await FlutterKronos.getNtpDateTime;
   Future<dynamic> get() async {
-    DateTime? now = await FlutterKronos.getNtpDateTime;
+    DateTime? now = await getTimeNTP();
     if (now == null) {
-      print('[NTP] null');
-      if (NavigationService.navigatorKey.currentContext != null) {
-        showDialogTime();
-      }
       return DateTime.now().toUtc();
     } else {
       print('[NTP] not null');

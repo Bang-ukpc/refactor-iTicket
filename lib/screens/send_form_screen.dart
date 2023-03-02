@@ -9,15 +9,17 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 
+import '../helpers/my_navigator_observer.dart';
+
 class SendFormScreen extends StatefulWidget {
   static const routeName = '/send-form';
   const SendFormScreen({super.key});
 
   @override
-  State<SendFormScreen> createState() => _SendFormScreenState();
+  BaseStatefulState<SendFormScreen> createState() => _SendFormScreenState();
 }
 
-class _SendFormScreenState extends State<SendFormScreen> {
+class _SendFormScreenState extends BaseStatefulState<SendFormScreen> {
   bool checkbox = false;
 
   late String selectedTypeValue = listType[0].id.toString();

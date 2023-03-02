@@ -14,6 +14,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
 import '../../services/local/created_warden_event_local_service .dart';
 
 class StartBreakScreen extends StatefulWidget {
@@ -21,10 +22,10 @@ class StartBreakScreen extends StatefulWidget {
   const StartBreakScreen({super.key});
 
   @override
-  State<StartBreakScreen> createState() => _StartBreakScreenState();
+  BaseStatefulState<StartBreakScreen> createState() => _StartBreakScreenState();
 }
 
-class _StartBreakScreenState extends State<StartBreakScreen> {
+class _StartBreakScreenState extends BaseStatefulState<StartBreakScreen> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;

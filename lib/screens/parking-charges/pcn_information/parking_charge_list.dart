@@ -20,15 +20,18 @@ import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:iWarden/widgets/parking-charge/card_item.dart';
 import 'package:provider/provider.dart';
 
+import '../../../helpers/my_navigator_observer.dart';
+
 class ParkingChargeList extends StatefulWidget {
   static const routeName = 'parking-charges-list';
   const ParkingChargeList({super.key});
 
   @override
-  State<ParkingChargeList> createState() => _ParkingChargeListState();
+  BaseStatefulState<ParkingChargeList> createState() =>
+      _ParkingChargeListState();
 }
 
-class _ParkingChargeListState extends State<ParkingChargeList> {
+class _ParkingChargeListState extends BaseStatefulState<ParkingChargeList> {
   List<Contravention> contraventionList = [];
   bool contraventionLoading = false;
   bool loadingImage = true;

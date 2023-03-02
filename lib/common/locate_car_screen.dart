@@ -13,15 +13,17 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 
+import '../helpers/my_navigator_observer.dart';
+
 class LocateCarScreen extends StatefulWidget {
   static const routeName = '/locate-car';
   const LocateCarScreen({super.key});
 
   @override
-  State<LocateCarScreen> createState() => _LocateCarScreenState();
+  BaseStatefulState<LocateCarScreen> createState() => _LocateCarScreenState();
 }
 
-class _LocateCarScreenState extends State<LocateCarScreen> {
+class _LocateCarScreenState extends BaseStatefulState<LocateCarScreen> {
   Directions? _info;
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();

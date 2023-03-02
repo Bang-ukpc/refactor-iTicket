@@ -28,15 +28,18 @@ import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../../../helpers/my_navigator_observer.dart';
+
 class AddFirstSeenScreen extends StatefulWidget {
   static const routeName = '/add-first-seen';
   const AddFirstSeenScreen({super.key});
 
   @override
-  State<AddFirstSeenScreen> createState() => _AddFirstSeenScreenState();
+  BaseStatefulState<AddFirstSeenScreen> createState() =>
+      _AddFirstSeenScreenState();
 }
 
-class _AddFirstSeenScreenState extends State<AddFirstSeenScreen> {
+class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _vrnController = TextEditingController();
   final _bayNumberController = TextEditingController();

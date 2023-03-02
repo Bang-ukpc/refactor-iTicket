@@ -23,6 +23,7 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
 import '../../services/local/created_warden_event_local_service .dart';
 import '../../widgets/parking-charge/detail_parking_common2.dart';
 
@@ -31,10 +32,10 @@ class PrintPCN extends StatefulWidget {
   const PrintPCN({super.key});
 
   @override
-  State<PrintPCN> createState() => _PrintPCNState();
+  BaseStatefulState<PrintPCN> createState() => _PrintPCNState();
 }
 
-class _PrintPCNState extends State<PrintPCN> {
+class _PrintPCNState extends BaseStatefulState<PrintPCN> {
   @override
   Widget build(BuildContext context) {
     final contraventionProvider = Provider.of<ContraventionProvider>(context);

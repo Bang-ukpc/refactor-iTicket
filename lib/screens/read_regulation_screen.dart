@@ -21,6 +21,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/my_navigator_observer.dart';
 import '../services/local/created_warden_event_local_service .dart';
 
 class ReadRegulationScreen extends StatefulWidget {
@@ -28,10 +29,12 @@ class ReadRegulationScreen extends StatefulWidget {
   const ReadRegulationScreen({super.key});
 
   @override
-  State<ReadRegulationScreen> createState() => _ReadRegulationScreenState();
+  BaseStatefulState<ReadRegulationScreen> createState() =>
+      _ReadRegulationScreenState();
 }
 
-class _ReadRegulationScreenState extends State<ReadRegulationScreen> {
+class _ReadRegulationScreenState
+    extends BaseStatefulState<ReadRegulationScreen> {
   bool checkbox = false;
 
   @override

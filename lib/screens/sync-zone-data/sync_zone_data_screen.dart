@@ -9,15 +9,17 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/my_navigator_observer.dart';
+
 class SyncZoneData extends StatefulWidget {
   static const routeName = '/sync-zone-data';
   const SyncZoneData({super.key});
 
   @override
-  State<SyncZoneData> createState() => _SyncZoneDataState();
+  BaseStatefulState<SyncZoneData> createState() => _SyncZoneDataState();
 }
 
-class _SyncZoneDataState extends State<SyncZoneData> {
+class _SyncZoneDataState extends BaseStatefulState<SyncZoneData> {
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   bool isPulledData = false;
   bool isLatestFirstSeen = false;
