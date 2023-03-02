@@ -279,7 +279,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     super.initState();
     onStartBackgroundService();
     getCurrentLocationOfWarden();
-    syncTime();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
       await wardensInfo.getWardensInfoLogging().then((value) async {
@@ -289,6 +288,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       });
       cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
       await syncAllRequiredData();
+      await syncTime();
       setState(() {
         isPending = false;
       });
