@@ -52,6 +52,8 @@ class TimeNTP with ChangeNotifier {
     );
   }
 
+  Future<DateTime?> getTimeNTP() async => await FlutterKronos.getNtpDateTime;
+
   Future<dynamic> get() async {
     DateTime? now = await FlutterKronos.getNtpDateTime;
     if (now == null) {
