@@ -54,6 +54,7 @@ class _ActiveFirstSeenScreenState
   }
 
   Future<void> getData(int zoneId) async {
+    await getTimeNTP();
     await zoneCachedServiceFactory.firstSeenCachedService
         .getListActive()
         .then((listActive) {
@@ -78,7 +79,7 @@ class _ActiveFirstSeenScreenState
   }
 
   DateTime nowNTP = DateTime.now();
-  void getTimeNTP() async {
+  getTimeNTP() async {
     DateTime now = await timeNTP.get();
     setState(() {
       nowNTP = now;
