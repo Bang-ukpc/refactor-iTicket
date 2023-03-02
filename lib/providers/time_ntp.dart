@@ -10,7 +10,6 @@ import '../configs/configs.dart';
 import '../theme/text_theme.dart';
 
 class TimeNTP with ChangeNotifier {
-  DateTime? currentNtpTimeMs;
   void showDialogTime() {
     showDialog<void>(
       context: NavigationService.navigatorKey.currentContext!,
@@ -54,6 +53,7 @@ class TimeNTP with ChangeNotifier {
   }
 
   Future<DateTime?> getTimeNTP() async => await FlutterKronos.getNtpDateTime;
+
   Future<dynamic> get() async {
     DateTime? now = await getTimeNTP();
     if (now == null) {
