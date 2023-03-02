@@ -52,21 +52,20 @@ class TimeNTP with ChangeNotifier {
     );
   }
 
-  Future<DateTime?> getTimeNTP() async => await FlutterKronos.getNtpDateTime;
-
   Future<dynamic> get() async {
-    DateTime? now = await getTimeNTP();
+    DateTime? now = await FlutterKronos.getNtpDateTime;
     if (now == null) {
+      print('[Time server] null');
       return DateTime.now().toUtc();
     } else {
-      print('[NTP] not null');
+      print('[Time server] not null');
       return now.toUtc();
     }
   }
 
   Future<void> sync() async {
     FlutterKronos.sync();
-    notifyListeners();
+    await Future.delayed(const Duration(seconds: 2));
   }
 }
 
