@@ -84,6 +84,7 @@ class _PrintPCNState extends BaseStatefulState<PrintPCN> {
         BadgeNumber: 'test',
         LocationAccuracy: 0, // missing
         TypePCN: args != null ? args.type : 1,
+        IsPermitVerifiedByPO: contraventionProvider.getStatusPermitVerified,
       );
       await issuedPcnLocalService.create(contraventionCreate);
 
