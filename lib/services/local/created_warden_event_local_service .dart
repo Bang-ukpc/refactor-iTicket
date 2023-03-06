@@ -19,7 +19,7 @@ class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
   }
 
   @override
-  syncAll() async {
+  syncAll([Function(int current, int total)? statusFunc]) async {
     logger.info("Start syncing all the events ...");
     if (isSyncing) {
       logger.info("Sync process is running => IGNORE");

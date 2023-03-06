@@ -19,7 +19,7 @@ class IssuedPcnLocalService
   }
 
   @override
-  syncAll() async {
+  syncAll([Function(int current, int total)? statusFunc]) async {
     logger.info("start syncing all ....");
 
     if (isSyncing) {
@@ -28,10 +28,19 @@ class IssuedPcnLocalService
     }
     isSyncing = true;
     List<ContraventionCreateWardenCommand> allPcns = await getAll();
+    if (statusFunc != null) statusFunc(0, allPcns.length);
     logger.info("start syncing ${allPcns.length} items ....");
     allPcnPhotos = await issuedPcnPhotoLocalService.getAll();
-    for (var pcn in allPcns) {
-      await sync(pcn);
+    var amountSynced = 0;
+    for (int i = 0; i < allPcns.length; i++) {
+      var pcn = allPcns[i];
+      try {
+        await sync(pcn);
+        amountSynced++;
+      } catch (e) {
+        logger.error("syncing ${pcn.Plate} error ${e.toString()}");
+      }
+      if (statusFunc != null) statusFunc(amountSynced, allPcns.length);
     }
     await issuedPcnPhotoLocalService.syncAll();
     isSyncing = false;
@@ -39,25 +48,21 @@ class IssuedPcnLocalService
 
   @override
   sync(ContraventionCreateWardenCommand pcn) async {
-    try {
     logger.info("syncing ${pcn.Plate} created at ${pcn.EventDateTime}");
-      var contraventionCachedService = ContraventionCachedService(pcn.ZoneId);
-      var cachedContravention = await contraventionCachedService
-          .convertIssuesContraventionToCachedContravention(pcn);
+    var contraventionCachedService = ContraventionCachedService(pcn.ZoneId);
+    var cachedContravention = await contraventionCachedService
+        .convertIssuesContraventionToCachedContravention(pcn);
 
-      logger.info("sync continue");
+    logger.info("sync continue");
 
-      // sync to server
-      await contraventionController.createPCN(pcn);
-      await syncPcnPhotos(pcn);
+    // sync to server
+    await contraventionController.createPCN(pcn);
+    await syncPcnPhotos(pcn);
 
-      // create cached after sync
-      // cachedContravention.created = now;
-      await contraventionCachedService.create(cachedContravention);
-      await delete(pcn.Id!);
-    } catch (e) {
-      logger.error("syncing ${pcn.Plate} error ${e.toString()}");
-    }
+    // create cached after sync
+    // cachedContravention.created = now;
+    await contraventionCachedService.create(cachedContravention);
+    await delete(pcn.Id!);
   }
 
   syncPcnPhotos(ContraventionCreateWardenCommand pcn) async {

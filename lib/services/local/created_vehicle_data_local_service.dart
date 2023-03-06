@@ -29,7 +29,7 @@ class CreatedVehicleDataLocalService
   }
 
   @override
-  syncAll() async {
+  syncAll([Function(int current, int total)? statusFunc]) async {
     logger.info('syncing all ...');
 
     if (isSyncing) {
@@ -39,9 +39,18 @@ class CreatedVehicleDataLocalService
     isSyncing = true;
 
     final items = await getAll();
-    logger.info('${items.map((e) => e.Id)}');
-    for (var item in items) {
-      await sync(item);
+    if (statusFunc != null) statusFunc(0, items.length);
+    logger.info("start syncing ${items.length} vehicle info ....");
+    var amountSynced = 0;
+    for (int i = 0; i < items.length; i++) {
+      var item = items[i];
+      try {
+        await sync(item);
+        amountSynced++;
+      } catch (e) {
+        logger.info(e.toString());
+      }
+      if (statusFunc != null) statusFunc(amountSynced, items.length);
     }
 
     isSyncing = false;
@@ -55,34 +64,29 @@ class CreatedVehicleDataLocalService
 
   @override
   sync(VehicleInformation vehicleInformation) async {
-    try {
-      logger.info(
-          'syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
-      var vehicleId = vehicleInformation.Id != null
-          ? int.tryParse(vehicleInformation.Id.toString())
-          : null;
-      bool isNewItem = idHelper.isGeneratedByLocal(vehicleInformation.Id);
-      await syncPcnPhotos(vehicleInformation.EvidencePhotos!)
-          .then((evidencePhotos) async {
-        vehicleInformation.EvidencePhotos = evidencePhotos;
-        var latestItem = await get(vehicleInformation.Id ?? 0);
-        if (latestItem != null && latestItem.CarLeftAt != null) {
-          vehicleInformation.CarLeftAt = latestItem.CarLeftAt!;
-        }
-        if (isNewItem) {
-          vehicleInformation.Id = null;
-        }
-        await vehicleInfoController.upsertVehicleInfo(vehicleInformation);
+    logger.info(
+        'syncing ${vehicleInformation.Plate} with ${vehicleInformation.EvidencePhotos?.length} images ...');
+    var vehicleId = vehicleInformation.Id != null
+        ? int.tryParse(vehicleInformation.Id.toString())
+        : null;
+    bool isNewItem = idHelper.isGeneratedByLocal(vehicleInformation.Id);
+    await syncPcnPhotos(vehicleInformation.EvidencePhotos!)
+        .then((evidencePhotos) async {
+      vehicleInformation.EvidencePhotos = evidencePhotos;
+      var latestItem = await get(vehicleInformation.Id ?? 0);
+      if (latestItem != null && latestItem.CarLeftAt != null) {
+        vehicleInformation.CarLeftAt = latestItem.CarLeftAt!;
+      }
+      if (isNewItem) {
+        vehicleInformation.Id = null;
+      }
+      await vehicleInfoController.upsertVehicleInfo(vehicleInformation);
 
-        if (isNewItem) {
-          await createCachedVehicleInformationAfterSync(vehicleInformation);
-        }
-        await delete(vehicleId ?? 0);
-      });
-    } catch (e) {
-      logger.info(e.toString());
-    }
-    return null;
+      if (isNewItem) {
+        await createCachedVehicleInformationAfterSync(vehicleInformation);
+      }
+      await delete(vehicleId ?? 0);
+    });
   }
 
   createCachedVehicleInformationAfterSync(VehicleInformation vehicle) async {

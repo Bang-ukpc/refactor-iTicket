@@ -29,7 +29,7 @@ class IssuedPcnPhotoLocalService
   }
 
   @override
-  syncAll() async {
+  syncAll([Function(int current, int total)? statusFunc]) async {
     List<ContraventionCreatePhoto> allPcnPhotos = await getAll();
     for (var pcnPhoto in allPcnPhotos) {
       await sync(pcnPhoto);
