@@ -159,7 +159,15 @@
 
 - WRDN-653 The expired time is display negative on the first seen and grace period page
 
-[1.0.52-1] - 2023-03-01
+[1.0.52-1] - 2023-03-02
 
 - WRDN-656 Wrong display of server time sync status when first installing the app
 - WRDN-655 Change the display of the time change notification when the user taps out and back into the app
+
+[1.0.53-1] - 2023-03-02
+
+- WRDN-662 Edit contravention display time to event date time
+
+[1.0.54-1] - 2023-03-03
+
+- WRDN-663 Show error can't choose rota when offline mode

@@ -7,7 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/operational_period.dart';
@@ -53,23 +52,17 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   }
 
   Future<void> getRotas() async {
+    List<RotaWithLocation> rotas = [];
     try {
       await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-      var rotas =
-          await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-      setState(() {
-        locationWithRotaList = rotas;
-        isLoading = false;
-      });
+      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
     } catch (e) {
-      var rotas =
-          await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-
-      setState(() {
-        locationWithRotaList = rotas;
-        isLoading = false;
-      });
+      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
     }
+    setState(() {
+      locationWithRotaList = rotas;
+      isLoading = false;
+    });
   }
 
   getLocalDate(DateTime date) {
@@ -165,7 +158,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
     super.dispose();
   }
 
-  // double distanceInMeters =
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
@@ -242,19 +234,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
         ),
         zoom: 16,
       )));
-      // final GoogleMapController controller = await _controller.future;
-      // controller.animateCamera(
-      //   CameraUpdate.newLatLngBounds(
-      //     LatLngBounds(
-      //       southwest: sourceLocation,
-      //       northeast: LatLng(
-      //         latitude,
-      //         longitude,
-      //       ),
-      //     ),
-      //     38,
-      //   ),
-      // );
     }
 
     Future<void> refresh() async {
@@ -290,29 +269,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Scaffold(
-          // bottomNavigationBar: BottomSheet2(buttonList: [
-          //   BottomNavyBarItem(
-          //     onPressed: () {
-          //       final isValid = _formKey.currentState!.validate();
-          //       if (!isValid) {
-          //         return;
-          //       } else {
-          //         Navigator.of(context)
-          //             .pushNamed(ReadRegulationScreen.routeName);
-          //       }
-
-          //       _formKey.currentState!.save();
-          //       return;
-          //     },
-          //     icon: SvgPicture.asset('assets/svg/IconNext.svg'),
-          //     label: Text(
-          //       'Next',
-          //       style: CustomTextStyle.h6.copyWith(
-          //         color: ColorTheme.grey600,
-          //       ),
-          //     ),
-          //   ),
-          // ]),
           bottomSheet: SizedBox(
             height: 46,
             width: double.infinity,
@@ -438,7 +394,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                               title:
                                                   '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                               isSelected: item.Id ==
-                                                  locations.rotaShift!.Id,
+                                                  locations.rotaShift?.Id,
                                             );
                                           },
                                         ),
