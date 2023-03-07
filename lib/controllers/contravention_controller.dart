@@ -101,12 +101,11 @@ class ContraventionController {
     }
   }
 
-  Future<CheckPermit?> checkHasPermit(
-      ContraventionCreateWardenCommand pcn) async {
+  Future<CheckPermit?> checkHasPermit(Permit permit) async {
     try {
       final response = await dio.post(
         '/contravention/check-has-permit',
-        data: pcn.toJson(),
+        data: permit.toJson(),
       );
       print('check permit: ${response.data}');
       CheckPermit data = CheckPermit.fromJson(response.data);

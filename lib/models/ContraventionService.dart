@@ -240,3 +240,24 @@ class CheckPermit {
         ),
       );
 }
+
+class Permit {
+  final String Plate;
+  final String ContraventionReasonCode;
+  final DateTime EventDateTime;
+  final DateTime FirstObservedDateTime;
+  final int ZoneId;
+  Permit(
+      {required this.Plate,
+      required this.ContraventionReasonCode,
+      required this.EventDateTime,
+      required this.FirstObservedDateTime,
+      required this.ZoneId});
+  Map<String, dynamic> toJson() => {
+        'Plate': Plate,
+        'ContraventionReasonCode': ContraventionReasonCode,
+        'EventDateTime': EventDateTime.toIso8601String(),
+        'FirstObservedDateTime': FirstObservedDateTime.toIso8601String(),
+        'ZoneId': ZoneId,
+      };
+}
