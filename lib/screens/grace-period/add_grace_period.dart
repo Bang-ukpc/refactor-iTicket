@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:collection/collection.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,8 +27,11 @@ import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../../controllers/index.dart';
+import '../../helpers/check_turn_on_net_work.dart';
 import '../../helpers/id_helper.dart';
 import '../../helpers/my_navigator_observer.dart';
+import '../../models/ContraventionService.dart';
 import '../../providers/time_ntp.dart';
 
 class AddGracePeriod extends StatefulWidget {
@@ -174,6 +179,145 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
       return true;
     }
 
+    addGracePeriodModeComplete() async {
+      await saveForm().then((value) {
+        if (value == true) {
+          Navigator.of(context).popAndPushNamed(GracePeriodList.routeName);
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'Grace period added successfully',
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        }
+      });
+    }
+
+    addGracePeriodModeCompleteAndAdd() async {
+      await saveForm().then((value) {
+        if (value == true) {
+          setState(() {
+            _vrnController.text = '';
+            _bayNumberController.text = '';
+            arrayImage.clear();
+            evidencePhotoList.clear();
+            validateMode = AutovalidateMode.disabled;
+          });
+        }
+      });
+    }
+
+    Widget itemInfoDialog({required String title, String? value}) {
+      return Row(
+        children: [
+          Text(
+            '$title: ',
+            style: CustomTextStyle.h5,
+          ),
+          Text(
+            value ?? 'No data',
+            style: CustomTextStyle.h5.copyWith(fontWeight: FontWeight.w600),
+          ),
+        ],
+      );
+    }
+
+    Future<void> showDialogPermitExists(CheckPermit? value) async {
+      return showDialog<void>(
+        context: context,
+        barrierColor: ColorTheme.backdrop,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+            child: AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    5.0,
+                  ),
+                ),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 0),
+              contentPadding: EdgeInsets.zero,
+              title: Center(
+                  child: Column(
+                children: [
+                  Text(
+                    "Permit exists with in this location",
+                    style: CustomTextStyle.h4.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: ColorTheme.danger,
+                    ),
+                  ),
+                  const Divider(),
+                ],
+              )),
+              content: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      itemInfoDialog(
+                          title: "VRN", value: value?.permitInfo?.VRN),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      itemInfoDialog(
+                          title: "Bay information",
+                          value: value?.permitInfo?.bayNumber),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      itemInfoDialog(
+                          title: "Source", value: value?.permitInfo?.source),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      itemInfoDialog(
+                          title: "Tenant", value: value?.permitInfo?.tenant),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.grey300,
+                              ),
+                              child: Text(
+                                "OK",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.textPrimary),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 24,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -188,22 +332,41 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
         bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () async {
-              await saveForm().then((value) {
-                if (value == true) {
-                  Navigator.of(context)
-                      .popAndPushNamed(GracePeriodList.routeName);
-                  CherryToast.success(
-                    displayCloseButton: false,
-                    title: Text(
-                      'Grace period added successfully',
-                      style: CustomTextStyle.h4
-                          .copyWith(color: ColorTheme.success),
-                    ),
-                    toastPosition: Position.bottom,
-                    borderRadius: 5,
-                  ).show(context);
+              bool checkTurnOnNetwork =
+                  await checkTurnOnNetWork.turnOnWifiAndMobile();
+              if (checkTurnOnNetwork) {
+                if (!mounted) return;
+                showCircularProgressIndicator(context: context);
+                DateTime now = await timeNTP.get();
+                Permit permit = Permit(
+                    Plate: _vrnController.text,
+                    ContraventionReasonCode: "36",
+                    EventDateTime: now,
+                    FirstObservedDateTime: now,
+                    ZoneId: locationProvider.zone!.Id as int);
+                try {
+                  await weakNetworkContraventionController
+                      .checkHasPermit(permit)
+                      .then((value) async {
+                    Navigator.of(context).pop();
+                    if (value?.hasPermit == true) {
+                      showDialogPermitExists(value);
+                    } else {
+                      await addGracePeriodModeComplete();
+                    }
+                  });
+                } on DioError catch (error) {
+                  if (!mounted) return;
+                  if (error.type == DioErrorType.other ||
+                      error.type == DioErrorType.connectTimeout) {
+                    Navigator.of(context).pop();
+                    await addGracePeriodModeComplete();
+                    return;
+                  }
                 }
-              });
+              } else {
+                await addGracePeriodModeComplete();
+              }
             },
             icon: SvgPicture.asset(
               'assets/svg/IconComplete2.svg',
@@ -212,17 +375,41 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
           ),
           BottomNavyBarItem(
             onPressed: () async {
-              await saveForm().then((value) {
-                if (value == true) {
-                  setState(() {
-                    _vrnController.text = '';
-                    _bayNumberController.text = '';
-                    arrayImage.clear();
-                    evidencePhotoList.clear();
-                    validateMode = AutovalidateMode.disabled;
+              bool checkTurnOnNetwork =
+                  await checkTurnOnNetWork.turnOnWifiAndMobile();
+              if (checkTurnOnNetwork) {
+                if (!mounted) return;
+                showCircularProgressIndicator(context: context);
+                DateTime now = await timeNTP.get();
+                Permit permit = Permit(
+                    Plate: _vrnController.text,
+                    ContraventionReasonCode: "36",
+                    EventDateTime: now,
+                    FirstObservedDateTime: now,
+                    ZoneId: locationProvider.zone!.Id as int);
+                try {
+                  await weakNetworkContraventionController
+                      .checkHasPermit(permit)
+                      .then((value) async {
+                    Navigator.of(context).pop();
+                    if (value?.hasPermit == true) {
+                      showDialogPermitExists(value);
+                    } else {
+                      await addGracePeriodModeCompleteAndAdd();
+                    }
                   });
+                } on DioError catch (error) {
+                  if (!mounted) return;
+                  if (error.type == DioErrorType.other ||
+                      error.type == DioErrorType.connectTimeout) {
+                    Navigator.of(context).pop();
+                    await addGracePeriodModeCompleteAndAdd();
+                    return;
+                  }
                 }
-              });
+              } else {
+                await addGracePeriodModeCompleteAndAdd();
+              }
             },
             icon: SvgPicture.asset(
               'assets/svg/IconSave2.svg',

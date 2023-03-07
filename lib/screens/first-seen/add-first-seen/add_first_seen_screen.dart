@@ -32,6 +32,7 @@ import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/index.dart';
+import '../../../helpers/check_turn_on_net_work.dart';
 import '../../../helpers/my_navigator_observer.dart';
 import '../../../models/ContraventionService.dart';
 import '../../../providers/contravention_provider.dart';
@@ -322,13 +323,6 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
       return true;
     }
 
-    Future<bool> turnOnWifiAndMobile() async {
-      ConnectivityResult connectionStatus =
-          await (Connectivity().checkConnectivity());
-      return connectionStatus == ConnectivityResult.wifi ||
-          connectionStatus == ConnectivityResult.mobile;
-    }
-
     addFirstSeenModeComplete() async {
       await saveForm().then((value) {
         if (value == true) {
@@ -393,7 +387,8 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
         bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () async {
-              bool checkTurnOnNetwork = await turnOnWifiAndMobile();
+              bool checkTurnOnNetwork =
+                  await checkTurnOnNetWork.turnOnWifiAndMobile();
               if (checkTurnOnNetwork) {
                 if (!mounted) return;
                 showCircularProgressIndicator(context: context);
@@ -407,12 +402,12 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                 try {
                   await weakNetworkContraventionController
                       .checkHasPermit(permit)
-                      .then((value) {
+                      .then((value) async {
                     Navigator.of(context).pop();
                     if (value?.hasPermit == true) {
                       showDialogPermitExists(value);
                     } else {
-                      addFirstSeenModeComplete();
+                      await addFirstSeenModeComplete();
                     }
                   });
                 } on DioError catch (error) {
@@ -420,13 +415,13 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                   if (error.type == DioErrorType.other ||
                       error.type == DioErrorType.connectTimeout) {
                     Navigator.of(context).pop();
-                    addFirstSeenModeComplete();
+                    await addFirstSeenModeComplete();
                     return;
                   }
                   sendMessageInternalServer(error);
                 }
               } else {
-                addFirstSeenModeComplete();
+                await addFirstSeenModeComplete();
               }
             },
             icon: SvgPicture.asset(
@@ -436,7 +431,8 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
           ),
           BottomNavyBarItem(
             onPressed: () async {
-              bool checkTurnOnNetwork = await turnOnWifiAndMobile();
+              bool checkTurnOnNetwork =
+                  await checkTurnOnNetWork.turnOnWifiAndMobile();
               if (checkTurnOnNetwork) {
                 if (!mounted) return;
                 showCircularProgressIndicator(context: context);
@@ -450,12 +446,12 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                 try {
                   await weakNetworkContraventionController
                       .checkHasPermit(permit)
-                      .then((value) {
+                      .then((value) async {
                     Navigator.of(context).pop();
                     if (value?.hasPermit == true) {
                       showDialogPermitExists(value);
                     } else {
-                      addFirstSeenModeCompleteAndAdd();
+                      await addFirstSeenModeCompleteAndAdd();
                     }
                   });
                 } on DioError catch (error) {
@@ -463,13 +459,13 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                   if (error.type == DioErrorType.other ||
                       error.type == DioErrorType.connectTimeout) {
                     Navigator.of(context).pop();
-                    addFirstSeenModeCompleteAndAdd();
+                    await addFirstSeenModeCompleteAndAdd();
                     return;
                   }
                   sendMessageInternalServer(error);
                 }
               } else {
-                addFirstSeenModeCompleteAndAdd();
+                await addFirstSeenModeCompleteAndAdd();
               }
             },
             icon: SvgPicture.asset(
