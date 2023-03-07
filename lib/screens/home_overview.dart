@@ -3,8 +3,6 @@ import 'dart:developer';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_kronos/flutter_kronos.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/show_loading.dart';
@@ -76,6 +74,7 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
       await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
       await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     } catch (e) {}
+    await getData();
     setState(() {
       loading = false;
     });
@@ -238,10 +237,6 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
     void onCheckOut() async {
       try {
         showCircularProgressIndicator(context: context, text: 'Checking out');
-        // eventAnalytics.clickButton(
-        //   button: "Check out",
-        //   user: wardensProvider.wardens!.Email,
-        // );
         await createdWardenEventLocalService.create(wardenEvent).then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
@@ -280,10 +275,6 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
     }
 
     void onStartBreak() async {
-      // eventAnalytics.clickButton(
-      //   button: "Start break",
-      //   user: wardensProvider.wardens!.Email,
-      // );
       try {
         showCircularProgressIndicator(context: context);
         await createdWardenEventLocalService
