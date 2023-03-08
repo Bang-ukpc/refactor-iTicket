@@ -1,10 +1,12 @@
+import 'package:iWarden/factory/sync_log_factory.dart';
 import 'package:iWarden/helpers/logger.dart';
-import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/services/cache/contravention_cached_service.dart';
 import 'package:iWarden/services/local/issued_pcn_photo_local_service.dart';
 import 'package:iWarden/services/local/local_service.dart';
+
 import '../../controllers/contravention_controller.dart';
 import '../../models/ContraventionService.dart';
+import '../../models/log.dart';
 
 class IssuedPcnLocalService
     extends BaseLocalService<ContraventionCreateWardenCommand> {
@@ -19,7 +21,10 @@ class IssuedPcnLocalService
   }
 
   @override
-  syncAll([Function(int current, int total)? statusFunc]) async {
+  syncAll(
+      [bool? isStopSyncing,
+      Function(int current, int total, [SyncLog? log])?
+          syncStatusCallBack]) async {
     logger.info("start syncing all ....");
 
     if (isSyncing) {
@@ -28,21 +33,34 @@ class IssuedPcnLocalService
     }
     isSyncing = true;
     List<ContraventionCreateWardenCommand> allPcns = await getAll();
-    if (statusFunc != null) statusFunc(0, allPcns.length);
+    if (syncStatusCallBack != null) syncStatusCallBack(0, allPcns.length);
     logger.info("start syncing ${allPcns.length} items ....");
     allPcnPhotos = await issuedPcnPhotoLocalService.getAll();
     var amountSynced = 0;
     for (int i = 0; i < allPcns.length; i++) {
+      if (isStopSyncing != null && isStopSyncing) break;
       var pcn = allPcns[i];
+      if (syncStatusCallBack != null) {
+        syncStatusCallBack(
+            amountSynced, allPcns.length, syncLogFactory.logPCNSyncing(pcn));
+      }
       try {
         await sync(pcn);
         amountSynced++;
+
+        if (syncStatusCallBack != null) {
+          syncStatusCallBack(
+              amountSynced, allPcns.length, syncLogFactory.logPCNSynced(pcn));
+        }
       } catch (e) {
-        logger.error("syncing ${pcn.Plate} error ${e.toString()}");
+        logger.error(e.toString());
+        if (syncStatusCallBack != null) {
+          syncStatusCallBack(amountSynced, allPcns.length,
+              syncLogFactory.logPCNSyncFail(pcn, e.toString()));
+        }
       }
-      if (statusFunc != null) statusFunc(amountSynced, allPcns.length);
     }
-    await issuedPcnPhotoLocalService.syncAll();
+    await issuedPcnPhotoLocalService.syncAll(false);
     isSyncing = false;
   }
 

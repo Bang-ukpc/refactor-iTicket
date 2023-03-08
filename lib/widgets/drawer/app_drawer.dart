@@ -14,7 +14,6 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
-import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -23,6 +22,7 @@ import 'package:iWarden/widgets/drawer/model/menu_item.dart';
 import 'package:iWarden/widgets/drawer/model/nav_item.dart';
 import 'package:iWarden/widgets/drawer/nav_item.dart';
 import 'package:iWarden/widgets/drawer/spot_check.dart';
+import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -185,7 +185,7 @@ class _MyDrawerState extends State<MyDrawer> {
             if (!mounted) return;
             Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(
-                ConnectingScreen.routeName, (Route<dynamic> route) => false,
+                CheckSyncDataLayout.routeName, (Route<dynamic> route) => false,
                 arguments: 'check-out');
           });
         });
@@ -398,7 +398,7 @@ class _MyDrawerState extends State<MyDrawer> {
                       child: SpotCheck(),
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Consumer<Auth>(
                       builder: (context, auth, _) {
@@ -419,7 +419,6 @@ class _MyDrawerState extends State<MyDrawer> {
                     ),
                   ],
                 ),
-                // SizedBox(height: heightScreen / 3.5),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 30,

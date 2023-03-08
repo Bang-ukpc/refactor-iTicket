@@ -1,4 +1,5 @@
 import 'package:iWarden/controllers/vehicle_information_controller.dart';
+import 'package:iWarden/factory/sync_log_factory.dart';
 import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/providers/time_ntp.dart';
@@ -9,6 +10,7 @@ import 'package:iWarden/services/cache/grace_period_cached_service.dart';
 import 'package:iWarden/services/local/created_vehicle_data_photo_local_service.dart';
 import 'package:iWarden/services/local/local_service.dart';
 
+import '../../models/log.dart';
 import '../../models/vehicle_information.dart';
 
 class CreatedVehicleDataLocalService
@@ -29,7 +31,10 @@ class CreatedVehicleDataLocalService
   }
 
   @override
-  syncAll([Function(int current, int total)? statusFunc]) async {
+  syncAll(bool? isStopSyncing,
+      [Function(int current, int total, [SyncLog? log])?
+          syncStatusCallBack]) async {
+    logger.info('[is stop syncing] $isStopSyncing');
     logger.info('syncing all ...');
 
     if (isSyncing) {
@@ -39,18 +44,34 @@ class CreatedVehicleDataLocalService
     isSyncing = true;
 
     final items = await getAll();
-    if (statusFunc != null) statusFunc(0, items.length);
+    if (syncStatusCallBack != null) syncStatusCallBack(0, items.length);
     logger.info("start syncing ${items.length} vehicle info ....");
     var amountSynced = 0;
     for (int i = 0; i < items.length; i++) {
+      if (isStopSyncing != null && isStopSyncing) break;
       var item = items[i];
+      if (syncStatusCallBack != null) {
+        syncStatusCallBack(amountSynced, items.length,
+            syncLogFactory.logVehicleInformationSyncing(item));
+      }
       try {
         await sync(item);
         amountSynced++;
+
+        if (syncStatusCallBack != null) {
+          syncStatusCallBack(amountSynced, items.length,
+              syncLogFactory.logVehicleInformationSynced(item));
+        }
       } catch (e) {
-        logger.info(e.toString());
+        logger.error(e.toString());
+        if (syncStatusCallBack != null) {
+          syncStatusCallBack(amountSynced, items.length,
+              syncLogFactory.logVehicleInformationSyncFail(item, e.toString()));
+        }
       }
-      if (statusFunc != null) statusFunc(amountSynced, items.length);
+      if (syncStatusCallBack != null) {
+        syncStatusCallBack(amountSynced, items.length);
+      }
     }
 
     isSyncing = false;

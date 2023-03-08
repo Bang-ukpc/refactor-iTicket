@@ -160,6 +160,9 @@ flutter:
     - assets/svg/IconComplete3.svg
     - assets/svg/IconSearch.svg
     - assets/svg/IconDotYellow.svg
+    - assets/svg/IconSkip.svg
+    - assets/svg/IconRefresh2.svg
+    - assets/svg/IconStop.svg
 
     - assets/
     - .env

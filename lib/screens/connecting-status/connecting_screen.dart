@@ -65,14 +65,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   bool isLocationPermission = false;
   bool loadingNTPTime = false;
   bool isNTPTimeNull = true;
-
-  // sync data to server
-  bool isSyncedVehicleToServer = false;
-  bool isSyncedPcnToServer = false;
-  int totalVehicleInfoNeedToSync = 0;
-  int progressingVehicleInfoNeedToSync = 0;
-  int totalPcnNeedToSync = 0;
-  int progressingPcnNeedToSync = 0;
   late CachedServiceFactory cachedServiceFactory;
   Stream<BluetoothState> bluetoothStateStream =
       FlutterBluePlus.instance.state.asBroadcastStream();
@@ -291,44 +283,9 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     }
   }
 
-  Future<void> getQuantityOfSyncData() async {
-    int totalVehicleInfoNeedToSync =
-        await createdVehicleDataLocalService.total();
-    int totalPcnNeedToSync = await issuedPcnLocalService.total();
-    setState(() {
-      totalVehicleInfoNeedToSync = totalVehicleInfoNeedToSync;
-      totalPcnNeedToSync = totalPcnNeedToSync;
-    });
-  }
-
-  Future<void> syncDataToServer() async {
-    setState(() {
-      isSyncedVehicleToServer = false;
-      isSyncedPcnToServer = false;
-    });
-    await createdVehicleDataLocalService.syncAll((current, total) {
-      setState(() {
-        totalVehicleInfoNeedToSync = total;
-        progressingVehicleInfoNeedToSync = current;
-      });
-    });
-
-    await issuedPcnLocalService.syncAll((current, total) {
-      setState(() {
-        totalPcnNeedToSync = total;
-        progressingPcnNeedToSync = current;
-      });
-    });
-    setState(() {
-      isSyncedVehicleToServer = true;
-      isSyncedPcnToServer = true;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    getQuantityOfSyncData();
     onPauseBackgroundService();
     getCurrentLocationOfWarden();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -344,7 +301,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       setState(() {
         isPending = false;
       });
-      await syncDataToServer();
     });
     checkGpsConnectingStatus();
     serviceStatusStreamSubscription =
@@ -376,21 +332,15 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
 
   Future<void> refreshPermissionGPS() async {
     var check = await permission.Permission.locationWhenInUse.isGranted;
-    await getQuantityOfSyncData();
     setState(() {
       isLocationPermission = check;
       isPending = true;
-      isSyncedVehicleToServer = false;
-      isSyncedPcnToServer = false;
-      totalVehicleInfoNeedToSync = 0;
-      totalPcnNeedToSync = 0;
     });
     await syncTime();
     await syncAllRequiredData();
     setState(() {
       isPending = false;
     });
-    await syncDataToServer();
   }
 
   @override
@@ -673,38 +623,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                         const SizedBox(
                           height: 12,
                         ),
-                        isSyncedVehicleToServer == true
-                            ? _buildConnect(
-                                "Sync first seen/grace period to server",
-                                checkState(progressingVehicleInfoNeedToSync ==
-                                        totalVehicleInfoNeedToSync
-                                    ? true
-                                    : false),
-                                subTitle:
-                                    "($progressingVehicleInfoNeedToSync/$totalVehicleInfoNeedToSync)",
-                              )
-                            : _buildConnect(
-                                'Sync first seen/grace period to server',
-                                StateDevice.pending,
-                                subTitle:
-                                    "($progressingVehicleInfoNeedToSync/$totalVehicleInfoNeedToSync)",
-                              ),
-                        isSyncedPcnToServer == true
-                            ? _buildConnect(
-                                "Sync PCNs to the server",
-                                checkState(progressingPcnNeedToSync ==
-                                        totalPcnNeedToSync
-                                    ? true
-                                    : false),
-                                subTitle:
-                                    "($progressingPcnNeedToSync/$totalPcnNeedToSync)",
-                              )
-                            : _buildConnect(
-                                'Sync PCNs to the server',
-                                StateDevice.pending,
-                                subTitle:
-                                    "($progressingPcnNeedToSync/$totalPcnNeedToSync)",
-                              ),
                       ],
                     ),
                   ),
@@ -734,10 +652,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                   const SizedBox(
                     height: 32,
                   ),
-                  if (isPending == false &&
-                      pendingGetCurrentLocation == false &&
-                      isSyncedVehicleToServer == true &&
-                      isSyncedPcnToServer == true)
+                  if (isPending == false && pendingGetCurrentLocation == false)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 28),
                       width: double.infinity,

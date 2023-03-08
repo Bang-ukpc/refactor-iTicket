@@ -25,14 +25,14 @@ class SyncFactory {
 
     isRunning = true;
     try {
-      await createdWardenEventLocalService.syncAll();
+      await createdWardenEventLocalService.syncAll(false);
     } catch (e) {
       logger.error(e);
     }
 
     try {
-      await createdVehicleDataLocalService.syncAll();
-      await issuedPcnLocalService.syncAll();
+      await createdVehicleDataLocalService.syncAll(false);
+      await issuedPcnLocalService.syncAll(false);
     } catch (e) {
       logger.error(e);
     }
