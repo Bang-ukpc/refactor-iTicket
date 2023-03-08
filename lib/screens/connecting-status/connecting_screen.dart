@@ -25,7 +25,9 @@ import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/services/cache/factory/cache_factory.dart';
+import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
+import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
@@ -66,7 +68,9 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   late CachedServiceFactory cachedServiceFactory;
   Stream<BluetoothState> bluetoothStateStream =
       FlutterBluePlus.instance.state.asBroadcastStream();
-  _buildConnect(String title, StateDevice state, {bool required = false}) {
+
+  _buildConnect(String title, StateDevice state,
+      {bool required = false, String? subTitle}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       child: Row(
@@ -82,6 +86,11 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                 Text(
                   "*",
                   style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
+                ),
+              if (subTitle != null)
+                Text(
+                  subTitle,
+                  style: CustomTextStyle.h5,
                 ),
             ],
           ),
@@ -182,11 +191,11 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     });
   }
 
-  void onStartBackgroundService() async {
+  void onPauseBackgroundService() async {
     final service = FlutterBackgroundService();
     var isRunning = await service.isRunning();
     if (isRunning) {
-      await initializeService();
+      service.invoke("stopService");
     }
   }
 
@@ -277,7 +286,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   @override
   void initState() {
     super.initState();
-    onStartBackgroundService();
+    onPauseBackgroundService();
     getCurrentLocationOfWarden();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
@@ -329,7 +338,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     });
     await syncTime();
     await syncAllRequiredData();
-
     setState(() {
       isPending = false;
     });
@@ -339,7 +347,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   Widget build(BuildContext context) {
     final wardensProvider = Provider.of<WardensInfo>(context);
     //check is route from checkout screen
-    logger.info(isNTPTimeNull);
     final data = ModalRoute.of(context)!.settings.arguments as dynamic;
     final isCheckoutScreen = (data == null) ? false : true;
 
@@ -357,11 +364,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
         await createdWardenEventLocalService
             .create(wardenEventStartShift)
             .then((value) async {
-          final service = FlutterBackgroundService();
-          var isRunning = await service.isRunning();
-          if (!isRunning) {
-            await initializeService();
-          }
+          await initializeService();
           if (!mounted) return;
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
@@ -518,7 +521,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
-                                    "1. Network (Mobile or WiFi)",
+                                    "Network (Mobile or WiFi)",
                                     checkState(
                                       _connectionStatus ==
                                               ConnectivityResult.mobile ||
@@ -526,53 +529,34 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                               ConnectivityResult.wifi,
                                     ),
                                   )
-                                : _buildConnect('1. Network (Mobile or WiFi)',
+                                : _buildConnect('Network (Mobile or WiFi)',
                                     StateDevice.pending)
-                            : _buildConnect('1. Network (Mobile or WiFi)',
+                            : _buildConnect('Network (Mobile or WiFi)',
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "2. GPS",
+                                    "GPS",
                                     checkState(gpsConnectionStatus ==
                                             ServiceStatus.enabled &&
                                         isLocationPermission))
                                 : _buildConnect(
-                                    required: true,
-                                    '2. GPS',
-                                    StateDevice.pending)
+                                    required: true, 'GPS', StateDevice.pending)
                             : _buildConnect(
-                                required: true, '2. GPS', StateDevice.pending),
+                                required: true, 'GPS', StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
-                                ? _buildConnect("3. Bluetooth",
+                                ? _buildConnect("Bluetooth",
                                     checkState(checkBluetooth == true))
                                 : _buildConnect(
-                                    '3. Bluetooth', StateDevice.pending)
-                            : _buildConnect(
-                                '3. Bluetooth', StateDevice.pending),
-
-                        // isPending == false
-                        //     ? pendingGetCurrentLocation == false
-                        //         ? _buildConnect(
-                        //             required: true,
-                        //             "4. Location permission",
-                        //             checkState(isLocationPermission),
-                        //           )
-                        //         : _buildConnect(
-                        //             required: true,
-                        //             '4. Location permission',
-                        //             StateDevice.pending)
-                        //     : _buildConnect(
-                        //         required: true,
-                        //         '4. Location permission',
-                        //         StateDevice.pending),
+                                    'Bluetooth', StateDevice.pending)
+                            : _buildConnect('Bluetooth', StateDevice.pending),
                         const SizedBox(
                           height: 8,
                         ),
                         Text(
-                          "Data download",
+                          "Sync & download data",
                           style: CustomTextStyle.h5.copyWith(
                               fontWeight: FontWeight.w600,
                               color: ColorTheme.textPrimary),
@@ -584,49 +568,61 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "1. Rota shifts and locations",
+                                    "Rota shifts and locations",
                                     checkState(
                                       isSyncedRota,
                                     ),
                                   )
                                 : _buildConnect(
                                     required: true,
-                                    '1. Rota shifts and locations',
+                                    'Rota shifts and locations',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '1. Rota shifts and locations',
+                                'Rota shifts and locations',
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "2. Cancellation reasons",
+                                    "Cancellation reasons",
                                     checkState(isCancellationNotNull),
                                   )
                                 : _buildConnect(
                                     required: true,
-                                    '2. Cancellation reasons',
+                                    'Cancellation reasons',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '2. Cancellation reasons',
+                                'Cancellation reasons',
                                 StateDevice.pending),
                         isPending == false
                             ? loadingNTPTime == false
                                 ? _buildConnect(
                                     required: true,
-                                    "3. Server time",
+                                    "Server time",
                                     checkState(!isNTPTimeNull),
                                   )
                                 : _buildConnect(
                                     required: true,
-                                    '3. Server time',
+                                    'Server time',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '3. Server time',
+                                'Server time',
                                 StateDevice.pending),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Text(
+                          "Upload data",
+                          style: CustomTextStyle.h5.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: ColorTheme.textPrimary),
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
                       ],
                     ),
                   ),

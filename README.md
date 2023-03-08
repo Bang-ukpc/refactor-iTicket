@@ -172,8 +172,13 @@
 
 - WRDN-663 Show error can't choose rota when offline mode
 
+
 [1.0.55-1] - 2023-03-07
 
 - WRDN-661 Can't realtime rates in issue PCN screen
 - WRDN-652 Can't realtime Contravention reasons in Home and issue PCN screen
 - WRDN-493 [Flash] Should turn the flash off when not using camera
+
+[1.1.0-1] - 2023-03-06
+
+- WRDN-629 As a PO, I want to sync the local data when using app

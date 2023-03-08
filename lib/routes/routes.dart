@@ -21,8 +21,11 @@ import 'package:iWarden/screens/read_regulation_screen.dart';
 import 'package:iWarden/screens/send_form_screen.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/screens/statistics_screen.dart';
+import 'package:iWarden/screens/sync-data/syncing_request_screen.dart';
 import 'package:iWarden/screens/sync-zone-data/sync_zone_data_screen.dart';
+import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';
 import '../screens/login_screens.dart';
+import '../screens/syncing-data-logs/syncing_data_log_screen.dart';
 
 final Map<String, WidgetBuilder> routes = {
   HomeOverview.routeName: (context) => const HomeOverview(),
@@ -53,4 +56,9 @@ final Map<String, WidgetBuilder> routes = {
   LocateCarScreen.routeName: (context) => const LocateCarScreen(),
   StartBreakScreen.routeName: (context) => const StartBreakScreen(),
   SyncZoneData.routeName: (context) => const SyncZoneData(),
+
+  // syncing data
+  SyncingRequestScreen.routeName: (context) => const SyncingRequestScreen(),
+  CheckSyncDataLayout.routeName: (context) => const CheckSyncDataLayout(),
+  SyncingDataLogScreen.routeName: (context) => const SyncingDataLogScreen(),
 };

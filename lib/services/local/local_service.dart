@@ -1,8 +1,11 @@
 import 'package:iWarden/models/base_model.dart';
 import 'package:iWarden/services/cache/cache_service.dart';
 
+import '../../models/log.dart';
+
 abstract class ILocalService<T extends Identifiable> {
-  syncAll();
+  syncAll(bool isStopSyncing,
+      [Function(int current, int total, [SyncLog? log])? syncStatusCallBack]);
   Future<T?> sync(T t);
 }
 
@@ -12,7 +15,9 @@ abstract class BaseLocalService<T extends Identifiable> extends CacheService<T>
   BaseLocalService(super.initLocalKey);
 
   @override
-  syncAll() async {
+  syncAll(bool? isStopSyncing,
+      [Function(int current, int total, [SyncLog? log])?
+          syncStatusCallBack]) async {
     if (isSyncing) {
       print("Is syncing");
       return;
