@@ -8,6 +8,7 @@ class ContraventionProvider with ChangeNotifier {
   static String? colorNullProvider;
   static String? makeNullProvider;
   static ContraventionReasonTranslations? contraventionCode;
+  static bool isPermitVerified = false;
 
   VehicleInformation? get getVehicleInfo {
     return vehicleInfoData;
@@ -27,6 +28,10 @@ class ContraventionProvider with ChangeNotifier {
 
   ContraventionReasonTranslations? get getContraventionCode {
     return contraventionCode;
+  }
+
+  bool get getStatusPermitVerified {
+    return isPermitVerified;
   }
 
   void setFirstSeenData(VehicleInformation? vehicleInformation) {
@@ -49,6 +54,11 @@ class ContraventionProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void setStatusPermitVerified(bool status) {
+    isPermitVerified = status;
+    notifyListeners();
+  }
+
   void upDateContravention(Contravention data) {
     contraventionData = data;
     notifyListeners();
@@ -60,6 +70,7 @@ class ContraventionProvider with ChangeNotifier {
     colorNullProvider = null;
     makeNullProvider = null;
     contraventionCode = null;
+    isPermitVerified = false;
     notifyListeners();
   }
 }

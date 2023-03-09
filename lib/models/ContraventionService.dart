@@ -22,6 +22,7 @@ class ContraventionCreateWardenCommand extends Identifiable {
   int? TypePCN;
   int ZoneId;
   int? Id;
+  bool IsPermitVerifiedByPO;
 
   ContraventionCreateWardenCommand({
     required this.ContraventionReference,
@@ -40,6 +41,7 @@ class ContraventionCreateWardenCommand extends Identifiable {
     this.TypePCN,
     required this.ZoneId,
     this.Id,
+    required this.IsPermitVerifiedByPO,
   });
 
   factory ContraventionCreateWardenCommand.fromJson(
@@ -63,6 +65,7 @@ class ContraventionCreateWardenCommand extends Identifiable {
         'TypePCN': TypePCN,
         'ZoneId': ZoneId,
         'Id': Id ?? 0,
+        'IsPermitVerifiedByPO': IsPermitVerifiedByPO,
       };
 
   // Map<String, dynamic> toJson() => {
@@ -89,6 +92,7 @@ ContraventionCreateWardenCommand _$ContraventionCreateWardenCommandFromJson(
     LocationAccuracy: json['LocationAccuracy'],
     WardenComments: json['WardenComments'],
     TypePCN: json['TypePCN'],
+    IsPermitVerifiedByPO: json['IsPermitVerifiedByPO'],
   );
 }
 
