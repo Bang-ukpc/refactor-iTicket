@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,7 +34,6 @@ import '../../../controllers/index.dart';
 import '../../../helpers/check_turn_on_net_work.dart';
 import '../../../helpers/my_navigator_observer.dart';
 import '../../../models/ContraventionService.dart';
-import '../../../providers/contravention_provider.dart';
 
 class AddFirstSeenScreen extends StatefulWidget {
   static const routeName = '/add-first-seen';
@@ -54,6 +52,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
   List<EvidencePhoto> evidencePhotoList = [];
   late CachedServiceFactory cachedServiceFactory;
   AutovalidateMode validateMode = AutovalidateMode.disabled;
+  bool isCheckedPermit = false;
 
   Future<void> getLocationList(Locations locations) async {
     List<RotaWithLocation> rotas = [];
@@ -101,7 +100,6 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<Locations>(context);
     final wardenProvider = Provider.of<WardensInfo>(context);
-    final contraventionProvider = Provider.of<ContraventionProvider>(context);
     var zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
     Widget itemInfoDialog({required String title, String? value}) {
       return Row(
@@ -355,21 +353,44 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
       });
     }
 
-    sendMessageInternalServer(error) {
+    sendMessageInternalServer(DioError error) {
       Navigator.of(context).pop();
       CherryToast.error(
         displayCloseButton: false,
         title: Text(
-          error.response!.data['message'].toString().length >
-                  Constant.errorMaxLength
-              ? 'Internal server error'
-              : error.response!.data['message'],
+          error.message,
           style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
         ),
         toastPosition: Position.bottom,
         borderRadius: 5,
       ).show(context);
       return;
+    }
+
+    void showErrorMessage(String error) {
+      CherryToast.error(
+        displayCloseButton: false,
+        title: Text(
+          error,
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    bool checkVrnIsValid() {
+      if (_vrnController.text.isEmpty) {
+        return false;
+      } else {
+        if (_vrnController.text.length < 2) {
+          return false;
+        } else if (_vrnController.text.length > 10) {
+          return false;
+        }
+        return true;
+      }
     }
 
     return WillPopScope(
@@ -394,18 +415,26 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                 showCircularProgressIndicator(context: context);
                 DateTime now = await timeNTP.get();
                 Permit permit = Permit(
-                    Plate: _vrnController.text,
-                    ContraventionReasonCode: "36",
-                    EventDateTime: now,
-                    FirstObservedDateTime: now,
-                    ZoneId: locationProvider.zone!.Id as int);
+                  Plate: _vrnController.text,
+                  ContraventionReasonCode: "36",
+                  EventDateTime: now,
+                  FirstObservedDateTime: now,
+                  ZoneId: locationProvider.zone!.Id as int,
+                );
                 try {
                   await weakNetworkContraventionController
                       .checkHasPermit(permit)
                       .then((value) async {
                     Navigator.of(context).pop();
                     if (value?.hasPermit == true) {
-                      showDialogPermitExists(value);
+                      if (!isCheckedPermit) {
+                        showDialogPermitExists(value);
+                      } else {
+                        await addFirstSeenModeComplete();
+                      }
+                      setState(() {
+                        isCheckedPermit = true;
+                      });
                     } else {
                       await addFirstSeenModeComplete();
                     }
@@ -449,7 +478,14 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                       .then((value) async {
                     Navigator.of(context).pop();
                     if (value?.hasPermit == true) {
-                      showDialogPermitExists(value);
+                      if (!isCheckedPermit) {
+                        showDialogPermitExists(value);
+                      } else {
+                        await addFirstSeenModeCompleteAndAdd();
+                      }
+                      setState(() {
+                        isCheckedPermit = true;
+                      });
                     } else {
                       await addFirstSeenModeCompleteAndAdd();
                     }
@@ -502,7 +538,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Flexible(
-                                flex: 8,
+                                flex: 7,
                                 child: TextFormField(
                                   inputFormatters: [
                                     FilteringTextInputFormatter.allow(
@@ -538,9 +574,78 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                                     setState(() {
                                       validateMode =
                                           AutovalidateMode.onUserInteraction;
+                                      isCheckedPermit = false;
                                     });
                                   },
                                   autovalidateMode: validateMode,
+                                ),
+                              ),
+                              Flexible(
+                                flex: 4,
+                                child: ElevatedButton.icon(
+                                  icon: SvgPicture.asset(
+                                    'assets/svg/IconComplete.svg',
+                                    color: Colors.white,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 8,
+                                    ),
+                                  ),
+                                  onPressed: checkVrnIsValid()
+                                      ? () async {
+                                          bool checkTurnOnNetwork =
+                                              await checkTurnOnNetWork
+                                                  .turnOnWifiAndMobile();
+                                          if (checkTurnOnNetwork) {
+                                            if (!mounted) return;
+                                            showCircularProgressIndicator(
+                                                context: context);
+                                            DateTime now = await timeNTP.get();
+                                            Permit permit = Permit(
+                                                Plate: _vrnController.text,
+                                                ContraventionReasonCode: "36",
+                                                EventDateTime: now,
+                                                FirstObservedDateTime: now,
+                                                ZoneId: locationProvider
+                                                    .zone!.Id as int);
+                                            try {
+                                              await weakNetworkContraventionController
+                                                  .checkHasPermit(permit)
+                                                  .then((value) async {
+                                                Navigator.of(context).pop();
+                                                if (value?.hasPermit == true) {
+                                                  showDialogPermitExists(value);
+                                                } else {
+                                                  showErrorMessage(
+                                                      'There is no permit for this VRN');
+                                                }
+                                              });
+                                            } on DioError catch (error) {
+                                              if (!mounted) return;
+                                              if (error.type ==
+                                                      DioErrorType.other ||
+                                                  error.type ==
+                                                      DioErrorType
+                                                          .connectTimeout) {
+                                                Navigator.of(context).pop();
+                                                showErrorMessage(
+                                                    'Check permit failed because poor connection');
+                                              }
+                                              sendMessageInternalServer(error);
+                                            }
+                                          } else {
+                                            if (!mounted) return;
+                                            showErrorMessage(
+                                                'Unable to check permit due to lack of internet');
+                                          }
+                                        }
+                                      : null,
+                                  label: const Text(
+                                    "Check permit",
+                                  ),
                                 ),
                               ),
                             ],

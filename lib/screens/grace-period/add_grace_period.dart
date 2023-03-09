@@ -50,6 +50,7 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
   List<EvidencePhoto> evidencePhotoList = [];
   late CachedServiceFactory cachedServiceFactory;
   AutovalidateMode validateMode = AutovalidateMode.disabled;
+  bool isCheckedPermit = false;
 
   Future<void> getLocationList(Locations locations) async {
     List<RotaWithLocation> rotas = [];
@@ -319,6 +320,46 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
       );
     }
 
+    sendMessageInternalServer(DioError error) {
+      Navigator.of(context).pop();
+      CherryToast.error(
+        displayCloseButton: false,
+        title: Text(
+          error.message,
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    void showErrorMessage(String error) {
+      CherryToast.error(
+        displayCloseButton: false,
+        title: Text(
+          error,
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    bool checkVrnIsValid() {
+      if (_vrnController.text.isEmpty) {
+        return false;
+      } else {
+        if (_vrnController.text.length < 2) {
+          return false;
+        } else if (_vrnController.text.length > 10) {
+          return false;
+        }
+        return true;
+      }
+    }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -340,18 +381,26 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                 showCircularProgressIndicator(context: context);
                 DateTime now = await timeNTP.get();
                 Permit permit = Permit(
-                    Plate: _vrnController.text,
-                    ContraventionReasonCode: "36",
-                    EventDateTime: now,
-                    FirstObservedDateTime: now,
-                    ZoneId: locationProvider.zone!.Id as int);
+                  Plate: _vrnController.text,
+                  ContraventionReasonCode: "36",
+                  EventDateTime: now,
+                  FirstObservedDateTime: now,
+                  ZoneId: locationProvider.zone!.Id as int,
+                );
                 try {
                   await weakNetworkContraventionController
                       .checkHasPermit(permit)
                       .then((value) async {
                     Navigator.of(context).pop();
                     if (value?.hasPermit == true) {
-                      showDialogPermitExists(value);
+                      if (!isCheckedPermit) {
+                        showDialogPermitExists(value);
+                      } else {
+                        await addGracePeriodModeComplete();
+                      }
+                      setState(() {
+                        isCheckedPermit = true;
+                      });
                     } else {
                       await addGracePeriodModeComplete();
                     }
@@ -364,6 +413,7 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                     await addGracePeriodModeComplete();
                     return;
                   }
+                  sendMessageInternalServer(error);
                 }
               } else {
                 await addGracePeriodModeComplete();
@@ -394,7 +444,14 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                       .then((value) async {
                     Navigator.of(context).pop();
                     if (value?.hasPermit == true) {
-                      showDialogPermitExists(value);
+                      if (!isCheckedPermit) {
+                        showDialogPermitExists(value);
+                      } else {
+                        await addGracePeriodModeCompleteAndAdd();
+                      }
+                      setState(() {
+                        isCheckedPermit = true;
+                      });
                     } else {
                       await addGracePeriodModeCompleteAndAdd();
                     }
@@ -446,7 +503,7 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Flexible(
-                                flex: 8,
+                                flex: 7,
                                 child: TextFormField(
                                   inputFormatters: [
                                     FilteringTextInputFormatter.allow(
@@ -482,9 +539,78 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                                     setState(() {
                                       validateMode =
                                           AutovalidateMode.onUserInteraction;
+                                      isCheckedPermit = false;
                                     });
                                   },
                                   autovalidateMode: validateMode,
+                                ),
+                              ),
+                              Flexible(
+                                flex: 4,
+                                child: ElevatedButton.icon(
+                                  icon: SvgPicture.asset(
+                                    'assets/svg/IconComplete.svg',
+                                    color: Colors.white,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 8,
+                                    ),
+                                  ),
+                                  onPressed: checkVrnIsValid()
+                                      ? () async {
+                                          bool checkTurnOnNetwork =
+                                              await checkTurnOnNetWork
+                                                  .turnOnWifiAndMobile();
+                                          if (checkTurnOnNetwork) {
+                                            if (!mounted) return;
+                                            showCircularProgressIndicator(
+                                                context: context);
+                                            DateTime now = await timeNTP.get();
+                                            Permit permit = Permit(
+                                                Plate: _vrnController.text,
+                                                ContraventionReasonCode: "36",
+                                                EventDateTime: now,
+                                                FirstObservedDateTime: now,
+                                                ZoneId: locationProvider
+                                                    .zone!.Id as int);
+                                            try {
+                                              await weakNetworkContraventionController
+                                                  .checkHasPermit(permit)
+                                                  .then((value) async {
+                                                Navigator.of(context).pop();
+                                                if (value?.hasPermit == true) {
+                                                  showDialogPermitExists(value);
+                                                } else {
+                                                  showErrorMessage(
+                                                      'There is no permit for this VRN');
+                                                }
+                                              });
+                                            } on DioError catch (error) {
+                                              if (!mounted) return;
+                                              if (error.type ==
+                                                      DioErrorType.other ||
+                                                  error.type ==
+                                                      DioErrorType
+                                                          .connectTimeout) {
+                                                Navigator.of(context).pop();
+                                                showErrorMessage(
+                                                    'Check permit failed because poor connection');
+                                              }
+                                              sendMessageInternalServer(error);
+                                            }
+                                          } else {
+                                            if (!mounted) return;
+                                            showErrorMessage(
+                                                'Unable to check permit due to lack of internet');
+                                          }
+                                        }
+                                      : null,
+                                  label: const Text(
+                                    "Check permit",
+                                  ),
                                 ),
                               ),
                             ],
