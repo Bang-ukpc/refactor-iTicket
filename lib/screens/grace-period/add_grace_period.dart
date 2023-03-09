@@ -142,6 +142,7 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
         return false;
       }
 
+      if (!mounted) return false;
       showCircularProgressIndicator(context: context);
 
       vehicleInfo.EvidencePhotos = arrayImage
