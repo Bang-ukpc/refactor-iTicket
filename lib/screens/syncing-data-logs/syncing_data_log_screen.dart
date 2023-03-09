@@ -38,16 +38,16 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
       isSyncing = true;
       syncLogs = [];
     });
-    await createdVehicleDataLocalService.syncAll(isStopSyncing, (current, total,
-        [log]) {
-      print('[is stop syncing 123] $isStopSyncing');
+    await createdVehicleDataLocalService.syncAll((isStop) => isStopSyncing,
+        (current, total, [log]) {
       setState(() {
         progressingDataNeedToSync = current;
         syncLogs.add(log);
       });
     });
 
-    await issuedPcnLocalService.syncAll(isStopSyncing, (current, total, [log]) {
+    await issuedPcnLocalService.syncAll((isStop) => isStopSyncing,
+        (current, total, [log]) {
       setState(() {
         progressingDataNeedToSync = current + progressingDataNeedToSync;
         syncLogs.add(log);
@@ -60,7 +60,9 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
 
   void stopSyncing() {
     isStopSyncing = true;
-    print('[is stop syncing] $isStopSyncing');
+    setState(() {
+      isSyncing = false;
+    });
   }
 
   Future<void> syncAgain() async {
@@ -122,6 +124,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                       print('[Sync Logs item] ${e?.toJson()}');
                       if (e != null && e.message.isNotEmpty) {
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               e.message,

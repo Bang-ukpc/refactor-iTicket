@@ -30,7 +30,7 @@ class IssuedPcnPhotoLocalService
   }
 
   @override
-  syncAll(bool? isStopSyncing,
+  syncAll(Function(bool isStop)? onStopSync,
       [Function(int current, int total, [SyncLog log])?
           syncStatusCallBack]) async {
     List<ContraventionCreatePhoto> allPcnPhotos = await getAll();

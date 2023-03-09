@@ -81,7 +81,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                   height: 24,
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
@@ -97,7 +97,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                   height: 32,
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
                       Row(
@@ -176,7 +176,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                   height: 24,
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   width: double.infinity,
                   child: Row(
                     children: [
@@ -189,7 +189,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             backgroundColor: ColorTheme.grey300,
                           ),
                           onPressed: () {
@@ -216,7 +216,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                           onPressed: () {
                             Navigator.of(context).pushNamedAndRemoveUntil(
