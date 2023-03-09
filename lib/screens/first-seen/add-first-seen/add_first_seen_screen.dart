@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:collection/collection.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -28,7 +30,10 @@ import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
+import '../../../controllers/index.dart';
+import '../../../helpers/check_turn_on_net_work.dart';
 import '../../../helpers/my_navigator_observer.dart';
+import '../../../models/ContraventionService.dart';
 
 class AddFirstSeenScreen extends StatefulWidget {
   static const routeName = '/add-first-seen';
@@ -47,6 +52,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
   List<EvidencePhoto> evidencePhotoList = [];
   late CachedServiceFactory cachedServiceFactory;
   AutovalidateMode validateMode = AutovalidateMode.disabled;
+  bool isCheckedPermit = false;
 
   Future<void> getLocationList(Locations locations) async {
     List<RotaWithLocation> rotas = [];
@@ -95,6 +101,114 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
     final locationProvider = Provider.of<Locations>(context);
     final wardenProvider = Provider.of<WardensInfo>(context);
     var zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
+    Widget itemInfoDialog({required String title, String? value}) {
+      return Row(
+        children: [
+          Text(
+            '$title: ',
+            style: CustomTextStyle.h5,
+          ),
+          Text(
+            value ?? 'No data',
+            style: CustomTextStyle.h5.copyWith(fontWeight: FontWeight.w600),
+          ),
+        ],
+      );
+    }
+
+    Future<void> showDialogPermitExists(CheckPermit? value) async {
+      return showDialog<void>(
+        context: context,
+        barrierColor: ColorTheme.backdrop,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+            child: AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    5.0,
+                  ),
+                ),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 0),
+              contentPadding: EdgeInsets.zero,
+              title: Center(
+                  child: Column(
+                children: [
+                  Text(
+                    "Permit exists with in this location",
+                    style: CustomTextStyle.h4.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: ColorTheme.danger,
+                    ),
+                  ),
+                  const Divider(),
+                ],
+              )),
+              content: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      itemInfoDialog(
+                          title: "VRN", value: value?.permitInfo?.VRN),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      itemInfoDialog(
+                          title: "Bay information",
+                          value: value?.permitInfo?.bayNumber),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      itemInfoDialog(
+                          title: "Source", value: value?.permitInfo?.source),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      itemInfoDialog(
+                          title: "Tenant", value: value?.permitInfo?.tenant),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: ColorTheme.grey300,
+                              ),
+                              child: Text(
+                                "OK",
+                                style: CustomTextStyle.h4
+                                    .copyWith(color: ColorTheme.textPrimary),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 24,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     Future<bool> saveForm() async {
       DateTime now = await timeNTP.get();
       final vehicleInfo = VehicleInformation(
@@ -188,8 +302,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
           ),
         );
       });
-      print(
-          '[showCircularProgressIndicator] ${locationProvider.expiringTimeFirstSeen}');
+
       await createdVehicleDataLocalService.create(vehicleInfo);
 
       if (!mounted) return false;
@@ -208,6 +321,78 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
       return true;
     }
 
+    addFirstSeenModeComplete() async {
+      await saveForm().then((value) {
+        if (value == true) {
+          Navigator.of(context)
+              .popAndPushNamed(ActiveFirstSeenScreen.routeName);
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'First seen added successfully',
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        }
+      });
+    }
+
+    addFirstSeenModeCompleteAndAdd() async {
+      await saveForm().then((value) {
+        if (value == true) {
+          setState(() {
+            _vrnController.text = '';
+            _bayNumberController.text = '';
+            arrayImage.clear();
+            evidencePhotoList.clear();
+            validateMode = AutovalidateMode.disabled;
+          });
+        }
+      });
+    }
+
+    sendMessageInternalServer(DioError error) {
+      Navigator.of(context).pop();
+      CherryToast.error(
+        displayCloseButton: false,
+        title: Text(
+          error.message,
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    void showErrorMessage(String error) {
+      CherryToast.error(
+        displayCloseButton: false,
+        title: Text(
+          error,
+          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+        ),
+        toastPosition: Position.bottom,
+        borderRadius: 5,
+      ).show(context);
+      return;
+    }
+
+    bool checkVrnIsValid() {
+      if (_vrnController.text.isEmpty) {
+        return false;
+      } else {
+        if (_vrnController.text.length < 2) {
+          return false;
+        } else if (_vrnController.text.length > 10) {
+          return false;
+        }
+        return true;
+      }
+    }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -223,22 +408,50 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
         bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () async {
-              await saveForm().then((value) {
-                if (value == true) {
-                  Navigator.of(context)
-                      .popAndPushNamed(ActiveFirstSeenScreen.routeName);
-                  CherryToast.success(
-                    displayCloseButton: false,
-                    title: Text(
-                      'First seen added successfully',
-                      style: CustomTextStyle.h4
-                          .copyWith(color: ColorTheme.success),
-                    ),
-                    toastPosition: Position.bottom,
-                    borderRadius: 5,
-                  ).show(context);
+              bool checkTurnOnNetwork =
+                  await checkTurnOnNetWork.turnOnWifiAndMobile();
+              if (checkTurnOnNetwork) {
+                if (!mounted) return;
+                showCircularProgressIndicator(context: context);
+                DateTime now = await timeNTP.get();
+                Permit permit = Permit(
+                  Plate: _vrnController.text,
+                  ContraventionReasonCode: "36",
+                  EventDateTime: now,
+                  FirstObservedDateTime: now,
+                  ZoneId: locationProvider.zone!.Id as int,
+                );
+                try {
+                  await weakNetworkContraventionController
+                      .checkHasPermit(permit)
+                      .then((value) async {
+                    Navigator.of(context).pop();
+                    if (value?.hasPermit == true) {
+                      if (!isCheckedPermit) {
+                        showDialogPermitExists(value);
+                      } else {
+                        await addFirstSeenModeComplete();
+                      }
+                      setState(() {
+                        isCheckedPermit = true;
+                      });
+                    } else {
+                      await addFirstSeenModeComplete();
+                    }
+                  });
+                } on DioError catch (error) {
+                  if (!mounted) return;
+                  if (error.type == DioErrorType.other ||
+                      error.type == DioErrorType.connectTimeout) {
+                    Navigator.of(context).pop();
+                    await addFirstSeenModeComplete();
+                    return;
+                  }
+                  sendMessageInternalServer(error);
                 }
-              });
+              } else {
+                await addFirstSeenModeComplete();
+              }
             },
             icon: SvgPicture.asset(
               'assets/svg/IconComplete2.svg',
@@ -247,17 +460,49 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
           ),
           BottomNavyBarItem(
             onPressed: () async {
-              await saveForm().then((value) {
-                if (value == true) {
-                  setState(() {
-                    _vrnController.text = '';
-                    _bayNumberController.text = '';
-                    arrayImage.clear();
-                    evidencePhotoList.clear();
-                    validateMode = AutovalidateMode.disabled;
+              bool checkTurnOnNetwork =
+                  await checkTurnOnNetWork.turnOnWifiAndMobile();
+              if (checkTurnOnNetwork) {
+                if (!mounted) return;
+                showCircularProgressIndicator(context: context);
+                DateTime now = await timeNTP.get();
+                Permit permit = Permit(
+                    Plate: _vrnController.text,
+                    ContraventionReasonCode: "36",
+                    EventDateTime: now,
+                    FirstObservedDateTime: now,
+                    ZoneId: locationProvider.zone!.Id as int);
+                try {
+                  await weakNetworkContraventionController
+                      .checkHasPermit(permit)
+                      .then((value) async {
+                    Navigator.of(context).pop();
+                    if (value?.hasPermit == true) {
+                      if (!isCheckedPermit) {
+                        showDialogPermitExists(value);
+                      } else {
+                        await addFirstSeenModeCompleteAndAdd();
+                      }
+                      setState(() {
+                        isCheckedPermit = true;
+                      });
+                    } else {
+                      await addFirstSeenModeCompleteAndAdd();
+                    }
                   });
+                } on DioError catch (error) {
+                  if (!mounted) return;
+                  if (error.type == DioErrorType.other ||
+                      error.type == DioErrorType.connectTimeout) {
+                    Navigator.of(context).pop();
+                    await addFirstSeenModeCompleteAndAdd();
+                    return;
+                  }
+                  sendMessageInternalServer(error);
                 }
-              });
+              } else {
+                await addFirstSeenModeCompleteAndAdd();
+              }
             },
             icon: SvgPicture.asset(
               'assets/svg/IconSave2.svg',
@@ -293,7 +538,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Flexible(
-                                flex: 8,
+                                flex: 7,
                                 child: TextFormField(
                                   inputFormatters: [
                                     FilteringTextInputFormatter.allow(
@@ -329,9 +574,78 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                                     setState(() {
                                       validateMode =
                                           AutovalidateMode.onUserInteraction;
+                                      isCheckedPermit = false;
                                     });
                                   },
                                   autovalidateMode: validateMode,
+                                ),
+                              ),
+                              Flexible(
+                                flex: 4,
+                                child: ElevatedButton.icon(
+                                  icon: SvgPicture.asset(
+                                    'assets/svg/IconComplete.svg',
+                                    color: Colors.white,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 8,
+                                    ),
+                                  ),
+                                  onPressed: checkVrnIsValid()
+                                      ? () async {
+                                          bool checkTurnOnNetwork =
+                                              await checkTurnOnNetWork
+                                                  .turnOnWifiAndMobile();
+                                          if (checkTurnOnNetwork) {
+                                            if (!mounted) return;
+                                            showCircularProgressIndicator(
+                                                context: context);
+                                            DateTime now = await timeNTP.get();
+                                            Permit permit = Permit(
+                                                Plate: _vrnController.text,
+                                                ContraventionReasonCode: "36",
+                                                EventDateTime: now,
+                                                FirstObservedDateTime: now,
+                                                ZoneId: locationProvider
+                                                    .zone!.Id as int);
+                                            try {
+                                              await weakNetworkContraventionController
+                                                  .checkHasPermit(permit)
+                                                  .then((value) async {
+                                                Navigator.of(context).pop();
+                                                if (value?.hasPermit == true) {
+                                                  showDialogPermitExists(value);
+                                                } else {
+                                                  showErrorMessage(
+                                                      'There is no permit for this VRN');
+                                                }
+                                              });
+                                            } on DioError catch (error) {
+                                              if (!mounted) return;
+                                              if (error.type ==
+                                                      DioErrorType.other ||
+                                                  error.type ==
+                                                      DioErrorType
+                                                          .connectTimeout) {
+                                                Navigator.of(context).pop();
+                                                showErrorMessage(
+                                                    'Check permit failed because poor connection');
+                                              }
+                                              sendMessageInternalServer(error);
+                                            }
+                                          } else {
+                                            if (!mounted) return;
+                                            showErrorMessage(
+                                                'Unable to check permit due to lack of internet');
+                                          }
+                                        }
+                                      : null,
+                                  label: const Text(
+                                    "Check permit",
+                                  ),
                                 ),
                               ),
                             ],

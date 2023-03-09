@@ -1016,8 +1016,16 @@ class _IssuePCNFirstSeenScreenState
                       try {
                         if (!mounted) return;
                         showCircularProgressIndicator(context: context);
+                        Permit permit = Permit(
+                            Plate: virtualTicket.Plate,
+                            ContraventionReasonCode:
+                                virtualTicket.ContraventionReasonCode,
+                            EventDateTime: virtualTicket.EventDateTime,
+                            FirstObservedDateTime:
+                                virtualTicket.FirstObservedDateTime,
+                            ZoneId: virtualTicket.ZoneId);
                         await weakNetworkContraventionController
-                            .checkHasPermit(virtualTicket)
+                            .checkHasPermit(permit)
                             .then((value) {
                           Navigator.of(context).pop();
                           if (value?.hasPermit == true) {
@@ -1080,8 +1088,17 @@ class _IssuePCNFirstSeenScreenState
                       try {
                         if (!mounted) return;
                         showCircularProgressIndicator(context: context);
+                        Permit permit = Permit(
+                            Plate: physicalPCN.Plate,
+                            ContraventionReasonCode:
+                                physicalPCN.ContraventionReasonCode,
+                            EventDateTime: physicalPCN.EventDateTime,
+                            FirstObservedDateTime:
+                                physicalPCN.FirstObservedDateTime,
+                            ZoneId: physicalPCN.ZoneId);
+
                         await weakNetworkContraventionController
-                            .checkHasPermit(physicalPCN)
+                            .checkHasPermit(permit)
                             .then((value) {
                           Navigator.of(context).pop();
                           if (value?.hasPermit == true) {

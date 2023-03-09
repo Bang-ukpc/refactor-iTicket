@@ -169,6 +169,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       });
       checkPermissionGPS();
     }).catchError((err) {
+      if (!mounted) return;
       setState(() {
         pendingGetCurrentLocation = false;
       });
