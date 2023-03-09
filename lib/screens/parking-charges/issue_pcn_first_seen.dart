@@ -422,6 +422,7 @@ class _IssuePCNFirstSeenScreenState
       LocationAccuracy: 0, // missing
       TypePCN: TypePCN.Physical.index,
       Id: randomNumber,
+      IsPermitVerifiedByPO: contraventionProvider.getStatusPermitVerified,
     );
 
     Future<void> createPhysicalPCN(
@@ -448,6 +449,7 @@ class _IssuePCNFirstSeenScreenState
         LocationAccuracy: 0, // missing
         TypePCN: TypePCN.Physical.index,
         Id: randomNumber,
+        IsPermitVerifiedByPO: contraventionProvider.getStatusPermitVerified,
       );
 
       final isValid = _formKey.currentState!.validate();
@@ -565,6 +567,7 @@ class _IssuePCNFirstSeenScreenState
       LocationAccuracy: 0, // missing
       TypePCN: TypePCN.Virtual.index,
       Id: randomNumber2,
+      IsPermitVerifiedByPO: contraventionProvider.getStatusPermitVerified,
     );
 
     Future<void> createVirtualTicket({bool? step2, bool? step3}) async {
@@ -572,7 +575,7 @@ class _IssuePCNFirstSeenScreenState
       final virtualTicket2 = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
         ContraventionReference:
-            await contraventionReferenceHelper.getContraventionReference(
+            contraventionReferenceHelper.getContraventionReference(
                 prefixNumber: 3,
                 wardenID: wardensProvider.wardens?.Id ?? 0,
                 dateTime: now),
@@ -590,6 +593,7 @@ class _IssuePCNFirstSeenScreenState
         LocationAccuracy: 0, // missing
         TypePCN: TypePCN.Virtual.index,
         Id: randomNumber2,
+        IsPermitVerifiedByPO: contraventionProvider.getStatusPermitVerified,
       );
       final isValid = _formKey.currentState!.validate();
 
@@ -819,6 +823,8 @@ class _IssuePCNFirstSeenScreenState
                                     .copyWith(color: ColorTheme.white),
                               ),
                               onPressed: () {
+                                contraventionProvider
+                                    .setStatusPermitVerified(true);
                                 if ((_selectedItemTypePCN?.value ?? 0) == 0) {
                                   createPhysicalPCN(isPrinter: true);
                                 } else {
@@ -1017,6 +1023,8 @@ class _IssuePCNFirstSeenScreenState
                           if (value?.hasPermit == true) {
                             showDialogPermitExists(value);
                           } else {
+                            contraventionProvider
+                                .setStatusPermitVerified(false);
                             createVirtualTicket();
                           }
                         });
@@ -1024,10 +1032,12 @@ class _IssuePCNFirstSeenScreenState
                         if (!mounted) return;
                         if (error.type == DioErrorType.other) {
                           Navigator.of(context).pop();
+                          contraventionProvider.setStatusPermitVerified(false);
                           createVirtualTicket();
                           return;
                         } else if (error.type == DioErrorType.connectTimeout) {
                           Navigator.of(context).pop();
+                          contraventionProvider.setStatusPermitVerified(false);
                           createVirtualTicket();
                           return;
                         }
@@ -1048,6 +1058,7 @@ class _IssuePCNFirstSeenScreenState
                         return;
                       }
                     } else {
+                      contraventionProvider.setStatusPermitVerified(false);
                       createVirtualTicket();
                     }
                   },
@@ -1076,6 +1087,8 @@ class _IssuePCNFirstSeenScreenState
                           if (value?.hasPermit == true) {
                             showDialogPermitExists(value);
                           } else {
+                            contraventionProvider
+                                .setStatusPermitVerified(false);
                             createPhysicalPCN(isPrinter: true);
                           }
                         });
@@ -1083,10 +1096,12 @@ class _IssuePCNFirstSeenScreenState
                         if (!mounted) return;
                         if (error.type == DioErrorType.other) {
                           Navigator.of(context).pop();
+                          contraventionProvider.setStatusPermitVerified(false);
                           createPhysicalPCN(isPrinter: true);
                           return;
                         } else if (error.type == DioErrorType.connectTimeout) {
                           Navigator.of(context).pop();
+                          contraventionProvider.setStatusPermitVerified(false);
                           createPhysicalPCN(isPrinter: true);
                           return;
                         }
@@ -1107,6 +1122,7 @@ class _IssuePCNFirstSeenScreenState
                         return;
                       }
                     } else {
+                      contraventionProvider.setStatusPermitVerified(false);
                       createPhysicalPCN(isPrinter: true);
                     }
                   },
