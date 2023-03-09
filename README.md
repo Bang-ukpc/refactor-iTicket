@@ -177,3 +177,8 @@
 - WRDN-661 Can't realtime rates in issue PCN screen
 - WRDN-652 Can't realtime Contravention reasons in Home and issue PCN screen
 - WRDN-493 [Flash] Should turn the flash off when not using camera
+
+[1.2.0-1] - 2023-03-09
+
+- WRDN-422 As a PO, when I create a first seen or consideration period I want to see if a permit exists for that VRN.
+- WRDN-692 As a verifier, I should be notified if a VRN has a permit on the verification page
