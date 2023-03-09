@@ -90,6 +90,7 @@ class CameraPicker extends HookWidget {
         minPicture: minPicture,
         maxPicture: maxPicture));
     var filesDataImage = useState<int>(store.filesData.length);
+    final mode = useState(FlashMode.off);
     var cameraOn = useState<bool>(true);
     final availableCamerasFuture = useMemoized(() => availableCameras());
     final cameras = useState<List<CameraDescription>?>(null);
@@ -103,8 +104,12 @@ class CameraPicker extends HookWidget {
       return await Permission.camera.isGranted;
     }
 
-    Future<void> showDiaLog(double widthScreen, double padding,
-        BuildContext context, File img) async {
+    Future<void> showDiaLog(
+        double widthScreen,
+        double padding,
+        BuildContext context,
+        File img,
+        CameraController cameraController) async {
       print("titleCamera $titleCamera");
       showGeneralDialog(
           context: context,
@@ -122,11 +127,18 @@ class CameraPicker extends HookWidget {
                       : titleCamera,
                   automaticallyImplyLeading: true,
                   isOpenDrawer: false,
+                  onRedirect: () {
+                    Navigator.of(context).pop();
+                    mode.value = FlashMode.off;
+                    cameraController.setFlashMode(FlashMode.off);
+                  },
                 ),
                 bottomNavigationBar: BottomSheet2(buttonList: [
                   BottomNavyBarItem(
                       onPressed: () {
                         Navigator.of(context).pop();
+                        mode.value = FlashMode.off;
+                        cameraController.setFlashMode(FlashMode.off);
                       },
                       icon: SvgPicture.asset(
                         'assets/svg/IconDelete.svg',
@@ -142,10 +154,14 @@ class CameraPicker extends HookWidget {
                               printIssue.findIssueNoImage(typePCN: typePCN).id);
                           printIssue.addImageToIssue(printIssue.idIssue, img);
                           Navigator.of(context).pop();
+                          mode.value = FlashMode.off;
+                          cameraController.setFlashMode(FlashMode.off);
                         } else {
                           printIssue.addImageToIssue(printIssue.idIssue, img);
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
+                          mode.value = FlashMode.off;
+                          cameraController.setFlashMode(FlashMode.off);
                         }
                       } else {
                         await printIssue.getIdIssue(
@@ -153,6 +169,8 @@ class CameraPicker extends HookWidget {
                         printIssue.addImageToIssue(printIssue.idIssue, img);
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
+                        mode.value = FlashMode.off;
+                        cameraController.setFlashMode(FlashMode.off);
                       }
                     },
                     icon: SvgPicture.asset(
@@ -216,11 +234,13 @@ class CameraPicker extends HookWidget {
         var capturedImage = img.decodeImage(await file.readAsBytes());
         img.encodeJpg(capturedImage!, quality: 40);
         log(files.path);
+        mode.value = FlashMode.off;
+        cameraController.setFlashMode(FlashMode.off);
         store.addFile(files);
         filesDataImage.value = filesDataImage.value + 1;
         previewImage == true
             // ignore: use_build_context_synchronously
-            ? showDiaLog(widthScreen, padding, context, files)
+            ? showDiaLog(widthScreen, padding, context, files, cameraController)
             : null;
       } catch (ex, stack) {
         onError?.call(ex, stack);
@@ -328,6 +348,8 @@ class CameraPicker extends HookWidget {
                           AppLifecycleState.resumed) {
                         if (cameraOn.value == false) {
                           Navigator.of(context).pop();
+                          mode.value = FlashMode.off;
+                          cameraController.setFlashMode(FlashMode.off);
                         }
                       }
                     }
@@ -397,6 +419,8 @@ class CameraPicker extends HookWidget {
                                                     children: [
                                                       IconButton(
                                                         onPressed: () {
+                                                          cameraController
+                                                              .dispose();
                                                           Navigator.of(context)
                                                               .pop();
                                                         },
@@ -427,30 +451,28 @@ class CameraPicker extends HookWidget {
                                                   ),
                                                   HookBuilder(
                                                       builder: (context) {
-                                                    final mode = useState(
-                                                        FlashMode.auto);
                                                     return InkWell(
                                                       onTap: () {
                                                         if (mode.value ==
-                                                            FlashMode.auto) {
+                                                            FlashMode.torch) {
+                                                          mode.value =
+                                                              FlashMode.off;
+                                                          cameraController
+                                                              .setFlashMode(
+                                                                  FlashMode
+                                                                      .off);
+                                                        } else {
                                                           mode.value =
                                                               FlashMode.torch;
                                                           cameraController
                                                               .setFlashMode(
                                                                   FlashMode
                                                                       .torch);
-                                                        } else {
-                                                          mode.value =
-                                                              FlashMode.auto;
-                                                          cameraController
-                                                              .setFlashMode(
-                                                                  FlashMode
-                                                                      .auto);
                                                         }
                                                       },
                                                       child: SvgPicture.asset(
                                                         mode.value ==
-                                                                FlashMode.auto
+                                                                FlashMode.off
                                                             ? "assets/svg/OffFlash.svg"
                                                             : "assets/svg/OnFlash.svg",
                                                       ),
