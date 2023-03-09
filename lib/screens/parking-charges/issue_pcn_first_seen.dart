@@ -380,7 +380,6 @@ class _IssuePCNFirstSeenScreenState
     final locationProvider = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
-    final vehicleInfo = ModalRoute.of(context)!.settings.arguments as dynamic;
     final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
 
     log('issue pcn screen $getNow');
@@ -413,7 +412,9 @@ class _IssuePCNFirstSeenScreenState
       ContraventionReasonCode:
           contraventionProvider.getContraventionCode?.code ?? '',
       EventDateTime: getNow,
-      FirstObservedDateTime: vehicleInfo != null ? vehicleInfo.Created : getNow,
+      FirstObservedDateTime: contraventionProvider.getVehicleInfo != null
+          ? contraventionProvider.getVehicleInfo?.Created as DateTime
+          : getNow,
       WardenId: wardensProvider.wardens?.Id ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -440,7 +441,9 @@ class _IssuePCNFirstSeenScreenState
         VehicleColour: _vehicleColorController.text,
         ContraventionReasonCode: _contraventionReasonController.text,
         EventDateTime: now,
-        FirstObservedDateTime: vehicleInfo != null ? vehicleInfo.Created : now,
+        FirstObservedDateTime: contraventionProvider.getVehicleInfo != null
+            ? contraventionProvider.getVehicleInfo?.Created as DateTime
+            : now,
         WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -558,7 +561,9 @@ class _IssuePCNFirstSeenScreenState
       ContraventionReasonCode:
           contraventionProvider.getContraventionCode?.code ?? '',
       EventDateTime: getNow,
-      FirstObservedDateTime: vehicleInfo != null ? vehicleInfo.Created : getNow,
+      FirstObservedDateTime: contraventionProvider.getVehicleInfo != null
+          ? contraventionProvider.getVehicleInfo?.Created as DateTime
+          : getNow,
       WardenId: wardensProvider.wardens?.Id ?? 0,
       Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
       Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
@@ -584,7 +589,9 @@ class _IssuePCNFirstSeenScreenState
         VehicleColour: _vehicleColorController.text,
         ContraventionReasonCode: _contraventionReasonController.text,
         EventDateTime: now,
-        FirstObservedDateTime: vehicleInfo != null ? vehicleInfo.Created : now,
+        FirstObservedDateTime: contraventionProvider.getVehicleInfo != null
+            ? contraventionProvider.getVehicleInfo?.Created as DateTime
+            : now,
         WardenId: wardensProvider.wardens?.Id ?? 0,
         Latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         Longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
