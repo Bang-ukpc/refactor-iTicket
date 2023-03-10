@@ -59,7 +59,7 @@ class ContraventionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void upDateContravention(Contravention data) {
+  void upDateContravention(Contravention? data) {
     contraventionData = data;
     notifyListeners();
   }
