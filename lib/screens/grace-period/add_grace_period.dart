@@ -502,8 +502,8 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Flexible(
-                                flex: 7,
+                              Expanded(
+                                flex: 3,
                                 child: TextFormField(
                                   inputFormatters: [
                                     FilteringTextInputFormatter.allow(
@@ -545,8 +545,11 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                                   autovalidateMode: validateMode,
                                 ),
                               ),
-                              Flexible(
-                                flex: 4,
+                              const SizedBox(
+                                width: 8,
+                              ),
+                              Expanded(
+                                flex: 2,
                                 child: ElevatedButton.icon(
                                   icon: SvgPicture.asset(
                                     'assets/svg/IconComplete.svg',
@@ -608,8 +611,10 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                                           }
                                         }
                                       : null,
-                                  label: const Text(
+                                  label: Text(
                                     "Check permit",
+                                    style: CustomTextStyle.body1
+                                        .copyWith(color: Colors.white),
                                   ),
                                 ),
                               ),
