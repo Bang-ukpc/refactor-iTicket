@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -19,7 +19,7 @@ import 'package:provider/provider.dart';
 
 import '../../services/local/created_warden_event_local_service .dart';
 
-class InfoDrawer extends StatelessWidget {
+class InfoDrawer extends StatefulWidget {
   final String name;
   final String assetImage;
   final String? location;
@@ -35,6 +35,34 @@ class InfoDrawer extends StatelessWidget {
     this.zone,
     this.isLogout = false,
   }) : super(key: key);
+
+  @override
+  State<InfoDrawer> createState() => _InfoDrawerState();
+}
+
+class _InfoDrawerState extends State<InfoDrawer> {
+  bool isValidImage = false;
+
+  Future<bool> checkImageLinkValidity(String imageUrl) async {
+    final DefaultCacheManager cacheManager = DefaultCacheManager();
+    final FileInfo? fileInfo = await cacheManager.getFileFromCache(imageUrl);
+    if (fileInfo == null || fileInfo.validTill.isBefore(DateTime.now())) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      bool checkImageLinkValid =
+          await checkImageLinkValidity(widget.assetImage);
+      setState(() {
+        isValidImage = checkImageLinkValid;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,33 +186,43 @@ class InfoDrawer extends StatelessWidget {
     }
 
     buildAvatar() {
-      if (isDrawer) {
+      if (widget.isDrawer) {
         return Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-                border: Border.all(
-                    width: 8, color: const Color.fromRGBO(255, 255, 255, 0.1)),
-                borderRadius: BorderRadius.circular(100)),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(100),
-              child: CachedNetworkImage(
-                imageUrl: assetImage,
-                fit: BoxFit.cover,
-                progressIndicatorBuilder: (context, url, downloadProgress) =>
-                    Center(
-                  child: SizedBox(
-                    width: 25,
-                    height: 25,
-                    child: CircularProgressIndicator(
-                      color: ColorTheme.primary,
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+              border: Border.all(
+                  width: 8, color: const Color.fromRGBO(255, 255, 255, 0.1)),
+              borderRadius: BorderRadius.circular(100)),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: isValidImage
+                ? CachedNetworkImage(
+                    imageUrl: widget.assetImage,
+                    fit: BoxFit.cover,
+                    progressIndicatorBuilder:
+                        (context, url, downloadProgress) => Center(
+                      child: SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: CircularProgressIndicator(
+                          color: ColorTheme.primary,
+                        ),
+                      ),
                     ),
+                    errorWidget: (context, url, error) => Image.asset(
+                      'assets/images/userAvatar.png',
+                      cacheWidth: 80,
+                      cacheHeight: 80,
+                    ),
+                  )
+                : Image.asset(
+                    'assets/images/userAvatar.png',
+                    cacheWidth: 80,
+                    cacheHeight: 80,
                   ),
-                ),
-                errorWidget: (context, url, error) =>
-                    Image.asset('assets/images/userAvatar.png'),
-              ),
-            ));
+          ),
+        );
       } else {
         return Container(
           width: 64,
@@ -205,22 +243,31 @@ class InfoDrawer extends StatelessWidget {
             height: 48,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),
-              child: CachedNetworkImage(
-                imageUrl: assetImage,
-                fit: BoxFit.cover,
-                progressIndicatorBuilder: (context, url, downloadProgress) =>
-                    Center(
-                  child: SizedBox(
-                    width: 25,
-                    height: 25,
-                    child: CircularProgressIndicator(
-                      color: ColorTheme.primary,
+              child: isValidImage
+                  ? CachedNetworkImage(
+                      imageUrl: widget.assetImage,
+                      fit: BoxFit.cover,
+                      progressIndicatorBuilder:
+                          (context, url, downloadProgress) => Center(
+                        child: SizedBox(
+                          width: 25,
+                          height: 25,
+                          child: CircularProgressIndicator(
+                            color: ColorTheme.primary,
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Image.asset(
+                        'assets/images/userAvatar.png',
+                        cacheWidth: 80,
+                        cacheHeight: 80,
+                      ),
+                    )
+                  : Image.asset(
+                      'assets/images/userAvatar.png',
+                      cacheWidth: 80,
+                      cacheHeight: 80,
                     ),
-                  ),
-                ),
-                errorWidget: (context, url, error) =>
-                    Image.asset('assets/images/userAvatar.png'),
-              ),
             ),
           ),
         );
@@ -231,18 +278,18 @@ class InfoDrawer extends StatelessWidget {
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
-        top: !isDrawer
-            ? (zone == null && location == null)
+        top: !widget.isDrawer
+            ? (widget.zone == null && widget.location == null)
                 ? 5
                 : 16
             : 37,
-        bottom: !isDrawer
-            ? (zone == null && location == null)
+        bottom: !widget.isDrawer
+            ? (widget.zone == null && widget.location == null)
                 ? 5
                 : 16
             : 15,
       ),
-      color: isDrawer ? ColorTheme.darkPrimary : Colors.white,
+      color: widget.isDrawer ? ColorTheme.darkPrimary : Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -259,13 +306,13 @@ class InfoDrawer extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: isLogout == true
+                        width: widget.isLogout == true
                             ? MediaQuery.of(context).size.width * 0.4
                             : MediaQuery.of(context).size.width * 0.5,
                         child: Text(
-                          name,
+                          widget.name,
                           style: CustomTextStyle.h5.copyWith(
-                            color: !isDrawer
+                            color: !widget.isDrawer
                                 ? ColorTheme.textPrimary
                                 : Colors.white,
                             fontWeight: FontWeight.w600,
@@ -273,30 +320,30 @@ class InfoDrawer extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (location != null)
+                      if (widget.location != null)
                         SizedBox(
-                          width: isLogout == true
+                          width: widget.isLogout == true
                               ? MediaQuery.of(context).size.width * 0.4
                               : MediaQuery.of(context).size.width * 0.5,
                           child: Text(
-                            "Location: ${location!}",
+                            "Location: ${widget.location!}",
                             style: CustomTextStyle.body2.copyWith(
-                              color: !isDrawer
+                              color: !widget.isDrawer
                                   ? ColorTheme.textPrimary
                                   : Colors.white,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
-                      if (zone != null)
+                      if (widget.zone != null)
                         SizedBox(
-                          width: isLogout == true
+                          width: widget.isLogout == true
                               ? MediaQuery.of(context).size.width * 0.4
                               : MediaQuery.of(context).size.width * 0.5,
                           child: Text(
-                            "Zone: ${zone!}",
+                            "Zone: ${widget.zone!}",
                             style: CustomTextStyle.body2.copyWith(
-                              color: !isDrawer
+                              color: !widget.isDrawer
                                   ? ColorTheme.textPrimary
                                   : Colors.white,
                               overflow: TextOverflow.ellipsis,
@@ -307,11 +354,11 @@ class InfoDrawer extends StatelessWidget {
                   )
                 ],
               ),
-              if (isDrawer)
+              if (widget.isDrawer)
                 const SizedBox(
                   height: 5,
                 ),
-              if (isDrawer)
+              if (widget.isDrawer)
                 Container(
                   margin: const EdgeInsets.only(left: 65),
                   height: 26,
@@ -337,7 +384,7 @@ class InfoDrawer extends StatelessWidget {
                 )
             ],
           ),
-          if (isLogout == true)
+          if (widget.isLogout == true)
             Consumer<Auth>(
               builder: (context, auth, _) {
                 return ElevatedButton(
