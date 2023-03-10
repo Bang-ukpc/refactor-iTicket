@@ -190,3 +190,10 @@
 
 - WRDN-689 [Start shift screen] Remove title "Upload data"
 - WRDN-680 As a PO, I want to see the logs when syncing data to server (WRDN-686 [FE] Button stop sync when syncing data)
+
+[1.1.3-1] - 2023-03-10
+
+- WRDN-691 [Physical] Wrong time first seen of PCN
+- WRDN-696 Change text
+- WRDN-694 Wrong data in sync data screen
+- WRDN-682 Can't get avt of PO
