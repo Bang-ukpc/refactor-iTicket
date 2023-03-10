@@ -21,7 +21,7 @@ class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
   }
 
   @override
-  syncAll(bool? isStopSyncing,
+  syncAll(Function(bool isStop)? onStopSync,
       [Function(int current, int total, [SyncLog log])?
           syncStatusCallBack]) async {
     logger.info("Start syncing all the events ...");

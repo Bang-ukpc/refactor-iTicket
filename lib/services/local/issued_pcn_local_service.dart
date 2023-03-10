@@ -21,9 +21,8 @@ class IssuedPcnLocalService
   }
 
   @override
-  syncAll(
-      [bool? isStopSyncing,
-      Function(int current, int total, [SyncLog? log])?
+  syncAll(Function(bool isStop)? onStopSync,
+      [Function(int current, int total, [SyncLog? log])?
           syncStatusCallBack]) async {
     logger.info("start syncing all ....");
 
@@ -38,7 +37,9 @@ class IssuedPcnLocalService
     allPcnPhotos = await issuedPcnPhotoLocalService.getAll();
     var amountSynced = 0;
     for (int i = 0; i < allPcns.length; i++) {
-      if (isStopSyncing != null && isStopSyncing) break;
+      if (onStopSync != null) {
+        if (onStopSync(true) == true) break;
+      }
       var pcn = allPcns[i];
       if (syncStatusCallBack != null) {
         syncStatusCallBack(
@@ -60,7 +61,9 @@ class IssuedPcnLocalService
         }
       }
     }
-    await issuedPcnPhotoLocalService.syncAll(false);
+    await issuedPcnPhotoLocalService.syncAll(
+      (isStop) => false,
+    );
     isSyncing = false;
   }
 

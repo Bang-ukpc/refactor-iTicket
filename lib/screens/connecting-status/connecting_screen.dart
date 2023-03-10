@@ -25,9 +25,7 @@ import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/services/cache/factory/cache_factory.dart';
-import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
-import 'package:iWarden/services/local/issued_pcn_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
@@ -69,8 +67,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   Stream<BluetoothState> bluetoothStateStream =
       FlutterBluePlus.instance.state.asBroadcastStream();
 
-  _buildConnect(String title, StateDevice state,
-      {bool required = false, String? subTitle}) {
+  _buildConnect(String title, StateDevice state, {bool required = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       child: Row(
@@ -86,11 +83,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                 Text(
                   "*",
                   style: CustomTextStyle.h5.copyWith(color: ColorTheme.danger),
-                ),
-              if (subTitle != null)
-                Text(
-                  subTitle,
-                  style: CustomTextStyle.h5,
                 ),
             ],
           ),
@@ -504,7 +496,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                     height: 32,
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -611,18 +603,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                 required: true,
                                 'Server time',
                                 StateDevice.pending),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        Text(
-                          "Upload data",
-                          style: CustomTextStyle.h5.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: ColorTheme.textPrimary),
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
                       ],
                     ),
                   ),
@@ -630,7 +610,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                     height: 16,
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -654,7 +634,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                   ),
                   if (isPending == false && pendingGetCurrentLocation == false)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       width: double.infinity,
                       child: Row(
                         children: [
@@ -702,7 +682,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                 elevation: 0,
                                 shadowColor: Colors.transparent,
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
+                                    const EdgeInsets.symmetric(vertical: 12),
                               ),
                               onPressed: () async {
                                 if (isLocationPermission == true) {

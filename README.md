@@ -172,7 +172,6 @@
 
 - WRDN-663 Show error can't choose rota when offline mode
 
-
 [1.0.55-1] - 2023-03-07
 
 - WRDN-661 Can't realtime rates in issue PCN screen
@@ -182,3 +181,12 @@
 [1.1.0-1] - 2023-03-06
 
 - WRDN-629 As a PO, I want to sync the local data when using app
+
+[1.1.1-1] - 2023-03-08
+
+- WRDN-680 As a PO, I want to see the logs when syncing data to server
+
+[1.1.2-1] - 2023-03-08
+
+- WRDN-689 [Start shift screen] Remove title "Upload data"
+- WRDN-680 As a PO, I want to see the logs when syncing data to server (WRDN-686 [FE] Button stop sync when syncing data)

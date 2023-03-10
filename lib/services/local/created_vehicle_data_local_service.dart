@@ -31,10 +31,9 @@ class CreatedVehicleDataLocalService
   }
 
   @override
-  syncAll(bool? isStopSyncing,
+  syncAll(Function(bool isStop)? onStopSync,
       [Function(int current, int total, [SyncLog? log])?
           syncStatusCallBack]) async {
-    logger.info('[is stop syncing] $isStopSyncing');
     logger.info('syncing all ...');
 
     if (isSyncing) {
@@ -48,7 +47,9 @@ class CreatedVehicleDataLocalService
     logger.info("start syncing ${items.length} vehicle info ....");
     var amountSynced = 0;
     for (int i = 0; i < items.length; i++) {
-      if (isStopSyncing != null && isStopSyncing) break;
+      if (onStopSync != null) {
+        if (onStopSync(true) == true) break;
+      }
       var item = items[i];
       if (syncStatusCallBack != null) {
         syncStatusCallBack(amountSynced, items.length,
