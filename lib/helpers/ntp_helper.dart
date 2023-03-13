@@ -26,18 +26,6 @@ class NTPHelper {
     int offset = await getOffset();
     logger.info("OFFSET $offset");
     DateTime now = DateTime.now();
-    /*
-     MAY: 1h
-     SERVER: 2h
-     Khoang cach: 1h = 3600000 milliseconds
-
-     - Hien tai (Case Sua gio)
-     MAY: 4h
-     4 + 11 = 15h 
-     Khoang cach: 11h = 39600000 milliseconds
-     SERVER: 15h
-
-     */
     DateTime ntpTime = now.add(Duration(milliseconds: offset));
     logger.info("NTP $ntpTime");
     return ntpTime.toUtc();
