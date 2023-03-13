@@ -187,3 +187,9 @@
 
 - WRDN-700 [Remain] - Fix UI of "Check permit" button
 - WRDN-664 [Issue PCN] Unable to check permit of VRN when user goes back to edit VRN in step 1
+
+[1.2.2-1] - 2023-03-13
+
+- WRDN-460 Improvement Future - iTicket location list should match the cluster list.
+- WRDN-722 [Issue PCN] PCN cannot be generated if the user checks the permit without entering the required fields
+- WRDN-723 [First seen/Grace period] Only check the permit once, if already checked, it will be added directly.
