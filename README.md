@@ -197,3 +197,8 @@
 - WRDN-696 Change text
 - WRDN-694 Wrong data in sync data screen
 - WRDN-682 Can't get avt of PO
+
+[1.1.4-1] - 2023-03-13
+
+- WRDN-634 [Offline] Can't get First seen/Consideration image when issue PCN
+- WRDN-720 There is no warden event data when users do manual data sync
