@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_kronos/flutter_kronos.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
@@ -21,7 +20,6 @@ import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../providers/time_ntp.dart';
 import '../../services/local/sync_factory.dart';
 
 Future<void> initializeService() async {
@@ -73,7 +71,6 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   await dotenv.load(fileName: ".env");
-  await timeNTP.sync();
   DartPluginRegistrant.ensureInitialized();
   final accessToken = await SharedPreferencesHelper.getStringValue(
     PreferencesKeys.accessToken,
@@ -105,10 +102,7 @@ void onStart(ServiceInstance service) async {
     await currentLocationPosition.getCurrentLocation();
   });
 
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
-    FlutterKronos.sync();
-    DateTime? now = await FlutterKronos.getNtpDateTime;
-    print('[Time server] creating event with created at $now');
+  Timer.periodic(const Duration(minutes: 5), (timer) async {
     if (service is AndroidServiceInstance) {
       final prefs = await SharedPreferences.getInstance();
       prefs.reload();

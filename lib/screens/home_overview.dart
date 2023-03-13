@@ -423,15 +423,15 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
                           height: 100,
                         ),
                       ),
-                ElevatedButton(
-                  onPressed: () async {
-                    DateTime now = await timeNTP.get();
-                    print('[NTP Time Server] $now');
-                  },
-                  child: const Text(
-                    "get NTp Time",
-                  ),
-                ),
+                // ElevatedButton(
+                //   onPressed: () async {
+                //     DateTime now = await timeNTP.get();
+                //     print('[NTP Time Server] $now');
+                //   },
+                //   child: const Text(
+                //     "get NTp Time",
+                //   ),
+                // ),
               ],
             ),
           ),
