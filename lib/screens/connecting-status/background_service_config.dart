@@ -12,6 +12,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/id_helper.dart';
+import 'package:iWarden/helpers/ntp_helper.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -102,7 +103,9 @@ void onStart(ServiceInstance service) async {
     await currentLocationPosition.getCurrentLocation();
   });
 
-  Timer.periodic(const Duration(minutes: 5), (timer) async {
+  Timer.periodic(const Duration(seconds: 15), (timer) async {
+    DateTime ntp = await ntpHelper.getTimeNTP();
+    print('[SERVER TIME] $ntp');
     if (service is AndroidServiceInstance) {
       final prefs = await SharedPreferences.getInstance();
       prefs.reload();
@@ -162,7 +165,7 @@ void onStart(ServiceInstance service) async {
       rotaTimeTo: rotaShiftSelected?.timeTo,
       locationId: locationSelected?.Id,
       zoneId: zoneSelected?.Id,
-      Created: null,
+      Created: ntp,
     );
 
     createdWardenEventLocalService.create(gpsEvent);

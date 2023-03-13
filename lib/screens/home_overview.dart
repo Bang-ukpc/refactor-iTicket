@@ -9,6 +9,7 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/ntp_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -423,12 +424,11 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
                           height: 100,
                         ),
                       ),
-                // ElevatedButton(
-                //     onPressed: () async {
-                //       DateTime now = await timeNTP.get();
-                //       print('[NTP] ${now}');
-                //     },
-                //     child: Text("geaâat")),
+                ElevatedButton(
+                    onPressed: () async {
+                      ntpHelper.getTimeNTP();
+                    },
+                    child: Text("geaâat")),
                 // ElevatedButton(
                 //     onPressed: () async {
                 //       FlutterKronos.sync();
