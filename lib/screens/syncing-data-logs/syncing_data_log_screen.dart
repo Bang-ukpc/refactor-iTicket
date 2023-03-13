@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/models/log.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
@@ -8,6 +9,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 import '../../services/local/created_vehicle_data_local_service.dart';
+import '../../services/local/created_warden_event_local_service .dart';
 import '../../services/local/issued_pcn_local_service.dart';
 
 class SyncingDataLogScreen extends StatefulWidget {
@@ -22,6 +24,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   int totalDataNeedToSync = 0;
   int progressingDataNeedToSync = 0;
   bool isSyncing = false;
+  bool isSyncingWardenEvent = false;
   List<SyncLog?> syncLogs = [];
   bool isStopSyncing = false;
 
@@ -36,8 +39,17 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   Future<void> syncDataToServer() async {
     setState(() {
       isSyncing = true;
+      isSyncingWardenEvent = true;
       syncLogs = [];
     });
+
+    try {
+      await createdWardenEventLocalService.syncAll((isStop) => false);
+    } catch (e) {}
+    setState(() {
+      isSyncingWardenEvent = false;
+    });
+
     await createdVehicleDataLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
       setState(() {
@@ -74,9 +86,18 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     await syncDataToServer();
   }
 
+  void onPauseBackgroundService() async {
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      service.invoke("stopService");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    onPauseBackgroundService();
     getQuantityOfSyncData();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await syncDataToServer();
@@ -119,6 +140,13 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                   const SizedBox(
                     height: 32,
                   ),
+                  if (isSyncingWardenEvent)
+                    Text(
+                      "Please wait a moment...",
+                      style: CustomTextStyle.body1.copyWith(
+                        color: ColorTheme.textPrimary,
+                      ),
+                    ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: syncLogs.map((e) {

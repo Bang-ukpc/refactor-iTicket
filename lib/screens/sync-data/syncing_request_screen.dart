@@ -35,18 +35,9 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
     });
   }
 
-  void onPauseBackgroundService() async {
-    final service = FlutterBackgroundService();
-    var isRunning = await service.isRunning();
-    if (isRunning) {
-      service.invoke("stopService");
-    }
-  }
-
   @override
   void initState() {
     super.initState();
-    onPauseBackgroundService();
     getQuantityOfSyncData();
   }
 

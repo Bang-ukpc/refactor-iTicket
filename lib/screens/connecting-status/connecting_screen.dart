@@ -183,11 +183,11 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     });
   }
 
-  void onPauseBackgroundService() async {
+  void onStartBackgroundService() async {
     final service = FlutterBackgroundService();
     var isRunning = await service.isRunning();
     if (isRunning) {
-      service.invoke("stopService");
+      await initializeService();
     }
   }
 
@@ -278,7 +278,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   @override
   void initState() {
     super.initState();
-    onPauseBackgroundService();
+    onStartBackgroundService();
     getCurrentLocationOfWarden();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
@@ -356,7 +356,11 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
         await createdWardenEventLocalService
             .create(wardenEventStartShift)
             .then((value) async {
-          await initializeService();
+          final service = FlutterBackgroundService();
+          var isRunning = await service.isRunning();
+          if (!isRunning) {
+            await initializeService();
+          }
           if (!mounted) return;
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
