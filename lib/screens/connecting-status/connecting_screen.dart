@@ -162,7 +162,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   }
 
   // Get current location
-  void getCurrentLocationOfWarden() async {
+  getCurrentLocationOfWarden() async {
     if (!mounted) return;
     await currentLocationPosition.getCurrentLocation().then((value) {
       setState(() {
@@ -328,6 +328,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       isLocationPermission = check;
       isPending = true;
     });
+    await getCurrentLocationOfWarden();
     await syncTime();
     await syncAllRequiredData();
     setState(() {
