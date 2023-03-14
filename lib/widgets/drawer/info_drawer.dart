@@ -17,7 +17,6 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/time_ntp.dart';
 import '../../services/local/created_warden_event_local_service .dart';
 
 class InfoDrawer extends StatefulWidget {
@@ -45,13 +44,13 @@ class _InfoDrawerState extends State<InfoDrawer> {
   bool isValidImage = false;
 
   Future<bool> checkImageLinkValidity(String imageUrl) async {
-    DateTime now = await timeNTP.get();
     final DefaultCacheManager cacheManager = DefaultCacheManager();
-    final FileInfo? fileInfo = await cacheManager.getFileFromCache(imageUrl);
-    if (fileInfo == null || fileInfo.validTill.isBefore(now)) {
+    try {
+      await cacheManager.getSingleFile(imageUrl);
+      return true;
+    } catch (e) {
       return false;
     }
-    return true;
   }
 
   @override
