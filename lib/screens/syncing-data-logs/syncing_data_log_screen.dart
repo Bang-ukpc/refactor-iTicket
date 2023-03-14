@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/models/log.dart';
@@ -110,6 +111,33 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: Colors.white,
+        appBar: AppBar(
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarColor: ColorTheme.textPrimary,
+            statusBarIconBrightness: Brightness.light,
+          ),
+          elevation: 5,
+          shadowColor: ColorTheme.boxShadow3,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Syncing data logs',
+                style: CustomTextStyle.h4.copyWith(
+                  color: ColorTheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '$progressingDataNeedToSync/$totalDataNeedToSync',
+                style: CustomTextStyle.h4.copyWith(
+                  color: ColorTheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
         body: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: SafeArea(
@@ -118,28 +146,6 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Syncing data logs',
-                        style: CustomTextStyle.h4.copyWith(
-                          color: ColorTheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        '$progressingDataNeedToSync/$totalDataNeedToSync',
-                        style: CustomTextStyle.h4.copyWith(
-                          color: ColorTheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 32,
-                  ),
                   if (isSyncingWardenEvent)
                     Text(
                       "Please wait a moment...",
