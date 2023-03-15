@@ -140,8 +140,10 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          const Text(
-                                            '2. Parking Charge Notices (PCNs)',
+                                          Text(
+                                            totalVehicleInfoNeedToSync > 0
+                                                ? "2. Parking Charge Notices (PCNs)"
+                                                : "1. Parking Charge Notices (PCNs)",
                                             style: CustomTextStyle.body1,
                                           ),
                                           Text(
