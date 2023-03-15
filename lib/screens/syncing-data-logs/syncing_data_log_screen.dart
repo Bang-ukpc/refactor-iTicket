@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/models/log.dart';
@@ -22,7 +23,8 @@ class SyncingDataLogScreen extends StatefulWidget {
 
 class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   int totalDataNeedToSync = 0;
-  int progressingDataNeedToSync = 0;
+  int progressingVehicleInfo = 0;
+  int progressingPcns = 0;
   bool isSyncing = false;
   bool isSyncingWardenEvent = false;
   List<SyncLog?> syncLogs = [];
@@ -53,7 +55,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     await createdVehicleDataLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
       setState(() {
-        progressingDataNeedToSync = current;
+        progressingVehicleInfo = current;
         syncLogs.add(log);
       });
     });
@@ -61,10 +63,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     await issuedPcnLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
       setState(() {
-        progressingDataNeedToSync =
-            current + progressingDataNeedToSync >= totalDataNeedToSync
-                ? totalDataNeedToSync
-                : current + progressingDataNeedToSync;
+        progressingPcns = current;
         syncLogs.add(log);
       });
     });
@@ -110,6 +109,33 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: Colors.white,
+        appBar: AppBar(
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarColor: ColorTheme.textPrimary,
+            statusBarIconBrightness: Brightness.light,
+          ),
+          elevation: 5,
+          shadowColor: ColorTheme.boxShadow3,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Syncing data logs',
+                style: CustomTextStyle.h4.copyWith(
+                  color: ColorTheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '${progressingVehicleInfo + progressingPcns}/$totalDataNeedToSync',
+                style: CustomTextStyle.h4.copyWith(
+                  color: ColorTheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
         body: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: SafeArea(
@@ -118,28 +144,6 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Syncing data logs',
-                        style: CustomTextStyle.h4.copyWith(
-                          color: ColorTheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        '$progressingDataNeedToSync/$totalDataNeedToSync',
-                        style: CustomTextStyle.h4.copyWith(
-                          color: ColorTheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 32,
-                  ),
                   if (isSyncingWardenEvent)
                     Text(
                       "Please wait a moment...",
@@ -227,7 +231,8 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                 ),
               if (!isSyncing &&
                   totalDataNeedToSync > 0 &&
-                  progressingDataNeedToSync != totalDataNeedToSync)
+                  (progressingVehicleInfo + progressingPcns) !=
+                      totalDataNeedToSync)
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: SvgPicture.asset(
@@ -252,7 +257,8 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                 ),
               if (!isSyncing &&
                   totalDataNeedToSync > 0 &&
-                  progressingDataNeedToSync != totalDataNeedToSync)
+                  (progressingVehicleInfo + progressingPcns) !=
+                      totalDataNeedToSync)
                 const SizedBox(
                   width: 16,
                 ),
