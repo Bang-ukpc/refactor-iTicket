@@ -60,8 +60,9 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     var issuedItem =
         await createdVehicleDataLocalService.getAllFirstSeen(_zoneId);
     var items = [...issuedItem, ...cachedItems];
-    return items.firstWhereOrNull(
-            (element) => element.Plate == plate && element.CarLeftAt == null) !=
+    return items.firstWhereOrNull((element) =>
+            element.Plate.toLowerCase() == plate.toLowerCase() &&
+            element.CarLeftAt == null) !=
         null;
   }
 
@@ -72,8 +73,10 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
     var contraventionCachedService = ContraventionCachedService(zoneId);
     var contraventionList =
         await contraventionCachedService.getAllWithCreatedOnTheOffline();
-    var findVRNExits = contraventionList.firstWhereOrNull(
-        (e) => e.plate == vrn && e.zoneId == zoneId && e.reason?.code == '36');
+    var findVRNExits = contraventionList.firstWhereOrNull((e) =>
+        e.plate?.toLowerCase() == vrn.toLowerCase() &&
+        e.zoneId == zoneId &&
+        e.reason?.code == '36');
     if (findVRNExits != null) {
       var date = await timeNTP.get();
       var timeMayIssue = findVRNExits.created!.add(const Duration(hours: 24));
