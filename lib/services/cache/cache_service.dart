@@ -20,6 +20,7 @@ abstract class ICacheService<T extends Identifiable> {
   set(List<T> listT);
   getAll() => List<T>;
   deleteAll();
+  total() => Future<int>;
 }
 
 class CacheService<T extends Identifiable> implements ICacheService<T> {
@@ -97,6 +98,12 @@ class CacheService<T extends Identifiable> implements ICacheService<T> {
   @override
   Future<List<T>> syncFromServer() {
     throw UnimplementedError();
+  }
+
+  @override
+  total() async {
+    var items = await getAll();
+    return items.length;
   }
 }
 

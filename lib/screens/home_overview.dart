@@ -424,16 +424,14 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
                         ),
                       ),
                 // ElevatedButton(
-                //     onPressed: () async {
-                //       DateTime now = await timeNTP.get();
-                //       print('[NTP] ${now}');
-                //     },
-                //     child: Text("geaâat")),
-                // ElevatedButton(
-                //     onPressed: () async {
-                //       FlutterKronos.sync();
-                //     },
-                //     child: Text("get")),
+                //   onPressed: () async {
+                //     DateTime now = await timeNTP.get();
+                //     print('[NTP Time Server] $now');
+                //   },
+                //   child: const Text(
+                //     "get NTp Time",
+                //   ),
+                // ),
               ],
             ),
           ),

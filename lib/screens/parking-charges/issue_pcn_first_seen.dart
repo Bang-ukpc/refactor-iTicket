@@ -830,12 +830,18 @@ class _IssuePCNFirstSeenScreenState
                                     .copyWith(color: ColorTheme.white),
                               ),
                               onPressed: () {
-                                contraventionProvider
-                                    .setStatusPermitVerified(true);
-                                if ((_selectedItemTypePCN?.value ?? 0) == 0) {
-                                  createPhysicalPCN(isPrinter: true);
+                                final isValid =
+                                    _formKey.currentState!.validate();
+                                if (isValid) {
+                                  contraventionProvider
+                                      .setStatusPermitVerified(true);
+                                  if ((_selectedItemTypePCN?.value ?? 0) == 0) {
+                                    createPhysicalPCN(isPrinter: true);
+                                  } else {
+                                    createVirtualTicket();
+                                  }
                                 } else {
-                                  createVirtualTicket();
+                                  Navigator.of(context).pop();
                                 }
                               },
                             ),
@@ -1213,31 +1219,36 @@ class _IssuePCNFirstSeenScreenState
                                           ? true
                                           : false
                                   : false,
-                              onTap3: _selectedItemTypePCN != null
-                                  ? _selectedItemTypePCN!.value ==
-                                          TypePCN.Physical.index
-                                      ? printIssue.checkIssueHasPhotoRequirePhysical() ==
-                                              true
-                                          ? () {
-                                              _selectedItemTypePCN!.value == 0
-                                                  ? createPhysicalPCN(
-                                                      step3: true,
-                                                      isPrinter: false)
-                                                  : createVirtualTicket(
-                                                      step3: true);
-                                            }
-                                          : null
-                                      : printIssue.checkIssueHasPhotoRequireVirtual() ==
-                                              true
-                                          ? () {
-                                              _selectedItemTypePCN!.value == 0
-                                                  ? createPhysicalPCN(
-                                                      step3: true,
-                                                      isPrinter: false)
-                                                  : createVirtualTicket(
-                                                      step3: true);
-                                            }
-                                          : null
+                              onTap3: contraventionProvider.contravention !=
+                                      null
+                                  ? _selectedItemTypePCN != null
+                                      ? _selectedItemTypePCN!.value ==
+                                              TypePCN.Physical.index
+                                          ? printIssue.checkIssueHasPhotoRequirePhysical() ==
+                                                  true
+                                              ? () {
+                                                  _selectedItemTypePCN!.value ==
+                                                          0
+                                                      ? createPhysicalPCN(
+                                                          step3: true,
+                                                          isPrinter: false)
+                                                      : createVirtualTicket(
+                                                          step3: true);
+                                                }
+                                              : null
+                                          : printIssue.checkIssueHasPhotoRequireVirtual() ==
+                                                  true
+                                              ? () {
+                                                  _selectedItemTypePCN!.value ==
+                                                          0
+                                                      ? createPhysicalPCN(
+                                                          step3: true,
+                                                          isPrinter: false)
+                                                      : createVirtualTicket(
+                                                          step3: true);
+                                                }
+                                              : null
+                                      : null
                                   : null,
                             ),
                             const SizedBox(
@@ -1275,6 +1286,8 @@ class _IssuePCNFirstSeenScreenState
                                                   ? ColorTheme.textPrimary
                                                   : ColorTheme.grey600),
                                           onChanged: (value) {
+                                            contraventionProvider
+                                                .upDateContravention(null);
                                             setState(() {});
                                           },
                                           decoration: const InputDecoration(
@@ -1512,6 +1525,8 @@ class _IssuePCNFirstSeenScreenState
                                             );
                                           }),
                                       onChanged: (value) {
+                                        contraventionProvider
+                                            .upDateContravention(null);
                                         setState(() {
                                           _contraventionReasonController.text =
                                               value!.code.toString();

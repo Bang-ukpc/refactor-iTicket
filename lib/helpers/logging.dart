@@ -6,6 +6,7 @@ import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/services/cache/user_cached_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class Logging extends Interceptor {
   var userCachedService = UserCachedService();
@@ -16,6 +17,9 @@ class Logging extends Interceptor {
     print('REQUEST[${options.method}] => PATH: ${options.path}');
     final accessToken = await SharedPreferencesHelper.getStringValue(
         PreferencesKeys.accessToken);
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String version = packageInfo.version;
+    options.headers["x-application-version"] = version;
     options.headers['content-Type'] = 'application/json';
     options.headers["authorization"] = accessToken;
     return super.onRequest(options, handler);

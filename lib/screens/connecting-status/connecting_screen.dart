@@ -66,6 +66,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   late CachedServiceFactory cachedServiceFactory;
   Stream<BluetoothState> bluetoothStateStream =
       FlutterBluePlus.instance.state.asBroadcastStream();
+
   _buildConnect(String title, StateDevice state, {bool required = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
@@ -161,7 +162,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   }
 
   // Get current location
-  void getCurrentLocationOfWarden() async {
+  getCurrentLocationOfWarden() async {
     if (!mounted) return;
     await currentLocationPosition.getCurrentLocation().then((value) {
       setState(() {
@@ -328,9 +329,9 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       isLocationPermission = check;
       isPending = true;
     });
+    await getCurrentLocationOfWarden();
     await syncTime();
     await syncAllRequiredData();
-
     setState(() {
       isPending = false;
     });
@@ -340,7 +341,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   Widget build(BuildContext context) {
     final wardensProvider = Provider.of<WardensInfo>(context);
     //check is route from checkout screen
-    logger.info(isNTPTimeNull);
     final data = ModalRoute.of(context)!.settings.arguments as dynamic;
     final isCheckoutScreen = (data == null) ? false : true;
 
@@ -502,7 +502,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                     height: 32,
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -519,7 +519,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
-                                    "1. Network (Mobile or WiFi)",
+                                    "Network (Mobile or WiFi)",
                                     checkState(
                                       _connectionStatus ==
                                               ConnectivityResult.mobile ||
@@ -527,53 +527,34 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                               ConnectivityResult.wifi,
                                     ),
                                   )
-                                : _buildConnect('1. Network (Mobile or WiFi)',
+                                : _buildConnect('Network (Mobile or WiFi)',
                                     StateDevice.pending)
-                            : _buildConnect('1. Network (Mobile or WiFi)',
+                            : _buildConnect('Network (Mobile or WiFi)',
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "2. GPS",
+                                    "GPS",
                                     checkState(gpsConnectionStatus ==
                                             ServiceStatus.enabled &&
                                         isLocationPermission))
                                 : _buildConnect(
-                                    required: true,
-                                    '2. GPS',
-                                    StateDevice.pending)
+                                    required: true, 'GPS', StateDevice.pending)
                             : _buildConnect(
-                                required: true, '2. GPS', StateDevice.pending),
+                                required: true, 'GPS', StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
-                                ? _buildConnect("3. Bluetooth",
+                                ? _buildConnect("Bluetooth",
                                     checkState(checkBluetooth == true))
                                 : _buildConnect(
-                                    '3. Bluetooth', StateDevice.pending)
-                            : _buildConnect(
-                                '3. Bluetooth', StateDevice.pending),
-
-                        // isPending == false
-                        //     ? pendingGetCurrentLocation == false
-                        //         ? _buildConnect(
-                        //             required: true,
-                        //             "4. Location permission",
-                        //             checkState(isLocationPermission),
-                        //           )
-                        //         : _buildConnect(
-                        //             required: true,
-                        //             '4. Location permission',
-                        //             StateDevice.pending)
-                        //     : _buildConnect(
-                        //         required: true,
-                        //         '4. Location permission',
-                        //         StateDevice.pending),
+                                    'Bluetooth', StateDevice.pending)
+                            : _buildConnect('Bluetooth', StateDevice.pending),
                         const SizedBox(
                           height: 8,
                         ),
                         Text(
-                          "Data download",
+                          "Sync & download data",
                           style: CustomTextStyle.h5.copyWith(
                               fontWeight: FontWeight.w600,
                               color: ColorTheme.textPrimary),
@@ -585,48 +566,48 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "1. Rota shifts and locations",
+                                    "Rota shifts and locations",
                                     checkState(
                                       isSyncedRota,
                                     ),
                                   )
                                 : _buildConnect(
                                     required: true,
-                                    '1. Rota shifts and locations',
+                                    'Rota shifts and locations',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '1. Rota shifts and locations',
+                                'Rota shifts and locations',
                                 StateDevice.pending),
                         isPending == false
                             ? pendingGetCurrentLocation == false
                                 ? _buildConnect(
                                     required: true,
-                                    "2. Cancellation reasons",
+                                    "Cancellation reasons",
                                     checkState(isCancellationNotNull),
                                   )
                                 : _buildConnect(
                                     required: true,
-                                    '2. Cancellation reasons',
+                                    'Cancellation reasons',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '2. Cancellation reasons',
+                                'Cancellation reasons',
                                 StateDevice.pending),
                         isPending == false
                             ? loadingNTPTime == false
                                 ? _buildConnect(
                                     required: true,
-                                    "3. Server time",
+                                    "Server time",
                                     checkState(!isNTPTimeNull),
                                   )
                                 : _buildConnect(
                                     required: true,
-                                    '3. Server time',
+                                    'Server time',
                                     StateDevice.pending)
                             : _buildConnect(
                                 required: true,
-                                '3. Server time',
+                                'Server time',
                                 StateDevice.pending),
                       ],
                     ),
@@ -635,7 +616,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                     height: 16,
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,7 +640,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                   ),
                   if (isPending == false && pendingGetCurrentLocation == false)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       width: double.infinity,
                       child: Row(
                         children: [
@@ -707,7 +688,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                 elevation: 0,
                                 shadowColor: Colors.transparent,
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
+                                    const EdgeInsets.symmetric(vertical: 12),
                               ),
                               onPressed: () async {
                                 if (isLocationPermission == true) {
