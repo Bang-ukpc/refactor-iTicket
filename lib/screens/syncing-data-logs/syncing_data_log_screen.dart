@@ -23,7 +23,8 @@ class SyncingDataLogScreen extends StatefulWidget {
 
 class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   int totalDataNeedToSync = 0;
-  int progressingDataNeedToSync = 0;
+  int progressingVehicleInfo = 0;
+  int progressingPcns = 0;
   bool isSyncing = false;
   bool isSyncingWardenEvent = false;
   List<SyncLog?> syncLogs = [];
@@ -54,7 +55,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     await createdVehicleDataLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
       setState(() {
-        progressingDataNeedToSync = current;
+        progressingVehicleInfo = current;
         syncLogs.add(log);
       });
     });
@@ -62,10 +63,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     await issuedPcnLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
       setState(() {
-        progressingDataNeedToSync =
-            current + progressingDataNeedToSync >= totalDataNeedToSync
-                ? totalDataNeedToSync
-                : current + progressingDataNeedToSync;
+        progressingPcns = current;
         syncLogs.add(log);
       });
     });
@@ -129,7 +127,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                 ),
               ),
               Text(
-                '$progressingDataNeedToSync/$totalDataNeedToSync',
+                '${progressingVehicleInfo + progressingPcns}/$totalDataNeedToSync',
                 style: CustomTextStyle.h4.copyWith(
                   color: ColorTheme.primary,
                   fontWeight: FontWeight.w600,
@@ -233,7 +231,8 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                 ),
               if (!isSyncing &&
                   totalDataNeedToSync > 0 &&
-                  progressingDataNeedToSync != totalDataNeedToSync)
+                  (progressingVehicleInfo + progressingPcns) !=
+                      totalDataNeedToSync)
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: SvgPicture.asset(
@@ -258,7 +257,8 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                 ),
               if (!isSyncing &&
                   totalDataNeedToSync > 0 &&
-                  progressingDataNeedToSync != totalDataNeedToSync)
+                  (progressingVehicleInfo + progressingPcns) !=
+                      totalDataNeedToSync)
                 const SizedBox(
                   width: 16,
                 ),
