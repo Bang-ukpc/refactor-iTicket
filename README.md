@@ -203,7 +203,7 @@
 - WRDN-634 [Offline] Can't get First seen/Consideration image when issue PCN
 - WRDN-720 There is no warden event data when users do manual data sync
 
-[1.2.0-1] - 2023-03-09
+[1.2.0-1] - 2023-03-15
 
 - WRDN-422 As a PO, when I create a first seen or consideration period I want to see if a permit exists for that VRN.
 - WRDN-692 As a verifier, I should be notified if a VRN has a permit on the verification page
