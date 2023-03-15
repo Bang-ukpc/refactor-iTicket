@@ -103,7 +103,7 @@ void onStart(ServiceInstance service) async {
     await currentLocationPosition.getCurrentLocation();
   });
 
-  Timer.periodic(const Duration(seconds: 15), (timer) async {
+  Timer.periodic(const Duration(minutes: 5), (timer) async {
     DateTime ntp = await ntpHelper.getTimeNTP();
     print('[SERVER TIME] $ntp');
     if (service is AndroidServiceInstance) {
