@@ -203,7 +203,7 @@
 - WRDN-634 [Offline] Can't get First seen/Consideration image when issue PCN
 - WRDN-720 There is no warden event data when users do manual data sync
 
-[1.2.0-1] - 2023-03-09
+[1.2.0-1] - 2023-03-15
 
 - WRDN-422 As a PO, when I create a first seen or consideration period I want to see if a permit exists for that VRN.
 - WRDN-692 As a verifier, I should be notified if a VRN has a permit on the verification page
@@ -212,3 +212,9 @@
 - WRDN-460 Improvement Future - iTicket location list should match the cluster list.
 - WRDN-722 [Issue PCN] PCN cannot be generated if the user checks the permit without entering the required fields
 - WRDN-723 [First seen/Grace period] Only check the permit once, if already checked, it will be added directly.
+
+[1.2.1-1] - 2023-03-15
+
+- WRDN-724 Still showing enough synced data even though one is faulty
+- WRDN-725 Displayed in the wrong order
+- WRDN-726 The current location cannot be updated if the user denies location access and re-enables it in the app settings
