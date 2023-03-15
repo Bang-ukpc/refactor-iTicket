@@ -4,6 +4,8 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/services/local/local_service.dart';
 
+import '../../models/log.dart';
+
 class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
   CreatedWardenEventLocalService() : super("wardenEvents");
   Logger logger = Logger<CreatedWardenEventLocalService>();
@@ -12,14 +14,15 @@ class CreatedWardenEventLocalService extends BaseLocalService<WardenEvent> {
   create(WardenEvent t) async {
     DateTime now = await timeNTP.get();
     t.Created ??= now;
-    logger.info('[Time server] creating event with created at ${t.Created}');
     logger.info(
         'creating event with type ${TypeWardenEvent.values[t.type].name}');
     await super.create(t);
   }
 
   @override
-  syncAll() async {
+  syncAll(Function(bool isStop)? onStopSync,
+      [Function(int current, int total, [SyncLog log])?
+          syncStatusCallBack]) async {
     logger.info("Start syncing all the events ...");
     if (isSyncing) {
       logger.info("Sync process is running => IGNORE");

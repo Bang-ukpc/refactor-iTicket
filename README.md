@@ -178,6 +178,31 @@
 - WRDN-652 Can't realtime Contravention reasons in Home and issue PCN screen
 - WRDN-493 [Flash] Should turn the flash off when not using camera
 
+[1.1.0-1] - 2023-03-06
+
+- WRDN-629 As a PO, I want to sync the local data when using app
+
+[1.1.1-1] - 2023-03-08
+
+- WRDN-680 As a PO, I want to see the logs when syncing data to server
+
+[1.1.2-1] - 2023-03-08
+
+- WRDN-689 [Start shift screen] Remove title "Upload data"
+- WRDN-680 As a PO, I want to see the logs when syncing data to server (WRDN-686 [FE] Button stop sync when syncing data)
+
+[1.1.3-1] - 2023-03-10
+
+- WRDN-691 [Physical] Wrong time first seen of PCN
+- WRDN-696 Change text
+- WRDN-694 Wrong data in sync data screen
+- WRDN-682 Can't get avt of PO
+
+[1.1.4-1] - 2023-03-13
+
+- WRDN-634 [Offline] Can't get First seen/Consideration image when issue PCN
+- WRDN-720 There is no warden event data when users do manual data sync
+
 [1.2.0-1] - 2023-03-09
 
 - WRDN-422 As a PO, when I create a first seen or consideration period I want to see if a permit exists for that VRN.
