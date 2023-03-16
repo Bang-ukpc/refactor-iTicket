@@ -32,6 +32,7 @@ import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
 
 import '../../helpers/my_navigator_observer.dart';
+import '../../helpers/ntp_helper.dart';
 import '../login_screens.dart';
 
 enum StateDevice { connected, pending, disconnect }
@@ -288,6 +289,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       }).catchError((err) {
         return;
       });
+      await ntpHelper.getOffset();
       cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
       await syncAllRequiredData();
       await syncTime();
@@ -329,6 +331,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       isLocationPermission = check;
       isPending = true;
     });
+    await ntpHelper.getOffset();
     await getCurrentLocationOfWarden();
     await syncTime();
     await syncAllRequiredData();
