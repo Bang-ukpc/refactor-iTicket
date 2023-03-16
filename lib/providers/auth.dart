@@ -10,10 +10,10 @@ import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
-import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';
 
 class Auth with ChangeNotifier {
   UserCachedService userCachedService = UserCachedService();
@@ -50,7 +50,8 @@ class Auth with ChangeNotifier {
         // ignore: use_build_context_synchronously
         Navigator.of(context).pop();
         // ignore: use_build_context_synchronously
-        Navigator.of(context).pushReplacementNamed(ConnectingScreen.routeName);
+        Navigator.of(context)
+            .pushReplacementNamed(CheckSyncDataLayout.routeName);
       });
     } on DioError catch (error) {
       if (error.type == DioErrorType.other) {

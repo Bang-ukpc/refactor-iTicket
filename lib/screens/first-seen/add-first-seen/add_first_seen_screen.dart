@@ -190,6 +190,9 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                                     .copyWith(color: ColorTheme.textPrimary),
                               ),
                               onPressed: () {
+                                setState(() {
+                                  isCheckedPermit = true;
+                                });
                                 Navigator.of(context).pop();
                               },
                             ),
@@ -432,9 +435,6 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                       } else {
                         await addFirstSeenModeComplete();
                       }
-                      setState(() {
-                        isCheckedPermit = true;
-                      });
                     } else {
                       await addFirstSeenModeComplete();
                     }
@@ -483,9 +483,6 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                       } else {
                         await addFirstSeenModeCompleteAndAdd();
                       }
-                      setState(() {
-                        isCheckedPermit = true;
-                      });
                     } else {
                       await addFirstSeenModeCompleteAndAdd();
                     }

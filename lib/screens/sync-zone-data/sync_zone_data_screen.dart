@@ -184,7 +184,7 @@ class _SyncZoneDataState extends BaseStatefulState<SyncZoneData> {
                     height: 32,
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
                         isPulledData
@@ -216,7 +216,7 @@ class _SyncZoneDataState extends BaseStatefulState<SyncZoneData> {
                   ),
                   if (isPulledData)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       width: double.infinity,
                       child: Row(
                         children: [
@@ -230,7 +230,7 @@ class _SyncZoneDataState extends BaseStatefulState<SyncZoneData> {
                                 elevation: 0,
                                 shadowColor: Colors.transparent,
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
+                                    const EdgeInsets.symmetric(vertical: 12),
                               ),
                               onPressed: () {
                                 Navigator.of(context).pushNamedAndRemoveUntil(

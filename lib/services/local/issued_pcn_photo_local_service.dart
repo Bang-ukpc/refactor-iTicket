@@ -6,6 +6,7 @@ import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/services/local/local_service.dart';
 
 import '../../controllers/contravention_controller.dart';
+import '../../models/log.dart';
 
 class IssuedPcnPhotoLocalService
     extends BaseLocalService<ContraventionCreatePhoto> {
@@ -29,7 +30,9 @@ class IssuedPcnPhotoLocalService
   }
 
   @override
-  syncAll() async {
+  syncAll(Function(bool isStop)? onStopSync,
+      [Function(int current, int total, [SyncLog log])?
+          syncStatusCallBack]) async {
     List<ContraventionCreatePhoto> allPcnPhotos = await getAll();
     for (var pcnPhoto in allPcnPhotos) {
       await sync(pcnPhoto);

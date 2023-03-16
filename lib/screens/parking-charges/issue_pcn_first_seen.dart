@@ -830,12 +830,18 @@ class _IssuePCNFirstSeenScreenState
                                     .copyWith(color: ColorTheme.white),
                               ),
                               onPressed: () {
-                                contraventionProvider
-                                    .setStatusPermitVerified(true);
-                                if ((_selectedItemTypePCN?.value ?? 0) == 0) {
-                                  createPhysicalPCN(isPrinter: true);
+                                final isValid =
+                                    _formKey.currentState!.validate();
+                                if (isValid) {
+                                  contraventionProvider
+                                      .setStatusPermitVerified(true);
+                                  if ((_selectedItemTypePCN?.value ?? 0) == 0) {
+                                    createPhysicalPCN(isPrinter: true);
+                                  } else {
+                                    createVirtualTicket();
+                                  }
                                 } else {
-                                  createVirtualTicket();
+                                  Navigator.of(context).pop();
                                 }
                               },
                             ),

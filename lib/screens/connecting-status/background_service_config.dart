@@ -19,6 +19,7 @@ import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/models/zone.dart';
 import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/local/sync_factory.dart';
@@ -78,6 +79,9 @@ void onStart(ServiceInstance service) async {
   );
 
   final dio = Dio();
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  String version = packageInfo.version;
+  dio.options.headers["x-application-version"] = version;
   dio.options.headers['content-Type'] = 'application/json';
   dio.options.headers["authorization"] = accessToken;
 

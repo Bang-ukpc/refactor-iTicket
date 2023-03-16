@@ -71,6 +71,8 @@ dependencies:
   uuid: ^3.0.7
   flutter_kronos: ^0.1.0+1
   ntp: ^2.0.0
+  package_info_plus: ^3.0.3
+  flutter_cache_manager: ^3.3.0
 
 dev_dependencies:
   flutter_test:
@@ -161,6 +163,9 @@ flutter:
     - assets/svg/IconComplete3.svg
     - assets/svg/IconSearch.svg
     - assets/svg/IconDotYellow.svg
+    - assets/svg/IconSkip.svg
+    - assets/svg/IconRefresh2.svg
+    - assets/svg/IconStop.svg
 
     - assets/
     - .env
