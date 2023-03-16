@@ -1264,7 +1264,7 @@ class _IssuePCNFirstSeenScreenState
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      Flexible(
+                                      Expanded(
                                         flex: 8,
                                         child: TextFormField(
                                           enabled: contraventionProvider
@@ -1318,7 +1318,14 @@ class _IssuePCNFirstSeenScreenState
                                               ConnectivityResult.mobile ||
                                           _connectionStatus ==
                                               ConnectivityResult.wifi)
-                                        Flexible(
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                      if (_connectionStatus ==
+                                              ConnectivityResult.mobile ||
+                                          _connectionStatus ==
+                                              ConnectivityResult.wifi)
+                                        Expanded(
                                           flex: 2,
                                           child: ButtonScan(
                                             color:
