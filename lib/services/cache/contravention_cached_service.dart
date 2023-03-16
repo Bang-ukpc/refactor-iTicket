@@ -75,7 +75,7 @@ class ContraventionCachedService extends CacheService<Contravention> {
       required String contraventionType}) async {
     var items = await getAllWithCreatedOnTheOffline();
     var findVRNExits = items.firstWhereOrNull((e) =>
-        e.plate == vrn &&
+        e.plate?.toLowerCase() == vrn.toLowerCase() &&
         e.zoneId == zoneId &&
         e.reason?.code == contraventionType);
     if (findVRNExits != null) {
