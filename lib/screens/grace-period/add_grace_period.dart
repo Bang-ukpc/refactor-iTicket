@@ -335,11 +335,12 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
     }
 
     void showErrorMessage(String error) {
-      CherryToast.error(
+      CherryToast.success2(
         displayCloseButton: false,
         title: Text(
           error,
-          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+          style: CustomTextStyle.h4.copyWith(
+              color: ColorTheme.textPrimary, fontWeight: FontWeight.w500),
         ),
         toastPosition: Position.bottom,
         borderRadius: 5,
@@ -588,7 +589,7 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                                                   showDialogPermitExists(value);
                                                 } else {
                                                   showErrorMessage(
-                                                      'There is no permit for this VRN');
+                                                      'There is currently no active permit for this VRN');
                                                 }
                                               });
                                             } on DioError catch (error) {
