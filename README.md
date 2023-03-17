@@ -212,3 +212,14 @@
 - WRDN-460 Improvement Future - iTicket location list should match the cluster list.
 - WRDN-722 [Issue PCN] PCN cannot be generated if the user checks the permit without entering the required fields
 - WRDN-723 [First seen/Grace period] Only check the permit once, if already checked, it will be added directly.
+- WRDN-739 [Change] - Permit message for first seen and consideration period
+
+[1.2.1-1] - 2023-03-15
+
+- WRDN-724 Still showing enough synced data even though one is faulty
+- WRDN-725 Displayed in the wrong order
+- WRDN-726 The current location cannot be updated if the user denies location access and re-enables it in the app settings
+- WRDN-733 [Add First seen/Grace period] VRN check already exists failed when a user enters lowercase and in the list is uppercase
+- WRDN-734 [Issue PCN] Adjust the space between the input VRN and the search button
+- WRDN-657 Cannot get server time in background service when doing GPS track
+- WRDN-736 [Location] Wrong validate check permission
