@@ -8,7 +8,6 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/id_helper.dart';
@@ -109,7 +108,6 @@ void onStart(ServiceInstance service) async {
 
   Timer.periodic(const Duration(minutes: 5), (timer) async {
     DateTime ntp = await ntpHelper.getTimeNTP();
-    print('[SERVER TIME] $ntp');
     if (service is AndroidServiceInstance) {
       final prefs = await SharedPreferences.getInstance();
       prefs.reload();
@@ -129,10 +127,6 @@ void onStart(ServiceInstance service) async {
         );
       }
     }
-    Position position = await Geolocator.getCurrentPosition();
-
-    print('latitude: ${position.latitude}');
-    print('longitude: ${position.longitude}');
 
     var userCachedService = UserCachedService();
     final Wardens? warden = await userCachedService.get();
@@ -159,11 +153,11 @@ void onStart(ServiceInstance service) async {
     }
 
     final gpsEvent = WardenEvent(
+      Id: idHelper.generateId(),
       type: TypeWardenEvent.TrackGPS.index,
       detail: "Warden's current location",
-      latitude: position.latitude,
-      Id: idHelper.generateId(),
-      longitude: position.longitude,
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
       wardenId: warden?.Id ?? 0,
       rotaTimeFrom: rotaShiftSelected?.timeFrom,
       rotaTimeTo: rotaShiftSelected?.timeTo,
