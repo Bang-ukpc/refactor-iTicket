@@ -34,7 +34,6 @@ import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
 
 import '../../helpers/my_navigator_observer.dart';
-import '../../helpers/ntp_helper.dart';
 import '../login_screens.dart';
 
 enum StateDevice { connected, pending, disconnect }
@@ -173,7 +172,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       });
       checkPermissionGPS();
     }).catchError((err) {
-      if (!mounted) return;
       setState(() {
         pendingGetCurrentLocation = false;
       });
@@ -293,7 +291,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       }).catchError((err) {
         return;
       });
-      await ntpHelper.getOffset();
       cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
       await syncAllRequiredData();
       await syncTime();
@@ -335,7 +332,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       isLocationPermission = check;
       isPending = true;
     });
-    await ntpHelper.getOffset();
     await getCurrentLocationOfWarden();
     await syncTime();
     await syncAllRequiredData();
@@ -700,11 +696,8 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                               ),
                               onPressed: () async {
                                 if (isLocationPermission == true) {
-                                  getCurrentLocationOfWarden();
                                   if (gpsConnectionStatus ==
                                       ServiceStatus.enabled) {
-                                    getCurrentLocationOfWarden();
-
                                     if (isDataValid()) {
                                       onStartShift();
                                     } else {
@@ -738,27 +731,17 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                   permission.Permission.location
                                       .request()
                                       .then((value) async {
-                                    if (permission.PermissionStatus.granted ==
-                                        value) {
-                                      getCurrentLocationOfWarden();
-
-                                      setState(() {
-                                        isLocationPermission = true;
-                                      });
-                                    } else {
-                                      toast.CherryToast.error(
-                                        toastDuration:
-                                            const Duration(seconds: 5),
-                                        title: Text(
-                                          'Please allow the app to access your location to continue',
-                                          style: CustomTextStyle.h4.copyWith(
-                                            color: ColorTheme.danger,
-                                          ),
+                                    toast.CherryToast.error(
+                                      toastDuration: const Duration(seconds: 5),
+                                      title: Text(
+                                        'Please allow the app to access your location to continue',
+                                        style: CustomTextStyle.h4.copyWith(
+                                          color: ColorTheme.danger,
                                         ),
-                                        toastPosition: toast.Position.bottom,
-                                        borderRadius: 5,
-                                      ).show(context);
-                                    }
+                                      ),
+                                      toastPosition: toast.Position.bottom,
+                                      borderRadius: 5,
+                                    ).show(context);
                                   });
                                 }
                               },

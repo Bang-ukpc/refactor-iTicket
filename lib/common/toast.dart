@@ -97,6 +97,38 @@ class CherryToast extends StatefulWidget {
     _initializeAttributes(successColor);
   }
 
+  CherryToast.success2(
+      {Key? key,
+      required this.title,
+      this.action,
+      this.actionHandler,
+      this.description,
+      this.displayTitle = true,
+      this.toastPosition = Position.top,
+      this.animationDuration = const Duration(
+        milliseconds: 700,
+      ),
+      this.animationCurve = Curves.ease,
+      this.animationType = AnimationType.fromLeft,
+      this.autoDismiss = true,
+      this.toastDuration = const Duration(
+        milliseconds: 1990,
+      ),
+      this.layout = ToastLayout.ltr,
+      this.displayCloseButton = true,
+      this.borderRadius = 20,
+      this.displayIcon = true,
+      this.enableIconAnimation = true,
+      this.color = successColor,
+      this.background = lightSuccess})
+      : super(key: key) {
+    icon = SvgPicture.asset(
+      "assets/svg/IconErrorToast.svg",
+      color: ColorTheme.success,
+    );
+    _initializeAttributes(successColor);
+  }
+
   CherryToast.error(
       {Key? key,
       required this.title,
