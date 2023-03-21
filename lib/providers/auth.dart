@@ -14,7 +14,6 @@ import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';
-import 'package:wakelock/wakelock.dart';
 
 class Auth with ChangeNotifier {
   UserCachedService userCachedService = UserCachedService();
@@ -93,7 +92,6 @@ class Auth with ChangeNotifier {
     final service = FlutterBackgroundService();
     var isRunning = await service.isRunning();
     if (isRunning) {
-      Wakelock.disable();
       service.invoke("stopService");
     }
 

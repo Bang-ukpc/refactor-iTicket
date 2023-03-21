@@ -25,7 +25,6 @@ import 'package:iWarden/widgets/drawer/spot_check.dart';
 import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:wakelock/wakelock.dart';
 
 import '../../services/local/created_warden_event_local_service .dart';
 import '../../theme/color.dart';
@@ -170,7 +169,6 @@ class _MyDrawerState extends State<MyDrawer> {
         final service = FlutterBackgroundService();
         var isRunning = await service.isRunning();
         if (isRunning) {
-          Wakelock.disable();
           service.invoke("stopService");
         }
         await createdWardenEventLocalService

@@ -8,7 +8,6 @@ import 'package:iWarden/models/log.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:wakelock/wakelock.dart';
 
 import '../../services/local/created_vehicle_data_local_service.dart';
 import '../../services/local/created_warden_event_local_service .dart';
@@ -90,7 +89,6 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     final service = FlutterBackgroundService();
     var isRunning = await service.isRunning();
     if (isRunning) {
-      Wakelock.disable();
       service.invoke("stopService");
     }
   }
