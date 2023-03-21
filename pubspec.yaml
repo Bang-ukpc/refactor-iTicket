@@ -73,6 +73,8 @@ dependencies:
   ntp: ^2.0.0
   package_info_plus: ^3.0.3
   flutter_cache_manager: ^3.3.0
+  optimize_battery: ^0.0.4
+  wakelock: ^0.6.2
 
 dev_dependencies:
   flutter_test:

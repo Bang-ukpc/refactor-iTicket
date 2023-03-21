@@ -23,8 +23,6 @@ class CurrentLocation {
     }
 
     currentLocation = await Geolocator.getCurrentPosition();
-    print(
-        '[Get current position] latitude: ${currentLocation?.latitude}, longitude: ${currentLocation?.longitude}');
     return currentLocation;
   }
 }
