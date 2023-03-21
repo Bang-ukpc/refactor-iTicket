@@ -30,7 +30,6 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   bool isSyncingWardenEvent = false;
   List<SyncLog?> syncLogs = [];
   bool isStopSyncing = false;
-  final ScrollController _controller = ScrollController();
 
   Future<void> getQuantityOfSyncData() async {
     int totalVehicleInfo = await createdVehicleDataLocalService.total();
@@ -56,8 +55,6 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
 
     await createdVehicleDataLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
-      _controller.animateTo(_controller.position.maxScrollExtent,
-          curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
       setState(() {
         progressingVehicleInfo = current;
         syncLogs.add(log);
@@ -66,16 +63,11 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
 
     await issuedPcnLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
-      _controller.animateTo(_controller.position.maxScrollExtent,
-          curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
       setState(() {
         progressingPcns = current;
         syncLogs.add(log);
       });
     });
-    _controller.animateTo(_controller.position.maxScrollExtent,
-        curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
-
     setState(() {
       isSyncing = false;
     });
@@ -148,7 +140,6 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
         ),
         body: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          controller: _controller,
           child: SafeArea(
             child: Container(
               padding: const EdgeInsets.all(16),
