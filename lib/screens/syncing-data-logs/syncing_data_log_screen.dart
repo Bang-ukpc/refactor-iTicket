@@ -25,10 +25,11 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   int totalDataNeedToSync = 0;
   int progressingVehicleInfo = 0;
   int progressingPcns = 0;
-  bool isSyncing = false;
   bool isSyncingWardenEvent = false;
   List<SyncLog?> syncLogs = [];
   bool isStopSyncing = false;
+  bool isStoppingSyncing = false;
+  bool isSyncing = false;
 
   Future<void> getQuantityOfSyncData() async {
     int totalVehicleInfo = await createdVehicleDataLocalService.total();
@@ -56,6 +57,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
         (current, total, [log]) {
       setState(() {
         progressingVehicleInfo = current;
+        isStoppingSyncing = false;
         syncLogs.add(log);
       });
     });
@@ -64,6 +66,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
         (current, total, [log]) {
       setState(() {
         progressingPcns = current;
+        isStoppingSyncing = false;
         syncLogs.add(log);
       });
     });
@@ -75,7 +78,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   void stopSyncing() {
     isStopSyncing = true;
     setState(() {
-      isSyncing = false;
+      isStoppingSyncing = true;
     });
   }
 
@@ -219,11 +222,15 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       backgroundColor: ColorTheme.grey300,
                     ),
-                    onPressed: () {
-                      stopSyncing();
-                    },
+                    onPressed: !isStoppingSyncing
+                        ? () {
+                            stopSyncing();
+                          }
+                        : null,
                     label: Text(
-                      'Stop syncing',
+                      isStoppingSyncing
+                          ? 'Stopping syncing...'
+                          : 'Stop syncing',
                       style: CustomTextStyle.h5.copyWith(
                           color: ColorTheme.textPrimary, fontSize: 16),
                     ),
