@@ -228,3 +228,5 @@
 [1.3.0-1] - 2023-03-20
 
 - WRDN-732 Cannot send GPS when device is in SLEEP MODE
+- WRDN-730 [GPS prod] Duplicate GPS
+- WRDN-727 [Improve UX] Auto-scroll down when sync data exceeds screen length
