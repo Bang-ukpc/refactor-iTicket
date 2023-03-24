@@ -7,7 +7,6 @@ import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:wakelock/wakelock.dart';
 
 class Logging extends Interceptor {
   var userCachedService = UserCachedService();
@@ -44,7 +43,6 @@ class Logging extends Interceptor {
       final service = FlutterBackgroundService();
       var isRunning = await service.isRunning();
       if (isRunning) {
-        Wakelock.disable();
         service.invoke("stopService");
       }
 

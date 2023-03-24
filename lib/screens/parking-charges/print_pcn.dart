@@ -7,12 +7,10 @@ import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/id_helper.dart';
 import 'package:iWarden/models/ContraventionService.dart';
 import 'package:iWarden/models/vehicle_information.dart';
-import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/providers/time_ntp.dart';
-import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_info.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
@@ -24,7 +22,6 @@ import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:provider/provider.dart';
 
 import '../../helpers/my_navigator_observer.dart';
-import '../../services/local/created_warden_event_local_service .dart';
 import '../../widgets/parking-charge/detail_parking_common2.dart';
 
 class PrintPCN extends StatefulWidget {
@@ -39,11 +36,8 @@ class _PrintPCNState extends BaseStatefulState<PrintPCN> {
   @override
   Widget build(BuildContext context) {
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
-    final locationProvider = Provider.of<Locations>(context);
-    final wardensProvider = Provider.of<WardensInfo>(context);
     var args = contraventionProvider.contravention;
     final printIssue = Provider.of<PrintIssueProviders>(context);
-    var zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
 
     print('[CONTRAVENTION REFERENCE] ${args?.reference}');
 

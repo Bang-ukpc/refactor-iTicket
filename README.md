@@ -222,6 +222,8 @@
 - WRDN-734 [Issue PCN] Adjust the space between the input VRN and the search button
 - WRDN-657 Cannot get server time in background service when doing GPS track
 - WRDN-736 [Location] Wrong validate check permission
+- WRDN-742 Duplicate images when manual sync PCNs
+- WRDN-745 [Printer issues] - Texts on printing still not aligned
 
 [1.3.0-1] - 2023-03-20
 

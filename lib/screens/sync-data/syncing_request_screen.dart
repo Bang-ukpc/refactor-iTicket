@@ -8,6 +8,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 import '../../services/local/issued_pcn_local_service.dart';
+import '../connecting-status/background_service_config.dart';
 
 class SyncingRequestScreen extends StatefulWidget {
   static const routeName = '/syncing-request';
@@ -21,6 +22,14 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
   int totalVehicleInfoNeedToSync = 0;
   int totalPcnNeedToSync = 0;
   bool isGetTotalNeedToSyncLoading = false;
+
+  void onStartBackgroundService() async {
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      await initializeService();
+    }
+  }
 
   Future<void> getQuantityOfSyncData() async {
     setState(() {
@@ -38,6 +47,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
   @override
   void initState() {
     super.initState();
+    onStartBackgroundService();
     getQuantityOfSyncData();
   }
 

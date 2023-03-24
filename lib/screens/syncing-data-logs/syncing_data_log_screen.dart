@@ -8,7 +8,6 @@ import 'package:iWarden/models/log.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:wakelock/wakelock.dart';
 
 import '../../services/local/created_vehicle_data_local_service.dart';
 import '../../services/local/created_warden_event_local_service .dart';
@@ -26,10 +25,12 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   int totalDataNeedToSync = 0;
   int progressingVehicleInfo = 0;
   int progressingPcns = 0;
-  bool isSyncing = false;
   bool isSyncingWardenEvent = false;
   List<SyncLog?> syncLogs = [];
   bool isStopSyncing = false;
+  bool isStoppingSyncing = false;
+  bool isSyncing = false;
+  final ScrollController _controller = ScrollController();
 
   Future<void> getQuantityOfSyncData() async {
     int totalVehicleInfo = await createdVehicleDataLocalService.total();
@@ -55,19 +56,28 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
 
     await createdVehicleDataLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
+      _controller.animateTo(_controller.position.maxScrollExtent,
+          curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
       setState(() {
         progressingVehicleInfo = current;
+        isStoppingSyncing = false;
         syncLogs.add(log);
       });
     });
 
     await issuedPcnLocalService.syncAll((isStop) => isStopSyncing,
         (current, total, [log]) {
+      _controller.animateTo(_controller.position.maxScrollExtent,
+          curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
       setState(() {
         progressingPcns = current;
+        isStoppingSyncing = false;
         syncLogs.add(log);
       });
     });
+    _controller.animateTo(_controller.position.maxScrollExtent,
+        curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
+
     setState(() {
       isSyncing = false;
     });
@@ -76,7 +86,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   void stopSyncing() {
     isStopSyncing = true;
     setState(() {
-      isSyncing = false;
+      isStoppingSyncing = true;
     });
   }
 
@@ -90,7 +100,6 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     final service = FlutterBackgroundService();
     var isRunning = await service.isRunning();
     if (isRunning) {
-      Wakelock.disable();
       service.invoke("stopService");
     }
   }
@@ -140,6 +149,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
         ),
         body: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
+          controller: _controller,
           child: SafeArea(
             child: Container(
               padding: const EdgeInsets.all(16),
@@ -221,11 +231,15 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       backgroundColor: ColorTheme.grey300,
                     ),
-                    onPressed: () {
-                      stopSyncing();
-                    },
+                    onPressed: !isStoppingSyncing
+                        ? () {
+                            stopSyncing();
+                          }
+                        : null,
                     label: Text(
-                      'Stop syncing',
+                      isStoppingSyncing
+                          ? 'Stopping syncing...'
+                          : 'Stop syncing',
                       style: CustomTextStyle.h5.copyWith(
                           color: ColorTheme.textPrimary, fontSize: 16),
                     ),

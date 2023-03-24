@@ -28,10 +28,8 @@ import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:optimize_battery/optimize_battery.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
-import 'package:wakelock/wakelock.dart';
 
 import '../../helpers/my_navigator_observer.dart';
 import '../../helpers/ntp_helper.dart';
@@ -190,7 +188,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     final service = FlutterBackgroundService();
     var isRunning = await service.isRunning();
     if (isRunning) {
-      Wakelock.enable();
       await initializeService();
     }
   }
@@ -284,7 +281,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     super.initState();
     onStartBackgroundService();
     getCurrentLocationOfWarden();
-    OptimizeBattery.stopOptimizingBatteryUsage();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
       await wardensInfo.getWardensInfoLogging().then((value) async {
@@ -367,7 +363,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
           final service = FlutterBackgroundService();
           var isRunning = await service.isRunning();
           if (!isRunning) {
-            Wakelock.enable();
             await initializeService();
           }
           if (!mounted) return;
