@@ -15,6 +15,7 @@ class MyTabBar extends StatefulWidget {
   final Widget tabBarViewTab2;
   final int quantityActive;
   final int quantityExpired;
+  final Function(String vrn, int currentTabNumber) searchByVrn;
   const MyTabBar(
       {Key? key,
       required this.titleAppBar,
@@ -23,6 +24,7 @@ class MyTabBar extends StatefulWidget {
       required this.tabBarViewTab2,
       required this.quantityActive,
       required this.labelFuncAdd,
+      required this.searchByVrn,
       required this.quantityExpired})
       : super(key: key);
 
@@ -44,6 +46,7 @@ class _MyTabBarState extends State<MyTabBar>
   void dispose() {
     _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
+    _vrnSearchController.dispose();
     super.dispose();
   }
 
@@ -54,6 +57,8 @@ class _MyTabBarState extends State<MyTabBar>
   }
 
   int currentIndexTab = 0;
+  final _vrnSearchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,6 +86,18 @@ class _MyTabBarState extends State<MyTabBar>
       drawer: const MyDrawer(),
       body: Column(
         children: <Widget>[
+          const SizedBox(
+            height: 10,
+          ),
+          TextFormField(
+            controller: _vrnSearchController,
+            onChanged: (value) {
+              widget.searchByVrn(value, _tabController.index);
+            },
+          ),
+          const SizedBox(
+            height: 10,
+          ),
           Container(
             margin: const EdgeInsets.only(bottom: 8),
             decoration: const BoxDecoration(
@@ -95,11 +112,6 @@ class _MyTabBarState extends State<MyTabBar>
               ],
             ),
             child: TabBar(
-              // onTap: (index) {
-              //   setState(() {
-              //     currentIndexTab = index;
-              //   });
-              // },
               controller: _tabController,
               tabs: <Widget>[
                 Tab(

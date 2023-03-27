@@ -153,6 +153,9 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
       onWillPop: () async => false,
       child: Scaffold(
         body: MyTabBar(
+          searchByVrn: (e, i) {
+            print(e);
+          },
           labelFuncAdd: "Add consideration period",
           titleAppBar: "Consideration period",
           funcAdd: () {

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,7 @@ import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -39,7 +42,7 @@ class _ActiveFirstSeenScreenState
   final calculateTime = CalculateTime();
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<VehicleInformation> cacheFirstSeenActive = [];
-
+  Logger logger = Logger<ActiveFirstSeenScreen>();
   Future<void> syncAndGetData(int zoneId) async {
     setState(() {
       isLoading = true;
@@ -104,6 +107,29 @@ class _ActiveFirstSeenScreenState
     super.dispose();
   }
 
+  void searchByVrn(String vrn, int currentTabNumber) async {
+    logger.info("value: $vrn, page: $currentTabNumber");
+    if (vrn.isEmpty) {
+      final locations = Provider.of<Locations>(context, listen: false);
+      await getData(locations.zone?.Id ?? 0);
+    }
+    List<VehicleInformation> vehicles =
+        currentTabNumber == 0 ? firstSeenActive : firstSeenExpired;
+    List<VehicleInformation> vehiclesFilter = vehicles
+        .where((element) =>
+            element.Plate.toUpperCase().contains(vrn.toUpperCase()))
+        .toList();
+    setState(() {
+      if (currentTabNumber == 0) {
+        firstSeenActive = vehiclesFilter;
+      } else {
+        firstSeenExpired = vehiclesFilter;
+      }
+    });
+    logger.info("Filter: ${json.encode(vehiclesFilter)}");
+    logger.info("Length filter: ${vehiclesFilter.length}");
+  }
+
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context);
@@ -154,6 +180,9 @@ class _ActiveFirstSeenScreenState
       onWillPop: () async => false,
       child: Scaffold(
         body: MyTabBar(
+          searchByVrn: (e, i) {
+            searchByVrn(e, i);
+          },
           labelFuncAdd: "Add first seen",
           titleAppBar: "First seen",
           funcAdd: () async {
