@@ -37,7 +37,8 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
   List<VehicleInformation> graceGracePeriodLocal = [];
   bool isLoading = false;
   final calculateTime = CalculateTime();
-
+  String messageNullActive = 'Your active grace period list is empty';
+  String messageNullExpired = 'Your expired grace period list is empty';
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
 
   Future<void> syncAndGetData(int zoneId) async {
@@ -102,6 +103,47 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
     super.dispose();
   }
 
+  void searchByVrn(String vrn) async {
+    final locations = Provider.of<Locations>(context, listen: false);
+    if (vrn.isEmpty) {
+      await getData(locations.zone?.Id ?? 0);
+    }
+    var localVehicleData = await zoneCachedServiceFactory
+        .gracePeriodCachedService
+        .getAllWithCreatedOnTheOffline();
+    List<VehicleInformation> vehiclesFilter = localVehicleData
+        .where((element) =>
+            element.Plate.toUpperCase().contains(vrn.toUpperCase()))
+        .toList();
+
+    await zoneCachedServiceFactory.gracePeriodCachedService
+        .filterListActive(vehiclesFilter)
+        .then((value) {
+      gracePeriodActive = value;
+    });
+    await zoneCachedServiceFactory.gracePeriodCachedService
+        .filterListExpired(vehiclesFilter)
+        .then((value) {
+      gracePeriodExpired = value;
+    });
+    setState(() {});
+    if (vrn.isNotEmpty) {
+      if (gracePeriodActive.isEmpty || gracePeriodExpired.isEmpty) {
+        setState(() {
+          messageNullActive =
+              "The vehicle number plate '$vrn' does not exist in the list";
+          messageNullExpired =
+              "The vehicle number plate '$vrn' does not exist in the list";
+        });
+      }
+    } else {
+      setState(() {
+        messageNullActive = 'Your active grace period list is empty';
+        messageNullExpired = 'Your expired grace period list is empty';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context);
@@ -153,6 +195,13 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
       onWillPop: () async => false,
       child: Scaffold(
         body: MyTabBar(
+          searchByVrn: (e) {
+            searchByVrn(e);
+          },
+          resetValueSearch: () async {
+            final locations = Provider.of<Locations>(context, listen: false);
+            await getData(locations.zone?.Id ?? 0);
+          },
           labelFuncAdd: "Add consideration period",
           titleAppBar: "Consideration period",
           funcAdd: () {
@@ -215,7 +264,7 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
                               ),
                             ),
                             Text(
-                              'Your active grace period list is empty',
+                              messageNullActive,
                               style: CustomTextStyle.body1.copyWith(
                                 color: ColorTheme.grey600,
                               ),
@@ -276,7 +325,7 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
                               ),
                             ),
                             Text(
-                              'Your expired grace period list is empty',
+                              messageNullExpired,
                               style: CustomTextStyle.body1.copyWith(
                                 color: ColorTheme.grey600,
                               ),

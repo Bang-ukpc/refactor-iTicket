@@ -200,6 +200,7 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
     gracePeriodActive.clear();
     gracePeriodExpired.clear();
     contraventionList.clear();
+
     super.dispose();
   }
 
@@ -424,6 +425,7 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
                           height: 100,
                         ),
                       ),
+
                 // ElevatedButton(
                 //   onPressed: () async {
                 //     DateTime now = await timeNTP.get();
