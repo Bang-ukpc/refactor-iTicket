@@ -1559,7 +1559,7 @@ class _IssuePCNFirstSeenScreenState
                                       dropdownBuilder: (context, selectedItem) {
                                         return Text(
                                             selectedItem == null
-                                                ? "Select zone"
+                                                ? "Select type of PCN"
                                                 : selectedItem.label,
                                             style: TextStyle(
                                                 fontSize: 16,
