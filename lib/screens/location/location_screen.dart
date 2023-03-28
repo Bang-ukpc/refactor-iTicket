@@ -390,7 +390,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                           ),
                                           itemBuilder:
                                               (context, item, isSelected) {
-                                            return DropDownItem(
+                                            return DropDownItemRota(
                                               title:
                                                   '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                               isSelected: item.Id ==
@@ -707,6 +707,55 @@ class DropDownItem extends StatelessWidget {
                 subTitle ?? '',
                 style: CustomTextStyle.body2,
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DropDownItemRota extends StatelessWidget {
+  final String title;
+  final bool? isSelected;
+  const DropDownItemRota({
+    required this.title,
+    this.isSelected = false,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 1,
+            color: ColorTheme.grey300,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 15,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: CustomTextStyle.body1.copyWith(
+                color: isSelected == false
+                    ? ColorTheme.textPrimary
+                    : ColorTheme.primary,
+                fontSize: 16,
+              ),
+            ),
+            Text(
+              "Not time yet",
+              style: CustomTextStyle.body2.copyWith(),
+            )
           ],
         ),
       ),
