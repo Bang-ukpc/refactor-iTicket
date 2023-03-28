@@ -96,6 +96,7 @@ class _ActiveFirstSeenScreenState
       getTimeNTP();
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
+
       await getData(locations.zone?.Id ?? 0);
     });
   }
@@ -107,27 +108,50 @@ class _ActiveFirstSeenScreenState
     super.dispose();
   }
 
-  void searchByVrn(String vrn, int currentTabNumber) async {
-    logger.info("value: $vrn, page: $currentTabNumber");
+  String messageNullActive = 'Your active first seen list is empty';
+  String messageNullExpired = 'Your expired first seen list is empty';
+
+  void searchByVrn(String vrn) async {
+    final locations = Provider.of<Locations>(context, listen: false);
     if (vrn.isEmpty) {
-      final locations = Provider.of<Locations>(context, listen: false);
       await getData(locations.zone?.Id ?? 0);
     }
-    List<VehicleInformation> vehicles =
-        currentTabNumber == 0 ? firstSeenActive : firstSeenExpired;
-    List<VehicleInformation> vehiclesFilter = vehicles
+    var localVehicleData = await zoneCachedServiceFactory.firstSeenCachedService
+        .getAllWithCreatedOnTheOffline();
+    List<VehicleInformation> vehiclesFilter = localVehicleData
         .where((element) =>
             element.Plate.toUpperCase().contains(vrn.toUpperCase()))
         .toList();
-    setState(() {
-      if (currentTabNumber == 0) {
-        firstSeenActive = vehiclesFilter;
-      } else {
-        firstSeenExpired = vehiclesFilter;
-      }
+
+    await zoneCachedServiceFactory.firstSeenCachedService
+        .filterListActive(vehiclesFilter)
+        .then((value) {
+      firstSeenActive = value;
     });
-    logger.info("Filter: ${json.encode(vehiclesFilter)}");
-    logger.info("Length filter: ${vehiclesFilter.length}");
+    await zoneCachedServiceFactory.firstSeenCachedService
+        .filterListExpired(vehiclesFilter)
+        .then((value) {
+      firstSeenExpired = value;
+    });
+    setState(() {});
+
+    logger.info(vrn);
+    logger.info(vrn.isNotEmpty);
+    if (vrn.isNotEmpty) {
+      if (firstSeenActive.isEmpty || firstSeenExpired.isEmpty) {
+        setState(() {
+          messageNullActive =
+              "The vehicle number plate '$vrn' does not exist in the list";
+          messageNullExpired =
+              "The vehicle number plate '$vrn' does not exist in the list";
+        });
+      }
+    } else {
+      setState(() {
+        messageNullActive = 'Your active first seen list is empty';
+        messageNullExpired = 'Your expired first seen list is empty';
+      });
+    }
   }
 
   @override
@@ -180,8 +204,15 @@ class _ActiveFirstSeenScreenState
       onWillPop: () async => false,
       child: Scaffold(
         body: MyTabBar(
-          searchByVrn: (e, i) {
-            searchByVrn(e, i);
+          searchByVrn: (vrn) {
+            searchByVrn(vrn);
+          },
+          resetValueSearch: () async {
+            final locations = Provider.of<Locations>(context, listen: false);
+            await getData(locations.zone?.Id ?? 0);
+            // setState(() {
+
+            // });
           },
           labelFuncAdd: "Add first seen",
           titleAppBar: "First seen",
@@ -245,7 +276,7 @@ class _ActiveFirstSeenScreenState
                               ),
                             ),
                             Text(
-                              'Your active first seen list is empty',
+                              messageNullActive,
                               style: CustomTextStyle.body1.copyWith(
                                 color: ColorTheme.grey600,
                               ),
@@ -306,7 +337,7 @@ class _ActiveFirstSeenScreenState
                               ),
                             ),
                             Text(
-                              'Your expired first seen list is empty',
+                              messageNullExpired,
                               style: CustomTextStyle.body1.copyWith(
                                 color: ColorTheme.grey600,
                               ),

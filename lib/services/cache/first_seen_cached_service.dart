@@ -19,8 +19,13 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
 
   Future<List<VehicleInformation>> getListActive() async {
     var items = await getAllWithCreatedOnTheOffline();
+    return filterListActive(items);
+  }
+
+  Future<List<VehicleInformation>> filterListActive(
+      List<VehicleInformation> list) async {
     DateTime now = await timeNTP.get();
-    return items.where((i) {
+    return list.where((i) {
       return timeHelper.daysBetween(
             i.Created!.add(
               Duration(
@@ -38,8 +43,13 @@ class FirstSeenCachedService extends CacheService<VehicleInformation> {
 
   Future<List<VehicleInformation>> getListExpired() async {
     var items = await getAllWithCreatedOnTheOffline();
+    return filterListExpired(items);
+  }
+
+  Future<List<VehicleInformation>> filterListExpired(
+      List<VehicleInformation> list) async {
     DateTime now = await timeNTP.get();
-    return items.where((i) {
+    return list.where((i) {
       return timeHelper.daysBetween(
             i.Created!.add(
               Duration(
