@@ -105,15 +105,17 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
 
   Logger logger = Logger<LocationScreen>();
   bool checkTimeoutFrom(DateTime date) {
-    DateTime now = getNowNTP.add(const Duration(minutes: 30));
+    DateTime now = DateTime.parse(
+        getLocalDate(getNowNTP.add(const Duration(minutes: 30))));
     logger.info("form $now");
-    return now.isBefore(date);
+    return now.isAfter(date);
   }
 
   bool checkTimeoutTo(DateTime date) {
-    DateTime now = getNowNTP.add(const Duration(minutes: -30));
+    DateTime now = DateTime.parse(
+        getLocalDate(getNowNTP.add(const Duration(minutes: -30))));
     logger.info("to $now");
-    return now.isAfter(date);
+    return now.isBefore(date);
   }
 
   bool checkTimeoutRota(DateTime from, DateTime to) {
@@ -121,15 +123,15 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
     bool checkTimeTo = checkTimeoutTo(DateTime.parse(getLocalDate(to)));
     logger.info("form $checkTimeForm");
     logger.info("to $checkTimeTo");
-    return checkTimeForm && checkTimeTo;
+    return (checkTimeForm && checkTimeTo);
   }
 
   String textTimeoutRota(DateTime from, DateTime to) {
     if (checkTimeoutRota(from, to) == false) {
       if (checkTimeoutFrom(from)) {
-        return "Not time yet";
-      } else if (checkTimeoutTo(to)) {
         return "Over time";
+      } else if (checkTimeoutTo(to)) {
+        return "Not time yet";
       } else {
         return "";
       }
