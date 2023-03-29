@@ -199,7 +199,6 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
             searchByVrn(e);
           },
           resetValueSearch: () async {
-            final locations = Provider.of<Locations>(context, listen: false);
             await getData(locations.zone?.Id ?? 0);
           },
           labelFuncAdd: "Add consideration period",

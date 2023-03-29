@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -208,11 +206,7 @@ class _ActiveFirstSeenScreenState
             searchByVrn(vrn);
           },
           resetValueSearch: () async {
-            final locations = Provider.of<Locations>(context, listen: false);
             await getData(locations.zone?.Id ?? 0);
-            // setState(() {
-
-            // });
           },
           labelFuncAdd: "Add first seen",
           titleAppBar: "First seen",
