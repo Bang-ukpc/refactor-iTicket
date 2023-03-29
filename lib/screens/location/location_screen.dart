@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/operational_period.dart';
@@ -100,6 +101,41 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
       listFilter = filterRotaShiftByNow;
     });
     return list;
+  }
+
+  Logger logger = Logger<LocationScreen>();
+  bool checkTimeoutFrom(DateTime date) {
+    DateTime now = getNowNTP.add(const Duration(minutes: 30));
+    logger.info("form $now");
+    return now.isBefore(date);
+  }
+
+  bool checkTimeoutTo(DateTime date) {
+    DateTime now = getNowNTP.add(const Duration(minutes: -30));
+    logger.info("to $now");
+    return now.isAfter(date);
+  }
+
+  bool checkTimeoutRota(DateTime from, DateTime to) {
+    bool checkTimeForm = checkTimeoutFrom(DateTime.parse(getLocalDate(from)));
+    bool checkTimeTo = checkTimeoutTo(DateTime.parse(getLocalDate(to)));
+    logger.info("form $checkTimeForm");
+    logger.info("to $checkTimeTo");
+    return checkTimeForm && checkTimeTo;
+  }
+
+  String textTimeoutRota(DateTime from, DateTime to) {
+    if (checkTimeoutRota(from, to) == false) {
+      if (checkTimeoutFrom(from)) {
+        return "Not time yet";
+      } else if (checkTimeoutTo(to)) {
+        return "Over time";
+      } else {
+        return "";
+      }
+    } else {
+      return "";
+    }
   }
 
   List<RotaWithLocation> locationListFilterByRota(
@@ -237,6 +273,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
     }
 
     Future<void> refresh() async {
+      await setTimeNTP();
       await getRotas();
       rotaList(locationWithRotaList);
       await currentLocationPosition.getCurrentLocation();
@@ -283,23 +320,26 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: () {
-                final isValid = _formKey.currentState!.validate();
-                if (!isValid) {
-                  return;
-                } else {
-                  if (handelDistanceInMeters(
-                          endLatitude: locations.location?.Latitude ?? 0,
-                          endLongitude: locations.location?.Longitude ?? 0) <=
-                      1609.344) {
-                    Navigator.of(context)
-                        .pushNamed(ReadRegulationScreen.routeName);
-                  } else {
-                    showMyDialog();
-                  }
-                }
+                // checkTimeoutRota(DateTime.now(), DateTime.now());
+                // logger.info(textTimeoutRota(DateTime.now(), DateTime.now()));
+                logger.info(getNowNTP);
+                // final isValid = _formKey.currentState!.validate();
+                // if (!isValid) {
+                //   return;
+                // } else {
+                //   if (handelDistanceInMeters(
+                //           endLatitude: locations.location?.Latitude ?? 0,
+                //           endLongitude: locations.location?.Longitude ?? 0) <=
+                //       1609.344) {
+                //     Navigator.of(context)
+                //         .pushNamed(ReadRegulationScreen.routeName);
+                //   } else {
+                //     showMyDialog();
+                //   }
+                // }
 
-                _formKey.currentState!.save();
-                return;
+                // _formKey.currentState!.save();
+                // return;
               },
               icon: SvgPicture.asset('assets/svg/IconNext.svg',
                   color: ColorTheme.white),
@@ -384,6 +424,10 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                         itemAsString: (item) =>
                                             '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                         popupProps: PopupProps.menu(
+                                          disabledItemFn: (item) =>
+                                              !checkTimeoutRota(
+                                                  item.timeFrom as DateTime,
+                                                  item.timeTo as DateTime),
                                           fit: FlexFit.loose,
                                           constraints: const BoxConstraints(
                                             maxHeight: 200,
@@ -391,6 +435,12 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                           itemBuilder:
                                               (context, item, isSelected) {
                                             return DropDownItemRota(
+                                              subtitle: textTimeoutRota(
+                                                  item.timeFrom as DateTime,
+                                                  item.timeTo as DateTime),
+                                              timeout: checkTimeoutRota(
+                                                  item.timeFrom as DateTime,
+                                                  item.timeTo as DateTime),
                                               title:
                                                   '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                               isSelected: item.Id ==
@@ -717,9 +767,13 @@ class DropDownItem extends StatelessWidget {
 class DropDownItemRota extends StatelessWidget {
   final String title;
   final bool? isSelected;
+  final bool timeout;
+  final String subtitle;
   const DropDownItemRota({
     required this.title,
+    required this.timeout,
     this.isSelected = false,
+    required this.subtitle,
     super.key,
   });
 
@@ -747,13 +801,15 @@ class DropDownItemRota extends StatelessWidget {
               title,
               style: CustomTextStyle.body1.copyWith(
                 color: isSelected == false
-                    ? ColorTheme.textPrimary
+                    ? !timeout
+                        ? ColorTheme.grey600
+                        : ColorTheme.textPrimary
                     : ColorTheme.primary,
                 fontSize: 16,
               ),
             ),
             Text(
-              "Not time yet",
+              subtitle,
               style: CustomTextStyle.body2.copyWith(),
             )
           ],
