@@ -3,28 +3,28 @@ import 'package:geolocator/geolocator.dart';
 class CurrentLocation {
   Position? currentLocation;
 
+  LocationSettings locationSettings = AndroidSettings(
+    accuracy: LocationAccuracy.high,
+    forceLocationManager: true,
+    distanceFilter: 10,
+    intervalDuration: const Duration(seconds: 5),
+  );
+
   Future<Position?> getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return Future.error('Location services are disabled.');
     }
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.deniedForever) {
-        return Future.error(
-            Exception('Location permissions are permanently denied.'));
-      }
-
-      if (permission == LocationPermission.denied) {
-        return Future.error(Exception('Location permissions are denied.'));
-      }
+    if (currentLocation != null) {
+      Geolocator.getPositionStream(locationSettings: locationSettings)
+          .listen((Position? location) async {
+        currentLocation = location;
+      });
+    } else {
+      currentLocation = await Geolocator.getCurrentPosition();
     }
 
-    currentLocation = await Geolocator.getCurrentPosition();
-    print(
-        '[Get current position] latitude: ${currentLocation?.latitude}, longitude: ${currentLocation?.longitude}');
     return currentLocation;
   }
 }
