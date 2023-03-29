@@ -167,6 +167,7 @@ flutter:
     - assets/svg/IconSkip.svg
     - assets/svg/IconRefresh2.svg
     - assets/svg/IconStop.svg
+    - assets/svg/iconSearchVrn.svg
 
     - assets/
     - .env

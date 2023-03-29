@@ -13,11 +13,10 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
       : super("cachedGracePeriodItems_$initZoneId") {
     _zoneId = initZoneId;
   }
-
-  Future<List<VehicleInformation>> getListActive() async {
+  Future<List<VehicleInformation>> filterListActive(
+      List<VehicleInformation> list) async {
     DateTime now = await timeNTP.get();
-    var items = await getAllWithCreatedOnTheOffline();
-    return items.where((i) {
+    return list.where((i) {
       return timeHelper.daysBetween(
             i.Created!.add(
               Duration(
@@ -33,10 +32,16 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
     }).toList();
   }
 
-  Future<List<VehicleInformation>> getListExpired() async {
+  Future<List<VehicleInformation>> getListActive() async {
     var items = await getAllWithCreatedOnTheOffline();
+    return filterListActive(items);
+  }
+
+  Future<List<VehicleInformation>> filterListExpired(
+      List<VehicleInformation> list) async {
     DateTime now = await timeNTP.get();
-    return items.where((i) {
+
+    return list.where((i) {
       return timeHelper.daysBetween(
             i.Created!.add(
               Duration(
@@ -50,6 +55,11 @@ class GracePeriodCachedService extends CacheService<VehicleInformation> {
           ) <=
           0;
     }).toList();
+  }
+
+  Future<List<VehicleInformation>> getListExpired() async {
+    var items = await getAllWithCreatedOnTheOffline();
+    return filterListExpired(items);
   }
 
   @override

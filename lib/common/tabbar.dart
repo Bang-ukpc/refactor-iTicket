@@ -15,6 +15,8 @@ class MyTabBar extends StatefulWidget {
   final Widget tabBarViewTab2;
   final int quantityActive;
   final int quantityExpired;
+  final Function(String vrn) searchByVrn;
+  final VoidCallback resetValueSearch;
   const MyTabBar(
       {Key? key,
       required this.titleAppBar,
@@ -23,6 +25,8 @@ class MyTabBar extends StatefulWidget {
       required this.tabBarViewTab2,
       required this.quantityActive,
       required this.labelFuncAdd,
+      required this.searchByVrn,
+      required this.resetValueSearch,
       required this.quantityExpired})
       : super(key: key);
 
@@ -44,6 +48,7 @@ class _MyTabBarState extends State<MyTabBar>
   void dispose() {
     _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
+    _vrnSearchController.dispose();
     super.dispose();
   }
 
@@ -54,10 +59,17 @@ class _MyTabBarState extends State<MyTabBar>
   }
 
   int currentIndexTab = 0;
+  final _vrnSearchController = TextEditingController();
+  bool showInputSearchVrn = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: MyAppBar(
+        showInputSearchVrn: () {
+          setState(() {
+            showInputSearchVrn = true;
+          });
+        },
         title: widget.titleAppBar,
         automaticallyImplyLeading: true,
         onRedirect: () {
@@ -90,35 +102,84 @@ class _MyTabBarState extends State<MyTabBar>
                   color: ColorTheme.boxShadow,
                   spreadRadius: 5,
                   blurRadius: 15,
-                  offset: Offset(0, 3), // changes position of shadow
+                  offset: Offset(0, 3),
                 ),
               ],
             ),
-            child: TabBar(
-              // onTap: (index) {
-              //   setState(() {
-              //     currentIndexTab = index;
-              //   });
-              // },
-              controller: _tabController,
-              tabs: <Widget>[
-                Tab(
-                  child: Text(
-                    "Active (${widget.quantityActive})",
-                    style: CustomTextStyle.h5.copyWith(
-                        color: currentIndexTab == 0
-                            ? ColorTheme.success
-                            : ColorTheme.grey600),
+            child: Column(
+              children: [
+                if (showInputSearchVrn)
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          flex: 8,
+                          child: TextFormField(
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              hintText: "Search by VRN",
+                              hintStyle: const TextStyle(
+                                fontSize: 16,
+                                color: ColorTheme.grey400,
+                              ),
+                              suffixIcon: Padding(
+                                padding: const EdgeInsets.all(15),
+                                child: SvgPicture.asset(
+                                  "assets/svg/iconSearchVrn.svg",
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            controller: _vrnSearchController,
+                            onChanged: (value) {
+                              widget.searchByVrn(value);
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          flex: 1,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                showInputSearchVrn = false;
+                              });
+                              widget.resetValueSearch();
+                              _vrnSearchController.clear();
+                            },
+                            child: SvgPicture.asset(
+                              "assets/svg/IconCloseCamera.svg",
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-                Tab(
-                  child: Text(
-                    "Expired  (${widget.quantityExpired})",
-                    style: CustomTextStyle.h5.copyWith(
-                        color: currentIndexTab == 1
-                            ? ColorTheme.success
-                            : ColorTheme.grey600),
-                  ),
+                TabBar(
+                  controller: _tabController,
+                  tabs: <Widget>[
+                    Tab(
+                      child: Text(
+                        "Active (${widget.quantityActive})",
+                        style: CustomTextStyle.h5.copyWith(
+                            color: currentIndexTab == 0
+                                ? ColorTheme.success
+                                : ColorTheme.grey600),
+                      ),
+                    ),
+                    Tab(
+                      child: Text(
+                        "Expired  (${widget.quantityExpired})",
+                        style: CustomTextStyle.h5.copyWith(
+                            color: currentIndexTab == 1
+                                ? ColorTheme.success
+                                : ColorTheme.grey600),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
