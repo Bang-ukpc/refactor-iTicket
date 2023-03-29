@@ -207,6 +207,10 @@ class _ActiveFirstSeenScreenState
           },
           resetValueSearch: () async {
             await getData(locations.zone?.Id ?? 0);
+            setState(() {
+              messageNullActive = 'Your active first seen list is empty';
+              messageNullExpired = 'Your expired first seen list is empty';
+            });
           },
           labelFuncAdd: "Add first seen",
           titleAppBar: "First seen",

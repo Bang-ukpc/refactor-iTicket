@@ -200,6 +200,10 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
           },
           resetValueSearch: () async {
             await getData(locations.zone?.Id ?? 0);
+            setState(() {
+              messageNullActive = 'Your active grace period list is empty';
+              messageNullExpired = 'Your expired grace period list is empty';
+            });
           },
           labelFuncAdd: "Add consideration period",
           titleAppBar: "Consideration period",
