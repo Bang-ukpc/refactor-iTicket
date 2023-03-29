@@ -73,6 +73,7 @@ dependencies:
   ntp: ^2.0.0
   package_info_plus: ^3.0.3
   flutter_cache_manager: ^3.3.0
+  location_permissions: ^4.0.1
 
 dev_dependencies:
   flutter_test:
@@ -166,6 +167,7 @@ flutter:
     - assets/svg/IconSkip.svg
     - assets/svg/IconRefresh2.svg
     - assets/svg/IconStop.svg
+    - assets/svg/iconSearchVrn.svg
 
     - assets/
     - .env

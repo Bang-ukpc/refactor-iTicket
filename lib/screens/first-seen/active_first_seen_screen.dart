@@ -7,6 +7,7 @@ import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/tabbar.dart';
 import 'package:iWarden/configs/const.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/first_seen.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -39,7 +40,7 @@ class _ActiveFirstSeenScreenState
   final calculateTime = CalculateTime();
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<VehicleInformation> cacheFirstSeenActive = [];
-
+  Logger logger = Logger<ActiveFirstSeenScreen>();
   Future<void> syncAndGetData(int zoneId) async {
     setState(() {
       isLoading = true;
@@ -93,6 +94,7 @@ class _ActiveFirstSeenScreenState
       getTimeNTP();
       final locations = Provider.of<Locations>(context, listen: false);
       zoneCachedServiceFactory = locations.zoneCachedServiceFactory;
+
       await getData(locations.zone?.Id ?? 0);
     });
   }
@@ -102,6 +104,52 @@ class _ActiveFirstSeenScreenState
     firstSeenActive.clear();
     firstSeenExpired.clear();
     super.dispose();
+  }
+
+  String messageNullActive = 'Your active first seen list is empty';
+  String messageNullExpired = 'Your expired first seen list is empty';
+
+  void searchByVrn(String vrn) async {
+    final locations = Provider.of<Locations>(context, listen: false);
+    if (vrn.isEmpty) {
+      await getData(locations.zone?.Id ?? 0);
+    }
+    var localVehicleData = await zoneCachedServiceFactory.firstSeenCachedService
+        .getAllWithCreatedOnTheOffline();
+    List<VehicleInformation> vehiclesFilter = localVehicleData
+        .where((element) =>
+            element.Plate.toUpperCase().contains(vrn.toUpperCase()))
+        .toList();
+
+    await zoneCachedServiceFactory.firstSeenCachedService
+        .filterListActive(vehiclesFilter)
+        .then((value) {
+      firstSeenActive = value;
+    });
+    await zoneCachedServiceFactory.firstSeenCachedService
+        .filterListExpired(vehiclesFilter)
+        .then((value) {
+      firstSeenExpired = value;
+    });
+    setState(() {});
+
+    logger.info(vrn);
+    logger.info(vrn.isNotEmpty);
+    if (vrn.isNotEmpty) {
+      if (firstSeenActive.isEmpty || firstSeenExpired.isEmpty) {
+        setState(() {
+          messageNullActive =
+              "The vehicle number plate '$vrn' does not exist in the list";
+          messageNullExpired =
+              "The vehicle number plate '$vrn' does not exist in the list";
+        });
+      }
+    } else {
+      setState(() {
+        messageNullActive = 'Your active first seen list is empty';
+        messageNullExpired = 'Your expired first seen list is empty';
+      });
+    }
   }
 
   @override
@@ -154,6 +202,12 @@ class _ActiveFirstSeenScreenState
       onWillPop: () async => false,
       child: Scaffold(
         body: MyTabBar(
+          searchByVrn: (vrn) {
+            searchByVrn(vrn);
+          },
+          resetValueSearch: () async {
+            await getData(locations.zone?.Id ?? 0);
+          },
           labelFuncAdd: "Add first seen",
           titleAppBar: "First seen",
           funcAdd: () async {
@@ -216,7 +270,7 @@ class _ActiveFirstSeenScreenState
                               ),
                             ),
                             Text(
-                              'Your active first seen list is empty',
+                              messageNullActive,
                               style: CustomTextStyle.body1.copyWith(
                                 color: ColorTheme.grey600,
                               ),
@@ -277,7 +331,7 @@ class _ActiveFirstSeenScreenState
                               ),
                             ),
                             Text(
-                              'Your expired first seen list is empty',
+                              messageNullExpired,
                               style: CustomTextStyle.body1.copyWith(
                                 color: ColorTheme.grey600,
                               ),

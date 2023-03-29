@@ -12,6 +12,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onRedirect;
   final SystemUiOverlayStyle? systemUiSettings;
   final bool? isOnlyTitle;
+  final Function? showInputSearchVrn;
 
   const MyAppBar({
     Key? key,
@@ -20,6 +21,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onRedirect,
     this.isOpenDrawer = true,
     this.isOnlyTitle = false,
+    this.showInputSearchVrn,
     this.systemUiSettings = const SystemUiOverlayStyle(
       statusBarColor: ColorTheme.textPrimary,
       statusBarIconBrightness: Brightness.light,
@@ -80,16 +82,33 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       // leadingWidth: 16,
       actions: [
         isOpenDrawer == true
-            ? Container(
-                margin: const EdgeInsets.only(right: 8),
-                child: IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                  tooltip:
-                      MaterialLocalizations.of(context).openAppDrawerTooltip,
-                ),
+            ? Row(
+                children: [
+                  if (showInputSearchVrn != null)
+                    GestureDetector(
+                      onTap: () {
+                        showInputSearchVrn!();
+                      },
+                      child: Container(
+                          margin: const EdgeInsets.only(right: 12),
+                          child: SvgPicture.asset(
+                            "assets/svg/iconSearchVrn.svg",
+                            width: 18,
+                            color: ColorTheme.darkPrimary,
+                          )),
+                    ),
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      icon: const Icon(Icons.menu),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                      tooltip: MaterialLocalizations.of(context)
+                          .openAppDrawerTooltip,
+                    ),
+                  ),
+                ],
               )
             : const SizedBox(),
       ],
