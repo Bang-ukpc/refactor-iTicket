@@ -166,6 +166,9 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   // Get current location
   getCurrentLocationOfWarden() async {
     if (await requestLocationPermission.checkLocationPermission()) {
+      setState(() {
+        isLocationPermission = true;
+      });
       await currentLocationPosition.getCurrentLocation().then((value) {
         setState(() {
           pendingGetCurrentLocation = false;
@@ -338,8 +341,18 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      var isGranted = await permission.Permission.locationAlways.isGranted;
+      setState(() {
+        isLocationPermission = isGranted;
+      });
+    }
+  }
+
   Future<void> refreshPermissionGPS() async {
-    var check = await permission.Permission.locationWhenInUse.isGranted;
+    var check = await permission.Permission.locationAlways.isGranted;
     setState(() {
       isLocationPermission = check;
       isPending = true;
@@ -360,17 +373,15 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     final data = ModalRoute.of(context)!.settings.arguments as dynamic;
     final isCheckoutScreen = (data == null) ? false : true;
 
-    final wardenEventStartShift = WardenEvent(
-      type: TypeWardenEvent.StartShift.index,
-      detail: 'Warden has started shift',
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardensProvider.wardens?.Id ?? 0,
-    );
-
     void onStartShift() async {
+      final wardenEventStartShift = WardenEvent(
+        type: TypeWardenEvent.StartShift.index,
+        detail: 'Warden has started shift',
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: wardensProvider.wardens?.Id ?? 0,
+      );
       try {
-        showCircularProgressIndicator(context: context, text: 'Starting shift');
         await createdWardenEventLocalService
             .create(wardenEventStartShift)
             .then((value) async {
@@ -709,12 +720,22 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                               onPressed: () async {
                                 if (await requestLocationPermission
                                     .checkLocationPermission()) {
+                                  setState(() {
+                                    isLocationPermission = true;
+                                  });
                                   if (gpsConnectionStatus ==
                                       ServiceStatus.enabled) {
+                                    if (!mounted) return;
                                     if (isDataValid()) {
-                                      onStartShift();
+                                      showCircularProgressIndicator(
+                                          context: context,
+                                          text: 'Starting shift');
+                                      await currentLocationPosition
+                                          .getCurrentLocation()
+                                          .then((value) {
+                                        onStartShift();
+                                      });
                                     } else {
-                                      if (!mounted) return;
                                       toast.CherryToast.error(
                                         toastDuration:
                                             const Duration(seconds: 5),
