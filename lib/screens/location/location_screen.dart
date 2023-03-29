@@ -319,24 +319,23 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
               onPressed: () {
                 // checkTimeoutRota(DateTime.now(), DateTime.now());
                 // logger.info(textTimeoutRota(DateTime.now(), DateTime.now()));
-                logger.info(getNowNTP);
-                // final isValid = _formKey.currentState!.validate();
-                // if (!isValid) {
-                //   return;
-                // } else {
-                //   if (handelDistanceInMeters(
-                //           endLatitude: locations.location?.Latitude ?? 0,
-                //           endLongitude: locations.location?.Longitude ?? 0) <=
-                //       1609.344) {
-                //     Navigator.of(context)
-                //         .pushNamed(ReadRegulationScreen.routeName);
-                //   } else {
-                //     showMyDialog();
-                //   }
-                // }
+                final isValid = _formKey.currentState!.validate();
+                if (!isValid) {
+                  return;
+                } else {
+                  if (handelDistanceInMeters(
+                          endLatitude: locations.location?.Latitude ?? 0,
+                          endLongitude: locations.location?.Longitude ?? 0) <=
+                      1609.344) {
+                    Navigator.of(context)
+                        .pushNamed(ReadRegulationScreen.routeName);
+                  } else {
+                    showMyDialog();
+                  }
+                }
 
-                // _formKey.currentState!.save();
-                // return;
+                _formKey.currentState!.save();
+                return;
               },
               icon: SvgPicture.asset('assets/svg/IconNext.svg',
                   color: ColorTheme.white),
