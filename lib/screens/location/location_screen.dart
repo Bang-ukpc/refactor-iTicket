@@ -85,8 +85,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
             DateTime.parse(getLocalDate(location.timeFrom as DateTime));
         DateTime timeTo =
             DateTime.parse(getLocalDate(location.timeTo as DateTime));
-        return timeFrom.isAfter(date) ||
-            (date.isAfter(timeFrom) && date.isBefore(timeTo));
+        return checkTimeoutRota(timeFrom, timeTo);
       },
     ).toList();
     filterRotaShiftByNow.sort(
