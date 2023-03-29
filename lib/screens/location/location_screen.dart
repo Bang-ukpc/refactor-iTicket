@@ -106,22 +106,18 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   bool checkTimeoutFrom(DateTime date) {
     DateTime now = DateTime.parse(
         getLocalDate(getNowNTP.add(const Duration(minutes: 30))));
-    logger.info("form $now");
     return now.isAfter(date);
   }
 
   bool checkTimeoutTo(DateTime date) {
     DateTime now = DateTime.parse(
         getLocalDate(getNowNTP.add(const Duration(minutes: -30))));
-    logger.info("to $now");
     return now.isBefore(date);
   }
 
   bool checkTimeoutRota(DateTime from, DateTime to) {
     bool checkTimeForm = checkTimeoutFrom(DateTime.parse(getLocalDate(from)));
     bool checkTimeTo = checkTimeoutTo(DateTime.parse(getLocalDate(to)));
-    logger.info("form $checkTimeForm");
-    logger.info("to $checkTimeTo");
     return (checkTimeForm && checkTimeTo);
   }
 
