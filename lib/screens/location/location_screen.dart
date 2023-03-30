@@ -206,6 +206,14 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
           endLongitude);
     }
 
+    String minWithKilometer() {
+      if (listFilter.isNotEmpty) {
+        return "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)";
+      } else {
+        return "0min (0.0km)";
+      }
+    }
+
     print("GPS ${listFilter.isNotEmpty ? listFilter[0] : "null"}");
     Future<void> showMyDialog() async {
       return showDialog<void>(
@@ -645,27 +653,14 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                                   const SizedBox(
                                                     width: 14,
                                                   ),
-                                                  listFilter.isNotEmpty
-                                                      ? Text(
-                                                          "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)",
-                                                          style: CustomTextStyle
-                                                              .h4
-                                                              .copyWith(
-                                                            color: ColorTheme
-                                                                .primary,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                        )
-                                                      : Text("0min (0.0km)",
-                                                          style: CustomTextStyle
-                                                              .h4
-                                                              .copyWith(
-                                                            color: ColorTheme
-                                                                .primary,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ))
+                                                  Text(minWithKilometer(),
+                                                      style: CustomTextStyle.h4
+                                                          .copyWith(
+                                                        color:
+                                                            ColorTheme.primary,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ))
                                                 ],
                                               ),
                                             ),
