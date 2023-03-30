@@ -197,7 +197,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-
     double handelDistanceInMeters(
         {required double endLatitude, required double endLongitude}) {
       return Geolocator.distanceBetween(
@@ -207,6 +206,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
           endLongitude);
     }
 
+    print("GPS ${listFilter.isNotEmpty ? listFilter[0] : "null"}");
     Future<void> showMyDialog() async {
       return showDialog<void>(
         context: context,
@@ -645,15 +645,27 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                                   const SizedBox(
                                                     width: 14,
                                                   ),
-                                                  Text(
-                                                    "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)",
-                                                    style: CustomTextStyle.h4
-                                                        .copyWith(
-                                                      color: ColorTheme.primary,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  )
+                                                  listFilter.isNotEmpty
+                                                      ? Text(
+                                                          "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)",
+                                                          style: CustomTextStyle
+                                                              .h4
+                                                              .copyWith(
+                                                            color: ColorTheme
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                        )
+                                                      : Text("0min (0.0km)",
+                                                          style: CustomTextStyle
+                                                              .h4
+                                                              .copyWith(
+                                                            color: ColorTheme
+                                                                .primary,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ))
                                                 ],
                                               ),
                                             ),
@@ -806,7 +818,7 @@ class DropDownItemRota extends StatelessWidget {
             ),
             Text(
               subtitle,
-              style: CustomTextStyle.body2.copyWith(),
+              style: CustomTextStyle.body2.copyWith(color: ColorTheme.grey600),
             )
           ],
         ),
