@@ -229,3 +229,4 @@
 
 - WRDN-730 [GPS prod] Duplicate GPS
 - WRDN-727 [Improve UX] Auto-scroll down when sync data exceeds screen length
+- WRDN-757 Can't access app after allowing location permission

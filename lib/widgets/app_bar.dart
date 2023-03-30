@@ -85,17 +85,16 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
             ? Row(
                 children: [
                   if (showInputSearchVrn != null)
-                    GestureDetector(
-                      onTap: () {
+                    IconButton(
+                      icon: SvgPicture.asset(
+                        "assets/svg/iconSearchVrn.svg",
+                        width: 18,
+                        color: ColorTheme.darkPrimary,
+                      ),
+                      onPressed: () {
                         showInputSearchVrn!();
                       },
-                      child: Container(
-                          margin: const EdgeInsets.only(right: 12),
-                          child: SvgPicture.asset(
-                            "assets/svg/iconSearchVrn.svg",
-                            width: 18,
-                            color: ColorTheme.darkPrimary,
-                          )),
+                      tooltip: "Search",
                     ),
                   Container(
                     margin: const EdgeInsets.only(right: 8),

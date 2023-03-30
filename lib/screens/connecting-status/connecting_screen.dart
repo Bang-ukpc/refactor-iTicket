@@ -16,6 +16,7 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/configs/request_location_permission.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -164,24 +165,40 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
 
   // Get current location
   getCurrentLocationOfWarden() async {
-    if (!mounted) return;
-    await currentLocationPosition.getCurrentLocation().then((value) {
+    if (await requestLocationPermission.checkLocationPermission()) {
       setState(() {
+        isLocationPermission = true;
+      });
+      await currentLocationPosition.getCurrentLocation().then((value) {
+        setState(() {
+          pendingGetCurrentLocation = false;
+        });
+      }).catchError((err) {
+        setState(() {
+          pendingGetCurrentLocation = false;
+        });
+      });
+    } else {
+      var isGranted = await permission.Permission.locationAlways.isGranted;
+      setState(() {
+        isLocationPermission = isGranted;
         pendingGetCurrentLocation = false;
       });
-      checkPermissionGPS();
-    }).catchError((err) {
-      setState(() {
-        pendingGetCurrentLocation = false;
-      });
-    });
-  }
-
-  void checkPermissionGPS() async {
-    var isGranted = await permission.Permission.locationWhenInUse.isGranted;
-    setState(() {
-      isLocationPermission = isGranted;
-    });
+      if (!isGranted) {
+        if (!mounted) return;
+        toast.CherryToast.error(
+          toastDuration: const Duration(seconds: 5),
+          title: Text(
+            'Please allow the app to always access location in settings',
+            style: CustomTextStyle.h4.copyWith(
+              color: ColorTheme.danger,
+            ),
+          ),
+          toastPosition: toast.Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      }
+    }
   }
 
   void onStartBackgroundService() async {
@@ -324,8 +341,18 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      var isGranted = await permission.Permission.locationAlways.isGranted;
+      setState(() {
+        isLocationPermission = isGranted;
+      });
+    }
+  }
+
   Future<void> refreshPermissionGPS() async {
-    var check = await permission.Permission.locationWhenInUse.isGranted;
+    var check = await permission.Permission.locationAlways.isGranted;
     setState(() {
       isLocationPermission = check;
       isPending = true;
@@ -346,17 +373,15 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     final data = ModalRoute.of(context)!.settings.arguments as dynamic;
     final isCheckoutScreen = (data == null) ? false : true;
 
-    final wardenEventStartShift = WardenEvent(
-      type: TypeWardenEvent.StartShift.index,
-      detail: 'Warden has started shift',
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardensProvider.wardens?.Id ?? 0,
-    );
-
     void onStartShift() async {
+      final wardenEventStartShift = WardenEvent(
+        type: TypeWardenEvent.StartShift.index,
+        detail: 'Warden has started shift',
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: wardensProvider.wardens?.Id ?? 0,
+      );
       try {
-        showCircularProgressIndicator(context: context, text: 'Starting shift');
         await createdWardenEventLocalService
             .create(wardenEventStartShift)
             .then((value) async {
@@ -693,11 +718,23 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                     const EdgeInsets.symmetric(vertical: 12),
                               ),
                               onPressed: () async {
-                                if (isLocationPermission == true) {
+                                if (await requestLocationPermission
+                                    .checkLocationPermission()) {
+                                  setState(() {
+                                    isLocationPermission = true;
+                                  });
                                   if (gpsConnectionStatus ==
                                       ServiceStatus.enabled) {
+                                    if (!mounted) return;
                                     if (isDataValid()) {
-                                      onStartShift();
+                                      showCircularProgressIndicator(
+                                          context: context,
+                                          text: 'Starting shift');
+                                      await currentLocationPosition
+                                          .getCurrentLocation()
+                                          .then((value) {
+                                        onStartShift();
+                                      });
                                     } else {
                                       toast.CherryToast.error(
                                         toastDuration:
@@ -713,6 +750,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                       ).show(context);
                                     }
                                   } else {
+                                    if (!mounted) return;
                                     toast.CherryToast.error(
                                       toastDuration: const Duration(seconds: 5),
                                       title: Text(
@@ -726,13 +764,17 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                     ).show(context);
                                   }
                                 } else {
-                                  permission.Permission.location
-                                      .request()
-                                      .then((value) async {
+                                  var isGranted = await permission
+                                      .Permission.locationAlways.isGranted;
+                                  setState(() {
+                                    isLocationPermission = isGranted;
+                                  });
+                                  if (!isGranted) {
+                                    if (!mounted) return;
                                     toast.CherryToast.error(
                                       toastDuration: const Duration(seconds: 5),
                                       title: Text(
-                                        'Please allow the app to access your location to continue',
+                                        'Please allow the app to always access location in settings',
                                         style: CustomTextStyle.h4.copyWith(
                                           color: ColorTheme.danger,
                                         ),
@@ -740,7 +782,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                       toastPosition: toast.Position.bottom,
                                       borderRadius: 5,
                                     ).show(context);
-                                  });
+                                  }
                                 }
                               },
                               label: Text(
