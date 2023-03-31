@@ -149,8 +149,8 @@ class BluetoothPrinterHelper {
     int issueTime = color + 220;
     int timeFirstSeen = issueTime + 60;
     int wardenId = timeFirstSeen + 58;
-    int desc = wardenId + (205 - 72);
-    int upper = desc + 107;
+    int desc = wardenId + (205 - 67);
+    int upper = desc + 102;
     int lower = upper + 45;
     int referenceNo2 = upper + 445;
     int date2 = referenceNo2 + 60;
