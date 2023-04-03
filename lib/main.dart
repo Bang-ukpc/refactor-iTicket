@@ -18,10 +18,12 @@ import 'package:iWarden/theme/theme.dart';
 import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';
 import 'package:iWarden/widgets/layouts/network_layout.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   await dotenv.load(fileName: ".env").then((value) => {});
   WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
   //firebase Crashlytics config
   if (ConfigEnvironmentVariable.environment.toString() != 'local') {
     //test err

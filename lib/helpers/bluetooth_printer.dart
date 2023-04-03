@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter_pos_printer_platform/flutter_pos_printer_platform.dart';
+import 'package:iWarden/helpers/time_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:intl/intl.dart';
@@ -95,7 +96,7 @@ class BluetoothPrinterHelper {
   Future printReceiveTest() async {
     String fontStyle1 = "^A1N,24,12";
     String fontStyle2 = "^A1N,14,12";
-    DateTime now = await timeNTP.get();
+    DateTime now = await timeNTP.getTimeWithUKTime();
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 145;
@@ -144,7 +145,7 @@ class BluetoothPrinterHelper {
     int make = plate + 65;
     int color = make + 60;
     int location = color + 55;
-    DateTime now = await timeNTP.get();
+    DateTime now = await timeNTP.getTimeWithUKTime();
     int road = location;
     int issueTime = color + 220;
     int timeFirstSeen = issueTime + 60;
@@ -170,7 +171,7 @@ class BluetoothPrinterHelper {
         "$upper^FB400,3,3,L,0$fontStyle1^FD$upperAmount^FS^FO${xAxis3 + 115}";
     String externalIdSpace = "$wardenId$fontStyle1^FD$externalId^FS^FO$xAxis2";
     bytes += generator.text(
-        '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^POI^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS^FO$xAxis,$locationInfo,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.eventDateTime as DateTime)}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime)}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
+        '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^POI^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS^FO$xAxis,$locationInfo,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.eventDateTime as DateTime))}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime))}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
 
     printEscPos(bytes, generator);
   }
