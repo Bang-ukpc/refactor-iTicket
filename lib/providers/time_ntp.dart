@@ -8,6 +8,7 @@ import 'dart:io';
 import '../common/my_dialog.dart';
 import '../configs/configs.dart';
 import '../theme/text_theme.dart';
+import 'package:timezone/standalone.dart' as tz;
 
 class TimeNTP with ChangeNotifier {
   void showDialogTime() {
@@ -62,6 +63,18 @@ class TimeNTP with ChangeNotifier {
     } else {
       print('[Time server] not null');
       return now.toUtc();
+    }
+  }
+
+  Future<dynamic> getTimeWithUKTime() async {
+    final detroit = tz.getLocation('Europe/London');
+    DateTime? now = await FlutterKronos.getNtpDateTime;
+    if (now == null) {
+      final localizedDt = tz.TZDateTime.from(DateTime.now(), detroit);
+      return localizedDt;
+    } else {
+      final localizedDt = tz.TZDateTime.from(now, detroit);
+      return localizedDt;
     }
   }
 
