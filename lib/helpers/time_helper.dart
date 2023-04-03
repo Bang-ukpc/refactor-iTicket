@@ -1,3 +1,5 @@
+import 'package:timezone/standalone.dart' as tz;
+
 class TimeHelper {
   int daysBetween(DateTime from, DateTime to) {
     from = DateTime(from.year, from.month, from.day, from.hour, from.minute);
@@ -17,6 +19,12 @@ class TimeHelper {
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
     String twoDigitHours = twoDigits(duration.inHours.remainder(24));
     return "${twoDigits(duration.inDays)}d ${twoDigitHours}hr ${twoDigitMinutes}min";
+  }
+
+  DateTime ukTimeZoneConversion(DateTime time) {
+    final detroit = tz.getLocation('Europe/London');
+    final localizedDt = tz.TZDateTime.from(time, detroit);
+    return localizedDt;
   }
 }
 
