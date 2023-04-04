@@ -57,6 +57,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   bool pendingGetCurrentLocation = true;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;
   bool isBluetoothConnected = false;
+  bool? checkBluetoothIsOn;
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
   ServiceStatus gpsConnectionStatus = ServiceStatus.disabled;
   final Connectivity _connectivity = Connectivity();
@@ -110,6 +111,13 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   }
 
   // Check bluetooth connection status
+  void _checkDeviceBluetoothIsOn() async {
+    var check = await FlutterBluePlus.instance.isOn;
+    setState(() {
+      checkBluetoothIsOn = check;
+    });
+  }
+
   Future<void> onConnectPrinter() async {
     bluetoothPrinterHelper.scan();
     bluetoothPrinterHelper.initConnect();
@@ -117,34 +125,15 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   }
 
   Future<void> checkBluetoothConnectionStatus() async {
-    await onConnectPrinter();
-    if (!mounted) return;
-    if (bluetoothPrinterHelper.selectedPrinter == null) {
-      showCircularProgressIndicator(
-        context: context,
-        text: 'Connecting to printer',
-      );
-      _debouncer.run(() {
-        Navigator.of(context).pop();
-        toast.CherryToast.error(
-          toastDuration: const Duration(seconds: 5),
-          title: Text(
-            "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: toast.Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-      });
-      setState(() {
-        isBluetoothConnected = false;
-      });
-    } else {
-      showCircularProgressIndicator(
-          context: context, text: 'Connecting to printer');
-      bluetoothPrinterHelper.connectToPrinter();
-      _debouncer2.run(() {
-        if (bluetoothPrinterHelper.isConnected == false) {
+    if (checkBluetoothIsOn == true) {
+      await onConnectPrinter();
+      if (!mounted) return;
+      if (bluetoothPrinterHelper.selectedPrinter == null) {
+        showCircularProgressIndicator(
+          context: context,
+          text: 'Connecting to printer',
+        );
+        _debouncer.run(() {
           Navigator.of(context).pop();
           toast.CherryToast.error(
             toastDuration: const Duration(seconds: 5),
@@ -155,13 +144,41 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
             toastPosition: toast.Position.bottom,
             borderRadius: 5,
           ).show(context);
-          bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
-        } else {
-          Navigator.of(context).pop();
-          setState(() {
-            isBluetoothConnected = true;
-          });
-        }
+        });
+        setState(() {
+          isBluetoothConnected = false;
+        });
+      } else {
+        showCircularProgressIndicator(
+            context: context, text: 'Connecting to printer');
+        bluetoothPrinterHelper.connectToPrinter();
+        _debouncer2.run(() {
+          if (bluetoothPrinterHelper.isConnected == false) {
+            Navigator.of(context).pop();
+            toast.CherryToast.error(
+              toastDuration: const Duration(seconds: 5),
+              title: Text(
+                "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: toast.Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            setState(() {
+              isBluetoothConnected = false;
+            });
+            bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
+          } else {
+            Navigator.of(context).pop();
+            setState(() {
+              isBluetoothConnected = true;
+            });
+          }
+        });
+      }
+    } else {
+      setState(() {
+        isBluetoothConnected = false;
       });
     }
   }
@@ -351,10 +368,13 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     checkGpsConnectingStatus();
     serviceStatusStreamSubscription =
         Geolocator.getServiceStatusStream().listen(_updateConnectionGpsStatus);
-
     initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    bluetoothStateStream.listen((bluetoothState) {
+      _checkDeviceBluetoothIsOn();
+    });
+    _checkDeviceBluetoothIsOn();
   }
 
   StateDevice checkState(bool check) {
@@ -606,6 +626,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                 checkState(isBluetoothConnected == true))
                             : _buildConnect('Bluetooth', StateDevice.pending),
                         if (isPending == false &&
+                            checkBluetoothIsOn == true &&
                             bluetoothPrinterHelper.isConnected)
                           Column(
                             children: [
