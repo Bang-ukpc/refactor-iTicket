@@ -120,7 +120,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     await onConnectPrinter();
     if (!mounted) return;
     if (bluetoothPrinterHelper.selectedPrinter == null) {
-      print('[BLUETOOTH PRINTER] bluetoothPrinterHelper is null');
       showCircularProgressIndicator(
         context: context,
         text: 'Connecting to printer',
@@ -141,7 +140,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
         isBluetoothConnected = false;
       });
     } else {
-      print('[BLUETOOTH PRINTER] bluetoothPrinterHelper is not null');
       showCircularProgressIndicator(
           context: context, text: 'Connecting to printer');
       bluetoothPrinterHelper.connectToPrinter();
@@ -185,7 +183,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   }
 
   Future<void> _updateConnectionGpsStatus(ServiceStatus result) async {
-    print('[gpsConnectionStatus] result:  $result');
     if (!mounted) {
       return Future.value(null);
     }
@@ -294,7 +291,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   Future<void> getCancellationReasons() async {
     var cancellationReasons =
         await cachedServiceFactory.cancellationReasonCachedService.getAll();
-    print('[Cancellation reason length] ${cancellationReasons.length}');
     setState(() {
       isCancellationNotNull = cancellationReasons.isNotEmpty;
     });
@@ -338,22 +334,16 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
       await getCurrentLocationOfWarden();
-      print('[PROGRESS INIT STATE] 0');
       await checkBluetoothConnectionStatus();
-      print('[PROGRESS INIT STATE] 1');
       await wardensInfo.getWardensInfoLogging().then((value) async {
         return;
       }).catchError((err) {
         return;
       });
-      print('[PROGRESS INIT STATE] 2');
       await ntpHelper.getOffset();
       cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
-      print('[PROGRESS INIT STATE] 3');
       await syncAllRequiredData();
-      print('[PROGRESS INIT STATE] 4');
       await syncTime();
-      print('[PROGRESS INIT STATE] 5');
       setState(() {
         isPending = false;
       });
@@ -411,9 +401,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     //check is route from checkout screen
     final data = ModalRoute.of(context)!.settings.arguments as dynamic;
     final isCheckoutScreen = (data == null) ? false : true;
-
-    print(
-        '[Bluetooth connection status] ${bluetoothPrinterHelper.isConnected}');
 
     final wardenEventStartShift = WardenEvent(
       type: TypeWardenEvent.StartShift.index,
