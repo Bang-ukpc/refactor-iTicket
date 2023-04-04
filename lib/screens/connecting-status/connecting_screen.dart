@@ -623,7 +623,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                 required: true, 'GPS', StateDevice.pending),
                         isPending == false
                             ? _buildConnect("Bluetooth",
-                                checkState(isBluetoothConnected == true))
+                                checkState(checkBluetoothIsOn == true))
                             : _buildConnect('Bluetooth', StateDevice.pending),
                         isPending == false
                             ? checkBluetoothIsOn == true
