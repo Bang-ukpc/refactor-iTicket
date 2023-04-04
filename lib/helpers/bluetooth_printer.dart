@@ -97,15 +97,20 @@ class BluetoothPrinterHelper {
     if (selectedPrinter == null) return;
     var bluetoothPrinter = selectedPrinter!;
     log("_printEscPos: ${bluetoothPrinter.typePrinter.toString()}");
-    await printerManager.connect(
-      type: bluetoothPrinter.typePrinter,
-      model: BluetoothPrinterInput(
-        name: bluetoothPrinter.deviceName,
-        address: bluetoothPrinter.address!,
-        isBle: bluetoothPrinter.isBle ?? false,
-        autoConnect: false,
-      ),
-    );
+    await printerManager
+        .connect(
+          type: bluetoothPrinter.typePrinter,
+          model: BluetoothPrinterInput(
+            name: bluetoothPrinter.deviceName,
+            address: bluetoothPrinter.address!,
+            isBle: bluetoothPrinter.isBle ?? false,
+            autoConnect: false,
+          ),
+        )
+        .timeout(
+          const Duration(seconds: 8),
+          onTimeout: () => false,
+        );
   }
 
   Future printReceiveTest() async {

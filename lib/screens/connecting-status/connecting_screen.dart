@@ -151,7 +151,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       } else {
         showCircularProgressIndicator(
             context: context, text: 'Connecting to printer');
-        bluetoothPrinterHelper.connectToPrinter();
+        await bluetoothPrinterHelper.connectToPrinter();
         _debouncer2.run(() {
           if (bluetoothPrinterHelper.isConnected == false) {
             Navigator.of(context).pop();
@@ -625,20 +625,19 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                             ? _buildConnect("Bluetooth",
                                 checkState(isBluetoothConnected == true))
                             : _buildConnect('Bluetooth', StateDevice.pending),
-                        if (isPending == false &&
-                            checkBluetoothIsOn == true &&
-                            bluetoothPrinterHelper.isConnected)
-                          Column(
-                            children: [
-                              Text(
-                                'Connected to printer ${bluetoothPrinterHelper.selectedPrinter?.deviceName}',
-                                style: CustomTextStyle.h5,
-                              ),
-                              const SizedBox(
-                                height: 15,
-                              ),
-                            ],
-                          ),
+                        isPending == false
+                            ? checkBluetoothIsOn == true
+                                ? bluetoothPrinterHelper.isConnected
+                                    ? _buildConnect(
+                                        "Connected to printer ${bluetoothPrinterHelper.selectedPrinter?.deviceName}",
+                                        checkState(
+                                            isBluetoothConnected == true))
+                                    : _buildConnect(
+                                        "Connect to printer", checkState(false))
+                                : _buildConnect(
+                                    "Connect to printer", checkState(false))
+                            : _buildConnect(
+                                "Connect to printer", StateDevice.pending),
                         const SizedBox(
                           height: 8,
                         ),
