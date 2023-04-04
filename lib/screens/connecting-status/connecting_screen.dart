@@ -32,6 +32,8 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
 
+import '../../helpers/bluetooth_printer.dart';
+import '../../helpers/debouncer.dart';
 import '../../helpers/my_navigator_observer.dart';
 import '../../helpers/ntp_helper.dart';
 import '../login_screens.dart';
@@ -50,10 +52,13 @@ String defaultErrorMessage =
     "Can't sync the data. Please check your network and try to refresh the app again.";
 
 class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
+  final _debouncer = Debouncer(milliseconds: 3000);
+  final _debouncer2 = Debouncer(milliseconds: 4000);
   bool isPending = true;
   bool pendingGetCurrentLocation = true;
   late StreamSubscription<ServiceStatus> serviceStatusStreamSubscription;
-  bool? checkBluetooth;
+  bool isBluetoothConnected = false;
+  bool? checkBluetoothIsOn;
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
   ServiceStatus gpsConnectionStatus = ServiceStatus.disabled;
   final Connectivity _connectivity = Connectivity();
@@ -106,12 +111,77 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     );
   }
 
-  // Check bluetooth connection
+  // Check bluetooth connection status
   void _checkDeviceBluetoothIsOn() async {
     var check = await FlutterBluePlus.instance.isOn;
     setState(() {
-      checkBluetooth = check;
+      checkBluetoothIsOn = check;
     });
+  }
+
+  Future<void> onConnectPrinter() async {
+    bluetoothPrinterHelper.scan();
+    bluetoothPrinterHelper.initConnect();
+    await Future.delayed(const Duration(seconds: 4));
+  }
+
+  Future<void> checkBluetoothConnectionStatus() async {
+    if (checkBluetoothIsOn == true) {
+      await onConnectPrinter();
+      if (!mounted) return;
+      if (bluetoothPrinterHelper.selectedPrinter == null) {
+        showCircularProgressIndicator(
+          context: context,
+          text: 'Connecting to printer',
+        );
+        _debouncer.run(() {
+          Navigator.of(context).pop();
+          toast.CherryToast.error(
+            toastDuration: const Duration(seconds: 5),
+            title: Text(
+              "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+            ),
+            toastPosition: toast.Position.bottom,
+            borderRadius: 5,
+          ).show(context);
+        });
+        setState(() {
+          isBluetoothConnected = false;
+        });
+      } else {
+        showCircularProgressIndicator(
+            context: context, text: 'Connecting to printer');
+        await bluetoothPrinterHelper.connectToPrinter();
+        _debouncer2.run(() {
+          if (bluetoothPrinterHelper.isConnected == false) {
+            Navigator.of(context).pop();
+            toast.CherryToast.error(
+              toastDuration: const Duration(seconds: 5),
+              title: Text(
+                "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+              ),
+              toastPosition: toast.Position.bottom,
+              borderRadius: 5,
+            ).show(context);
+            setState(() {
+              isBluetoothConnected = false;
+            });
+            bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
+          } else {
+            Navigator.of(context).pop();
+            setState(() {
+              isBluetoothConnected = true;
+            });
+          }
+        });
+      }
+    } else {
+      setState(() {
+        isBluetoothConnected = false;
+      });
+    }
   }
 
   // Check GPS connection
@@ -131,7 +201,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   }
 
   Future<void> _updateConnectionGpsStatus(ServiceStatus result) async {
-    print('[gpsConnectionStatus] result:  $result');
     if (!mounted) {
       return Future.value(null);
     }
@@ -256,7 +325,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   Future<void> getCancellationReasons() async {
     var cancellationReasons =
         await cachedServiceFactory.cancellationReasonCachedService.getAll();
-    print('[Cancellation reason length] ${cancellationReasons.length}');
     setState(() {
       isCancellationNotNull = cancellationReasons.isNotEmpty;
     });
@@ -297,9 +365,10 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   void initState() {
     super.initState();
     onStartBackgroundService();
-    getCurrentLocationOfWarden();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
+      await getCurrentLocationOfWarden();
+      await checkBluetoothConnectionStatus();
       await wardensInfo.getWardensInfoLogging().then((value) async {
         return;
       }).catchError((err) {
@@ -316,7 +385,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     checkGpsConnectingStatus();
     serviceStatusStreamSubscription =
         Geolocator.getServiceStatusStream().listen(_updateConnectionGpsStatus);
-
     initConnectivity();
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
@@ -336,6 +404,13 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
 
   @override
   void dispose() {
+    bluetoothPrinterHelper.disposePrinter();
+    if (_debouncer.timer != null) {
+      _debouncer.timer!.cancel();
+    }
+    if (_debouncer2.timer != null) {
+      _debouncer2.timer!.cancel();
+    }
     serviceStatusStreamSubscription.cancel();
     _connectivitySubscription.cancel();
     super.dispose();
@@ -357,10 +432,11 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       isLocationPermission = check;
       isPending = true;
     });
-    await ntpHelper.getOffset();
     await getCurrentLocationOfWarden();
-    await syncTime();
+    await checkBluetoothConnectionStatus();
+    await ntpHelper.getOffset();
     await syncAllRequiredData();
+    await syncTime();
     setState(() {
       isPending = false;
     });
@@ -571,12 +647,22 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                             : _buildConnect(
                                 required: true, 'GPS', StateDevice.pending),
                         isPending == false
-                            ? pendingGetCurrentLocation == false
-                                ? _buildConnect("Bluetooth",
-                                    checkState(checkBluetooth == true))
-                                : _buildConnect(
-                                    'Bluetooth', StateDevice.pending)
+                            ? _buildConnect("Bluetooth",
+                                checkState(isBluetoothConnected == true))
                             : _buildConnect('Bluetooth', StateDevice.pending),
+                        isPending == false
+                            ? checkBluetoothIsOn == true
+                                ? bluetoothPrinterHelper.isConnected
+                                    ? _buildConnect(
+                                        "Connected to printer ${bluetoothPrinterHelper.selectedPrinter?.deviceName}",
+                                        checkState(
+                                            isBluetoothConnected == true))
+                                    : _buildConnect(
+                                        "Connect to printer", checkState(false))
+                                : _buildConnect(
+                                    "Connect to printer", checkState(false))
+                            : _buildConnect(
+                                "Connect to printer", StateDevice.pending),
                         const SizedBox(
                           height: 8,
                         ),
