@@ -212,6 +212,7 @@
 - WRDN-460 Improvement Future - iTicket location list should match the cluster list.
 - WRDN-722 [Issue PCN] PCN cannot be generated if the user checks the permit without entering the required fields
 - WRDN-723 [First seen/Grace period] Only check the permit once, if already checked, it will be added directly.
+- WRDN-739 [Change] - Permit message for first seen and consideration period
 
 [1.2.1-1] - 2023-03-15
 
