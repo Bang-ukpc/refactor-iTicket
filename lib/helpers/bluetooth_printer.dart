@@ -92,6 +92,21 @@ class BluetoothPrinterHelper {
     log('Select device');
   }
 
+  Future<void> connectToPrinter() async {
+    if (selectedPrinter == null) return;
+    var bluetoothPrinter = selectedPrinter!;
+    log("_printEscPos: ${bluetoothPrinter.typePrinter.toString()}");
+    await printerManager.connect(
+      type: bluetoothPrinter.typePrinter,
+      model: BluetoothPrinterInput(
+        name: bluetoothPrinter.deviceName,
+        address: bluetoothPrinter.address!,
+        isBle: bluetoothPrinter.isBle ?? false,
+        autoConnect: false,
+      ),
+    );
+  }
+
   Future printReceiveTest() async {
     String fontStyle1 = "^A1N,24,12";
     String fontStyle2 = "^A1N,14,12";
