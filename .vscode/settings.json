@@ -28,6 +28,7 @@
     "prefs",
     "RGBO",
     "riverpod",
+    "setvar",
     "synchronisation",
     "syspaths",
     "Tabbar",
@@ -35,6 +36,7 @@
     "timego",
     "typeahead",
     "UKPC",
+    "unfocus",
     "upsert",
     "Vegeto",
     "workmanager"

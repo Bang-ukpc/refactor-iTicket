@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/screens/home_overview.dart';
@@ -37,8 +38,11 @@ class MyTabBar extends StatefulWidget {
 class _MyTabBarState extends State<MyTabBar>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late FocusNode _focusNode;
+
   @override
   void initState() {
+    _focusNode = FocusNode();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabSelection);
     super.initState();
@@ -48,6 +52,7 @@ class _MyTabBarState extends State<MyTabBar>
   void dispose() {
     _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
+    _focusNode.dispose();
     _vrnSearchController.dispose();
     super.dispose();
   }
@@ -91,106 +96,123 @@ class _MyTabBarState extends State<MyTabBar>
         ),
       ]),
       drawer: const MyDrawer(),
-      body: Column(
-        children: <Widget>[
-          Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: ColorTheme.boxShadow,
-                  spreadRadius: 5,
-                  blurRadius: 15,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                if (showInputSearchVrn)
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          flex: 8,
-                          child: TextFormField(
-                            autofocus: true,
-                            decoration: InputDecoration(
-                              hintText: "Search by VRN",
-                              hintStyle: const TextStyle(
-                                fontSize: 16,
-                                color: ColorTheme.grey400,
-                              ),
-                              suffixIcon: Padding(
-                                padding: const EdgeInsets.all(15),
-                                child: SvgPicture.asset(
-                                  "assets/svg/iconSearchVrn.svg",
-                                  fit: BoxFit.cover,
+      body: GestureDetector(
+        onTap: () {
+          _focusNode.unfocus();
+        },
+        child: Column(
+          children: <Widget>[
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorTheme.boxShadow,
+                    spreadRadius: 5,
+                    blurRadius: 15,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  if (showInputSearchVrn)
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            flex: 8,
+                            child: TextFormField(
+                              focusNode: _focusNode,
+                              autofocus: true,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z0-9]'),
+                                ),
+                              ],
+                              textCapitalization: TextCapitalization.characters,
+                              decoration: InputDecoration(
+                                hintText: "Search by VRN",
+                                hintStyle: const TextStyle(
+                                  fontSize: 16,
+                                  color: ColorTheme.grey400,
+                                ),
+                                suffixIcon: Padding(
+                                  padding: const EdgeInsets.all(15),
+                                  child: SvgPicture.asset(
+                                    "assets/svg/iconSearchVrn.svg",
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
+                              controller: _vrnSearchController,
+                              onChanged: (value) {
+                                widget.searchByVrn(value);
+                              },
                             ),
-                            controller: _vrnSearchController,
-                            onChanged: (value) {
-                              widget.searchByVrn(value);
-                            },
                           ),
+                          Flexible(
+                            flex: 1,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  showInputSearchVrn = false;
+                                });
+                                widget.resetValueSearch();
+                                _vrnSearchController.clear();
+                              },
+                              child: SvgPicture.asset(
+                                "assets/svg/IconCloseCamera.svg",
+                                width: 16,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  TabBar(
+                    controller: _tabController,
+                    tabs: <Widget>[
+                      Tab(
+                        child: Text(
+                          "Active (${widget.quantityActive})",
+                          style: CustomTextStyle.h5.copyWith(
+                              color: currentIndexTab == 0
+                                  ? ColorTheme.success
+                                  : ColorTheme.grey600),
                         ),
-                        Flexible(
-                          flex: 1,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                showInputSearchVrn = false;
-                              });
-                              widget.resetValueSearch();
-                              _vrnSearchController.clear();
-                            },
-                            child: SvgPicture.asset(
-                              "assets/svg/IconCloseCamera.svg",
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
+                      ),
+                      Tab(
+                        child: Text(
+                          "Expired  (${widget.quantityExpired})",
+                          style: CustomTextStyle.h5.copyWith(
+                              color: currentIndexTab == 1
+                                  ? ColorTheme.success
+                                  : ColorTheme.grey600),
+                        ),
+                      ),
+                    ],
                   ),
-                TabBar(
-                  controller: _tabController,
-                  tabs: <Widget>[
-                    Tab(
-                      child: Text(
-                        "Active (${widget.quantityActive})",
-                        style: CustomTextStyle.h5.copyWith(
-                            color: currentIndexTab == 0
-                                ? ColorTheme.success
-                                : ColorTheme.grey600),
-                      ),
-                    ),
-                    Tab(
-                      child: Text(
-                        "Expired  (${widget.quantityExpired})",
-                        style: CustomTextStyle.h5.copyWith(
-                            color: currentIndexTab == 1
-                                ? ColorTheme.success
-                                : ColorTheme.grey600),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: <Widget>[widget.tabBarViewTab1, widget.tabBarViewTab2],
-            ),
-          )
-        ],
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: <Widget>[
+                  widget.tabBarViewTab1,
+                  widget.tabBarViewTab2
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

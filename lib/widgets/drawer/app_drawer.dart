@@ -364,9 +364,10 @@ class _MyDrawerState extends State<MyDrawer> {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: SizedBox(
-          width: isLandscape ? widthScreen * 0.66 : widthScreen * 0.85,
-          child: Drawer(
-            child: containerDrawer(Column(
+        width: isLandscape ? widthScreen * 0.66 : widthScreen * 0.85,
+        child: Drawer(
+          child: containerDrawer(
+            Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Column(
@@ -430,8 +431,10 @@ class _MyDrawerState extends State<MyDrawer> {
                   ),
                 ),
               ],
-            )),
-          )),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

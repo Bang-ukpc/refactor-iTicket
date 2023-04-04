@@ -207,6 +207,10 @@ class _ActiveFirstSeenScreenState
           },
           resetValueSearch: () async {
             await getData(locations.zone?.Id ?? 0);
+            setState(() {
+              messageNullActive = 'Your active first seen list is empty';
+              messageNullExpired = 'Your expired first seen list is empty';
+            });
           },
           labelFuncAdd: "Add first seen",
           titleAppBar: "First seen",
@@ -257,25 +261,29 @@ class _ActiveFirstSeenScreenState
                           ),
                         ),
                       )
-                    : Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 100,
-                              height: 100,
-                              child: Image.asset(
-                                'assets/images/empty-list.png',
-                                color: ColorTheme.grey600,
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 100,
+                                height: 100,
+                                child: Image.asset(
+                                  'assets/images/empty-list.png',
+                                  color: ColorTheme.grey600,
+                                ),
                               ),
-                            ),
-                            Text(
-                              messageNullActive,
-                              style: CustomTextStyle.body1.copyWith(
-                                color: ColorTheme.grey600,
+                              Text(
+                                messageNullActive,
+                                style: CustomTextStyle.body1.copyWith(
+                                  color: ColorTheme.grey600,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       )
                 : const Center(
@@ -318,25 +326,29 @@ class _ActiveFirstSeenScreenState
                           ),
                         ),
                       )
-                    : Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 100,
-                              height: 100,
-                              child: Image.asset(
-                                'assets/images/empty-list.png',
-                                color: ColorTheme.grey600,
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 100,
+                                height: 100,
+                                child: Image.asset(
+                                  'assets/images/empty-list.png',
+                                  color: ColorTheme.grey600,
+                                ),
                               ),
-                            ),
-                            Text(
-                              messageNullExpired,
-                              style: CustomTextStyle.body1.copyWith(
-                                color: ColorTheme.grey600,
+                              Text(
+                                messageNullExpired,
+                                style: CustomTextStyle.body1.copyWith(
+                                  color: ColorTheme.grey600,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       )
                 : const Center(
