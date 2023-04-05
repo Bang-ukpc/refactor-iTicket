@@ -126,8 +126,11 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   }
 
   Future<void> checkBluetoothConnectionStatus() async {
+    bluetoothPrinterHelper.resetPrinterConnection();
     if (checkBluetoothIsOn == true) {
-      await onConnectPrinter();
+      if (!bluetoothPrinterHelper.isConnected) {
+        await onConnectPrinter();
+      }
       if (!mounted) return;
       if (bluetoothPrinterHelper.selectedPrinter == null) {
         showCircularProgressIndicator(
@@ -146,6 +149,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
             borderRadius: 5,
           ).show(context);
         });
+        bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
         setState(() {
           isBluetoothConnected = false;
         });
@@ -165,10 +169,10 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
               toastPosition: toast.Position.bottom,
               borderRadius: 5,
             ).show(context);
+            bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
             setState(() {
               isBluetoothConnected = false;
             });
-            bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
           } else {
             Navigator.of(context).pop();
             setState(() {

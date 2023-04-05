@@ -141,7 +141,7 @@ class BluetoothPrinterHelper {
     bytes += generator.text(
         '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^POI^FO$xAxis,$referenceNo$fontStyle1^FD1234567890123^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FDXX99XXX^FS^FO$xAxis,$make$fontStyle1^FDMAKE^FS^FO$xAxis,$color$fontStyle1^FDCOLOUR^FS^FO$xAxis,$location$fontStyle2^FDVOID A2^FS^FO$xAxis,${location + 40}$fontStyle2^FDVOID A3^FS^FO$xAxis,${location + 80}$fontStyle2^FDVOID A4^FS^FO$xAxis,${location + 120}$fontStyle2^FDVOID A5^FS^FO$xAxis,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(now)}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(now)}^FS^FO$xAxis2,$desc$fontStyle2^FDVOID 02^FS^FO$xAxis2,${desc + 20}$fontStyle2^FDVOID 03^FS^FO$xAxis2,${desc + 40}$fontStyle2^FDVOID 04^FS^FO$xAxis3,$referenceNo2$fontStyle1^FD1234567890123^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FDXX99XXX^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS^XZ');
 
-    printEscPos(bytes, generator);
+    await printEscPos(bytes, generator);
   }
 
   bool isTextNull(String? text) {
@@ -193,23 +193,28 @@ class BluetoothPrinterHelper {
     bytes += generator.text(
         '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^POI^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS^FO$xAxis,$locationInfo,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.eventDateTime as DateTime))}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime))}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
 
-    printEscPos(bytes, generator);
+    await printEscPos(bytes, generator);
   }
 
   /// print ticket
-  void printEscPos(List<int> bytes, Generator generator) async {
+  Future<void> printEscPos(List<int> bytes, Generator generator) async {
     if (selectedPrinter == null) return;
     var bluetoothPrinter = selectedPrinter!;
     log("_printEscPos: ${bluetoothPrinter.typePrinter.toString()}");
-    await printerManager.connect(
-      type: bluetoothPrinter.typePrinter,
-      model: BluetoothPrinterInput(
-        name: bluetoothPrinter.deviceName,
-        address: bluetoothPrinter.address!,
-        isBle: bluetoothPrinter.isBle ?? false,
-        autoConnect: false,
-      ),
-    );
+    await printerManager
+        .connect(
+          type: bluetoothPrinter.typePrinter,
+          model: BluetoothPrinterInput(
+            name: bluetoothPrinter.deviceName,
+            address: bluetoothPrinter.address!,
+            isBle: bluetoothPrinter.isBle ?? false,
+            autoConnect: false,
+          ),
+        )
+        .timeout(
+          const Duration(seconds: 8),
+          onTimeout: () => false,
+        );
 
     pendingTask = [];
     if (Platform.isAndroid) {
@@ -232,6 +237,18 @@ class BluetoothPrinterHelper {
   void disposePrinter() {
     subscription?.cancel();
     subscriptionBtStatus?.cancel();
+  }
+
+  void resetPrinterConnection() {
+    subscription?.cancel();
+    subscriptionBtStatus?.cancel();
+    isBle = false;
+    isConnected = false;
+    printerManager = PrinterManager.instance;
+    devices = <BluetoothPrinter>[];
+    currentStatus = BTStatus.none;
+    pendingTask = [];
+    selectedPrinter = null;
   }
 }
 
