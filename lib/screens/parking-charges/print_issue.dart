@@ -37,12 +37,18 @@ class PrintIssue extends StatefulWidget {
 
 class _PrintIssueState extends BaseStatefulState<PrintIssue> {
   final _debouncer = Debouncer(milliseconds: 3000);
+  final _debouncer2 = Debouncer(milliseconds: 4000);
   bool isLoading = false;
+
+  void onConnectPrinter() {
+    bluetoothPrinterHelper.scan();
+    bluetoothPrinterHelper.initConnect();
+  }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locations = Provider.of<Locations>(context, listen: false);
       final contraventionProvider =
           Provider.of<ContraventionProvider>(context, listen: false);
@@ -51,8 +57,8 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
 
       if (contraventionProvider.contravention!.type == TypePCN.Physical.index &&
           args['isPrinter'] == true) {
-        bluetoothPrinterHelper.scan();
-        bluetoothPrinterHelper.initConnect();
+        onConnectPrinter();
+        if (!mounted) return;
         if (bluetoothPrinterHelper.selectedPrinter == null) {
           showCircularProgressIndicator(
             context: context,
@@ -70,14 +76,34 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
               borderRadius: 5,
             ).show(context);
           });
+          bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
         } else {
-          bluetoothPrinterHelper.printPhysicalPCN(
+          showCircularProgressIndicator(
+              context: context, text: 'Connecting to printer');
+          await bluetoothPrinterHelper.printPhysicalPCN(
             physicalPCN: contraventionProvider.contravention as Contravention,
             locationName: locations.location!,
             lowerAmount: locations.location?.LowerAmount ?? 0,
             upperAmount: locations.location?.UpperAmount ?? 0,
             externalId: wardensProvider.wardens?.ExternalId ?? "",
           );
+          _debouncer2.run(() {
+            if (bluetoothPrinterHelper.isConnected == false) {
+              Navigator.of(context).pop();
+              CherryToast.error(
+                toastDuration: const Duration(seconds: 5),
+                title: Text(
+                  "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+                ),
+                toastPosition: Position.bottom,
+                borderRadius: 5,
+              ).show(context);
+              bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
+            } else {
+              Navigator.of(context).pop();
+            }
+          });
         }
       }
     });
@@ -89,6 +115,9 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
     bluetoothPrinterHelper.disposePrinter();
     if (_debouncer.timer != null) {
       _debouncer.timer!.cancel();
+    }
+    if (_debouncer2.timer != null) {
+      _debouncer2.timer!.cancel();
     }
     super.dispose();
   }
@@ -231,11 +260,13 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
               if (contraventionProvider.contravention?.type ==
                   TypePCN.Physical.index)
                 BottomNavyBarItem(
-                  onPressed: () {
+                  onPressed: () async {
                     //set disable button on 3s
                     setLoading(true);
                     setLoadingEnd();
                     //
+                    onConnectPrinter();
+                    if (!mounted) return;
                     if (bluetoothPrinterHelper.selectedPrinter == null) {
                       showCircularProgressIndicator(
                         context: context,
@@ -254,8 +285,11 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
                           borderRadius: 5,
                         ).show(context);
                       });
+                      bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
                     } else {
-                      bluetoothPrinterHelper.printPhysicalPCN(
+                      showCircularProgressIndicator(
+                          context: context, text: 'Connecting to printer');
+                      await bluetoothPrinterHelper.printPhysicalPCN(
                         physicalPCN: contraventionProvider.contravention
                             as Contravention,
                         locationName: locations.location!,
@@ -263,6 +297,24 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
                         upperAmount: locations.location?.UpperAmount ?? 0,
                         externalId: wardensProvider.wardens?.ExternalId ?? "",
                       );
+                      _debouncer2.run(() {
+                        if (bluetoothPrinterHelper.isConnected == false) {
+                          Navigator.of(context).pop();
+                          CherryToast.error(
+                            toastDuration: const Duration(seconds: 5),
+                            title: Text(
+                              "Can't connect to a printer. Enable Bluetooth on both mobile device and printer and check that devices are paired.",
+                              style: CustomTextStyle.h4
+                                  .copyWith(color: ColorTheme.danger),
+                            ),
+                            toastPosition: Position.bottom,
+                            borderRadius: 5,
+                          ).show(context);
+                          bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      });
                     }
                   },
                   isDisabled: isLoading,
@@ -293,17 +345,6 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
                 ),
               BottomNavyBarItem(
                 onPressed: () {
-                  // if (printIssue
-                  //             .findIssueNoImage(
-                  //                 typePCN:
-                  //                     contraventionProvider.contravention!.type)
-                  //             .title !=
-                  //         'null' &&
-                  //     printIssue.checkIssueHasPhotoRequirePhysical() == false) {
-                  //   showMyDialog();
-                  // } else {
-                  //   onCompleteTakePhotos();
-                  // }
                   if (printIssue
                           .findIssueNoImage(
                               typePCN:
