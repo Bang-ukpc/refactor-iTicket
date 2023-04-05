@@ -39,7 +39,6 @@ class MyDrawer extends StatefulWidget {
 }
 
 class _MyDrawerState extends State<MyDrawer> {
-  bool check = false;
   bool? checkBluetooth;
   final _debouncer = Debouncer(milliseconds: 3000);
   final _debouncer2 = Debouncer(milliseconds: 4000);
@@ -247,6 +246,7 @@ class _MyDrawerState extends State<MyDrawer> {
                         ? () async {
                             if (checkBluetooth == true) {
                               onConnectPrinter();
+                              if (!mounted) return;
                               if (bluetoothPrinterHelper.selectedPrinter ==
                                   null) {
                                 showCircularProgressIndicator(
@@ -272,7 +272,7 @@ class _MyDrawerState extends State<MyDrawer> {
                                 showCircularProgressIndicator(
                                     context: context,
                                     text: 'Connecting to printer');
-                                bluetoothPrinterHelper.printReceiveTest();
+                                await bluetoothPrinterHelper.printReceiveTest();
                                 _debouncer2.run(() {
                                   if (bluetoothPrinterHelper.isConnected ==
                                       false) {
