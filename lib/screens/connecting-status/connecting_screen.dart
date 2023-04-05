@@ -145,6 +145,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
             borderRadius: 5,
           ).show(context);
         });
+        bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
         setState(() {
           isBluetoothConnected = false;
         });
@@ -164,10 +165,10 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
               toastPosition: toast.Position.bottom,
               borderRadius: 5,
             ).show(context);
+            bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
             setState(() {
               isBluetoothConnected = false;
             });
-            bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
           } else {
             Navigator.of(context).pop();
             setState(() {
