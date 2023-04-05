@@ -57,7 +57,9 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
 
       if (contraventionProvider.contravention!.type == TypePCN.Physical.index &&
           args['isPrinter'] == true) {
-        onConnectPrinter();
+        if (!bluetoothPrinterHelper.isConnected) {
+          onConnectPrinter();
+        }
         if (!mounted) return;
         if (bluetoothPrinterHelper.selectedPrinter == null) {
           showCircularProgressIndicator(
@@ -265,7 +267,9 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
                     setLoading(true);
                     setLoadingEnd();
                     //
-                    onConnectPrinter();
+                    if (!bluetoothPrinterHelper.isConnected) {
+                      onConnectPrinter();
+                    }
                     if (!mounted) return;
                     if (bluetoothPrinterHelper.selectedPrinter == null) {
                       showCircularProgressIndicator(
