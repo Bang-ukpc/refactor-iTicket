@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/operational_period.dart';
@@ -70,7 +71,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   }
 
   setTimeNTP() async {
-    DateTime now = await timeNTP.get();
+    DateTime now = await timeNTP.getTimeWithUKTime();
     setState(() {
       getNowNTP = now;
     });
@@ -84,8 +85,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
             DateTime.parse(getLocalDate(location.timeFrom as DateTime));
         DateTime timeTo =
             DateTime.parse(getLocalDate(location.timeTo as DateTime));
-        return timeFrom.isAfter(date) ||
-            (date.isAfter(timeFrom) && date.isBefore(timeTo));
+        return checkTimeoutRota(timeFrom, timeTo);
       },
     ).toList();
     filterRotaShiftByNow.sort(
@@ -100,6 +100,25 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
       listFilter = filterRotaShiftByNow;
     });
     return list;
+  }
+
+  Logger logger = Logger<LocationScreen>();
+  bool checkTimeoutFrom(DateTime date) {
+    DateTime now = DateTime.parse(
+        getLocalDate(getNowNTP.add(const Duration(minutes: 30))));
+    return now.isAfter(date);
+  }
+
+  bool checkTimeoutTo(DateTime date) {
+    DateTime now = DateTime.parse(
+        getLocalDate(getNowNTP.add(const Duration(minutes: -30))));
+    return now.isBefore(date);
+  }
+
+  bool checkTimeoutRota(DateTime from, DateTime to) {
+    bool checkTimeForm = checkTimeoutFrom(DateTime.parse(getLocalDate(from)));
+    bool checkTimeTo = checkTimeoutTo(DateTime.parse(getLocalDate(to)));
+    return (checkTimeForm && checkTimeTo);
   }
 
   List<RotaWithLocation> locationListFilterByRota(
@@ -164,7 +183,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
-
     double handelDistanceInMeters(
         {required double endLatitude, required double endLongitude}) {
       return Geolocator.distanceBetween(
@@ -174,6 +192,15 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
           endLongitude);
     }
 
+    String minWithKilometer() {
+      if (listFilter.isNotEmpty) {
+        return "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)";
+      } else {
+        return "0min (0.0km)";
+      }
+    }
+
+    print("GPS ${listFilter.isNotEmpty ? listFilter[0] : "null"}");
     Future<void> showMyDialog() async {
       return showDialog<void>(
         context: context,
@@ -237,6 +264,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
     }
 
     Future<void> refresh() async {
+      await setTimeNTP();
       await getRotas();
       rotaList(locationWithRotaList);
       await currentLocationPosition.getCurrentLocation();
@@ -283,6 +311,8 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: () {
+                // checkTimeoutRota(DateTime.now(), DateTime.now());
+                // logger.info(textTimeoutRota(DateTime.now(), DateTime.now()));
                 final isValid = _formKey.currentState!.validate();
                 if (!isValid) {
                   return;
@@ -384,13 +414,20 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                         itemAsString: (item) =>
                                             '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                         popupProps: PopupProps.menu(
+                                          disabledItemFn: (item) =>
+                                              !checkTimeoutRota(
+                                                  item.timeFrom as DateTime,
+                                                  item.timeTo as DateTime),
                                           fit: FlexFit.loose,
                                           constraints: const BoxConstraints(
                                             maxHeight: 200,
                                           ),
                                           itemBuilder:
                                               (context, item, isSelected) {
-                                            return DropDownItem(
+                                            return DropDownItemRota(
+                                              timeout: checkTimeoutRota(
+                                                  item.timeFrom as DateTime,
+                                                  item.timeTo as DateTime),
                                               title:
                                                   '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
                                               isSelected: item.Id ==
@@ -599,15 +636,14 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                                   const SizedBox(
                                                     width: 14,
                                                   ),
-                                                  Text(
-                                                    "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)",
-                                                    style: CustomTextStyle.h4
-                                                        .copyWith(
-                                                      color: ColorTheme.primary,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  )
+                                                  Text(minWithKilometer(),
+                                                      style: CustomTextStyle.h4
+                                                          .copyWith(
+                                                        color:
+                                                            ColorTheme.primary,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ))
                                                 ],
                                               ),
                                             ),
@@ -708,6 +744,49 @@ class DropDownItem extends StatelessWidget {
                 style: CustomTextStyle.body2,
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class DropDownItemRota extends StatelessWidget {
+  final String title;
+  final bool? isSelected;
+  final bool timeout;
+  const DropDownItemRota({
+    required this.title,
+    required this.timeout,
+    this.isSelected = false,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 1,
+            color: ColorTheme.grey300,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 15,
+        ),
+        child: Text(
+          title,
+          style: CustomTextStyle.body1.copyWith(
+            color: isSelected == false
+                ? !timeout
+                    ? ColorTheme.grey600
+                    : ColorTheme.textPrimary
+                : ColorTheme.primary,
+            fontSize: 16,
+          ),
         ),
       ),
     );
