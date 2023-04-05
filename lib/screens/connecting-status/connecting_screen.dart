@@ -148,6 +148,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
         setState(() {
           isBluetoothConnected = false;
         });
+        bluetoothPrinterHelper.subscriptionBtStatus!.cancel();
       } else {
         showCircularProgressIndicator(
             context: context, text: 'Connecting to printer');
