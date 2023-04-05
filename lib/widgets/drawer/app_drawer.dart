@@ -245,7 +245,9 @@ class _MyDrawerState extends State<MyDrawer> {
                     : e.route == 'testPrinter'
                         ? () async {
                             if (checkBluetooth == true) {
-                              onConnectPrinter();
+                              if (!bluetoothPrinterHelper.isConnected) {
+                                onConnectPrinter();
+                              }
                               if (!mounted) return;
                               if (bluetoothPrinterHelper.selectedPrinter ==
                                   null) {

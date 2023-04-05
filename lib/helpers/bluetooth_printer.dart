@@ -238,6 +238,18 @@ class BluetoothPrinterHelper {
     subscription?.cancel();
     subscriptionBtStatus?.cancel();
   }
+
+  void resetPrinterConnection() {
+    subscription?.cancel();
+    subscriptionBtStatus?.cancel();
+    isBle = false;
+    isConnected = false;
+    printerManager = PrinterManager.instance;
+    devices = <BluetoothPrinter>[];
+    currentStatus = BTStatus.none;
+    pendingTask = [];
+    selectedPrinter = null;
+  }
 }
 
 final bluetoothPrinterHelper = BluetoothPrinterHelper();
