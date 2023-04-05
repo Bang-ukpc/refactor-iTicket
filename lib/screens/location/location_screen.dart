@@ -71,7 +71,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   }
 
   setTimeNTP() async {
-    DateTime now = await timeNTP.get();
+    DateTime now = await timeNTP.getTimeWithUKTime();
     setState(() {
       getNowNTP = now;
     });
@@ -119,20 +119,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
     bool checkTimeForm = checkTimeoutFrom(DateTime.parse(getLocalDate(from)));
     bool checkTimeTo = checkTimeoutTo(DateTime.parse(getLocalDate(to)));
     return (checkTimeForm && checkTimeTo);
-  }
-
-  String textTimeoutRota(DateTime from, DateTime to) {
-    if (checkTimeoutRota(from, to) == false) {
-      if (checkTimeoutFrom(from)) {
-        return "Over time";
-      } else if (checkTimeoutTo(to)) {
-        return "Not time yet";
-      } else {
-        return "";
-      }
-    } else {
-      return "";
-    }
   }
 
   List<RotaWithLocation> locationListFilterByRota(
@@ -439,9 +425,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                           itemBuilder:
                                               (context, item, isSelected) {
                                             return DropDownItemRota(
-                                              subtitle: textTimeoutRota(
-                                                  item.timeFrom as DateTime,
-                                                  item.timeTo as DateTime),
                                               timeout: checkTimeoutRota(
                                                   item.timeFrom as DateTime,
                                                   item.timeTo as DateTime),
@@ -771,12 +754,10 @@ class DropDownItemRota extends StatelessWidget {
   final String title;
   final bool? isSelected;
   final bool timeout;
-  final String subtitle;
   const DropDownItemRota({
     required this.title,
     required this.timeout,
     this.isSelected = false,
-    required this.subtitle,
     super.key,
   });
 
@@ -796,26 +777,16 @@ class DropDownItemRota extends StatelessWidget {
           horizontal: 12,
           vertical: 15,
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: CustomTextStyle.body1.copyWith(
-                color: isSelected == false
-                    ? !timeout
-                        ? ColorTheme.grey600
-                        : ColorTheme.textPrimary
-                    : ColorTheme.primary,
-                fontSize: 16,
-              ),
-            ),
-            Text(
-              subtitle,
-              style: CustomTextStyle.body2.copyWith(color: ColorTheme.grey600),
-            )
-          ],
+        child: Text(
+          title,
+          style: CustomTextStyle.body1.copyWith(
+            color: isSelected == false
+                ? !timeout
+                    ? ColorTheme.grey600
+                    : ColorTheme.textPrimary
+                : ColorTheme.primary,
+            fontSize: 16,
+          ),
         ),
       ),
     );
