@@ -126,6 +126,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
 
   Future<void> checkBluetoothConnectionStatus() async {
     await bluetoothPrinterHelper.resetPrinterConnection();
+    await Future.delayed(const Duration(seconds: 2));
     if (checkBluetoothIsOn == true) {
       if (!bluetoothPrinterHelper.isConnected) {
         await onConnectPrinter();
