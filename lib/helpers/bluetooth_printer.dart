@@ -239,9 +239,9 @@ class BluetoothPrinterHelper {
     subscriptionBtStatus?.cancel();
   }
 
-  void resetPrinterConnection() {
-    subscription?.cancel();
-    subscriptionBtStatus?.cancel();
+  Future<void> resetPrinterConnection() async {
+    await subscription?.cancel();
+    await subscriptionBtStatus?.cancel();
     // isBle = false;
     isConnected = false;
     // printerManager = PrinterManager.instance;
