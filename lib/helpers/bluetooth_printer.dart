@@ -239,16 +239,16 @@ class BluetoothPrinterHelper {
     subscriptionBtStatus?.cancel();
   }
 
-  void resetPrinterConnection() {
-    subscription?.cancel();
-    subscriptionBtStatus?.cancel();
-    isBle = false;
+  Future<void> resetPrinterConnection() async {
+    await subscription?.cancel();
+    await subscriptionBtStatus?.cancel();
+    // isBle = false;
     isConnected = false;
-    printerManager = PrinterManager.instance;
-    devices = <BluetoothPrinter>[];
-    currentStatus = BTStatus.none;
-    pendingTask = [];
-    selectedPrinter = null;
+    // printerManager = PrinterManager.instance;
+    // devices = <BluetoothPrinter>[];
+    // currentStatus = BTStatus.none;
+    // pendingTask = [];
+    // selectedPrinter = null;
   }
 }
 
