@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class _ActiveFirstSeenScreenState
   final calculateTime = CalculateTime();
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
   List<VehicleInformation> cacheFirstSeenActive = [];
+  String textSearchVrn = '';
   Logger logger = Logger<ActiveFirstSeenScreen>();
   Future<void> syncAndGetData(int zoneId) async {
     setState(() {
@@ -48,7 +50,11 @@ class _ActiveFirstSeenScreenState
     try {
       await zoneCachedServiceFactory.firstSeenCachedService.syncFromServer();
     } catch (e) {}
-    await getData(zoneId);
+    if (textSearchVrn.isEmpty) {
+      await getData(zoneId);
+    } else {
+      searchByVrn(textSearchVrn);
+    }
     setState(() {
       isLoading = false;
     });
@@ -103,6 +109,8 @@ class _ActiveFirstSeenScreenState
   void dispose() {
     firstSeenActive.clear();
     firstSeenExpired.clear();
+    textSearchVrn = '';
+    log("dispose");
     super.dispose();
   }
 
@@ -204,12 +212,16 @@ class _ActiveFirstSeenScreenState
         body: MyTabBar(
           searchByVrn: (vrn) {
             searchByVrn(vrn);
+            setState(() {
+              textSearchVrn = vrn;
+            });
           },
           resetValueSearch: () async {
             await getData(locations.zone?.Id ?? 0);
             setState(() {
               messageNullActive = 'Your active first seen list is empty';
               messageNullExpired = 'Your expired first seen list is empty';
+              textSearchVrn = '';
             });
           },
           labelFuncAdd: "Add first seen",

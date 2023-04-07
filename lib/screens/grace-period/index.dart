@@ -40,6 +40,7 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
   String messageNullActive = 'Your active grace period list is empty';
   String messageNullExpired = 'Your expired grace period list is empty';
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
+  String textSearchVrn = '';
 
   Future<void> syncAndGetData(int zoneId) async {
     setState(() {
@@ -48,7 +49,11 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
     try {
       await zoneCachedServiceFactory.gracePeriodCachedService.syncFromServer();
     } catch (e) {}
-    await getData(zoneId);
+    if (textSearchVrn.isEmpty) {
+      await getData(zoneId);
+    } else {
+      searchByVrn(textSearchVrn);
+    }
     setState(() {
       isLoading = false;
     });
@@ -100,6 +105,7 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
   void dispose() {
     gracePeriodActive.clear();
     gracePeriodExpired.clear();
+    textSearchVrn = '';
     super.dispose();
   }
 
@@ -197,12 +203,16 @@ class _GracePeriodListState extends BaseStatefulState<GracePeriodList> {
         body: MyTabBar(
           searchByVrn: (e) {
             searchByVrn(e);
+            setState(() {
+              textSearchVrn = e;
+            });
           },
           resetValueSearch: () async {
             await getData(locations.zone?.Id ?? 0);
             setState(() {
               messageNullActive = 'Your active grace period list is empty';
               messageNullExpired = 'Your expired grace period list is empty';
+              textSearchVrn = '';
             });
           },
           labelFuncAdd: "Add consideration period",
