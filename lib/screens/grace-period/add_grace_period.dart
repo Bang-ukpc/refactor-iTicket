@@ -301,6 +301,9 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                                     .copyWith(color: ColorTheme.textPrimary),
                               ),
                               onPressed: () {
+                                setState(() {
+                                  isCheckedPermit = true;
+                                });
                                 Navigator.of(context).pop();
                               },
                             ),
@@ -399,9 +402,6 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                       } else {
                         await addGracePeriodModeComplete();
                       }
-                      setState(() {
-                        isCheckedPermit = true;
-                      });
                     } else {
                       await addGracePeriodModeComplete();
                     }
@@ -450,9 +450,6 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                       } else {
                         await addGracePeriodModeCompleteAndAdd();
                       }
-                      setState(() {
-                        isCheckedPermit = true;
-                      });
                     } else {
                       await addGracePeriodModeCompleteAndAdd();
                     }

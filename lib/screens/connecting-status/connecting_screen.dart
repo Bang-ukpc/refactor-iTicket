@@ -126,7 +126,8 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   }
 
   Future<void> checkBluetoothConnectionStatus() async {
-    bluetoothPrinterHelper.resetPrinterConnection();
+    await bluetoothPrinterHelper.resetPrinterConnection();
+    await Future.delayed(const Duration(seconds: 2));
     if (checkBluetoothIsOn == true) {
       if (!bluetoothPrinterHelper.isConnected) {
         await onConnectPrinter();
@@ -262,7 +263,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
         toast.CherryToast.error(
           toastDuration: const Duration(seconds: 5),
           title: Text(
-            'Please allow the app to always access location in settings',
+            'Please give permission "Allow all the time" location in the app settings',
             style: CustomTextStyle.h4.copyWith(
               color: ColorTheme.danger,
             ),
@@ -864,7 +865,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                                     toast.CherryToast.error(
                                       toastDuration: const Duration(seconds: 5),
                                       title: Text(
-                                        'Please allow the app to always access location in settings',
+                                        'Please give permission "Allow all the time" location in the app settings',
                                         style: CustomTextStyle.h4.copyWith(
                                           color: ColorTheme.danger,
                                         ),
