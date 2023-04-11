@@ -130,8 +130,6 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
 
-    log('Print issue');
-
     void takeAPhoto() async {
       await printIssue.getIdIssue(printIssue
           .findIssueNoImage(typePCN: contraventionProvider.contravention!.type)
@@ -234,8 +232,6 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
         });
       });
     }
-
-    log(isLoading.toString());
 
     return WillPopScope(
       onWillPop: () async => false,
@@ -495,9 +491,11 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
                                                   .findIssueNoImage(
                                                       typePCN:
                                                           contraventionProvider
-                                                              .contravention!
-                                                              .type)
+                                                                  .contravention
+                                                                  ?.type ??
+                                                              1)
                                                   .id);
+                                              if (!mounted) return;
                                               await Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                   builder: (context) =>
