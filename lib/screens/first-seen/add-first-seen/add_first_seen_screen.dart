@@ -53,6 +53,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
   late CachedServiceFactory cachedServiceFactory;
   AutovalidateMode validateMode = AutovalidateMode.disabled;
   bool isCheckedPermit = false;
+  String _errorMessage = '';
 
   Future<void> getLocationList(Locations locations) async {
     List<RotaWithLocation> rotas = [];
@@ -76,6 +77,16 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
           return;
         }
       }
+    }
+  }
+
+  void setError(String msg) {
+    if (_errorMessage != msg) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _errorMessage = msg;
+        });
+      });
     }
   }
 
@@ -347,6 +358,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
         if (value == true) {
           setState(() {
             _vrnController.text = '';
+            _errorMessage = '';
             _bayNumberController.text = '';
             arrayImage.clear();
             evidencePhotoList.clear();
@@ -530,6 +542,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                     child: Form(
                       key: _formKey,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -555,16 +568,25 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                                       fontSize: 16,
                                       color: ColorTheme.grey400,
                                     ),
+                                    errorStyle: TextStyle(
+                                      height: 0,
+                                    ),
                                   ),
                                   validator: ((value) {
                                     if (value!.isEmpty) {
-                                      return 'Please enter VRN';
+                                      setError('Please enter VRN');
+                                      return '';
                                     } else {
                                       if (value.length < 2) {
-                                        return 'Please enter at least 2 characters';
+                                        setError(
+                                            'Please enter at least 2 characters');
+                                        return '';
                                       } else if (value.length > 10) {
-                                        return 'You can only enter up to 10 characters';
+                                        setError(
+                                            'You can only enter up to 10 characters');
+                                        return '';
                                       }
+                                      setError('');
                                       return null;
                                     }
                                   }),
@@ -653,6 +675,16 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                               ),
                             ],
                           ),
+                          if (_errorMessage != "")
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12, top: 8),
+                              child: Text(
+                                _errorMessage,
+                                style: TextStyle(
+                                  color: ColorTheme.danger,
+                                ),
+                              ),
+                            ),
                           const SizedBox(
                             height: 25,
                           ),
