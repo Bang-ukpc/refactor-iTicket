@@ -148,32 +148,100 @@ class BluetoothPrinterHelper {
     return text == null || text.isEmpty;
   }
 
+  // Future printPhysicalPCN(
+  //     {required Contravention physicalPCN,
+  //     required Location locationName,
+  //     required double lowerAmount,
+  //     required double upperAmount,
+  //     required String externalId}) async {
+  //   String fontStyle1 = "^A1N,24,12";
+  //   String fontStyle2 = "^A1N,14,12";
+  //   int xAxis = 175;
+  //   int xAxis2 = 30;
+  //   int xAxis3 = 145;
+  //   int referenceNo = 78;
+  //   int date = referenceNo + 55;
+  //   int plate = date + 70;
+  //   int make = plate + 65;
+  //   int color = make + 60;
+  //   int location = color + 55;
+  //   DateTime now = await timeNTP.getTimeWithUKTime();
+  //   int road = location;
+  //   int issueTime = color + 220;
+  //   int timeFirstSeen = issueTime + 60;
+  //   int wardenId = timeFirstSeen + 58;
+  //   int desc = wardenId + (205 - 67);
+  //   int upper = desc + 102;
+  //   int lower = upper + 45;
+  //   int referenceNo2 = upper + 445;
+  //   int date2 = referenceNo2 + 60;
+  //   int plate2 = date2 + 60;
+  //   int barcode = plate2 + 70;
+  //   List<int> bytes = [];
+
+  //   final profile = await CapabilityProfile.load();
+
+  //   final generator = Generator(PaperSize.mm80, profile);
+  //   String locationInfo =
+  //       "$road^FB400,7,3,L,0$fontStyle2^FD${locationName.Name}\\&${isTextNull(locationName.Address1) ? " " : locationName.Address1}\\&${isTextNull(locationName.Town) ? " " : locationName.Town}\\&${isTextNull(locationName.County) ? " " : locationName.County}\\&${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS^FO$xAxis";
+
+  //   String lowerPrintText =
+  //       "$lower^FB400,3,3,L,0$fontStyle1^FD$lowerAmount^FS^FO$xAxis3";
+  //   String upperPrintText =
+  //       "$upper^FB400,3,3,L,0$fontStyle1^FD$upperAmount^FS^FO${xAxis3 + 115}";
+  //   String externalIdSpace = "$wardenId$fontStyle1^FD$externalId^FS^FO$xAxis2";
+  //   bytes += generator.text(
+  //       '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^POI^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS^FO$xAxis,$locationInfo,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.eventDateTime as DateTime))}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime))}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
+
+  //   await printEscPos(bytes, generator);
+  // }
+
+  int calculatorItem(String? text) {
+    int num;
+    if (text == null || text.isEmpty) {
+      num = 0;
+    } else {
+      num = 30;
+    }
+    return num;
+  }
+
   Future printPhysicalPCN(
       {required Contravention physicalPCN,
       required Location locationName,
       required double lowerAmount,
       required double upperAmount,
       required String externalId}) async {
-    String fontStyle1 = "^A1N,24,12";
-    String fontStyle2 = "^A1N,14,12";
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 145;
-    int referenceNo = 78;
+    int referenceNo = 80;
     int date = referenceNo + 55;
     int plate = date + 70;
     int make = plate + 65;
-    int color = make + 60;
+    int color = make + 65;
     int location = color + 55;
-    DateTime now = await timeNTP.getTimeWithUKTime();
-    int road = location;
+    DateTime now = await timeNTP.get();
+    int road = location + calculatorItem(locationName.Address1);
+    int town = road + calculatorItem(locationName.Town);
+    int county = town + calculatorItem(locationName.County);
+    int postCode = county + calculatorItem(locationName.Postcode);
+
+    // int issueTime = postCode +
+    //     45 +
+    //     calculatorLocation([
+    //       locationName.Address1,
+    //       locationName.Town,
+    //       locationName.County,
+    //       locationName.Postcode
+    //     ]);
     int issueTime = color + 220;
     int timeFirstSeen = issueTime + 60;
-    int wardenId = timeFirstSeen + 58;
-    int desc = wardenId + (205 - 67);
-    int upper = desc + 102;
-    int lower = upper + 45;
-    int referenceNo2 = upper + 445;
+    int wardenId = timeFirstSeen + 55;
+    int desc = wardenId + (205 - 65);
+    int upper = desc + 101;
+    int lower = upper + 42;
+    int referenceNo2 = upper + 441;
     int date2 = referenceNo2 + 60;
     int plate2 = date2 + 60;
     int barcode = plate2 + 70;
@@ -182,18 +250,25 @@ class BluetoothPrinterHelper {
     final profile = await CapabilityProfile.load();
 
     final generator = Generator(PaperSize.mm80, profile);
-    String locationInfo =
-        "$road^FB400,7,3,L,0$fontStyle2^FD${locationName.Name}\\&${isTextNull(locationName.Address1) ? " " : locationName.Address1}\\&${isTextNull(locationName.Town) ? " " : locationName.Town}\\&${isTextNull(locationName.County) ? " " : locationName.County}\\&${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS^FO$xAxis";
+    String roadString =
+        "$road^FB400,3,3,L,0^FD${isTextNull(locationName.Address1) ? " " : locationName.Address1}^FS^FO$xAxis";
 
-    String lowerPrintText =
-        "$lower^FB400,3,3,L,0$fontStyle1^FD$lowerAmount^FS^FO$xAxis3";
+    String townString =
+        "$town^FB400,3,3,L,0^FD${isTextNull(locationName.Town) ? " " : locationName.Town}^FS^FO$xAxis";
+
+    String countyString =
+        "$county^FB400,3,3,L,0^FD${isTextNull(locationName.County) ? " " : locationName.County}^FS^FO$xAxis";
+
+    String postCodeString =
+        "$postCode^FB400,3,3,L,0^FD${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS^FO$xAxis";
+    String lowerPrintText = "$lower^FB400,3,3,L,0^FD$lowerAmount^FS^FO$xAxis3";
     String upperPrintText =
-        "$upper^FB400,3,3,L,0$fontStyle1^FD$upperAmount^FS^FO${xAxis3 + 115}";
-    String externalIdSpace = "$wardenId$fontStyle1^FD$externalId^FS^FO$xAxis2";
+        "$upper^FB400,3,3,L,0^FD$upperAmount^FS^FO${xAxis3 + 115}";
+    String externalIdSpace = "$wardenId^FD$externalId^FS^FO$xAxis2";
     bytes += generator.text(
-        '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^POI^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS^FO$xAxis,$locationInfo,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.eventDateTime as DateTime))}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime))}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
+        '! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^MNN^LL1886^POI^CFA,20^FO$xAxis,$referenceNo^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate^FD${physicalPCN.plate}^FS^FO$xAxis,$make^FD${physicalPCN.make}^FS^FO$xAxis,$color^FD${physicalPCN.colour}^FS^FO$xAxis,$location^FB400,3,3,L,0^FD${locationName.Name}^FS^FO$xAxis,$roadString,$townString,$countyString,$postCodeString,$issueTime^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.eventDateTime as DateTime)}^FS^FO$xAxis,$timeFirstSeen^FD${DateFormat('HH:mm dd-MM-yyyy').format(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime)}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB500,3,3,L,0^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
 
-    await printEscPos(bytes, generator);
+    printEscPos(bytes, generator);
   }
 
   /// print ticket
