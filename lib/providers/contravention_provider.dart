@@ -9,6 +9,8 @@ class ContraventionProvider with ChangeNotifier {
   static String? makeNullProvider;
   static ContraventionReasonTranslations? contraventionCode;
   static bool isPermitVerified = false;
+  static String? virtualReference;
+  static String? physicalReference;
 
   VehicleInformation? get getVehicleInfo {
     return vehicleInfoData;
@@ -32,6 +34,14 @@ class ContraventionProvider with ChangeNotifier {
 
   bool get getStatusPermitVerified {
     return isPermitVerified;
+  }
+
+  String? get getVirtualReference {
+    return virtualReference;
+  }
+
+  String? get getPhysicalReference {
+    return physicalReference;
   }
 
   void setFirstSeenData(VehicleInformation? vehicleInformation) {
@@ -64,6 +74,16 @@ class ContraventionProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void updateVirtualReference(String? ref) {
+    virtualReference = ref;
+    notifyListeners();
+  }
+
+  void updatePhysicalReference(String? ref) {
+    physicalReference = ref;
+    notifyListeners();
+  }
+
   void clearContraventionData() {
     vehicleInfoData = null;
     contraventionData = null;
@@ -71,6 +91,8 @@ class ContraventionProvider with ChangeNotifier {
     makeNullProvider = null;
     contraventionCode = null;
     isPermitVerified = false;
+    virtualReference = null;
+    physicalReference = null;
     notifyListeners();
   }
 }
