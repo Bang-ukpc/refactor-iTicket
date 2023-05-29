@@ -4,7 +4,7 @@ import 'package:iWarden/theme/text_theme.dart';
 
 ThemeData themeMain() {
   return ThemeData(
-    fontFamily: 'TT-Firs-Neue',
+    fontFamily: 'Lato',
     drawerTheme: const DrawerThemeData(
       backgroundColor: Colors.white,
     ),
