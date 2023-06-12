@@ -287,6 +287,36 @@ class _IssuePCNFirstSeenScreenState
     });
   }
 
+  Future<bool> checkDuplicateContravention(
+      String contraventionReferenceID) async {
+    List<Contravention> issuedContraventions = await zoneCachedServiceFactory
+        .contraventionCachedService
+        .getAllWithCreatedOnTheOffline();
+
+    bool isContraventionExisted = issuedContraventions
+            .firstWhereOrNull((c) => c.reference == contraventionReferenceID) !=
+        null;
+
+    return isContraventionExisted;
+  }
+
+  Future getAndSetContraventionReference(
+      {required ContraventionProvider contraventionProvider,
+      required int wardenId}) async {
+    var virtualRef = contraventionReferenceHelper.getContraventionReference(
+        prefixNumber: 3, wardenID: wardenId, dateTime: getNow);
+    var physicalRef = contraventionReferenceHelper.getContraventionReference(
+        prefixNumber: 2, wardenID: wardenId, dateTime: getNow);
+    bool isVirtualRefExisted = await checkDuplicateContravention(virtualRef);
+    bool isPhysicalRefExisted = await checkDuplicateContravention(physicalRef);
+    if (!isVirtualRefExisted) {
+      contraventionProvider.updateVirtualReference(virtualRef);
+    }
+    if (!isPhysicalRefExisted) {
+      contraventionProvider.updatePhysicalReference(physicalRef);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -320,6 +350,15 @@ class _IssuePCNFirstSeenScreenState
         } else {
           setContraventionReasons(isOverStaying: false);
         }
+      }
+
+      // Get references and put them in the provider
+      var virtualRef = contraventionProvider.getVirtualReference;
+      var physicalRef = contraventionProvider.getPhysicalReference;
+      if (virtualRef == null && physicalRef == null) {
+        await getAndSetContraventionReference(
+            contraventionProvider: contraventionProvider,
+            wardenId: wardensProvider.wardens?.Id ?? 0);
       }
 
       setContraventionReasons(
@@ -382,26 +421,11 @@ class _IssuePCNFirstSeenScreenState
     final contraventionProvider = Provider.of<ContraventionProvider>(context);
     final printIssue = Provider.of<prefix.PrintIssueProviders>(context);
 
-    log('issue pcn screen $getNow');
-
     int randomNumber = (DateTime.now().microsecondsSinceEpoch / -1000).ceil();
-
-    Future<bool> checkDuplicateContravention(
-        String contraventionReferenceID) async {
-      List<Contravention> issuedContraventions = await zoneCachedServiceFactory
-          .contraventionCachedService
-          .getAllWithCreatedOnTheOffline();
-
-      bool isContraventionExisted = issuedContraventions.firstWhereOrNull(
-              (c) => c.reference == contraventionReferenceID) !=
-          null;
-
-      return isContraventionExisted;
-    }
 
     final physicalPCN = ContraventionCreateWardenCommand(
       ZoneId: locationProvider.zone?.Id ?? 0,
-      ContraventionReference:
+      ContraventionReference: contraventionProvider.getPhysicalReference ??
           contraventionReferenceHelper.getContraventionReference(
               prefixNumber: 2,
               wardenID: wardensProvider.wardens?.Id ?? 0,
@@ -429,13 +453,18 @@ class _IssuePCNFirstSeenScreenState
     Future<void> createPhysicalPCN(
         {bool? step2, bool? step3, required bool isPrinter}) async {
       DateTime now = await timeNTP.get();
+      var physicalRefPrefix =
+          contraventionReferenceHelper.getContraventionReference(
+              prefixNumber: 2,
+              wardenID: wardensProvider.wardens?.Id ?? 0,
+              dateTime: now);
+      if (contraventionProvider.getPhysicalReference == null) {
+        contraventionProvider.updatePhysicalReference(physicalRefPrefix);
+      }
       final physicalPCN2 = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
         ContraventionReference:
-            contraventionReferenceHelper.getContraventionReference(
-                prefixNumber: 2,
-                wardenID: wardensProvider.wardens?.Id ?? 0,
-                dateTime: now),
+            contraventionProvider.getPhysicalReference ?? physicalRefPrefix,
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
@@ -461,16 +490,42 @@ class _IssuePCNFirstSeenScreenState
         return;
       }
 
-      var isVrnExisted = await zoneCachedServiceFactory
-          .contraventionCachedService
-          .isExistedWithIn24h(
-              vrn: physicalPCN.Plate,
-              zoneId: physicalPCN.ZoneId,
-              contraventionType: physicalPCN.ContraventionReasonCode);
-      if (!isVrnExisted) {
+      var reason = contraventionReasonList
+          .firstWhere((e) => e.code == physicalPCN.ContraventionReasonCode);
+
+      try {
         if (!mounted) return;
-        showAlertCheckVrnExits(context: context);
-        return;
+        showCircularProgressIndicator(
+            context: context, text: 'Checking for duplicate VRN');
+        var isDuplicate =
+            await weakNetworkContraventionController.checkDuplicateVRN(
+          plate: physicalPCN.Plate,
+          zoneId: physicalPCN.ZoneId,
+          timeIssue: now,
+          reasonId: '${reason.contraventionReasonId}',
+        );
+
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        if (isDuplicate) {
+          showAlertCheckVrnExits(context: context);
+          return;
+        }
+      } on DioError catch (error) {
+        print('[ERROR] ${error.message}');
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        var isVrnExisted = await zoneCachedServiceFactory
+            .contraventionCachedService
+            .isExistedWithIn24h(
+                vrn: physicalPCN.Plate,
+                zoneId: physicalPCN.ZoneId,
+                contraventionType: physicalPCN.ContraventionReasonCode);
+        if (!isVrnExisted) {
+          if (!mounted) return;
+          showAlertCheckVrnExits(context: context);
+          return;
+        }
       }
 
       List<ContraventionPhotos> contraventionImageList = [];
@@ -532,6 +587,7 @@ class _IssuePCNFirstSeenScreenState
                     PrintIssue.routeName,
                     arguments: {'isPrinter': isPrinter});
       } else {
+        contraventionProvider.updatePhysicalReference(null);
         CherryToast.error(
           toastDuration: const Duration(seconds: 3),
           title: Text(
@@ -550,7 +606,7 @@ class _IssuePCNFirstSeenScreenState
     int randomNumber2 = (getNow.microsecondsSinceEpoch / -1000).ceil();
     final virtualTicket = ContraventionCreateWardenCommand(
       ZoneId: locationProvider.zone?.Id ?? 0,
-      ContraventionReference:
+      ContraventionReference: contraventionProvider.getVirtualReference ??
           contraventionReferenceHelper.getContraventionReference(
               prefixNumber: 3,
               wardenID: wardensProvider.wardens?.Id ?? 0,
@@ -577,13 +633,18 @@ class _IssuePCNFirstSeenScreenState
 
     Future<void> createVirtualTicket({bool? step2, bool? step3}) async {
       DateTime now = await timeNTP.get();
+      var virtualRefPrefix =
+          contraventionReferenceHelper.getContraventionReference(
+              prefixNumber: 3,
+              wardenID: wardensProvider.wardens?.Id ?? 0,
+              dateTime: now);
+      if (contraventionProvider.getVirtualReference == null) {
+        contraventionProvider.updateVirtualReference(virtualRefPrefix);
+      }
       final virtualTicket2 = ContraventionCreateWardenCommand(
         ZoneId: locationProvider.zone?.Id ?? 0,
         ContraventionReference:
-            contraventionReferenceHelper.getContraventionReference(
-                prefixNumber: 3,
-                wardenID: wardensProvider.wardens?.Id ?? 0,
-                dateTime: now),
+            contraventionProvider.getVirtualReference ?? virtualRefPrefix,
         Plate: _vrnController.text,
         VehicleMake: _vehicleMakeController.text,
         VehicleColour: _vehicleColorController.text,
@@ -608,16 +669,42 @@ class _IssuePCNFirstSeenScreenState
         return;
       }
 
-      var isVrnExisted = await zoneCachedServiceFactory
-          .contraventionCachedService
-          .isExistedWithIn24h(
-              vrn: virtualTicket.Plate,
-              zoneId: virtualTicket.ZoneId,
-              contraventionType: virtualTicket.ContraventionReasonCode);
-      if (!isVrnExisted) {
+      var reason = contraventionReasonList
+          .firstWhere((e) => e.code == virtualTicket.ContraventionReasonCode);
+
+      try {
         if (!mounted) return;
-        showAlertCheckVrnExits(context: context);
-        return;
+        showCircularProgressIndicator(
+            context: context, text: 'Checking for duplicate VRN');
+        var isDuplicate =
+            await weakNetworkContraventionController.checkDuplicateVRN(
+          plate: virtualTicket.Plate,
+          zoneId: virtualTicket.ZoneId,
+          timeIssue: now,
+          reasonId: '${reason.contraventionReasonId}',
+        );
+
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        if (isDuplicate) {
+          showAlertCheckVrnExits(context: context);
+          return;
+        }
+      } on DioError catch (error) {
+        print('[ERROR] ${error.message}');
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        var isVrnExisted = await zoneCachedServiceFactory
+            .contraventionCachedService
+            .isExistedWithIn24h(
+                vrn: virtualTicket.Plate,
+                zoneId: virtualTicket.ZoneId,
+                contraventionType: virtualTicket.ContraventionReasonCode);
+        if (!isVrnExisted) {
+          if (!mounted) return;
+          showAlertCheckVrnExits(context: context);
+          return;
+        }
       }
 
       List<ContraventionPhotos> contraventionImageList = [];
@@ -677,6 +764,7 @@ class _IssuePCNFirstSeenScreenState
                 : Navigator.of(context)
                     .pushReplacementNamed(PrintIssue.routeName);
       } else {
+        contraventionProvider.updateVirtualReference(null);
         CherryToast.error(
           toastDuration: const Duration(seconds: 3),
           title: Text(
@@ -1028,7 +1116,8 @@ class _IssuePCNFirstSeenScreenState
                       virtualTicket.WardenComments = _commentController.text;
                       try {
                         if (!mounted) return;
-                        showCircularProgressIndicator(context: context);
+                        showCircularProgressIndicator(
+                            context: context, text: 'Checking permit');
                         Permit permit = Permit(
                             Plate: virtualTicket.Plate,
                             ContraventionReasonCode:
@@ -1100,7 +1189,8 @@ class _IssuePCNFirstSeenScreenState
                       physicalPCN.WardenComments = _commentController.text;
                       try {
                         if (!mounted) return;
-                        showCircularProgressIndicator(context: context);
+                        showCircularProgressIndicator(
+                            context: context, text: 'Checking permit');
                         Permit permit = Permit(
                             Plate: physicalPCN.Plate,
                             ContraventionReasonCode:

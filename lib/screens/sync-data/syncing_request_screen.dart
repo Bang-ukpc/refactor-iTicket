@@ -83,9 +83,9 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text(
                         'Some data has not been synced. \nDo you want to sync now?',
                         textAlign: TextAlign.center,
