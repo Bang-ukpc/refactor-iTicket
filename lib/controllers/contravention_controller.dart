@@ -116,6 +116,33 @@ class ContraventionController {
     }
   }
 
+  Future<bool> checkDuplicateVRN({
+    required String plate,
+    required int zoneId,
+    required DateTime timeIssue,
+    required String reasonId,
+  }) async {
+    print(
+        '[DATA] {plate: $plate, zoneId: $zoneId, timeIssue: $timeIssue, reasonId: $reasonId}');
+    try {
+      final response = await dio.post(
+        '/contravention/check-duplicate-pcn',
+        data: {
+          'Plate': plate,
+          'ZoneId': zoneId,
+          'TimeIssue': timeIssue.toIso8601String(),
+          'ReasonId': reasonId,
+        },
+      );
+      bool responseData = response.data['isDuplicate'];
+      print('[CHECK DUPLICATE PCN] ${response.data}');
+      return responseData;
+    } on DioError catch (error) {
+      print(error.response);
+      rethrow;
+    }
+  }
+
   Future<dynamic> uploadContraventionImage(
       ContraventionCreatePhoto contraventionCreatePhoto) async {
     var formData = FormData.fromMap({

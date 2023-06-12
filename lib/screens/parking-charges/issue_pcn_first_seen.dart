@@ -490,16 +490,42 @@ class _IssuePCNFirstSeenScreenState
         return;
       }
 
-      var isVrnExisted = await zoneCachedServiceFactory
-          .contraventionCachedService
-          .isExistedWithIn24h(
-              vrn: physicalPCN.Plate,
-              zoneId: physicalPCN.ZoneId,
-              contraventionType: physicalPCN.ContraventionReasonCode);
-      if (!isVrnExisted) {
+      var reason = contraventionReasonList
+          .firstWhere((e) => e.code == physicalPCN.ContraventionReasonCode);
+
+      try {
         if (!mounted) return;
-        showAlertCheckVrnExits(context: context);
-        return;
+        showCircularProgressIndicator(
+            context: context, text: 'Checking for duplicate VRN');
+        var isDuplicate =
+            await weakNetworkContraventionController.checkDuplicateVRN(
+          plate: physicalPCN.Plate,
+          zoneId: physicalPCN.ZoneId,
+          timeIssue: now,
+          reasonId: '${reason.contraventionReasonId}',
+        );
+
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        if (isDuplicate) {
+          showAlertCheckVrnExits(context: context);
+          return;
+        }
+      } on DioError catch (error) {
+        print('[ERROR] ${error.message}');
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        var isVrnExisted = await zoneCachedServiceFactory
+            .contraventionCachedService
+            .isExistedWithIn24h(
+                vrn: physicalPCN.Plate,
+                zoneId: physicalPCN.ZoneId,
+                contraventionType: physicalPCN.ContraventionReasonCode);
+        if (!isVrnExisted) {
+          if (!mounted) return;
+          showAlertCheckVrnExits(context: context);
+          return;
+        }
       }
 
       List<ContraventionPhotos> contraventionImageList = [];
@@ -643,16 +669,42 @@ class _IssuePCNFirstSeenScreenState
         return;
       }
 
-      var isVrnExisted = await zoneCachedServiceFactory
-          .contraventionCachedService
-          .isExistedWithIn24h(
-              vrn: virtualTicket.Plate,
-              zoneId: virtualTicket.ZoneId,
-              contraventionType: virtualTicket.ContraventionReasonCode);
-      if (!isVrnExisted) {
+      var reason = contraventionReasonList
+          .firstWhere((e) => e.code == virtualTicket.ContraventionReasonCode);
+
+      try {
         if (!mounted) return;
-        showAlertCheckVrnExits(context: context);
-        return;
+        showCircularProgressIndicator(
+            context: context, text: 'Checking for duplicate VRN');
+        var isDuplicate =
+            await weakNetworkContraventionController.checkDuplicateVRN(
+          plate: virtualTicket.Plate,
+          zoneId: virtualTicket.ZoneId,
+          timeIssue: now,
+          reasonId: '${reason.contraventionReasonId}',
+        );
+
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        if (isDuplicate) {
+          showAlertCheckVrnExits(context: context);
+          return;
+        }
+      } on DioError catch (error) {
+        print('[ERROR] ${error.message}');
+        if (!mounted) return;
+        Navigator.of(context).pop();
+        var isVrnExisted = await zoneCachedServiceFactory
+            .contraventionCachedService
+            .isExistedWithIn24h(
+                vrn: virtualTicket.Plate,
+                zoneId: virtualTicket.ZoneId,
+                contraventionType: virtualTicket.ContraventionReasonCode);
+        if (!isVrnExisted) {
+          if (!mounted) return;
+          showAlertCheckVrnExits(context: context);
+          return;
+        }
       }
 
       List<ContraventionPhotos> contraventionImageList = [];
@@ -1064,7 +1116,8 @@ class _IssuePCNFirstSeenScreenState
                       virtualTicket.WardenComments = _commentController.text;
                       try {
                         if (!mounted) return;
-                        showCircularProgressIndicator(context: context);
+                        showCircularProgressIndicator(
+                            context: context, text: 'Checking permit');
                         Permit permit = Permit(
                             Plate: virtualTicket.Plate,
                             ContraventionReasonCode:
@@ -1136,7 +1189,8 @@ class _IssuePCNFirstSeenScreenState
                       physicalPCN.WardenComments = _commentController.text;
                       try {
                         if (!mounted) return;
-                        showCircularProgressIndicator(context: context);
+                        showCircularProgressIndicator(
+                            context: context, text: 'Checking permit');
                         Permit permit = Permit(
                             Plate: physicalPCN.Plate,
                             ContraventionReasonCode:
