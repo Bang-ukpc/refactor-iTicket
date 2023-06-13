@@ -81,9 +81,9 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                 const SizedBox(
                   height: 24,
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Row(
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
