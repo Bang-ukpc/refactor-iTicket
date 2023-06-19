@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/directions.dart';
@@ -297,6 +298,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: Scaffold(
+          bottomNavigationBar: const VersionName(),
           bottomSheet: SizedBox(
             height: 46,
             width: double.infinity,
