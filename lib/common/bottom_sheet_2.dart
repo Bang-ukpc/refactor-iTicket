@@ -117,7 +117,7 @@ class _BottomSheet2State extends State<BottomSheet2> {
               },
             ).toList(),
           ),
-          VersionName(),
+          const VersionName(),
           const SizedBox(
             height: 1,
           ),

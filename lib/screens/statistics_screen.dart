@@ -215,7 +215,7 @@ class _StatisticScreenState extends BaseStatefulState<StatisticScreen> {
           onRedirect: () =>
               Navigator.of(context).popAndPushNamed(HomeOverview.routeName),
         ),
-        bottomNavigationBar: VersionName(),
+        bottomNavigationBar: const VersionName(),
         drawer: const MyDrawer(),
         body: SingleChildScrollView(
           child: Column(

@@ -4,7 +4,7 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class VersionName extends StatefulWidget {
-  VersionName({super.key});
+  const VersionName({super.key});
 
   @override
   State<VersionName> createState() => _VersionNameState();
