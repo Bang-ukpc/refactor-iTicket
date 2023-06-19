@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/controllers/statistic_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
@@ -214,6 +215,7 @@ class _StatisticScreenState extends BaseStatefulState<StatisticScreen> {
           onRedirect: () =>
               Navigator.of(context).popAndPushNamed(HomeOverview.routeName),
         ),
+        bottomNavigationBar: VersionName(),
         drawer: const MyDrawer(),
         body: SingleChildScrollView(
           child: Column(

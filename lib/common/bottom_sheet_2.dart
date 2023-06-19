@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class BottomNavyBarItem extends StatelessWidget {
   final void Function()? onPressed;
@@ -85,28 +87,42 @@ class _BottomSheet2State extends State<BottomSheet2> {
   @override
   Widget build(BuildContext context) {
     final widthScreen = MediaQuery.of(context).size.width;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: widget.buttonList.map(
-        (item) {
-          return (widget.buttonList.length == 1
-              ? SizedBox(
-                  width: widthScreen,
-                  child: item,
-                )
-              : Row(
-                  children: [
-                    SizedBox(
-                      width: ((widthScreen - widget.buttonList.length + 1) /
-                          widget.buttonList.length),
-                      child: item,
-                    ),
-                    if (item != widget.buttonList[widget.buttonList.length - 1])
-                      verticalLine
-                  ],
-                ));
-        },
-      ).toList(),
+    return SizedBox(
+      height: 62,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: widget.buttonList.map(
+              (item) {
+                return (widget.buttonList.length == 1
+                    ? SizedBox(
+                        width: widthScreen,
+                        child: item,
+                      )
+                    : Row(
+                        children: [
+                          SizedBox(
+                            width:
+                                ((widthScreen - widget.buttonList.length + 1) /
+                                    widget.buttonList.length),
+                            child: item,
+                          ),
+                          if (item !=
+                              widget.buttonList[widget.buttonList.length - 1])
+                            verticalLine
+                        ],
+                      ));
+              },
+            ).toList(),
+          ),
+          VersionName(),
+          const SizedBox(
+            height: 1,
+          ),
+        ],
+      ),
     );
   }
 }
