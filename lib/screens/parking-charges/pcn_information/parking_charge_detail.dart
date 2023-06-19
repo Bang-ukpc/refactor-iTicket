@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
@@ -26,6 +27,7 @@ class ParkingChargeDetail extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
+        bottomNavigationBar: const VersionName(),
         drawer: const MyDrawer(),
         body: DetailParkingCommon(contravention: args),
       ),
