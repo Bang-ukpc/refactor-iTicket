@@ -200,7 +200,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
       }
     }
 
-    print("GPS ${listFilter.isNotEmpty ? listFilter[0] : "null"}");
     Future<void> showMyDialog() async {
       return showDialog<void>(
         context: context,
@@ -228,7 +227,9 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                   style: CustomTextStyle.h5.copyWith(
                     color: Colors.white,
                   )),
-              onPressed: () {
+              onPressed: () async {
+                await currentLocationPosition.getCurrentLocation();
+                if (!mounted) return;
                 Navigator.of(context).pop();
               },
             ),
