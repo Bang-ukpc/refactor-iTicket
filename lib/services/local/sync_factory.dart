@@ -16,6 +16,7 @@ class SyncFactory {
     issuedPcnLocalService = IssuedPcnLocalService();
     createdWardenEventLocalService = CreatedWardenEventLocalService();
   }
+
   syncToServer() async {
     logger.info('Starting ...');
     if (isRunning) {
@@ -24,18 +25,23 @@ class SyncFactory {
     }
 
     isRunning = true;
-    try {
-      await createdWardenEventLocalService.syncAll((isStop) => false);
-    } catch (e) {
-      logger.error(e);
-    }
-
-    try {
-      await createdVehicleDataLocalService.syncAll((isStop) => false);
-      await issuedPcnLocalService.syncAll((isStop) => false);
-    } catch (e) {
-      logger.error(e);
-    }
+    Future.wait([
+      Future(() async {
+        try {
+          await createdWardenEventLocalService.syncAll((isStop) => false);
+        } catch (e) {
+          logger.error(e);
+        }
+      }),
+      Future(() async {
+        try {
+          await createdVehicleDataLocalService.syncAll((isStop) => false);
+          await issuedPcnLocalService.syncAll((isStop) => false);
+        } catch (e) {
+          logger.error(e);
+        }
+      }),
+    ]);
     isRunning = false;
   }
 }
