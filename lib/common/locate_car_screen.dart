@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/vehicle_information.dart';
@@ -86,6 +87,7 @@ class _LocateCarScreenState extends BaseStatefulState<LocateCarScreen> {
     );
 
     return Scaffold(
+      bottomNavigationBar: const VersionName(),
       appBar: const MyAppBar(
         title: "Locate car",
         automaticallyImplyLeading: true,
@@ -97,7 +99,7 @@ class _LocateCarScreenState extends BaseStatefulState<LocateCarScreen> {
         ),
         Container(
           width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height - 100,
+          height: MediaQuery.of(context).size.height - 120,
           color: ColorTheme.white,
           child: Column(
             children: [

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/models/log.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
@@ -215,91 +216,101 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
           ),
         ),
         bottomNavigationBar: Container(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          height: 62 + 36,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              if (isSyncing)
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: SvgPicture.asset(
-                      "assets/svg/IconStop.svg",
-                      color: ColorTheme.textPrimary,
+              Row(
+                children: [
+                  if (isSyncing)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: SvgPicture.asset(
+                          "assets/svg/IconStop.svg",
+                          color: ColorTheme.textPrimary,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: ColorTheme.grey300,
+                        ),
+                        onPressed: !isStoppingSyncing
+                            ? () {
+                                stopSyncing();
+                              }
+                            : null,
+                        label: Text(
+                          isStoppingSyncing
+                              ? 'Stopping syncing...'
+                              : 'Stop syncing',
+                          style: CustomTextStyle.h5.copyWith(
+                              color: ColorTheme.textPrimary, fontSize: 16),
+                        ),
+                      ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      backgroundColor: ColorTheme.grey300,
+                  if (!isSyncing &&
+                      totalDataNeedToSync > 0 &&
+                      (progressingVehicleInfo + progressingPcns) !=
+                          totalDataNeedToSync)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: SvgPicture.asset(
+                          "assets/svg/IconRefresh2.svg",
+                          color: ColorTheme.textPrimary,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: ColorTheme.grey300,
+                        ),
+                        onPressed: () async {
+                          await syncAgain();
+                        },
+                        label: Text(
+                          'Sync again',
+                          style: CustomTextStyle.h5.copyWith(
+                              color: ColorTheme.textPrimary, fontSize: 16),
+                        ),
+                      ),
                     ),
-                    onPressed: !isStoppingSyncing
-                        ? () {
-                            stopSyncing();
-                          }
-                        : null,
-                    label: Text(
-                      isStoppingSyncing
-                          ? 'Stopping syncing...'
-                          : 'Stop syncing',
-                      style: CustomTextStyle.h5.copyWith(
-                          color: ColorTheme.textPrimary, fontSize: 16),
+                  if (!isSyncing &&
+                      totalDataNeedToSync > 0 &&
+                      (progressingVehicleInfo + progressingPcns) !=
+                          totalDataNeedToSync)
+                    const SizedBox(
+                      width: 16,
                     ),
-                  ),
-                ),
-              if (!isSyncing &&
-                  totalDataNeedToSync > 0 &&
-                  (progressingVehicleInfo + progressingPcns) !=
-                      totalDataNeedToSync)
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: SvgPicture.asset(
-                      "assets/svg/IconRefresh2.svg",
-                      color: ColorTheme.textPrimary,
+                  if (!isSyncing)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: SvgPicture.asset(
+                          "assets/svg/IconComplete2.svg",
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushReplacementNamed(ConnectingScreen.routeName);
+                        },
+                        label: Text(
+                          'Finish',
+                          style: CustomTextStyle.h5
+                              .copyWith(color: ColorTheme.white, fontSize: 16),
+                        ),
+                      ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      backgroundColor: ColorTheme.grey300,
-                    ),
-                    onPressed: () async {
-                      await syncAgain();
-                    },
-                    label: Text(
-                      'Sync again',
-                      style: CustomTextStyle.h5.copyWith(
-                          color: ColorTheme.textPrimary, fontSize: 16),
-                    ),
-                  ),
-                ),
-              if (!isSyncing &&
-                  totalDataNeedToSync > 0 &&
-                  (progressingVehicleInfo + progressingPcns) !=
-                      totalDataNeedToSync)
-                const SizedBox(
-                  width: 16,
-                ),
-              if (!isSyncing)
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: SvgPicture.asset(
-                      "assets/svg/IconComplete2.svg",
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context)
-                          .pushReplacementNamed(ConnectingScreen.routeName);
-                    },
-                    label: Text(
-                      'Finish',
-                      style: CustomTextStyle.h5
-                          .copyWith(color: ColorTheme.white, fontSize: 16),
-                    ),
-                  ),
-                ),
+                ],
+              ),
+              const VersionName(),
+              const SizedBox(
+                height: 1,
+              ),
             ],
           ),
         ),
