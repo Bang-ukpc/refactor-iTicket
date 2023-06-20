@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/syncing-data-logs/syncing_data_log_screen.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
@@ -56,6 +57,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
+        bottomNavigationBar: const VersionName(),
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/circle.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/home_overview.dart';
@@ -154,6 +155,7 @@ class _SyncZoneDataState extends BaseStatefulState<SyncZoneData> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
+        bottomNavigationBar: const VersionName(),
         backgroundColor: Colors.white,
         body: RefreshIndicator(
           onRefresh: refresh,

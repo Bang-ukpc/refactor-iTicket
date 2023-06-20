@@ -5,6 +5,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/common/version_name.dart';
+import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -116,6 +118,7 @@ class _ReadRegulationScreenState
     }
 
     return Scaffold(
+      bottomNavigationBar: const VersionName(),
       bottomSheet: SizedBox(
         height: 46,
         width: double.infinity,
