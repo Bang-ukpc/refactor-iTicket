@@ -231,6 +231,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                 await currentLocationPosition.getCurrentLocation();
                 if (!mounted) return;
                 Navigator.of(context).pop();
+                setState(() {});
               },
             ),
           );
