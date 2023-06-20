@@ -30,6 +30,7 @@ import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:location_permissions/location_permissions.dart' as location;
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
 
@@ -238,6 +239,15 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     });
   }
 
+  Future _requestLocationAccessWhenUsing() async {
+    final permission = await location.LocationPermissions().requestPermissions(
+      permissionLevel: location.LocationPermissionLevel.locationWhenInUse,
+    );
+    if (permission == location.PermissionStatus.granted) {
+      return;
+    }
+  }
+
   // Get current location
   getCurrentLocationOfWarden() async {
     if (await requestLocationPermission.checkLocationPermission()) {
@@ -373,6 +383,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     onStartBackgroundService();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
+      await _requestLocationAccessWhenUsing();
       await getCurrentLocationOfWarden();
       await checkBluetoothConnectionStatus();
       await wardensInfo.getWardensInfoLogging().then((value) async {
