@@ -14,6 +14,7 @@ import 'package:iWarden/common/circle.dart';
 import 'package:iWarden/common/dot.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/configs/request_location_permission.dart';
@@ -560,6 +561,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
+        bottomNavigationBar: const VersionName(),
         backgroundColor: Colors.white,
         body: SafeArea(
           child: RefreshIndicator(

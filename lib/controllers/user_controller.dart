@@ -3,7 +3,16 @@ import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/models/wardens.dart';
 
 class UserController {
-  static final dio = DioHelper.defaultApiClient;
+  late Dio dio;
+
+  UserController() {
+    dio = DioHelper.defaultApiClient;
+  }
+
+  UserController.fromDio(Dio initDio) {
+    dio = initDio;
+  }
+
   Future<Wardens> getMe() async {
     try {
       final response = await dio.get('/warden/get-me');

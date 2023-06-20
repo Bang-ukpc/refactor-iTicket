@@ -5,6 +5,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
@@ -422,16 +423,26 @@ class _MyDrawerState extends State<MyDrawer> {
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 30,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: getListNav(),
-                  ),
-                ),
+                Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 30,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: getListNav(),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      width: double.infinity,
+                      color: ColorTheme.grey200,
+                      child: const VersionName(),
+                    ),
+                  ],
+                )
               ],
             ),
           ),

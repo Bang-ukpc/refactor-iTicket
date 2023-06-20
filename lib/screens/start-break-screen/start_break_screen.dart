@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
+import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/user_controller.dart';
@@ -93,6 +94,7 @@ class _StartBreakScreenState extends BaseStatefulState<StartBreakScreen> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
+        bottomNavigationBar: const VersionName(),
         body: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           width: screenWidth,
