@@ -27,12 +27,10 @@ class _VersionNameState extends State<VersionName> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Text(
-        "iTicket $verisonName",
-        style: CustomTextStyle.body1.copyWith(color: ColorTheme.grey600),
-        textAlign: TextAlign.center,
-      ),
+    return Text(
+      "iTicket $verisonName",
+      style: CustomTextStyle.body1.copyWith(color: ColorTheme.grey600),
+      textAlign: TextAlign.center,
     );
   }
 }
