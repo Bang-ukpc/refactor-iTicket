@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
@@ -9,14 +8,11 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/contravention_controller.dart';
-import 'package:iWarden/controllers/user_controller.dart';
-import 'package:iWarden/models/contravention.dart';
-import 'package:iWarden/models/pagination.dart';
+import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
-import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/sync-zone-data/sync_zone_data_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -58,55 +54,26 @@ class _ReadRegulationScreenState
     );
 
     void checkNextPage() async {
-      // eventAnalytics.clickButton(
-      //   button: "Check in",
-      //   user: wardersProvider.wardens!.Email,
-      // );
+      DateTime now = await timeNTP.get();
       if (locations.location?.Notes?.isEmpty == true ||
           locations.location?.Notes == null) {
-        try {
-          showCircularProgressIndicator(context: context, text: 'Checking in');
-          await createdWardenEventLocalService
-              .create(wardenEvent)
-              .then((value) {
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                SyncZoneData.routeName, (Route<dynamic> route) => false);
-          });
-        } on DioError catch (error) {
-          if (!mounted) return;
-          if (error.type == DioErrorType.other) {
-            Navigator.of(context).pop();
-            CherryToast.error(
-              toastDuration: const Duration(seconds: 3),
-              title: Text(
-                error.message.length > Constant.errorTypeOther
-                    ? 'Something went wrong, please try again'
-                    : error.message,
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-            return;
-          }
-          Navigator.of(context).pop();
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              error.response!.data['message'].toString().length >
-                      Constant.errorMaxLength
-                  ? 'Internal server error'
-                  : error.response!.data['message'],
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-        }
-      } else {
+        wardenEvent.Created ??= now;
         if (!mounted) return;
+        showCircularProgressIndicator(context: context, text: 'Checking in');
+        weakNetworkUserController.createWardenEvent(wardenEvent).then((value) {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              SyncZoneData.routeName, (Route<dynamic> route) => false);
+        }).catchError((error) async {
+          Navigator.of(context).pop();
+          await createdWardenEventLocalService.create(wardenEvent);
+          if (!mounted) return;
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              SyncZoneData.routeName, (Route<dynamic> route) => false);
+        });
+      } else {
         if (!checkbox) {
+          if (!mounted) return;
           CherryToast.error(
             displayCloseButton: false,
             title: Text(
@@ -117,46 +84,22 @@ class _ReadRegulationScreenState
             borderRadius: 5,
           ).show(context);
         } else {
-          try {
-            showCircularProgressIndicator(
-                context: context, text: 'Checking in');
-            await createdWardenEventLocalService
-                .create(wardenEvent)
-                .then((value) {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  SyncZoneData.routeName, (Route<dynamic> route) => false);
-            });
-          } on DioError catch (error) {
-            if (error.type == DioErrorType.other) {
-              Navigator.of(context).pop();
-              CherryToast.error(
-                toastDuration: const Duration(seconds: 3),
-                title: Text(
-                  error.message.length > Constant.errorTypeOther
-                      ? 'Something went wrong, please try again'
-                      : error.message,
-                  style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-                ),
-                toastPosition: Position.bottom,
-                borderRadius: 5,
-              ).show(context);
-              return;
-            }
+          wardenEvent.Created ??= now;
+          if (!mounted) return;
+          showCircularProgressIndicator(context: context, text: 'Checking in');
+          weakNetworkUserController
+              .createWardenEvent(wardenEvent)
+              .then((value) {
             Navigator.of(context).pop();
-            CherryToast.error(
-              displayCloseButton: false,
-              title: Text(
-                error.response!.data['message'].toString().length >
-                        Constant.errorMaxLength
-                    ? 'Internal server error'
-                    : error.response!.data['message'],
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-          }
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                SyncZoneData.routeName, (Route<dynamic> route) => false);
+          }).catchError((error) async {
+            Navigator.of(context).pop();
+            await createdWardenEventLocalService.create(wardenEvent);
+            if (!mounted) return;
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                SyncZoneData.routeName, (Route<dynamic> route) => false);
+          });
         }
       }
     }
