@@ -19,6 +19,7 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/configs/request_location_permission.dart';
 import 'package:iWarden/helpers/logger.dart';
+import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
@@ -485,6 +486,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
           }
           await Future.delayed(const Duration(seconds: 1));
           service.invoke("startShiftService");
+          await SharedPreferencesHelper.setBoolValue('isEndShift', false);
           if (!mounted) return;
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);

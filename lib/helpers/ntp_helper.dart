@@ -9,8 +9,19 @@ class NTPHelper {
   Future<int> getOffset() async {
     bool netWorkTurnOn = await checkTurnOnNetWork.turnOnWifiAndMobile();
     if (netWorkTurnOn) {
-      final int offset = await NTP.getNtpOffset(
-          localTime: DateTime.now(), lookUpAddress: 'time.google.com');
+      int offset = 0;
+      try {
+        offset = await NTP.getNtpOffset(
+          localTime: DateTime.now(),
+          lookUpAddress: 'time.google.com',
+          timeout: const Duration(seconds: 4),
+        );
+      } catch (e) {
+        String offsetOffline = await SharedPreferencesHelper.getStringValue(
+                keySharedPreferences) ??
+            "0";
+        offset = int.parse(offsetOffline);
+      }
       SharedPreferencesHelper.setStringValue(
           keySharedPreferences, offset.toString());
       return offset;
