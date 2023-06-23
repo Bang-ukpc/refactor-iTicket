@@ -16,4 +16,15 @@ class SharedPreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(key);
   }
+
+  static Future<void> setBoolValue(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+
+  static Future<bool?> getBoolValue(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool? value = prefs.getBool(key);
+    return value;
+  }
 }

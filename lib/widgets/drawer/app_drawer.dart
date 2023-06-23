@@ -167,10 +167,7 @@ class _MyDrawerState extends State<MyDrawer> {
       try {
         showCircularProgressIndicator(context: context);
         final service = FlutterBackgroundService();
-        var isRunning = await service.isRunning();
-        if (isRunning) {
-          service.invoke("stopService");
-        }
+        service.invoke("endShiftService");
         await createdWardenEventLocalService
             .create(wardenEventCheckOut)
             .then((value) async {

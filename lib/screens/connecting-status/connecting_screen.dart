@@ -483,6 +483,8 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
           if (!isRunning) {
             await initializeService();
           }
+          await Future.delayed(const Duration(seconds: 1));
+          service.invoke("startShiftService");
           if (!mounted) return;
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
