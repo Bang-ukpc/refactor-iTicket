@@ -101,71 +101,83 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
+  service.on('startShiftService').listen((event) async {
+    await SharedPreferencesHelper.setBoolValue('isEndShift', false);
+  });
+
+  service.on('endShiftService').listen((event) async {
+    await SharedPreferencesHelper.setBoolValue('isEndShift', true);
+  });
+
   Timer.periodic(const Duration(seconds: 5), (timer) async {
     syncFactory.syncToServer();
     await currentLocationPosition.getCurrentLocation();
   });
 
   Timer.periodic(const Duration(minutes: 5), (timer) async {
-    DateTime ntp = await ntpHelper.getTimeNTP();
-    if (service is AndroidServiceInstance) {
-      final prefs = await SharedPreferences.getInstance();
-      prefs.reload();
-      if (await service.isForegroundService()) {
-        flutterLocalNotificationsPlugin.show(
-          888,
-          'iTicket Service',
-          'iTicket Service',
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'my_foreground',
-              'MY FOREGROUND SERVICE',
-              icon: 'ic_bg_service_small',
-              ongoing: true,
+    final prefs = await SharedPreferences.getInstance();
+    prefs.reload();
+    bool isEndShift =
+        await SharedPreferencesHelper.getBoolValue('isEndShift') ?? false;
+    if (!isEndShift) {
+      DateTime ntp = await ntpHelper.getTimeNTP();
+      if (service is AndroidServiceInstance) {
+        if (await service.isForegroundService()) {
+          flutterLocalNotificationsPlugin.show(
+            888,
+            'iTicket Service',
+            'iTicket Service',
+            const NotificationDetails(
+              android: AndroidNotificationDetails(
+                'my_foreground',
+                'MY FOREGROUND SERVICE',
+                icon: 'ic_bg_service_small',
+                ongoing: true,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
+
+      var userCachedService = UserCachedService();
+      final Wardens? warden = await userCachedService.get();
+      final String? rotaShift = await SharedPreferencesHelper.getStringValue(
+          'rotaShiftSelectedByWarden');
+      final String? locations = await SharedPreferencesHelper.getStringValue(
+          'locationSelectedByWarden');
+      final String? zone =
+          await SharedPreferencesHelper.getStringValue('zoneSelectedByWarden');
+      RotaWithLocation? rotaShiftSelected;
+      LocationWithZones? locationSelected;
+      Zone? zoneSelected;
+
+      if (rotaShift != null) {
+        rotaShiftSelected = RotaWithLocation.fromJson(json.decode(rotaShift));
+      }
+
+      if (locations != null) {
+        locationSelected = LocationWithZones.fromJson(json.decode(locations));
+      }
+
+      if (zone != null) {
+        zoneSelected = Zone.fromJson(json.decode(zone));
+      }
+
+      final gpsEvent = WardenEvent(
+        Id: idHelper.generateId(),
+        type: TypeWardenEvent.TrackGPS.index,
+        detail: "Warden's current location",
+        latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+        longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+        wardenId: warden?.Id ?? 0,
+        rotaTimeFrom: rotaShiftSelected?.timeFrom,
+        rotaTimeTo: rotaShiftSelected?.timeTo,
+        locationId: locationSelected?.Id,
+        zoneId: zoneSelected?.Id,
+        Created: ntp,
+      );
+
+      createdWardenEventLocalService.create(gpsEvent);
     }
-
-    var userCachedService = UserCachedService();
-    final Wardens? warden = await userCachedService.get();
-    final String? rotaShift = await SharedPreferencesHelper.getStringValue(
-        'rotaShiftSelectedByWarden');
-    final String? locations = await SharedPreferencesHelper.getStringValue(
-        'locationSelectedByWarden');
-    final String? zone =
-        await SharedPreferencesHelper.getStringValue('zoneSelectedByWarden');
-    RotaWithLocation? rotaShiftSelected;
-    LocationWithZones? locationSelected;
-    Zone? zoneSelected;
-
-    if (rotaShift != null) {
-      rotaShiftSelected = RotaWithLocation.fromJson(json.decode(rotaShift));
-    }
-
-    if (locations != null) {
-      locationSelected = LocationWithZones.fromJson(json.decode(locations));
-    }
-
-    if (zone != null) {
-      zoneSelected = Zone.fromJson(json.decode(zone));
-    }
-
-    final gpsEvent = WardenEvent(
-      Id: idHelper.generateId(),
-      type: TypeWardenEvent.TrackGPS.index,
-      detail: "Warden's current location",
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: warden?.Id ?? 0,
-      rotaTimeFrom: rotaShiftSelected?.timeFrom,
-      rotaTimeTo: rotaShiftSelected?.timeTo,
-      locationId: locationSelected?.Id,
-      zoneId: zoneSelected?.Id,
-      Created: ntp,
-    );
-
-    createdWardenEventLocalService.create(gpsEvent);
   });
 }
