@@ -7,17 +7,22 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/check_background_service_status_helper.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/login_screens.dart';
+import 'package:iWarden/screens/syncing-data-logs/syncing_data_log_screen.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:iWarden/widgets/display_alert.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/local/created_warden_event_local_service .dart';
+enum EventAction { logout }
 
 class InfoDrawer extends StatefulWidget {
   final String name;
@@ -57,6 +62,8 @@ class _InfoDrawerState extends State<InfoDrawer> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final syncData = Provider.of<SyncData>(context, listen: false);
+      await syncData.getQuantity();
       bool checkImageLinkValid =
           await checkImageLinkValidity(widget.assetImage);
       setState(() {
@@ -68,6 +75,7 @@ class _InfoDrawerState extends State<InfoDrawer> {
   @override
   Widget build(BuildContext context) {
     final wardersProvider = Provider.of<WardensInfo>(context);
+    final syncData = Provider.of<SyncData>(context);
     final locations = Provider.of<Locations>(context);
 
     WardenEvent wardenEvent = WardenEvent(
@@ -133,8 +141,47 @@ class _InfoDrawerState extends State<InfoDrawer> {
       }
     }
 
-    void onLogout(Auth auth) async {
-      try {
+    Future onLogout(Auth auth) async {
+      await syncData.getQuantity();
+      if (syncData.totalDataNeedToSync > 0) {
+        if (await checkBackgroundServiceStatusHelper.isRunning()) {
+          if (!mounted) return;
+          openAlert(
+            context: context,
+            content:
+                'Data is being synced. Please waiting until it’s done. Thank you.',
+            textButton: 'I got it',
+          );
+        } else {
+          if (syncData.isSyncing) {
+            if (!mounted) return;
+            openAlert(
+              context: context,
+              content:
+                  'Data is being synced. Please waiting until it’s done. Thank you.',
+              textButton: 'I got it',
+            );
+          } else {
+            if (mounted) {
+              openAlertWithAction(
+                context: context,
+                title: 'Sync before logout',
+                content:
+                    'You still have some data that needs to be synced. Please sync before you logout.\n\nThe total data waiting for synchronization: ${syncData.totalDataNeedToSync}',
+                textButton: 'Sync now',
+                action: () {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    SyncingDataLogScreen.routeName,
+                    (Route<dynamic> route) => false,
+                    arguments: {'action': EventAction.logout.index},
+                  );
+                },
+              );
+            }
+          }
+        }
+      } else {
+        if (!mounted) return;
         showCircularProgressIndicator(context: context, text: "Logging out");
         await createdWardenEventLocalService
             .create(wardenEventEndShift)
@@ -154,35 +201,6 @@ class _InfoDrawerState extends State<InfoDrawer> {
             ).show(context);
           });
         });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
-        Navigator.of(context).pop();
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
       }
     }
 

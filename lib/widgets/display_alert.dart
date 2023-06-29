@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
@@ -78,6 +79,40 @@ void openAlert({
               ),
             ),
           ),
+        ),
+      );
+    },
+  );
+}
+
+Future<void> openAlertWithAction({
+  required BuildContext context,
+  required String title,
+  required String content,
+  required String textButton,
+  required void Function()? action,
+}) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: ColorTheme.backdrop,
+    builder: (BuildContext context) {
+      return MyDialog(
+        title: Text(
+          title,
+          style: CustomTextStyle.h4.copyWith(
+            color: ColorTheme.danger,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subTitle: Text(
+          content,
+          textAlign: TextAlign.center,
+          style: CustomTextStyle.body1,
+        ),
+        func: ElevatedButton(
+          onPressed: action,
+          child: Text(textButton),
         ),
       );
     },
