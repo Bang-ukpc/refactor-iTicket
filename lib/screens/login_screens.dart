@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +19,15 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final syncData = Provider.of<SyncData>(context, listen: false);
+      syncData.stopSync();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<Auth>(context);

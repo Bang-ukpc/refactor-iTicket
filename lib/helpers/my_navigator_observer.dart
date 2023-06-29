@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/time_ntp.dart';
+import 'package:provider/provider.dart';
 
 abstract class BaseStatefulState<T extends StatefulWidget> extends State<T>
     with WidgetsBindingObserver {
@@ -17,6 +19,7 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    final syncData = Provider.of<SyncData>(context, listen: false);
     DateTime? dateTime = await timeNTP.getTimeNTP();
     switch (state) {
       case AppLifecycleState.resumed:
@@ -27,6 +30,7 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T>
         break;
       case AppLifecycleState.paused:
         print("[AppLifecycleState] paused");
+        syncData.stopSync();
         break;
       default:
         break;

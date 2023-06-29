@@ -9,15 +9,18 @@ import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
+import 'package:iWarden/helpers/check_background_service_status_helper.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/home_overview.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:iWarden/widgets/display_alert.dart';
 import 'package:iWarden/widgets/drawer/model/data.dart';
 import 'package:iWarden/widgets/drawer/model/menu_item.dart';
 import 'package:iWarden/widgets/drawer/model/nav_item.dart';
@@ -45,6 +48,7 @@ class _MyDrawerState extends State<MyDrawer> {
   final _debouncer2 = Debouncer(milliseconds: 4000);
   Stream<BluetoothState> bluetoothStateStream =
       FlutterBluePlus.instance.state.asBroadcastStream();
+  bool isSyncingData = false;
 
   void onConnectPrinter() {
     bluetoothPrinterHelper.scan();
@@ -59,6 +63,12 @@ class _MyDrawerState extends State<MyDrawer> {
     });
   }
 
+  void onCheckIsSyncing(bool isSyncing) {
+    setState(() {
+      isSyncingData = isSyncing;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +76,11 @@ class _MyDrawerState extends State<MyDrawer> {
       _checkDeviceBluetoothIsOn();
     });
     _checkDeviceBluetoothIsOn();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final syncData = Provider.of<SyncData>(context, listen: false);
+      await syncData.getQuantity();
+      onCheckIsSyncing(syncData.isSyncing);
+    });
   }
 
   @override
@@ -85,6 +100,7 @@ class _MyDrawerState extends State<MyDrawer> {
     final widthScreen = MediaQuery.of(context).size.width;
     final wardensProvider = Provider.of<WardensInfo>(context);
     final locations = Provider.of<Locations>(context);
+    final syncData = Provider.of<SyncData>(context);
 
     WardenEvent wardenEventStartBreak = WardenEvent(
       type: TypeWardenEvent.StartBreak.index,
@@ -316,7 +332,57 @@ class _MyDrawerState extends State<MyDrawer> {
           .toList();
     }
 
+    Future<void> syncDataToServer() async {
+      if (syncData.totalDataNeedToSync > 0) {
+        if (await checkBackgroundServiceStatusHelper.isRunning()) {
+          if (!mounted) return;
+          openAlert(
+            context: context,
+            content: 'Synchronization is running on background',
+            textButton: 'I got it',
+          );
+        } else {
+          await syncData.startSync(
+            (isSyncing) {
+              if (mounted) {
+                print('[IS SYNCING] $isSyncing');
+                setState(() {
+                  isSyncingData = isSyncing;
+                });
+              }
+            },
+          );
+          if (!mounted) return;
+          openAlert(
+            context: context,
+            content:
+                'Start syncing. You can keep using the app but do not close it. Thank you.',
+            textButton: 'I got it',
+          );
+        }
+      } else {
+        openAlert(
+          context: context,
+          content: 'No data needs to be synced.',
+          textButton: 'I got it',
+        );
+      }
+    }
+
     List<NavItemMenu> navItem = [
+      NavItemMenu(
+        title:
+            '${isSyncingData ? 'Syncing' : 'Sync'} (${syncData.totalDataNeedToSync})',
+        icon: SvgPicture.asset('assets/svg/IconUpload.svg'),
+        background: ColorTheme.lighterPrimary,
+        check: true,
+        colorText: ColorTheme.primary,
+        setCheck: isSyncingData
+            ? () {}
+            : () async {
+                await syncDataToServer();
+              },
+      ),
       NavItemMenu(
         title: '999',
         icon: SvgPicture.asset('assets/svg/IconCall3.svg'),
@@ -337,6 +403,7 @@ class _MyDrawerState extends State<MyDrawer> {
         icon: SvgPicture.asset('assets/svg/IconStartBreak.svg'),
         route: HomeOverview.routeName,
         check: true,
+        colorText: ColorTheme.secondary,
         background: ColorTheme.lighterSecondary,
         setCheck: onStartBreak,
       ),

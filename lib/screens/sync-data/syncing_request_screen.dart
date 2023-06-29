@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/version_name.dart';
+import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/syncing-data-logs/syncing_data_log_screen.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:provider/provider.dart';
 
 import '../../services/local/issued_pcn_local_service.dart';
 import '../connecting-status/background_service_config.dart';
@@ -54,6 +56,8 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final syncData = Provider.of<SyncData>(context, listen: false);
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -223,7 +227,12 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                             shadowColor: Colors.transparent,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
+                            await Future.delayed(const Duration(seconds: 1),
+                                () {
+                              syncData.stopSync();
+                            });
+                            if (!mounted) return;
                             Navigator.of(context).pushNamedAndRemoveUntil(
                                 SyncingDataLogScreen.routeName,
                                 (Route<dynamic> route) => false);

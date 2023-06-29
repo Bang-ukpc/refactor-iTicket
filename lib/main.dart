@@ -10,6 +10,7 @@ import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart' as print_issue;
+import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/routes/routes.dart';
 import 'package:iWarden/screens/login_screens.dart';
@@ -50,6 +51,7 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (_) => Auth()),
         ChangeNotifierProvider(create: (_) => ContraventionProvider()),
+        ChangeNotifierProvider(create: (_) => SyncData()),
       ],
       child: const MyApp(),
     ),

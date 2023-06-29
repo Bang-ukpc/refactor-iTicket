@@ -110,6 +110,7 @@ void onStart(ServiceInstance service) async {
   });
 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
+    await SharedPreferencesHelper.setBoolValue('isSyncFuncActive', true);
     syncFactory.syncToServer();
     await currentLocationPosition.getCurrentLocation();
   });
