@@ -131,7 +131,6 @@ class _SyncZoneDataState extends BaseStatefulState<SyncZoneData> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final locationProvider = Provider.of<Locations>(context, listen: false);
-      print("[SYNC ZONE DATA] with zoneID is ${locationProvider.zone?.Id}");
       zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
       await syncZoneData();
       setState(() {

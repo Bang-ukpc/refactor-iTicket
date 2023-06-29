@@ -7,6 +7,7 @@ class NavItemMenu {
   final Color background;
   final bool? check;
   final VoidCallback? setCheck;
+  final Color? colorText;
   NavItemMenu({
     required this.title,
     required this.icon,
@@ -14,5 +15,6 @@ class NavItemMenu {
     required this.background,
     this.check,
     this.setCheck,
+    this.colorText,
   });
 }

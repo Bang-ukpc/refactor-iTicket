@@ -28,7 +28,7 @@ class NavItem extends StatelessWidget {
             style: CustomTextStyle.h6.copyWith(
               color: itemMenu.check == null
                   ? ColorTheme.grey600
-                  : ColorTheme.secondary,
+                  : itemMenu.colorText,
             ),
           ),
         ],
