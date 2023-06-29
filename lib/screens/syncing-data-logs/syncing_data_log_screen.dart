@@ -4,11 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:iWarden/common/show_loading.dart';
+import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
+import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/models/log.dart';
+import 'package:iWarden/models/wardens.dart';
+import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/locations.dart';
+import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
+import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:iWarden/widgets/drawer/info_drawer.dart';
+import 'package:provider/provider.dart';
 
 import '../../services/local/created_vehicle_data_local_service.dart';
 import '../../services/local/created_warden_event_local_service .dart';
@@ -32,12 +42,22 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   bool isStoppingSyncing = false;
   bool isSyncing = false;
   final ScrollController _controller = ScrollController();
+  int totalDataAll = 0;
 
   Future<void> getQuantityOfSyncData() async {
     int totalVehicleInfo = await createdVehicleDataLocalService.total();
     int totalPcn = await issuedPcnLocalService.total();
     setState(() {
       totalDataNeedToSync = totalVehicleInfo + totalPcn;
+    });
+  }
+
+  Future<void> getTotalDataAll() async {
+    int totalWardenEvent = await createdWardenEventLocalService.total();
+    int totalVehicleInfo = await createdVehicleDataLocalService.total();
+    int totalPcn = await issuedPcnLocalService.total();
+    setState(() {
+      totalDataAll = totalWardenEvent + totalVehicleInfo + totalPcn;
     });
   }
 
@@ -79,6 +99,8 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     _controller.animateTo(_controller.position.maxScrollExtent,
         curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
 
+    await getTotalDataAll();
+
     setState(() {
       isSyncing = false;
     });
@@ -110,6 +132,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     super.initState();
     onPauseBackgroundService();
     getQuantityOfSyncData();
+    getTotalDataAll();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await syncDataToServer();
     });
@@ -117,6 +140,105 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<Auth>(context);
+    final wardensProvider = Provider.of<WardensInfo>(context);
+    final locations = Provider.of<Locations>(context);
+    final args = ModalRoute.of(context)!.settings.arguments as dynamic;
+    int action = args != null ? args['action'] : -1;
+    bool isEndShift = args != null ? args['isEndShift'] : true;
+
+    WardenEvent wardenEventEndShift = WardenEvent(
+      type: TypeWardenEvent.EndShift.index,
+      detail: 'Warden has ended shift',
+      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
+      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
+      wardenId: wardensProvider.wardens?.Id ?? 0,
+      zoneId: locations.zone?.Id ?? 0,
+      locationId: locations.location?.Id ?? 0,
+      rotaTimeFrom: locations.rotaShift?.timeFrom,
+      rotaTimeTo: locations.rotaShift?.timeTo,
+    );
+
+    Future userLogOut() async {
+      await auth.logout().then((value) {
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            LoginScreen.routeName, (Route<dynamic> route) => false);
+        CherryToast.success(
+          displayCloseButton: false,
+          title: Text(
+            'Log out successfully',
+            style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+          ),
+          toastPosition: Position.bottom,
+          borderRadius: 5,
+        ).show(context);
+      });
+    }
+
+    Widget getButtonByEvent() {
+      if (action == EventAction.logout.index) {
+        if (totalDataAll <= 0) {
+          return Expanded(
+            child: ElevatedButton.icon(
+              icon: SvgPicture.asset(
+                "assets/svg/IconEndShift.svg",
+                color: Colors.white,
+              ),
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: () async {
+                if (!mounted) return;
+                showCircularProgressIndicator(
+                    context: context, text: "Logging out");
+                if (isEndShift) {
+                  await createdWardenEventLocalService
+                      .create(wardenEventEndShift)
+                      .then((value) async {
+                    await userLogOut();
+                  });
+                } else {
+                  await userLogOut();
+                }
+              },
+              label: Text(
+                'Logout',
+                style: CustomTextStyle.h5
+                    .copyWith(color: ColorTheme.white, fontSize: 16),
+              ),
+            ),
+          );
+        } else {
+          return const SizedBox();
+        }
+      } else {
+        return Expanded(
+          child: ElevatedButton.icon(
+            icon: SvgPicture.asset(
+              "assets/svg/IconComplete2.svg",
+            ),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            onPressed: () {
+              Navigator.of(context)
+                  .pushReplacementNamed(ConnectingScreen.routeName);
+            },
+            label: Text(
+              'Finish',
+              style: CustomTextStyle.h5
+                  .copyWith(color: ColorTheme.white, fontSize: 16),
+            ),
+          ),
+        );
+      }
+    }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -283,28 +405,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                     const SizedBox(
                       width: 16,
                     ),
-                  if (!isSyncing)
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        icon: SvgPicture.asset(
-                          "assets/svg/IconComplete2.svg",
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pushReplacementNamed(ConnectingScreen.routeName);
-                        },
-                        label: Text(
-                          'Finish',
-                          style: CustomTextStyle.h5
-                              .copyWith(color: ColorTheme.white, fontSize: 16),
-                        ),
-                      ),
-                    ),
+                  if (!isSyncing) getButtonByEvent(),
                 ],
               ),
               const VersionName(),

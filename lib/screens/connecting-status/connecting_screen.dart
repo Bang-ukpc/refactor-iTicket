@@ -18,19 +18,24 @@ import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/configs/request_location_permission.dart';
+import 'package:iWarden/helpers/check_background_service_status_helper.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/background_service_config.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
+import 'package:iWarden/screens/syncing-data-logs/syncing_data_log_screen.dart';
 import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
+import 'package:iWarden/widgets/display_alert.dart';
+import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:location_permissions/location_permissions.dart' as location;
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:provider/provider.dart';
@@ -384,9 +389,11 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     onStartBackgroundService();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
+      final syncData = Provider.of<SyncData>(context, listen: false);
       await _requestLocationAccessWhenUsing();
       await getCurrentLocationOfWarden();
       await checkBluetoothConnectionStatus();
+      await syncData.getQuantity();
       await wardensInfo.getWardensInfoLogging().then((value) async {
         return;
       }).catchError((err) {
@@ -463,6 +470,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
   @override
   Widget build(BuildContext context) {
     final wardensProvider = Provider.of<WardensInfo>(context);
+    final syncData = Provider.of<SyncData>(context);
     //check is route from checkout screen
     final data = ModalRoute.of(context)!.settings.arguments as dynamic;
     final isCheckoutScreen = (data == null) ? false : true;
@@ -525,7 +533,49 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     }
 
     void onLogout(Auth auth) async {
-      try {
+      await syncData.getQuantity();
+      if (syncData.totalDataNeedToSync > 0) {
+        if (await checkBackgroundServiceStatusHelper.isRunning()) {
+          if (!mounted) return;
+          openAlert(
+            context: context,
+            content:
+                'Data is being synced. Please waiting until it’s done. Thank you.',
+            textButton: 'I got it',
+          );
+        } else {
+          if (syncData.isSyncing) {
+            if (!mounted) return;
+            openAlert(
+              context: context,
+              content:
+                  'Data is being synced. Please waiting until it’s done. Thank you.',
+              textButton: 'I got it',
+            );
+          } else {
+            if (mounted) {
+              openAlertWithAction(
+                context: context,
+                title: 'Sync before logout',
+                content:
+                    'You still have some data that needs to be synced. Please sync before you logout.\n\nThe total data waiting for synchronization: ${syncData.totalDataNeedToSync}',
+                textButton: 'Sync now',
+                action: () {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    SyncingDataLogScreen.routeName,
+                    (Route<dynamic> route) => false,
+                    arguments: {
+                      'action': EventAction.logout.index,
+                      'isEndShift': false
+                    },
+                  );
+                },
+              );
+            }
+          }
+        }
+      } else {
+        if (!mounted) return;
         showCircularProgressIndicator(context: context, text: "Logging out");
         await auth.logout().then((value) {
           Navigator.of(context).pop();
@@ -541,35 +591,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
             borderRadius: 5,
           ).show(context);
         });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
-          Navigator.of(context).pop();
-          toast.CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: toast.Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
-        Navigator.of(context).pop();
-        toast.CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: toast.Position.bottom,
-          borderRadius: 5,
-        ).show(context);
       }
     }
 
