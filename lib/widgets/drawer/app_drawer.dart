@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
@@ -191,10 +192,11 @@ class _MyDrawerState extends State<MyDrawer> {
               .create(wardenEventEndShift)
               .then((value) async {
             SharedPreferencesHelper.removeStringValue(
-                'rotaShiftSelectedByWarden');
+                PreferencesKeys.rotaShiftSelectedByWarden);
             SharedPreferencesHelper.removeStringValue(
-                'locationSelectedByWarden');
-            SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');
+                PreferencesKeys.locationSelectedByWarden);
+            SharedPreferencesHelper.removeStringValue(
+                PreferencesKeys.zoneSelectedByWarden);
             if (!mounted) return;
             Navigator.of(context).pop();
             Navigator.of(context).pushNamedAndRemoveUntil(

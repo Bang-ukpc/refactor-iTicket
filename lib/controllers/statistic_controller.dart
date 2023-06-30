@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/dio_helper.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/statistic.dart';
@@ -31,7 +32,7 @@ class StatisticController {
           StatisticWardenPropsData.fromJson(response.data);
       final String encodedData = json.encode(statisticData.toJson());
       SharedPreferencesHelper.setStringValue(
-          'StatisticWardenPropsDataLocal', encodedData);
+          PreferencesKeys.statisticWardenPropsDataLocal, encodedData);
       return statisticData;
     } on DioError catch (error) {
       print(error.response);

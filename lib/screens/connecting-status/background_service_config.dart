@@ -102,15 +102,18 @@ void onStart(ServiceInstance service) async {
   });
 
   service.on('startShiftService').listen((event) async {
-    await SharedPreferencesHelper.setBoolValue('isEndShift', false);
+    await SharedPreferencesHelper.setBoolValue(
+        PreferencesKeys.isEndShift, false);
   });
 
   service.on('endShiftService').listen((event) async {
-    await SharedPreferencesHelper.setBoolValue('isEndShift', true);
+    await SharedPreferencesHelper.setBoolValue(
+        PreferencesKeys.isEndShift, true);
   });
 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
-    await SharedPreferencesHelper.setBoolValue('isSyncFuncActive', true);
+    await SharedPreferencesHelper.setBoolValue(
+        PreferencesKeys.isSyncFuncActive, true);
     syncFactory.syncToServer();
     await currentLocationPosition.getCurrentLocation();
   });
@@ -118,8 +121,9 @@ void onStart(ServiceInstance service) async {
   Timer.periodic(const Duration(minutes: 5), (timer) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.reload();
-    bool isEndShift =
-        await SharedPreferencesHelper.getBoolValue('isEndShift') ?? false;
+    bool isEndShift = await SharedPreferencesHelper.getBoolValue(
+            PreferencesKeys.isEndShift) ??
+        false;
     if (!isEndShift) {
       DateTime ntp = await ntpHelper.getTimeNTP();
       if (service is AndroidServiceInstance) {
@@ -143,11 +147,11 @@ void onStart(ServiceInstance service) async {
       var userCachedService = UserCachedService();
       final Wardens? warden = await userCachedService.get();
       final String? rotaShift = await SharedPreferencesHelper.getStringValue(
-          'rotaShiftSelectedByWarden');
+          PreferencesKeys.rotaShiftSelectedByWarden);
       final String? locations = await SharedPreferencesHelper.getStringValue(
-          'locationSelectedByWarden');
-      final String? zone =
-          await SharedPreferencesHelper.getStringValue('zoneSelectedByWarden');
+          PreferencesKeys.locationSelectedByWarden);
+      final String? zone = await SharedPreferencesHelper.getStringValue(
+          PreferencesKeys.zoneSelectedByWarden);
       RotaWithLocation? rotaShiftSelected;
       LocationWithZones? locationSelected;
       Zone? zoneSelected;
