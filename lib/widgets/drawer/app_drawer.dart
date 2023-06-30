@@ -340,7 +340,7 @@ class _MyDrawerState extends State<MyDrawer> {
           if (!mounted) return;
           openAlert(
             context: context,
-            content: 'Synchronization is running on background',
+            content: 'Synchronization is running in background',
             textButton: 'I got it',
           );
         } else {
