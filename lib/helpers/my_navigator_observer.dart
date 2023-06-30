@@ -19,7 +19,6 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    final syncData = Provider.of<SyncData>(context, listen: false);
     DateTime? dateTime = await timeNTP.getTimeNTP();
     switch (state) {
       case AppLifecycleState.resumed:
@@ -30,7 +29,6 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T>
         break;
       case AppLifecycleState.paused:
         print("[AppLifecycleState] paused");
-        syncData.stopSync();
         break;
       default:
         break;
