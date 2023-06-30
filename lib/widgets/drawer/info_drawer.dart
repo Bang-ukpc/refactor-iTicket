@@ -90,18 +90,6 @@ class _InfoDrawerState extends State<InfoDrawer> {
       rotaTimeTo: locations.rotaShift?.timeTo,
     );
 
-    WardenEvent wardenEventEndShift = WardenEvent(
-      type: TypeWardenEvent.EndShift.index,
-      detail: 'Warden has ended shift',
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardersProvider.wardens?.Id ?? 0,
-      zoneId: locations.zone?.Id ?? 0,
-      locationId: locations.location?.Id ?? 0,
-      rotaTimeFrom: locations.rotaShift?.timeFrom,
-      rotaTimeTo: locations.rotaShift?.timeTo,
-    );
-
     void onCheckOut() async {
       try {
         showCircularProgressIndicator(context: context, text: 'Checking out');
@@ -183,23 +171,19 @@ class _InfoDrawerState extends State<InfoDrawer> {
       } else {
         if (!mounted) return;
         showCircularProgressIndicator(context: context, text: "Logging out");
-        await createdWardenEventLocalService
-            .create(wardenEventEndShift)
-            .then((value) async {
-          await auth.logout().then((value) {
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                LoginScreen.routeName, (Route<dynamic> route) => false);
-            CherryToast.success(
-              displayCloseButton: false,
-              title: Text(
-                'Log out successfully',
-                style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
-              ),
-              toastPosition: Position.bottom,
-              borderRadius: 5,
-            ).show(context);
-          });
+        await auth.logout().then((value) {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              LoginScreen.routeName, (Route<dynamic> route) => false);
+          CherryToast.success(
+            displayCloseButton: false,
+            title: Text(
+              'Log out successfully',
+              style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+            ),
+            toastPosition: Position.bottom,
+            borderRadius: 5,
+          ).show(context);
         });
       }
     }

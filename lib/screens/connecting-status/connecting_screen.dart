@@ -566,10 +566,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     SyncingDataLogScreen.routeName,
                     (Route<dynamic> route) => false,
-                    arguments: {
-                      'action': EventAction.logout.index,
-                      'isEndShift': false
-                    },
+                    arguments: {'action': EventAction.logout.index},
                   );
                 },
               );

@@ -141,23 +141,8 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<Auth>(context);
-    final wardensProvider = Provider.of<WardensInfo>(context);
-    final locations = Provider.of<Locations>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
     int action = args != null ? args['action'] : -1;
-    bool isEndShift = args != null ? args['isEndShift'] : true;
-
-    WardenEvent wardenEventEndShift = WardenEvent(
-      type: TypeWardenEvent.EndShift.index,
-      detail: 'Warden has ended shift',
-      latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
-      longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
-      wardenId: wardensProvider.wardens?.Id ?? 0,
-      zoneId: locations.zone?.Id ?? 0,
-      locationId: locations.location?.Id ?? 0,
-      rotaTimeFrom: locations.rotaShift?.timeFrom,
-      rotaTimeTo: locations.rotaShift?.timeTo,
-    );
 
     Future userLogOut() async {
       await auth.logout().then((value) {
@@ -194,15 +179,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                 if (!mounted) return;
                 showCircularProgressIndicator(
                     context: context, text: "Logging out");
-                if (isEndShift) {
-                  await createdWardenEventLocalService
-                      .create(wardenEventEndShift)
-                      .then((value) async {
-                    await userLogOut();
-                  });
-                } else {
-                  await userLogOut();
-                }
+                await userLogOut();
               },
               label: Text(
                 'Logout',
