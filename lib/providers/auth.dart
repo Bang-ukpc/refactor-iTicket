@@ -98,9 +98,12 @@ class Auth with ChangeNotifier {
     await oauth.logout();
 
     SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
-    SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
-    SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
-    SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');
+    SharedPreferencesHelper.removeStringValue(
+        PreferencesKeys.rotaShiftSelectedByWarden);
+    SharedPreferencesHelper.removeStringValue(
+        PreferencesKeys.locationSelectedByWarden);
+    SharedPreferencesHelper.removeStringValue(
+        PreferencesKeys.zoneSelectedByWarden);
     userCachedService.remove;
     log('Logout successfully');
   }

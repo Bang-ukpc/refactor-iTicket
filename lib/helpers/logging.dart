@@ -48,9 +48,12 @@ class Logging extends Interceptor {
 
       await oauth.logout();
       SharedPreferencesHelper.removeStringValue(PreferencesKeys.accessToken);
-      SharedPreferencesHelper.removeStringValue('rotaShiftSelectedByWarden');
-      SharedPreferencesHelper.removeStringValue('locationSelectedByWarden');
-      SharedPreferencesHelper.removeStringValue('zoneSelectedByWarden');
+      SharedPreferencesHelper.removeStringValue(
+          PreferencesKeys.rotaShiftSelectedByWarden);
+      SharedPreferencesHelper.removeStringValue(
+          PreferencesKeys.locationSelectedByWarden);
+      SharedPreferencesHelper.removeStringValue(
+          PreferencesKeys.zoneSelectedByWarden);
       userCachedService.remove();
       NavigationService.navigatorKey.currentState!.pushNamedAndRemoveUntil(
           LoginScreen.routeName, (Route<dynamic> route) => false);

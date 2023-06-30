@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 
 class NetworkLayout extends StatefulWidget {
@@ -11,7 +12,8 @@ class NetworkLayout extends StatefulWidget {
 
 class _NetworkLayoutState extends State<NetworkLayout> {
   Future setSyncDataFuncStatus() async {
-    await SharedPreferencesHelper.setBoolValue('isSyncFuncActive', false);
+    await SharedPreferencesHelper.setBoolValue(
+        PreferencesKeys.isSyncFuncActive, false);
   }
 
   @override

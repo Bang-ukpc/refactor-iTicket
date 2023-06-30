@@ -18,6 +18,12 @@ class NavigationService {
 
 class PreferencesKeys {
   static const accessToken = 'access_token';
+  static String statisticWardenPropsDataLocal = 'StatisticWardenPropsDataLocal';
+  static String rotaShiftSelectedByWarden = 'rotaShiftSelectedByWarden';
+  static String locationSelectedByWarden = 'locationSelectedByWarden';
+  static String zoneSelectedByWarden = 'zoneSelectedByWarden';
+  static String isEndShift = 'isEndShift';
+  static String isSyncFuncActive = 'isSyncFuncActive';
 }
 
 class OAuthConfig {
