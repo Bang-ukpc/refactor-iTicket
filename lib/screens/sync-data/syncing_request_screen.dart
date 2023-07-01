@@ -6,6 +6,7 @@ import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/syncing-data-logs/syncing_data_log_screen.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
+import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,7 @@ class SyncingRequestScreen extends StatefulWidget {
 }
 
 class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
+  int totalEventNeedToSync = 0;
   int totalVehicleInfoNeedToSync = 0;
   int totalPcnNeedToSync = 0;
   bool isGetTotalNeedToSyncLoading = false;
@@ -38,9 +40,11 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
     setState(() {
       isGetTotalNeedToSyncLoading = true;
     });
+    int totalWardenEvent = await createdWardenEventLocalService.total();
     int totalVehicleInfo = await createdVehicleDataLocalService.total();
     int totalPcn = await issuedPcnLocalService.total();
     setState(() {
+      totalEventNeedToSync = totalWardenEvent;
       totalVehicleInfoNeedToSync = totalVehicleInfo;
       totalPcnNeedToSync = totalPcn;
       isGetTotalNeedToSyncLoading = false;
@@ -120,7 +124,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                       !isGetTotalNeedToSyncLoading
                           ? Column(
                               children: [
-                                if (totalVehicleInfoNeedToSync > 0)
+                                if (totalEventNeedToSync > 0)
                                   Column(
                                     children: [
                                       const SizedBox(
@@ -133,7 +137,31 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                                             CrossAxisAlignment.center,
                                         children: [
                                           const Text(
-                                            '1. First seen & Consideration period',
+                                            '1. Event',
+                                            style: CustomTextStyle.body1,
+                                          ),
+                                          Text(
+                                            '$totalEventNeedToSync',
+                                            style: CustomTextStyle.body1,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                if (totalVehicleInfoNeedToSync > 0)
+                                  Column(
+                                    children: [
+                                      const SizedBox(
+                                        height: 24,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${totalEventNeedToSync > 0 ? '2' : '1'}. First seen & Consideration period',
                                             style: CustomTextStyle.body1,
                                           ),
                                           Text(
@@ -157,9 +185,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                                             CrossAxisAlignment.center,
                                         children: [
                                           Text(
-                                            totalVehicleInfoNeedToSync > 0
-                                                ? "2. Parking Charge Notices (PCNs)"
-                                                : "1. Parking Charge Notices (PCNs)",
+                                            '${totalEventNeedToSync > 0 ? totalVehicleInfoNeedToSync > 0 ? '3' : '2' : '1'}. Parking Charge Notices (PCNs)',
                                             style: CustomTextStyle.body1,
                                           ),
                                           Text(

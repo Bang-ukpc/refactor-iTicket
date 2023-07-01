@@ -7,12 +7,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
-import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/models/log.dart';
-import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
-import 'package:iWarden/providers/locations.dart';
-import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/screens/login_screens.dart';
 import 'package:iWarden/theme/color.dart';
@@ -34,6 +30,7 @@ class SyncingDataLogScreen extends StatefulWidget {
 
 class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   int totalDataNeedToSync = 0;
+  int progressingWardenEvent = 0;
   int progressingVehicleInfo = 0;
   int progressingPcns = 0;
   bool isSyncingWardenEvent = false;
@@ -43,12 +40,14 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   bool isSyncing = false;
   final ScrollController _controller = ScrollController();
   int totalDataAll = 0;
+  int totalEvent = 0;
 
   Future<void> getQuantityOfSyncData() async {
+    int totalWardenEvent = await createdWardenEventLocalService.total();
     int totalVehicleInfo = await createdVehicleDataLocalService.total();
     int totalPcn = await issuedPcnLocalService.total();
     setState(() {
-      totalDataNeedToSync = totalVehicleInfo + totalPcn;
+      totalDataNeedToSync = totalWardenEvent + totalVehicleInfo + totalPcn;
     });
   }
 
@@ -68,10 +67,21 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
       syncLogs = [];
     });
 
-    try {
-      await createdWardenEventLocalService.syncAll((isStop) => false);
-    } catch (e) {}
+    await createdWardenEventLocalService.syncAll(
+      (isStop) => isStopSyncing,
+      (current, total, [log]) {
+        _controller.animateTo(_controller.position.maxScrollExtent,
+            curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
+        setState(() {
+          progressingWardenEvent = current;
+          isStoppingSyncing = false;
+        });
+      },
+    );
+
+    int totalWardenEvent = await createdWardenEventLocalService.total();
     setState(() {
+      totalEvent = totalWardenEvent;
       isSyncingWardenEvent = false;
     });
 
@@ -116,6 +126,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   Future<void> syncAgain() async {
     isStopSyncing = false;
     await getQuantityOfSyncData();
+    await getTotalDataAll();
     await syncDataToServer();
   }
 
@@ -216,6 +227,20 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
       }
     }
 
+    Widget textDataEventSyncStatus(String text) => Column(
+          children: [
+            Text(
+              text,
+              style: CustomTextStyle.body1.copyWith(
+                color: ColorTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(
+              height: 16,
+            )
+          ],
+        );
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -238,7 +263,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                 ),
               ),
               Text(
-                '${progressingVehicleInfo + progressingPcns}/$totalDataNeedToSync',
+                '${progressingWardenEvent + progressingVehicleInfo + progressingPcns}/$totalDataNeedToSync',
                 style: CustomTextStyle.h4.copyWith(
                   color: ColorTheme.primary,
                   fontWeight: FontWeight.w600,
@@ -257,12 +282,14 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (isSyncingWardenEvent)
-                    Text(
-                      "Please wait a moment...",
-                      style: CustomTextStyle.body1.copyWith(
-                        color: ColorTheme.textPrimary,
-                      ),
-                    ),
+                    textDataEventSyncStatus(
+                        'Synchronizing event data with the server...'),
+                  if (!isSyncingWardenEvent && totalEvent > 0)
+                    textDataEventSyncStatus(
+                        'Data event synchronization with the unfinished server'),
+                  if (!isSyncingWardenEvent && totalEvent <= 0)
+                    textDataEventSyncStatus(
+                        'Synchronize data events with the completed server'),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: syncLogs.map((e) {
@@ -351,7 +378,9 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                     ),
                   if (!isSyncing &&
                       totalDataNeedToSync > 0 &&
-                      (progressingVehicleInfo + progressingPcns) !=
+                      (progressingWardenEvent +
+                              progressingVehicleInfo +
+                              progressingPcns) !=
                           totalDataNeedToSync)
                     Expanded(
                       child: ElevatedButton.icon(
@@ -377,8 +406,11 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                     ),
                   if (!isSyncing &&
                       totalDataNeedToSync > 0 &&
-                      (progressingVehicleInfo + progressingPcns) !=
-                          totalDataNeedToSync)
+                      (progressingWardenEvent +
+                              progressingVehicleInfo +
+                              progressingPcns) !=
+                          totalDataNeedToSync &&
+                      action != EventAction.logout.index)
                     const SizedBox(
                       width: 16,
                     ),
