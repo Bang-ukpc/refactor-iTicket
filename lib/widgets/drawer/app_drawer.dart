@@ -11,6 +11,7 @@ import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
 import 'package:iWarden/helpers/check_background_service_status_helper.dart';
+import 'package:iWarden/helpers/check_turn_on_net_work.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -336,29 +337,39 @@ class _MyDrawerState extends State<MyDrawer> {
 
     Future<void> syncDataToServer() async {
       if (syncData.totalDataNeedToSync > 0) {
-        if (await checkBackgroundServiceStatusHelper.isRunning()) {
-          if (!mounted) return;
-          openAlert(
-            context: context,
-            content: 'Synchronization is running in background',
-            textButton: 'I got it',
-          );
+        if (await checkTurnOnNetWork.turnOnWifiAndMobile()) {
+          if (await checkBackgroundServiceStatusHelper.isRunning()) {
+            if (!mounted) return;
+            openAlert(
+              context: context,
+              content: 'Synchronization is running in background',
+              textButton: 'I got it',
+            );
+          } else {
+            await syncData.startSync(
+              (isSyncing) {
+                if (mounted) {
+                  print('[IS SYNCING] $isSyncing');
+                  setState(() {
+                    isSyncingData = isSyncing;
+                  });
+                }
+              },
+            );
+            if (!mounted) return;
+            openAlert(
+              context: context,
+              content:
+                  'Start syncing. You can keep using the app but do not close it. Thank you.',
+              textButton: 'I got it',
+            );
+          }
         } else {
-          await syncData.startSync(
-            (isSyncing) {
-              if (mounted) {
-                print('[IS SYNCING] $isSyncing');
-                setState(() {
-                  isSyncingData = isSyncing;
-                });
-              }
-            },
-          );
           if (!mounted) return;
           openAlert(
             context: context,
             content:
-                'Start syncing. You can keep using the app but do not close it. Thank you.',
+                'Unable to synchronize due to no internet connection. Please connect to the internet to synchronize the data.',
             textButton: 'I got it',
           );
         }
