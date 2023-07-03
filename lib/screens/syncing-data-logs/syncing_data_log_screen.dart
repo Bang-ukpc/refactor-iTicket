@@ -8,6 +8,7 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/helpers/check_turn_on_net_work.dart';
+import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/log.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
@@ -30,6 +31,7 @@ class SyncingDataLogScreen extends StatefulWidget {
 }
 
 class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
+  Logger logger = Logger<SyncingDataLogScreen>();
   int totalDataNeedToSync = 0;
   int progressingWardenEvent = 0;
   int progressingVehicleInfo = 0;
@@ -61,8 +63,8 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     });
   }
 
-  Future syncData() async {
-    print('[SYNC PROGRESS] start sync data');
+  Future syncData({int totalPreviousVehicleInfo = 0}) async {
+    logger.info('Start sync data');
     await Future.wait([
       Future(() async {
         await createdWardenEventLocalService.syncAll(
@@ -71,6 +73,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
             _controller.animateTo(_controller.position.maxScrollExtent,
                 curve: Curves.fastOutSlowIn,
                 duration: const Duration(seconds: 1));
+            logger.info('[progressingWardenEvent] $current');
             setState(() {
               progressingWardenEvent = current;
               isStoppingSyncing = false;
@@ -90,8 +93,9 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
           _controller.animateTo(_controller.position.maxScrollExtent,
               curve: Curves.fastOutSlowIn,
               duration: const Duration(seconds: 1));
+          logger.info('[progressingVehicleInfo] $current');
           setState(() {
-            progressingVehicleInfo = current;
+            progressingVehicleInfo = totalPreviousVehicleInfo + current;
             isStoppingSyncing = false;
             syncLogs.add(log);
           });
@@ -101,8 +105,9 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
         if (totalVehicleInfo > 0 &&
             !isStopSyncing &&
             await checkTurnOnNetWork.turnOnWifiAndMobile()) {
-          print('[SYNC PROGRESS] sync Vehicle info data is not complete');
-          await syncData();
+          logger.info('Sync Vehicle info data is not complete');
+          await syncData(totalPreviousVehicleInfo: progressingVehicleInfo);
+          return;
         }
 
         await issuedPcnLocalService.syncAll((isStop) => isStopSyncing,
@@ -110,6 +115,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
           _controller.animateTo(_controller.position.maxScrollExtent,
               curve: Curves.fastOutSlowIn,
               duration: const Duration(seconds: 1));
+          logger.info('[progressingPcns] $current');
           setState(() {
             progressingPcns = current;
             isStoppingSyncing = false;
@@ -121,7 +127,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   }
 
   Future<void> startSyncToServer() async {
-    print('[SYNC PROGRESS] start sync to server');
+    logger.info('Start sync to server');
     setState(() {
       isSyncing = true;
       isSyncingWardenEvent = true;
@@ -265,6 +271,9 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
           ],
         );
 
+    logger.info(
+        'is syncing: $isSyncing, totalDataNeedToSync: $totalDataAll, total progress: ${progressingWardenEvent + progressingVehicleInfo + progressingPcns} in there: progressingWardenEvent: $progressingWardenEvent, progressingVehicleInfo: $progressingVehicleInfo, progressingPcns: $progressingPcns');
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -401,7 +410,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                       ),
                     ),
                   if (!isSyncing &&
-                      totalDataNeedToSync > 0 &&
+                      totalDataAll > 0 &&
                       (progressingWardenEvent +
                               progressingVehicleInfo +
                               progressingPcns) !=
@@ -429,7 +438,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
                       ),
                     ),
                   if (!isSyncing &&
-                      totalDataNeedToSync > 0 &&
+                      totalDataAll > 0 &&
                       (progressingWardenEvent +
                               progressingVehicleInfo +
                               progressingPcns) !=
