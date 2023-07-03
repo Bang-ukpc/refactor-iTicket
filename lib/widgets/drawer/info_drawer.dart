@@ -8,6 +8,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/check_background_service_status_helper.dart';
+import 'package:iWarden/helpers/check_turn_on_net_work.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
@@ -132,16 +133,8 @@ class _InfoDrawerState extends State<InfoDrawer> {
     Future onLogout(Auth auth) async {
       await syncData.getQuantity();
       if (syncData.totalDataNeedToSync > 0) {
-        if (await checkBackgroundServiceStatusHelper.isRunning()) {
-          if (!mounted) return;
-          openAlert(
-            context: context,
-            content:
-                'Data is being synced. Please waiting until it’s done. Thank you.',
-            textButton: 'I got it',
-          );
-        } else {
-          if (syncData.isSyncing) {
+        if (await checkTurnOnNetWork.turnOnWifiAndMobile()) {
+          if (await checkBackgroundServiceStatusHelper.isRunning()) {
             if (!mounted) return;
             openAlert(
               context: context,
@@ -150,23 +143,41 @@ class _InfoDrawerState extends State<InfoDrawer> {
               textButton: 'I got it',
             );
           } else {
-            if (mounted) {
-              openAlertWithAction(
+            if (syncData.isSyncing) {
+              if (!mounted) return;
+              openAlert(
                 context: context,
-                title: 'Sync before logout',
                 content:
-                    'You still have some data that needs to be synced. Please sync before you logout.\n\nThe total data waiting for synchronization: ${syncData.totalDataNeedToSync}',
-                textButton: 'Sync now',
-                action: () {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    SyncingDataLogScreen.routeName,
-                    (Route<dynamic> route) => false,
-                    arguments: {'action': EventAction.logout.index},
-                  );
-                },
+                    'Data is being synced. Please waiting until it’s done. Thank you.',
+                textButton: 'I got it',
               );
+            } else {
+              if (mounted) {
+                openAlertWithAction(
+                  context: context,
+                  title: 'Sync before logout',
+                  content:
+                      'You still have some data that needs to be synced. Please sync before you logout.\n\nThe total data waiting for synchronization: ${syncData.totalDataNeedToSync}',
+                  textButton: 'Sync now',
+                  action: () {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      SyncingDataLogScreen.routeName,
+                      (Route<dynamic> route) => false,
+                      arguments: {'action': EventAction.logout.index},
+                    );
+                  },
+                );
+              }
             }
           }
+        } else {
+          if (!mounted) return;
+          openAlert(
+            context: context,
+            content:
+                'There is currently no internet connection. Please connect to the internet to synchronize the data before logging out. Thank you.',
+            textButton: 'I got it',
+          );
         }
       } else {
         if (!mounted) return;
