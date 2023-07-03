@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
+import 'package:iWarden/helpers/check_turn_on_net_work.dart';
 import 'package:iWarden/models/log.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
@@ -60,52 +61,75 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     });
   }
 
-  Future<void> syncDataToServer() async {
+  Future syncData() async {
+    print('[SYNC PROGRESS] start sync data');
+    await Future.wait([
+      Future(() async {
+        await createdWardenEventLocalService.syncAll(
+          (isStop) => isStopSyncing,
+          (current, total, [log]) {
+            _controller.animateTo(_controller.position.maxScrollExtent,
+                curve: Curves.fastOutSlowIn,
+                duration: const Duration(seconds: 1));
+            setState(() {
+              progressingWardenEvent = current;
+              isStoppingSyncing = false;
+            });
+          },
+        );
+
+        int totalWardenEvent = await createdWardenEventLocalService.total();
+        setState(() {
+          totalEvent = totalWardenEvent;
+          isSyncingWardenEvent = false;
+        });
+      }),
+      Future(() async {
+        await createdVehicleDataLocalService.syncAll((isStop) => isStopSyncing,
+            (current, total, [log]) {
+          _controller.animateTo(_controller.position.maxScrollExtent,
+              curve: Curves.fastOutSlowIn,
+              duration: const Duration(seconds: 1));
+          setState(() {
+            progressingVehicleInfo = current;
+            isStoppingSyncing = false;
+            syncLogs.add(log);
+          });
+        });
+
+        int totalVehicleInfo = await createdVehicleDataLocalService.total();
+        if (totalVehicleInfo > 0 &&
+            !isStopSyncing &&
+            await checkTurnOnNetWork.turnOnWifiAndMobile()) {
+          print('[SYNC PROGRESS] sync Vehicle info data is not complete');
+          await syncData();
+        }
+
+        await issuedPcnLocalService.syncAll((isStop) => isStopSyncing,
+            (current, total, [log]) {
+          _controller.animateTo(_controller.position.maxScrollExtent,
+              curve: Curves.fastOutSlowIn,
+              duration: const Duration(seconds: 1));
+          setState(() {
+            progressingPcns = current;
+            isStoppingSyncing = false;
+            syncLogs.add(log);
+          });
+        });
+      }),
+    ]);
+  }
+
+  Future<void> startSyncToServer() async {
+    print('[SYNC PROGRESS] start sync to server');
     setState(() {
       isSyncing = true;
       isSyncingWardenEvent = true;
       syncLogs = [];
     });
 
-    await createdWardenEventLocalService.syncAll(
-      (isStop) => isStopSyncing,
-      (current, total, [log]) {
-        _controller.animateTo(_controller.position.maxScrollExtent,
-            curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
-        setState(() {
-          progressingWardenEvent = current;
-          isStoppingSyncing = false;
-        });
-      },
-    );
+    await syncData();
 
-    int totalWardenEvent = await createdWardenEventLocalService.total();
-    setState(() {
-      totalEvent = totalWardenEvent;
-      isSyncingWardenEvent = false;
-    });
-
-    await createdVehicleDataLocalService.syncAll((isStop) => isStopSyncing,
-        (current, total, [log]) {
-      _controller.animateTo(_controller.position.maxScrollExtent,
-          curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
-      setState(() {
-        progressingVehicleInfo = current;
-        isStoppingSyncing = false;
-        syncLogs.add(log);
-      });
-    });
-
-    await issuedPcnLocalService.syncAll((isStop) => isStopSyncing,
-        (current, total, [log]) {
-      _controller.animateTo(_controller.position.maxScrollExtent,
-          curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
-      setState(() {
-        progressingPcns = current;
-        isStoppingSyncing = false;
-        syncLogs.add(log);
-      });
-    });
     _controller.animateTo(_controller.position.maxScrollExtent,
         curve: Curves.fastOutSlowIn, duration: const Duration(seconds: 1));
 
@@ -127,7 +151,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     isStopSyncing = false;
     await getQuantityOfSyncData();
     await getTotalDataAll();
-    await syncDataToServer();
+    await startSyncToServer();
   }
 
   void onPauseBackgroundService() async {
@@ -145,7 +169,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
     getQuantityOfSyncData();
     getTotalDataAll();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await syncDataToServer();
+      await startSyncToServer();
     });
   }
 

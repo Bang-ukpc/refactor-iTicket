@@ -254,10 +254,7 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                           onPressed: () async {
-                            await Future.delayed(const Duration(seconds: 1),
-                                () {
-                              syncData.stopSync();
-                            });
+                            syncData.stopSync();
                             if (!mounted) return;
                             Navigator.of(context).pushNamedAndRemoveUntil(
                                 SyncingDataLogScreen.routeName,
