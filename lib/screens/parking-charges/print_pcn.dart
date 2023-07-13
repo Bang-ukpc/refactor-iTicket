@@ -89,7 +89,7 @@ class _PrintPCNState extends BaseStatefulState<PrintPCN> {
               contraventionReference:
                   contraventionCreate.ContraventionReference,
               originalFileName: e.blobName!.split('/').last,
-              capturedDateTime: now,
+              capturedDateTime: e.created ?? now,
               filePath: e.blobName as String,
               photoType: args.type == TypePCN.Physical.index ? 5 : 6,
             ),

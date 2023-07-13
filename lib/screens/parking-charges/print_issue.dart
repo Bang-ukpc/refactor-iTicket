@@ -196,6 +196,7 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
               contraventionImageList.add(ContraventionPhotos(
                 blobName: printIssue.data[i].image!.path,
                 contraventionId: contraventionProvider.contravention?.id ?? 0,
+                created: printIssue.data[i].created,
               ));
             }
           } else {
@@ -203,6 +204,7 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
               contraventionImageList.add(ContraventionPhotos(
                 blobName: printIssue.data[i].image!.path,
                 contraventionId: contraventionProvider.contravention?.id ?? 0,
+                created: printIssue.data[i].created,
               ));
             }
           }

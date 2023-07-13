@@ -7,7 +7,13 @@ class PrintIssue {
   final int id;
   final String title;
   File? image;
-  PrintIssue({required this.id, required this.title, this.image});
+  DateTime? created;
+  PrintIssue({
+    required this.id,
+    required this.title,
+    this.image,
+    this.created,
+  });
 }
 
 class PrintIssueProviders with ChangeNotifier {
@@ -140,7 +146,8 @@ class PrintIssueProviders with ChangeNotifier {
     return false;
   }
 
-  void addImageToIssue(int id, File image) {
+  void addImageToIssue(int id, File image, DateTime photoCreated) async {
+    print('[PHOTO CREATION TIME] $photoCreated');
     print({
       id,
       image,
@@ -148,6 +155,7 @@ class PrintIssueProviders with ChangeNotifier {
 
     final PrintIssue temp = _data.firstWhere((element) => element.id == id);
     temp.image = image;
+    temp.created = photoCreated;
     notifyListeners();
   }
 
