@@ -262,7 +262,7 @@ class _AddImageState extends State<AddImage> {
                                                       ),
                                                     )
                                               : Image.file(
-                                                  widget.listImage[index],
+                                                  widget.listImage[index].image,
                                                   fit: BoxFit.cover,
                                                 ),
                                         ),

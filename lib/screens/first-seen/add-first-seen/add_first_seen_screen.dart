@@ -44,11 +44,20 @@ class AddFirstSeenScreen extends StatefulWidget {
       _AddFirstSeenScreenState();
 }
 
+class VehicleInfoImage {
+  File image;
+  DateTime created;
+  VehicleInfoImage({
+    required this.image,
+    required this.created,
+  });
+}
+
 class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _vrnController = TextEditingController();
   final _bayNumberController = TextEditingController();
-  List<File> arrayImage = [];
+  List<VehicleInfoImage> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
   late CachedServiceFactory cachedServiceFactory;
   AutovalidateMode validateMode = AutovalidateMode.disabled;
@@ -303,8 +312,8 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
           .map(
             (image) => EvidencePhoto(
               Id: idHelper.generateId(),
-              BlobName: image.path,
-              Created: now,
+              BlobName: image.image.path,
+              Created: image.created,
               VehicleInformationId: vehicleInfo.Id,
             ),
           )

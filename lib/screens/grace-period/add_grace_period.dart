@@ -18,6 +18,7 @@ import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
+import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
 import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
@@ -46,7 +47,7 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _vrnController = TextEditingController();
   final _bayNumberController = TextEditingController();
-  List<File> arrayImage = [];
+  List<VehicleInfoImage> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
   late CachedServiceFactory cachedServiceFactory;
   AutovalidateMode validateMode = AutovalidateMode.disabled;
@@ -161,8 +162,8 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
           .map(
             (image) => EvidencePhoto(
               Id: idHelper.generateId(),
-              BlobName: image.path,
-              Created: now,
+              BlobName: image.image.path,
+              Created: image.created,
               VehicleInformationId: vehicleInfo.Id,
             ),
           )

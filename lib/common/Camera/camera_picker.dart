@@ -13,6 +13,8 @@ import 'package:iWarden/common/Camera/picker_store.dart';
 import 'package:iWarden/common/IconButtonCamera/build_icon.dart';
 import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
+import 'package:iWarden/providers/time_ntp.dart';
+import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
@@ -49,7 +51,7 @@ class CameraPicker extends HookWidget {
 
   final FutureOr<bool> Function(File file)? onDelete;
 
-  final List<File>? initialFiles;
+  final List<VehicleInfoImage>? initialFiles;
 
   final int? typePCN;
 
@@ -109,6 +111,7 @@ class CameraPicker extends HookWidget {
         double padding,
         BuildContext context,
         File img,
+        DateTime photoCreated,
         CameraController cameraController) async {
       print("titleCamera $titleCamera");
       showGeneralDialog(
@@ -152,12 +155,14 @@ class CameraPicker extends HookWidget {
                         if (!editImage) {
                           await printIssue.getIdIssue(
                               printIssue.findIssueNoImage(typePCN: typePCN).id);
-                          printIssue.addImageToIssue(printIssue.idIssue, img);
+                          printIssue.addImageToIssue(
+                              printIssue.idIssue, img, photoCreated);
                           Navigator.of(context).pop();
                           mode.value = FlashMode.off;
                           cameraController.setFlashMode(FlashMode.off);
                         } else {
-                          printIssue.addImageToIssue(printIssue.idIssue, img);
+                          printIssue.addImageToIssue(
+                              printIssue.idIssue, img, photoCreated);
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
                           mode.value = FlashMode.off;
@@ -166,7 +171,8 @@ class CameraPicker extends HookWidget {
                       } else {
                         await printIssue.getIdIssue(
                             printIssue.findIssueNoImage(typePCN: typePCN).id);
-                        printIssue.addImageToIssue(printIssue.idIssue, img);
+                        printIssue.addImageToIssue(
+                            printIssue.idIssue, img, photoCreated);
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                         mode.value = FlashMode.off;
@@ -225,6 +231,7 @@ class CameraPicker extends HookWidget {
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     void actionCamera(CameraController cameraController) async {
+      DateTime now = await timeNTP.get();
       try {
         final file = await cameraController.takePicture();
         var imageFile = File(file.path);
@@ -234,13 +241,15 @@ class CameraPicker extends HookWidget {
         var capturedImage = img.decodeImage(await file.readAsBytes());
         img.encodeJpg(capturedImage!, quality: 40);
         log(files.path);
+        print('[PHOTO CREATION TIME] $now');
         mode.value = FlashMode.off;
         cameraController.setFlashMode(FlashMode.off);
-        store.addFile(files);
+        store.addFile(VehicleInfoImage(image: files, created: now));
         filesDataImage.value = filesDataImage.value + 1;
         previewImage == true
             // ignore: use_build_context_synchronously
-            ? showDiaLog(widthScreen, padding, context, files, cameraController)
+            ? showDiaLog(
+                widthScreen, padding, context, files, now, cameraController)
             : null;
       } catch (ex, stack) {
         onError?.call(ex, stack);
@@ -500,8 +509,10 @@ class CameraPicker extends HookWidget {
                                                       onDelete: (index) async {
                                                         if (onDelete == null ||
                                                             await onDelete!(
-                                                                store.filesData[
-                                                                    index])) {
+                                                                store
+                                                                    .filesData[
+                                                                        index]
+                                                                    .image)) {
                                                           store.removeFile(
                                                               store.filesData[
                                                                   index]);
@@ -663,8 +674,8 @@ class CameraPicker extends HookWidget {
                                         previewHeight: previewHeight,
                                         onDelete: (index) async {
                                           if (onDelete == null ||
-                                              await onDelete!(
-                                                  store.filesData[index])) {
+                                              await onDelete!(store
+                                                  .filesData[index].image)) {
                                             store.removeFile(
                                                 store.filesData[index]);
                                             filesDataImage.value =
@@ -785,7 +796,7 @@ class CameraPicker extends HookWidget {
 /// ImagesPreview is a widget to show preview of files with
 class ImagesPreview extends HookWidget {
   /// Files to show in preview
-  final List<File> files;
+  final List<VehicleInfoImage> files;
 
   /// Callback when delete button is pressed, but don't delete the file, that's on you to so it and update [files]
   final Function(int index)? onDelete;
@@ -815,7 +826,8 @@ class ImagesPreview extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final ioFiles = useMemoized(
-        () => files.map((e) => File(e.path)).toList(), [files, files.length]);
+        () => files.map((e) => File(e.image.path)).toList(),
+        [files, files.length]);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
