@@ -113,33 +113,87 @@ class BluetoothPrinterHelper {
         );
   }
 
+  String formatDateTime(DateTime date) {
+    return DateFormat('HH:mm dd-MM-yyyy').format(date);
+  }
+
   Future printReceiveTest() async {
     String fontStyle1 = "^A1N,24,12";
     String fontStyle2 = "^A1N,14,12";
-    DateTime now = await timeNTP.getTimeWithUKTime();
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 145;
+    int xAxis4 = 100;
+
     int referenceNo = 78;
     int date = referenceNo + 55;
     int plate = date + 70;
     int make = plate + 65;
-    int color = make + 65;
-    int location = color + 50;
+    int color = make + 60;
+    int location = color + 55;
     int issueTime = location + 165;
     int timeFirstSeen = issueTime + 60;
     int desc = timeFirstSeen + 200;
-    int referenceNo2 = desc + 535;
+    int referenceNo2 = desc + 543;
     int date2 = referenceNo2 + 60;
     int plate2 = date2 + 60;
     int barcode = plate2 + 70;
+
+    DateTime now = await timeNTP.getTimeWithUKTime();
+    final dateFormatted = DateFormat('dd-MM-yyyy').format(now);
+    final dateTimeFormatted = formatDateTime(now);
+
     List<int> bytes = [];
-
     final profile = await CapabilityProfile.load();
-
     final generator = Generator(PaperSize.mm80, profile);
-    bytes += generator.text(
-        '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^POI^FO$xAxis,$referenceNo$fontStyle1^FD1234567890123^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FDXX99XXX^FS^FO$xAxis,$make$fontStyle1^FDMAKE^FS^FO$xAxis,$color$fontStyle1^FDCOLOUR^FS^FO$xAxis,$location$fontStyle2^FDVOID A2^FS^FO$xAxis,${location + 40}$fontStyle2^FDVOID A3^FS^FO$xAxis,${location + 80}$fontStyle2^FDVOID A4^FS^FO$xAxis,${location + 120}$fontStyle2^FDVOID A5^FS^FO$xAxis,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(now)}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(now)}^FS^FO$xAxis2,$desc$fontStyle2^FDVOID 02^FS^FO$xAxis2,${desc + 20}$fontStyle2^FDVOID 03^FS^FO$xAxis2,${desc + 40}$fontStyle2^FDVOID 04^FS^FO$xAxis3,$referenceNo2$fontStyle1^FD1234567890123^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FDXX99XXX^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS^XZ');
+
+    bytes += generator.text('''^XA
+    ^MNM
+    ^LL1994
+    ^POI
+    ^FO$xAxis,$referenceNo$fontStyle1^FD1234567890123^FS
+    ^FO$xAxis,$date^A,$fontStyle1^FD$dateFormatted^FS
+    ^FO$xAxis,$plate$fontStyle1^FDXX99XXX^FS
+    ^FO$xAxis,$make$fontStyle1^FDMAKE^FS
+    ^FO$xAxis,$color$fontStyle1^FDCOLOUR^FS
+    ^FO$xAxis,$location$fontStyle2^FDVOID A2^FS
+    ^FO$xAxis,${location + 40}$fontStyle2^FDVOID A3^FS
+    ^FO$xAxis,${location + 80}$fontStyle2^FDVOID A4^FS
+    ^FO$xAxis,${location + 120}$fontStyle2^FDVOID A5^FS
+    ^FO$xAxis,$issueTime$fontStyle1^FD$dateTimeFormatted^FS
+    ^FO$xAxis,$timeFirstSeen$fontStyle1^FD$dateTimeFormatted^FS
+    ^FO$xAxis2,$desc$fontStyle2^FDVOID 02^FS
+    ^FO$xAxis2,${desc + 20}$fontStyle2^FDVOID 03^FS
+    ^FO$xAxis2,${desc + 40}$fontStyle2^FDVOID 04^FS
+    ^FO$xAxis3,$referenceNo2$fontStyle1^FD1234567890123^FS
+    ^FO$xAxis3,$date2$fontStyle1^FD$dateFormatted^FS
+    ^FO$xAxis3,$plate2$fontStyle1^FDXX99XXX^FS
+    ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS
+    ^XZ''');
+
+    log('''^XA
+    ^MNM
+    ^LL1994
+    ^POI
+    ^FO$xAxis,$referenceNo$fontStyle1^FD1234567890123^FS
+    ^FO$xAxis,$date^A,$fontStyle1^FD$dateFormatted^FS
+    ^FO$xAxis,$plate$fontStyle1^FDXX99XXX^FS
+    ^FO$xAxis,$make$fontStyle1^FDMAKE^FS
+    ^FO$xAxis,$color$fontStyle1^FDCOLOUR^FS
+    ^FO$xAxis,$location$fontStyle2^FDVOID A2^FS
+    ^FO$xAxis,${location + 40}$fontStyle2^FDVOID A3^FS
+    ^FO$xAxis,${location + 80}$fontStyle2^FDVOID A4^FS
+    ^FO$xAxis,${location + 120}$fontStyle2^FDVOID A5^FS
+    ^FO$xAxis,$issueTime$fontStyle1^FD$dateTimeFormatted^FS
+    ^FO$xAxis,$timeFirstSeen$fontStyle1^FD$dateTimeFormatted^FS
+    ^FO$xAxis2,$desc$fontStyle2^FDVOID 02^FS
+    ^FO$xAxis2,${desc + 20}$fontStyle2^FDVOID 03^FS
+    ^FO$xAxis2,${desc + 40}$fontStyle2^FDVOID 04^FS
+    ^FO$xAxis3,$referenceNo2$fontStyle1^FD1234567890123^FS
+    ^FO$xAxis3,$date2$fontStyle1^FD$dateFormatted^FS
+    ^FO$xAxis3,$plate2$fontStyle1^FDXX99XXX^FS
+    ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS
+    ^XZ''');
 
     await printEscPos(bytes, generator);
   }
@@ -159,41 +213,80 @@ class BluetoothPrinterHelper {
     int xAxis = 175;
     int xAxis2 = 30;
     int xAxis3 = 145;
+    int xAxis4 = 100;
+
     int referenceNo = 78;
     int date = referenceNo + 55;
     int plate = date + 70;
     int make = plate + 65;
     int color = make + 60;
     int location = color + 55;
-    DateTime now = await timeNTP.getTimeWithUKTime();
     int road = location;
     int issueTime = color + 220;
     int timeFirstSeen = issueTime + 60;
     int wardenId = timeFirstSeen + 58;
-    int desc = wardenId + (205 - 67);
+    int desc = wardenId + (205 - 41);
     int upper = desc + 102;
     int lower = upper + 45;
     int referenceNo2 = upper + 445;
     int date2 = referenceNo2 + 60;
     int plate2 = date2 + 60;
     int barcode = plate2 + 70;
+
+    DateTime now = await timeNTP.getTimeWithUKTime();
+    final timeFormatted = DateFormat('dd-MM-yyyy').format(now);
+    final eventDateTime = formatDateTime(
+        timeHelper.ukTimeZoneConversion(physicalPCN.eventDateTime as DateTime));
+    final firstObservedTime = formatDateTime(timeHelper.ukTimeZoneConversion(
+        physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime));
+
     List<int> bytes = [];
-
     final profile = await CapabilityProfile.load();
-
     final generator = Generator(PaperSize.mm80, profile);
-    String locationInfo =
-        "$road^FB400,7,3,L,0$fontStyle2^FD${locationName.Name}\\&${isTextNull(locationName.Address1) ? " " : locationName.Address1}\\&${isTextNull(locationName.Town) ? " " : locationName.Town}\\&${isTextNull(locationName.County) ? " " : locationName.County}\\&${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS^FO$xAxis";
 
-    String lowerPrintText =
-        "$lower^FB400,3,3,L,0$fontStyle1^FD$lowerAmount^FS^FO$xAxis3";
-    String upperPrintText =
-        "$upper^FB400,3,3,L,0$fontStyle1^FD$upperAmount^FS^FO${xAxis3 + 115}";
-    String externalIdSpace = "$wardenId$fontStyle1^FD$externalId^FS^FO$xAxis2";
-    // bytes += generator.text(
-    //     '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^POI^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS^FO$xAxis,$locationInfo,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.eventDateTime as DateTime))}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime))}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
-    bytes += generator.text(
-        '! U1 setvar "media.type" "label" ! U1 setvar "media.sense_mode" "bar" ! U1 setvar "device.languages" "zpl" ! U1 setvar "device.pnp_option" "zpl" ^XA^MNN^LL1884^POI^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis,$date^A,$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS^FO$xAxis,$locationInfo,$issueTime$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.eventDateTime as DateTime))}^FS^FO$xAxis,$timeFirstSeen$fontStyle1^FD${DateFormat('HH:mm dd-MM-yyyy').format(timeHelper.ukTimeZoneConversion(physicalPCN.contraventionDetailsWarden?.FirstObserved as DateTime))}^FS^FO${xAxis3 + 110},$externalIdSpace,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS^FO${xAxis3 + 115},$upperPrintText, $lowerPrintText, $referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS^FO$xAxis3,$date2$fontStyle1^FD${DateFormat('dd-MM-yyyy').format(now)}^FS^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS^FO100,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS^XZ');
+    bytes += generator.text('''^XA
+    ^MNM
+    ^LL1994
+    ^POI
+    ^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS
+    ^FO$xAxis,$date^A,$fontStyle1^FD$timeFormatted^FS
+    ^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS
+    ^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS
+    ^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS
+    ^FO$xAxis,$road^FB400,7,3,L,0$fontStyle2^FD${locationName.Name}\\&${isTextNull(locationName.Address1) ? " " : locationName.Address1}\\&${isTextNull(locationName.Town) ? " " : locationName.Town}\\&${isTextNull(locationName.County) ? " " : locationName.County}\\&${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS
+    ^FO$xAxis,$issueTime$fontStyle1^FD$eventDateTime^FS
+    ^FO$xAxis,$timeFirstSeen$fontStyle1^FD$firstObservedTime^FS
+    ^FO${xAxis3 + 110},$wardenId$fontStyle1^FD$externalId^FS
+    ^FO$xAxis2,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS
+    ^FO${xAxis3 + 115},$upper^FB400,3,3,L,0$fontStyle1^FD$upperAmount^FS
+    ^FO${xAxis3 + 115},$lower^FB400,3,3,L,0$fontStyle1^FD$lowerAmount^FS
+    ^FO$xAxis3,$referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS
+    ^FO$xAxis3,$date2$fontStyle1^FD$timeFormatted^FS
+    ^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS
+    ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS
+    ^XZ''');
+
+    log('''^XA
+    ^MNM
+    ^LL1994
+    ^POI
+    ^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS
+    ^FO$xAxis,$date^A,$fontStyle1^FD$timeFormatted^FS
+    ^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS
+    ^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS
+    ^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS
+    ^FO$xAxis,$road^FB400,7,3,L,0$fontStyle2^FD${locationName.Name}\\&${isTextNull(locationName.Address1) ? " " : locationName.Address1}\\&${isTextNull(locationName.Town) ? " " : locationName.Town}\\&${isTextNull(locationName.County) ? " " : locationName.County}\\&${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS
+    ^FO$xAxis,$issueTime$fontStyle1^FD$eventDateTime^FS
+    ^FO$xAxis,$timeFirstSeen$fontStyle1^FD$firstObservedTime^FS
+    ^FO${xAxis3 + 110},$wardenId$fontStyle1^FD$externalId^FS
+    ^FO$xAxis2,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS
+    ^FO${xAxis3 + 115},$upper^FB400,3,3,L,0$fontStyle1^FD$upperAmount^FS
+    ^FO${xAxis3 + 115},$lower^FB400,3,3,L,0$fontStyle1^FD$lowerAmount^FS
+    ^FO$xAxis3,$referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS
+    ^FO$xAxis3,$date2$fontStyle1^FD$timeFormatted^FS
+    ^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS
+    ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS
+    ^XZ''');
 
     await printEscPos(bytes, generator);
   }
