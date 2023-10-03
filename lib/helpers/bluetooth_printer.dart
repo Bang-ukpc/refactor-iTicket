@@ -133,8 +133,8 @@ class BluetoothPrinterHelper {
     int location = color + 55;
     int issueTime = location + 165;
     int timeFirstSeen = issueTime + 60;
-    int desc = timeFirstSeen + 200;
-    int referenceNo2 = desc + 543;
+    int desc = timeFirstSeen + 222;
+    int referenceNo2 = desc + 521;
     int date2 = referenceNo2 + 60;
     int plate2 = date2 + 60;
     int barcode = plate2 + 70;
@@ -171,7 +171,7 @@ class BluetoothPrinterHelper {
     ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS
     ^XZ''');
 
-    log('''^XA
+    print('''^XA
     ^MNM
     ^LL1994
     ^POI
@@ -226,7 +226,7 @@ class BluetoothPrinterHelper {
     int timeFirstSeen = issueTime + 60;
     int wardenId = timeFirstSeen + 58;
     int desc = wardenId + (205 - 41);
-    int upper = desc + 102;
+    int upper = desc + 76;
     int lower = upper + 45;
     int referenceNo2 = upper + 445;
     int date2 = referenceNo2 + 60;
@@ -266,7 +266,7 @@ class BluetoothPrinterHelper {
     ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS
     ^XZ''');
 
-    log('''^XA
+    print('''^XA
     ^MNM
     ^LL1994
     ^POI
