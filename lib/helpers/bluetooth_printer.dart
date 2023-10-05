@@ -147,53 +147,35 @@ class BluetoothPrinterHelper {
     final profile = await CapabilityProfile.load();
     final generator = Generator(PaperSize.mm80, profile);
 
-    bytes += generator.text('''^XA
-    ^MNM
-    ^LL1994
-    ^POI
-    ^FO$xAxis,$referenceNo$fontStyle1^FD1234567890123^FS
-    ^FO$xAxis,$date^A,$fontStyle1^FD$dateFormatted^FS
-    ^FO$xAxis,$plate$fontStyle1^FDXX99XXX^FS
-    ^FO$xAxis,$make$fontStyle1^FDMAKE^FS
-    ^FO$xAxis,$color$fontStyle1^FDCOLOUR^FS
-    ^FO$xAxis,$location$fontStyle2^FDVOID A2^FS
-    ^FO$xAxis,${location + 40}$fontStyle2^FDVOID A3^FS
-    ^FO$xAxis,${location + 80}$fontStyle2^FDVOID A4^FS
-    ^FO$xAxis,${location + 120}$fontStyle2^FDVOID A5^FS
-    ^FO$xAxis,$issueTime$fontStyle1^FD$dateTimeFormatted^FS
-    ^FO$xAxis,$timeFirstSeen$fontStyle1^FD$dateTimeFormatted^FS
-    ^FO$xAxis2,$desc$fontStyle2^FDVOID 02^FS
-    ^FO$xAxis2,${desc + 20}$fontStyle2^FDVOID 03^FS
-    ^FO$xAxis2,${desc + 40}$fontStyle2^FDVOID 04^FS
-    ^FO$xAxis3,$referenceNo2$fontStyle1^FD1234567890123^FS
-    ^FO$xAxis3,$date2$fontStyle1^FD$dateFormatted^FS
-    ^FO$xAxis3,$plate2$fontStyle1^FDXX99XXX^FS
-    ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS
-    ^XZ''');
+    bytes += generator.text('''
+    ! U1 setvar "media.type" "label"
+    ! U1 setvar "media.sense_mode" "bar"
+    ~jc^xa^jus^xz
+    ''');
 
-    print('''^XA
-    ^MNM
-    ^LL1994
-    ^POI
-    ^FO$xAxis,$referenceNo$fontStyle1^FD1234567890123^FS
-    ^FO$xAxis,$date^A,$fontStyle1^FD$dateFormatted^FS
-    ^FO$xAxis,$plate$fontStyle1^FDXX99XXX^FS
-    ^FO$xAxis,$make$fontStyle1^FDMAKE^FS
-    ^FO$xAxis,$color$fontStyle1^FDCOLOUR^FS
-    ^FO$xAxis,$location$fontStyle2^FDVOID A2^FS
-    ^FO$xAxis,${location + 40}$fontStyle2^FDVOID A3^FS
-    ^FO$xAxis,${location + 80}$fontStyle2^FDVOID A4^FS
-    ^FO$xAxis,${location + 120}$fontStyle2^FDVOID A5^FS
-    ^FO$xAxis,$issueTime$fontStyle1^FD$dateTimeFormatted^FS
-    ^FO$xAxis,$timeFirstSeen$fontStyle1^FD$dateTimeFormatted^FS
-    ^FO$xAxis2,$desc$fontStyle2^FDVOID 02^FS
-    ^FO$xAxis2,${desc + 20}$fontStyle2^FDVOID 03^FS
-    ^FO$xAxis2,${desc + 40}$fontStyle2^FDVOID 04^FS
-    ^FO$xAxis3,$referenceNo2$fontStyle1^FD1234567890123^FS
-    ^FO$xAxis3,$date2$fontStyle1^FD$dateFormatted^FS
-    ^FO$xAxis3,$plate2$fontStyle1^FDXX99XXX^FS
-    ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS
-    ^XZ''');
+    // bytes += generator.text('''^XA
+    // ^MNM
+    // ^LL1994
+    // ^POI
+    // ^FO$xAxis,$referenceNo$fontStyle1^FD1234567890123^FS
+    // ^FO$xAxis,$date^A,$fontStyle1^FD$dateFormatted^FS
+    // ^FO$xAxis,$plate$fontStyle1^FDXX99XXX^FS
+    // ^FO$xAxis,$make$fontStyle1^FDMAKE^FS
+    // ^FO$xAxis,$color$fontStyle1^FDCOLOUR^FS
+    // ^FO$xAxis,$location$fontStyle2^FDVOID A2^FS
+    // ^FO$xAxis,${location + 40}$fontStyle2^FDVOID A3^FS
+    // ^FO$xAxis,${location + 80}$fontStyle2^FDVOID A4^FS
+    // ^FO$xAxis,${location + 120}$fontStyle2^FDVOID A5^FS
+    // ^FO$xAxis,$issueTime$fontStyle1^FD$dateTimeFormatted^FS
+    // ^FO$xAxis,$timeFirstSeen$fontStyle1^FD$dateTimeFormatted^FS
+    // ^FO$xAxis2,$desc$fontStyle2^FDVOID 02^FS
+    // ^FO$xAxis2,${desc + 20}$fontStyle2^FDVOID 03^FS
+    // ^FO$xAxis2,${desc + 40}$fontStyle2^FDVOID 04^FS
+    // ^FO$xAxis3,$referenceNo2$fontStyle1^FD1234567890123^FS
+    // ^FO$xAxis3,$date2$fontStyle1^FD$dateFormatted^FS
+    // ^FO$xAxis3,$plate2$fontStyle1^FDXX99XXX^FS
+    // ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD1234567890123^FS
+    // ^XZ''');
 
     await printEscPos(bytes, generator);
   }
@@ -244,31 +226,16 @@ class BluetoothPrinterHelper {
     final profile = await CapabilityProfile.load();
     final generator = Generator(PaperSize.mm80, profile);
 
+    // bytes += generator.text('''
+    // ! U1 setvar "media.type" "label"
+    // ! U1 setvar "media.sense_mode" "bar"
+    // ~jc^xa^jus^xz
+    // ''');
+
+    // bytes += generator.text('^XA^JUF^XZ^XA^JUN^XZ^XA^JUS^XZ');
+
     bytes += generator.text('''^XA
     ^MNM
-    ^LL1994
-    ^POI
-    ^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS
-    ^FO$xAxis,$date^A,$fontStyle1^FD$timeFormatted^FS
-    ^FO$xAxis,$plate$fontStyle1^FD${physicalPCN.plate}^FS
-    ^FO$xAxis,$make$fontStyle1^FD${physicalPCN.make}^FS
-    ^FO$xAxis,$color$fontStyle1^FD${physicalPCN.colour}^FS
-    ^FO$xAxis,$road^FB400,7,3,L,0$fontStyle2^FD${locationName.Name}\\&${isTextNull(locationName.Address1) ? " " : locationName.Address1}\\&${isTextNull(locationName.Town) ? " " : locationName.Town}\\&${isTextNull(locationName.County) ? " " : locationName.County}\\&${isTextNull(locationName.Postcode) ? " " : locationName.Postcode}^FS
-    ^FO$xAxis,$issueTime$fontStyle1^FD$eventDateTime^FS
-    ^FO$xAxis,$timeFirstSeen$fontStyle1^FD$firstObservedTime^FS
-    ^FO${xAxis3 + 110},$wardenId$fontStyle1^FD$externalId^FS
-    ^FO$xAxis2,$desc^FB550,4,3,L,0$fontStyle2^FD${physicalPCN.reason?.contraventionReasonTranslations?[0].detail ?? ""}^FS
-    ^FO${xAxis3 + 115},$upper^FB400,3,3,L,0$fontStyle1^FD$upperAmount^FS
-    ^FO${xAxis3 + 115},$lower^FB400,3,3,L,0$fontStyle1^FD$lowerAmount^FS
-    ^FO$xAxis3,$referenceNo2$fontStyle1^FD${physicalPCN.reference}^FS
-    ^FO$xAxis3,$date2$fontStyle1^FD$timeFormatted^FS
-    ^FO$xAxis3,$plate2$fontStyle1^FD${physicalPCN.plate}^FS
-    ^FO$xAxis4,$barcode^BY3^BC,100,N,N,N,A^FD${physicalPCN.reference}^FS
-    ^XZ''');
-
-    print('''^XA
-    ^MNM
-    ^LL1994
     ^POI
     ^FO$xAxis,$referenceNo$fontStyle1^FD${physicalPCN.reference}^FS
     ^FO$xAxis,$date^A,$fontStyle1^FD$timeFormatted^FS
