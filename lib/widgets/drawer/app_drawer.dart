@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -7,7 +6,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/configs.dart';
-import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/bluetooth_printer.dart';
 import 'package:iWarden/helpers/check_background_service_status_helper.dart';
@@ -141,100 +139,38 @@ class _MyDrawerState extends State<MyDrawer> {
     );
 
     void onStartBreak() async {
-      try {
-        showCircularProgressIndicator(context: context);
-        await createdWardenEventLocalService
-            .create(wardenEventStartBreak)
-            .then((value) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(StartBreakScreen.routeName);
-        });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
+      showCircularProgressIndicator(context: context);
+      await createdWardenEventLocalService
+          .create(wardenEventStartBreak)
+          .then((value) {
         Navigator.of(context).pop();
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-      }
+        Navigator.of(context).pushNamed(StartBreakScreen.routeName);
+      });
     }
 
     void onEndShift(Auth auth) async {
-      try {
-        showCircularProgressIndicator(context: context);
-        final service = FlutterBackgroundService();
-        service.invoke("endShiftService");
+      showCircularProgressIndicator(context: context);
+      final service = FlutterBackgroundService();
+      service.invoke("endShiftService");
+      await createdWardenEventLocalService
+          .create(wardenEventCheckOut)
+          .then((value) async {
         await createdWardenEventLocalService
-            .create(wardenEventCheckOut)
+            .create(wardenEventEndShift)
             .then((value) async {
-          await createdWardenEventLocalService
-              .create(wardenEventEndShift)
-              .then((value) async {
-            SharedPreferencesHelper.removeStringValue(
-                PreferencesKeys.rotaShiftSelectedByWarden);
-            SharedPreferencesHelper.removeStringValue(
-                PreferencesKeys.locationSelectedByWarden);
-            SharedPreferencesHelper.removeStringValue(
-                PreferencesKeys.zoneSelectedByWarden);
-            if (!mounted) return;
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                CheckSyncDataLayout.routeName, (Route<dynamic> route) => false,
-                arguments: 'check-out');
-          });
-        });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
+          SharedPreferencesHelper.removeStringValue(
+              PreferencesKeys.rotaShiftSelectedByWarden);
+          SharedPreferencesHelper.removeStringValue(
+              PreferencesKeys.locationSelectedByWarden);
+          SharedPreferencesHelper.removeStringValue(
+              PreferencesKeys.zoneSelectedByWarden);
+          if (!mounted) return;
           Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
-        Navigator.of(context).pop();
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-      }
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              CheckSyncDataLayout.routeName, (Route<dynamic> route) => false,
+              arguments: 'check-out');
+        });
+      });
     }
 
     List<Widget> getList() {

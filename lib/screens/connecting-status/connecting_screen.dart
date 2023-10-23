@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -16,7 +15,6 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart' as toast;
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/configs.dart';
-import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/configs/request_location_permission.dart';
 import 'package:iWarden/helpers/check_background_service_status_helper.dart';
@@ -485,54 +483,23 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
         longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         wardenId: wardensProvider.wardens?.Id ?? 0,
       );
-      try {
-        await createdWardenEventLocalService
-            .create(wardenEventStartShift)
-            .then((value) async {
-          final service = FlutterBackgroundService();
-          var isRunning = await service.isRunning();
-          if (!isRunning) {
-            await initializeService();
-          }
-          await Future.delayed(const Duration(seconds: 1));
-          service.invoke("startShiftService");
-          await SharedPreferencesHelper.setBoolValue(
-              PreferencesKeys.isEndShift, false);
-          if (!mounted) return;
-          Navigator.of(context).pop();
-          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-        });
-      } on DioError catch (error) {
-        if (!mounted) return;
-        if (error.type == DioErrorType.other) {
-          Navigator.of(context).pop();
-          toast.CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: toast.Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
+
+      await createdWardenEventLocalService
+          .create(wardenEventStartShift)
+          .then((value) async {
+        final service = FlutterBackgroundService();
+        var isRunning = await service.isRunning();
+        if (!isRunning) {
+          await initializeService();
         }
+        await Future.delayed(const Duration(seconds: 1));
+        service.invoke("startShiftService");
+        await SharedPreferencesHelper.setBoolValue(
+            PreferencesKeys.isEndShift, false);
+        if (!mounted) return;
         Navigator.of(context).pop();
-        toast.CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: toast.Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-      }
+        Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+      });
     }
 
     void onLogout(Auth auth) async {

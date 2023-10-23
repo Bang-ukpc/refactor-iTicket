@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/theme/color.dart';
 
 class AppSettings {

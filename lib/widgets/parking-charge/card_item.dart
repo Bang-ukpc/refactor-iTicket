@@ -1,9 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/helpers/url_helper.dart';
 import 'package:iWarden/models/contravention.dart';

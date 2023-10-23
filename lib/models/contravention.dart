@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:iWarden/models/base_model.dart';
 
 class Contravention extends BaseModel {

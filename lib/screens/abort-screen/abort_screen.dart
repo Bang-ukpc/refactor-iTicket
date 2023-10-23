@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,10 +5,7 @@ import 'package:iWarden/common/bottom_sheet_2.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/show_loading.dart';
-import 'package:iWarden/common/toast.dart';
-import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
@@ -104,45 +100,14 @@ class _AbortScreenState extends BaseStatefulState<AbortScreen> {
         return;
       }
 
-      try {
-        showCircularProgressIndicator(context: context);
-        await createdWardenEventLocalService
-            .create(wardenEventAbortPCN)
-            .then((value) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(ParkingChargeList.routeName);
-        });
-      } on DioError catch (error) {
-        if (!mounted) return;
-        if (error.type == DioErrorType.other) {
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
+      showCircularProgressIndicator(context: context);
+      await createdWardenEventLocalService
+          .create(wardenEventAbortPCN)
+          .then((value) {
         Navigator.of(context).pop();
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-      }
+        Navigator.of(context).pushNamed(ParkingChargeList.routeName);
+      });
+
       contraventionProvider.clearContraventionData();
       printIssue.resetData();
       _formKey.currentState!.save();

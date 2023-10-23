@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 class BottomNavyBarItem extends StatelessWidget {
   final void Function()? onPressed;

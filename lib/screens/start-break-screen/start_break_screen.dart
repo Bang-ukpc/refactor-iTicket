@@ -1,12 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/show_loading.dart';
-import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
-import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
-import 'package:iWarden/controllers/user_controller.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -47,48 +43,13 @@ class _StartBreakScreenState extends BaseStatefulState<StartBreakScreen> {
     );
 
     void onEndBreak() async {
-      try {
-        // eventAnalytics.clickButton(
-        //   button: "End break",
-        //   user: wardersProvider.wardens!.Email,
-        // );
-        showCircularProgressIndicator(context: context);
-        await createdWardenEventLocalService
-            .create(wardenEventEndBreak)
-            .then((value) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushReplacementNamed(HomeOverview.routeName);
-        });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
+      showCircularProgressIndicator(context: context);
+      await createdWardenEventLocalService
+          .create(wardenEventEndBreak)
+          .then((value) {
         Navigator.of(context).pop();
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-      }
+        Navigator.of(context).pushReplacementNamed(HomeOverview.routeName);
+      });
     }
 
     return WillPopScope(
