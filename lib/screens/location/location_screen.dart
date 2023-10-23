@@ -79,7 +79,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   }
 
   List<RotaWithLocation> rotaList(List<RotaWithLocation> list) {
-    DateTime date = DateTime.parse(getLocalDate(getNowNTP));
     final filterRotaShiftByNow = list.where(
       (location) {
         DateTime timeFrom =

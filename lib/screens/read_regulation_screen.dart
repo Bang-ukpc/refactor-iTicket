@@ -1,12 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
-import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/index.dart';
 import 'package:iWarden/models/wardens.dart';
@@ -38,8 +35,6 @@ class _ReadRegulationScreenState
   Widget build(BuildContext context) {
     final locations = Provider.of<Locations>(context);
     final wardersProvider = Provider.of<WardensInfo>(context);
-
-    log('Read regulation screen');
 
     WardenEvent wardenEvent = WardenEvent(
       type: TypeWardenEvent.CheckIn.index,

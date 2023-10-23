@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 
 import 'package:camera/camera.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +11,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/controllers/index.dart';
-import 'package:iWarden/controllers/statistic_controller.dart';
 import 'package:iWarden/helpers/format_date.dart';
 import 'package:iWarden/models/date_filter.dart';
 import 'package:iWarden/models/statistic.dart';
@@ -25,8 +23,8 @@ import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/app_bar.dart';
 import 'package:iWarden/widgets/drawer/app_drawer.dart';
 import 'package:iWarden/widgets/statistic/statistic_item.dart';
-import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 import '../helpers/my_navigator_observer.dart';
 

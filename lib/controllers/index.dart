@@ -9,8 +9,8 @@ import '../helpers/dio_helper.dart';
 
 final weakNetworkCancellationReasonController =
     CancellationReasonController.fromDio(DioHelper.weakNetWorkApiClient);
-final weakNetworkRotaWithLocationController =
-    LocationController.fromDio(DioHelper.weakNetWorkApiClient);
+final weakNetworkRotaWithLocationController = LocationController.fromDio(
+    DioHelper.weakNetWorkApiClientForRotaAndLocation);
 final weakNetworkVehicleInfoController =
     VehicleInfoController.fromDio(DioHelper.weakNetWorkApiClient);
 final weakNetworkContraventionController =

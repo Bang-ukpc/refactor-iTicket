@@ -4,13 +4,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/Camera/camera_picker.dart';
-import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/providers/print_issue_providers.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:provider/provider.dart';
-
-import '../../common/my_dialog.dart';
 
 class TakePhotoItem extends StatelessWidget {
   final int id;

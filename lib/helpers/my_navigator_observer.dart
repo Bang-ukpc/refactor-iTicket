@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/time_ntp.dart';
-import 'package:provider/provider.dart';
 
 abstract class BaseStatefulState<T extends StatefulWidget> extends State<T>
     with WidgetsBindingObserver {

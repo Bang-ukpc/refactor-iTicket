@@ -16,6 +16,12 @@ class DioHelper {
       .addInterceptor(Logging())
       .setTimeout(4000)
       .create();
+
+  static Dio get weakNetWorkApiClientForRotaAndLocation => ApiClientBuilder()
+      .ofUrl(ConfigEnvironmentVariable.serviceURL)
+      .addInterceptor(Logging())
+      .setTimeout(6000)
+      .create();
 }
 
 class ApiClientBuilder {

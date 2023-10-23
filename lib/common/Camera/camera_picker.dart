@@ -234,7 +234,6 @@ class CameraPicker extends HookWidget {
       DateTime now = await timeNTP.get();
       try {
         final file = await cameraController.takePicture();
-        var imageFile = File(file.path);
         final tempDir = await syspaths.getTemporaryDirectory();
         final fileName = path.basename(file.path);
         File files = await File('${tempDir.path}/$fileName').create();
@@ -550,7 +549,7 @@ class CameraPicker extends HookWidget {
                                                 children: [
                                                   Container(
                                                     padding: const EdgeInsets
-                                                            .symmetric(
+                                                        .symmetric(
                                                         horizontal: 10.9,
                                                         vertical: 55),
                                                     child: Column(

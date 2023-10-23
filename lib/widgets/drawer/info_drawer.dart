@@ -1,11 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
-import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/check_background_service_status_helper.dart';
 import 'package:iWarden/helpers/check_turn_on_net_work.dart';
@@ -92,42 +90,11 @@ class _InfoDrawerState extends State<InfoDrawer> {
     );
 
     void onCheckOut() async {
-      try {
-        showCircularProgressIndicator(context: context, text: 'Checking out');
-        await createdWardenEventLocalService.create(wardenEvent).then((value) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
-        });
-      } on DioError catch (error) {
-        if (error.type == DioErrorType.other) {
-          Navigator.of(context).pop();
-          CherryToast.error(
-            toastDuration: const Duration(seconds: 3),
-            title: Text(
-              error.message.length > Constant.errorTypeOther
-                  ? 'Something went wrong, please try again'
-                  : error.message,
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
-          return;
-        }
+      showCircularProgressIndicator(context: context, text: 'Checking out');
+      await createdWardenEventLocalService.create(wardenEvent).then((value) {
         Navigator.of(context).pop();
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            error.response!.data['message'].toString().length >
-                    Constant.errorMaxLength
-                ? 'Internal server error'
-                : error.response!.data['message'],
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-      }
+        Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+      });
     }
 
     Future onLogout(Auth auth) async {
