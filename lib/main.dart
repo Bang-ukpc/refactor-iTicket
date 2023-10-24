@@ -13,7 +13,7 @@ import 'package:iWarden/providers/print_issue_providers.dart' as print_issue;
 import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/routes/routes.dart';
-import 'package:iWarden/screens/login_screens.dart';
+import 'package:iWarden/screens/auth/login_screen.dart';
 import 'package:iWarden/settings/app_settings.dart';
 import 'package:iWarden/theme/theme.dart';
 import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';

@@ -44,7 +44,7 @@ import '../../helpers/bluetooth_printer.dart';
 import '../../helpers/debouncer.dart';
 import '../../helpers/my_navigator_observer.dart';
 import '../../helpers/ntp_helper.dart';
-import '../login_screens.dart';
+import '../auth/login_screen.dart';
 
 enum StateDevice { connected, pending, disconnect }
 

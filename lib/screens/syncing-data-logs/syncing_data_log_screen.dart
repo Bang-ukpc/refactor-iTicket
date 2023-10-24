@@ -12,7 +12,7 @@ import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/log.dart';
 import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
-import 'package:iWarden/screens/login_screens.dart';
+import 'package:iWarden/screens/auth/login_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';

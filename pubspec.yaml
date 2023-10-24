@@ -75,6 +75,7 @@ dependencies:
   flutter_cache_manager: ^3.3.0
   location_permissions: ^4.0.1
   timezone: ^0.9.1
+  pin_code_fields: ^8.0.1
 
 dev_dependencies:
   flutter_test:

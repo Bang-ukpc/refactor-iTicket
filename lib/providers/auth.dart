@@ -29,12 +29,10 @@ class Auth with ChangeNotifier {
     try {
       await oauth.login();
       final accessToken = await oauth.getIdToken();
-      if (accessToken != null) {
-        // ignore: use_build_context_synchronously
+      if (accessToken != null && context.mounted) {
         showCircularProgressIndicator(context: context, text: 'Signing in');
         SharedPreferencesHelper.setStringValue(
             PreferencesKeys.accessToken, 'Bearer $accessToken');
-        // ignore: use_build_context_synchronously
         await loginWithJwt(accessToken, context);
       }
     } catch (e) {
@@ -47,13 +45,13 @@ class Auth with ChangeNotifier {
     try {
       await userController.getMe().then((value) async {
         await userCachedService.set(value);
-        // ignore: use_build_context_synchronously
+        if (!context.mounted) return;
         Navigator.of(context).pop();
-        // ignore: use_build_context_synchronously
         Navigator.of(context)
             .pushReplacementNamed(CheckSyncDataLayout.routeName);
       });
     } on DioError catch (error) {
+      if (!context.mounted) return;
       if (error.type == DioErrorType.other) {
         Navigator.of(context).pop();
         CherryToast.error(
