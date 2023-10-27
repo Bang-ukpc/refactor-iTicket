@@ -39,8 +39,6 @@ class _PrintPCNState extends BaseStatefulState<PrintPCN> {
     var args = contraventionProvider.contravention;
     final printIssue = Provider.of<PrintIssueProviders>(context);
 
-    print('[CONTRAVENTION REFERENCE] ${args?.reference}');
-
     Future<void> onRemoveFromVehicleInfo() async {
       if (contraventionProvider.getVehicleInfo != null) {
         var vehicleInfo =
