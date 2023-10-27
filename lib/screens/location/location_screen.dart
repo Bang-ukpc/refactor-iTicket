@@ -6,8 +6,12 @@ import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/drop_down_button_style.dart';
+import 'package:iWarden/common/my_dialog.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/my_navigator_observer.dart';
+import 'package:iWarden/helpers/number_format.dart';
+import 'package:iWarden/helpers/user_info.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/location.dart';
@@ -25,8 +29,9 @@ import 'package:iWarden/widgets/drawer/info_drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../common/my_dialog.dart';
-import '../../helpers/my_navigator_observer.dart';
+const metersInKilometer = 1000;
+const averageSpeed = 15;
+const minutesInAnHour = 60;
 
 class LocationScreen extends StatefulWidget {
   static const routeName = '/location';
@@ -41,6 +46,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   List<RotaWithLocation> locationWithRotaList = [];
   List<RotaWithLocation> listFilter = [];
   List<RotaWithLocation> listFilterByRota = [];
+  List<LocationWithZones> locationList = [];
   Directions? _info;
   bool isLoading = true;
   final Completer<GoogleMapController> _controller =
@@ -55,14 +61,30 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
 
   Future<void> getRotas() async {
     List<RotaWithLocation> rotas = [];
+    List<LocationWithZones> locationsFromCached = [];
     try {
       await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+      if (userInfo.isStsUser) {
+        locationsFromCached = await cachedServiceFactory
+            .rotaWithLocationCachedService
+            .getAllLocations();
+      } else {
+        rotas =
+            await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+      }
     } catch (e) {
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+      if (userInfo.isStsUser) {
+        locationsFromCached = await cachedServiceFactory
+            .rotaWithLocationCachedService
+            .getAllLocations();
+      } else {
+        rotas =
+            await cachedServiceFactory.rotaWithLocationCachedService.getAll();
+      }
     }
     setState(() {
       locationWithRotaList = rotas;
+      locationList = locationsFromCached;
       isLoading = false;
     });
   }
@@ -157,14 +179,27 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
           CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
       await getRotas();
       rotaList(locationWithRotaList);
-      if (listFilter.isNotEmpty) {
-        locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
-        locations.onSelectedRotaShift(listFilter[0]);
-        locations.onSelectedLocation(listFilterByRota[0].locations![0]);
-        locations.onSelectedZone(
-            listFilterByRota[0].locations![0].Zones!.isNotEmpty
-                ? listFilterByRota[0].locations![0].Zones![0]
-                : null);
+      if (userInfo.isStsUser) {
+        if (locationList.isNotEmpty) {
+          final selectedLocation = locationList[0];
+
+          locations.onSelectedLocation(selectedLocation);
+          locations.onSelectedZone(selectedLocation.Zones!.isNotEmpty
+              ? selectedLocation.Zones![0]
+              : null);
+        }
+      } else {
+        if (listFilter.isNotEmpty) {
+          final rotaSelected = listFilter[0];
+          locationListFilterByRota(rotaSelected.timeFrom, rotaSelected.timeTo);
+
+          final selectedLocation = listFilterByRota[0].locations![0];
+          locations.onSelectedRotaShift(rotaSelected);
+          locations.onSelectedLocation(selectedLocation);
+          locations.onSelectedZone(selectedLocation.Zones!.isNotEmpty
+              ? selectedLocation.Zones![0]
+              : null);
+        }
       }
     });
   }
@@ -193,8 +228,16 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
     }
 
     String minWithKilometer() {
-      if (listFilter.isNotEmpty) {
-        return "${((handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000) / 15 * 60).ceil()}min (${(handelDistanceInMeters(endLatitude: locations.location?.Latitude ?? 0, endLongitude: locations.location?.Longitude ?? 0) / 1000).toStringAsFixed(3)}km)";
+      double distance = handelDistanceInMeters(
+          endLatitude: locations.location?.Latitude ?? 0,
+          endLongitude: locations.location?.Longitude ?? 0);
+
+      double averageTime =
+          ((distance / metersInKilometer) / averageSpeed * minutesInAnHour);
+      double distanceInKilometers = distance / metersInKilometer;
+
+      if (listFilter.isNotEmpty || locationList.isNotEmpty) {
+        return "${numberFormatHelper.getNumberFormat(averageTime)}min (${numberFormatHelper.getNumberFormat(distanceInKilometers)}km)";
       } else {
         return "0min (0.0km)";
       }
@@ -265,30 +308,61 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
       )));
     }
 
+    List<LocationWithZones> getLocations() {
+      if (!userInfo.isStsUser) {
+        return locations.rotaShift != null
+            ? locations.rotaShift!.locations!.isNotEmpty
+                ? locations.rotaShift!.locations as List<LocationWithZones>
+                : []
+            : [];
+      }
+      return locationList;
+    }
+
     Future<void> refresh() async {
       await setTimeNTP();
       await getRotas();
       rotaList(locationWithRotaList);
       await currentLocationPosition.getCurrentLocation();
-      if (listFilter.isNotEmpty) {
-        locationListFilterByRota(listFilter[0].timeFrom, listFilter[0].timeTo);
-        locations.onSelectedRotaShift(listFilter[0]);
-        locations.onSelectedLocation(listFilterByRota[0].locations!.isNotEmpty
-            ? listFilterByRota[0].locations![0]
-            : null);
-        handelDistanceInMeters(
-            endLatitude: listFilterByRota[0].locations![0].Latitude ?? 0,
-            endLongitude: listFilterByRota[0].locations![0].Longitude ?? 0);
-        goToDestination(
-            latitude: listFilterByRota[0].locations?[0].Latitude ?? 0,
-            longitude: listFilterByRota[0].locations?[0].Longitude ?? 0);
-        locations.onSelectedZone(listFilterByRota[0].locations!.isNotEmpty
-            ? listFilterByRota[0].locations![0].Zones!.isNotEmpty
-                ? listFilterByRota[0].locations![0].Zones![0]
-                : null
-            : null);
+      if (userInfo.isStsUser) {
+        if (locationList.isNotEmpty) {
+          final selectedLocation = locationList[0];
+          locations.onSelectedLocation(selectedLocation);
+          locations.onSelectedZone(selectedLocation.Zones!.isNotEmpty
+              ? selectedLocation.Zones![0]
+              : null);
+          handelDistanceInMeters(
+              endLatitude: selectedLocation.Latitude ?? 0,
+              endLongitude: selectedLocation.Longitude ?? 0);
+          goToDestination(
+              latitude: selectedLocation.Latitude ?? 0,
+              longitude: selectedLocation.Longitude ?? 0);
+        } else {
+          locations.resetLocationWithZones();
+        }
       } else {
-        locations.resetLocationWithZones();
+        if (listFilter.isNotEmpty) {
+          final rotaSelected = listFilter[0];
+          locationListFilterByRota(rotaSelected.timeFrom, rotaSelected.timeTo);
+          locations.onSelectedRotaShift(rotaSelected);
+
+          final selectedLocation = listFilterByRota[0].locations;
+          locations.onSelectedLocation(
+              selectedLocation!.isNotEmpty ? selectedLocation[0] : null);
+          handelDistanceInMeters(
+              endLatitude: selectedLocation[0].Latitude ?? 0,
+              endLongitude: selectedLocation[0].Longitude ?? 0);
+          goToDestination(
+              latitude: selectedLocation[0].Latitude ?? 0,
+              longitude: selectedLocation[0].Longitude ?? 0);
+          locations.onSelectedZone(selectedLocation.isNotEmpty
+              ? selectedLocation[0].Zones!.isNotEmpty
+                  ? selectedLocation[0].Zones![0]
+                  : null
+              : null);
+        } else {
+          locations.resetLocationWithZones();
+        }
       }
     }
 
@@ -377,103 +451,125 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                       CrossAxisAlignment.stretch,
                                   children: [
                                     Text(
-                                        'Please select your location for this shift',
-                                        style: CustomTextStyle.body1.copyWith(
-                                          fontSize: 16,
-                                        )),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    SizedBox(
-                                      child: DropdownSearch<RotaWithLocation>(
-                                        dropdownBuilder:
-                                            (context, selectedItem) {
-                                          return Text(
-                                              selectedItem == null
-                                                  ? "Select rota shift"
-                                                  : '${formatRotaShift(selectedItem.timeFrom as DateTime)} - ${formatRotaShift(selectedItem.timeTo as DateTime)}',
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: selectedItem == null
-                                                      ? ColorTheme.grey400
-                                                      : ColorTheme
-                                                          .textPrimary));
-                                        },
-                                        dropdownDecoratorProps:
-                                            DropDownDecoratorProps(
-                                          dropdownSearchDecoration:
-                                              dropDownButtonStyle
-                                                  .getInputDecorationCustom(
-                                            labelText: const Text(
-                                              'My rota shift',
-                                            ),
-                                            hintText: 'Select rota shift',
-                                          ),
-                                        ),
-                                        items: rotaList(locationWithRotaList),
-                                        selectedItem: listFilter.isNotEmpty
-                                            ? listFilter[0]
-                                            : null,
-                                        itemAsString: (item) =>
-                                            '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
-                                        popupProps: PopupProps.menu(
-                                          disabledItemFn: (item) =>
-                                              !checkTimeoutRota(
-                                                  item.timeFrom as DateTime,
-                                                  item.timeTo as DateTime),
-                                          fit: FlexFit.loose,
-                                          constraints: const BoxConstraints(
-                                            maxHeight: 200,
-                                          ),
-                                          itemBuilder:
-                                              (context, item, isSelected) {
-                                            return DropDownItemRota(
-                                              timeout: checkTimeoutRota(
-                                                  item.timeFrom as DateTime,
-                                                  item.timeTo as DateTime),
-                                              title:
-                                                  '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
-                                              isSelected: item.Id ==
-                                                  locations.rotaShift?.Id,
-                                            );
-                                          },
-                                        ),
-                                        onChanged: (value) {
-                                          RotaWithLocation rotaShiftSelected =
-                                              locationWithRotaList.firstWhere(
-                                            (item) => item.Id == value!.Id,
-                                          );
-                                          locations.onSelectedRotaShift(
-                                              rotaShiftSelected);
-                                          locationListFilterByRota(
-                                            rotaShiftSelected.timeFrom,
-                                            rotaShiftSelected.timeTo,
-                                          );
-                                          locations.onSelectedLocation(
-                                            listFilterByRota[0].locations![0],
-                                          );
-                                          goToDestination(
-                                              latitude: listFilterByRota[0]
-                                                      .locations?[0]
-                                                      .Latitude ??
-                                                  0,
-                                              longitude: listFilterByRota[0]
-                                                      .locations?[0]
-                                                      .Longitude ??
-                                                  0);
-                                          setZoneWhenSelectedLocation(
-                                              rotaShiftSelected.locations![0]);
-                                        },
-                                        validator: ((value) {
-                                          if (value == null) {
-                                            return 'Please select rota shift';
-                                          }
-                                          return null;
-                                        }),
-                                        autoValidateMode:
-                                            AutovalidateMode.onUserInteraction,
+                                      'Please select your location for this shift',
+                                      style: CustomTextStyle.body1.copyWith(
+                                        fontSize: 16,
                                       ),
                                     ),
+                                    if (!userInfo.isStsUser)
+                                      Column(
+                                        children: [
+                                          const SizedBox(
+                                            height: 20,
+                                          ),
+                                          SizedBox(
+                                            child: DropdownSearch<
+                                                RotaWithLocation>(
+                                              dropdownBuilder:
+                                                  (context, selectedItem) {
+                                                return Text(
+                                                    selectedItem == null
+                                                        ? "Select rota shift"
+                                                        : '${formatRotaShift(selectedItem.timeFrom as DateTime)} - ${formatRotaShift(selectedItem.timeTo as DateTime)}',
+                                                    style: TextStyle(
+                                                        fontSize: 16,
+                                                        color: selectedItem ==
+                                                                null
+                                                            ? ColorTheme.grey400
+                                                            : ColorTheme
+                                                                .textPrimary));
+                                              },
+                                              dropdownDecoratorProps:
+                                                  DropDownDecoratorProps(
+                                                dropdownSearchDecoration:
+                                                    dropDownButtonStyle
+                                                        .getInputDecorationCustom(
+                                                  labelText: const Text(
+                                                    'My rota shift',
+                                                  ),
+                                                  hintText: 'Select rota shift',
+                                                ),
+                                              ),
+                                              items: rotaList(
+                                                  locationWithRotaList),
+                                              selectedItem:
+                                                  listFilter.isNotEmpty
+                                                      ? listFilter[0]
+                                                      : null,
+                                              itemAsString: (item) =>
+                                                  '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
+                                              popupProps: PopupProps.menu(
+                                                disabledItemFn: (item) =>
+                                                    !checkTimeoutRota(
+                                                        item.timeFrom
+                                                            as DateTime,
+                                                        item.timeTo
+                                                            as DateTime),
+                                                fit: FlexFit.loose,
+                                                constraints:
+                                                    const BoxConstraints(
+                                                  maxHeight: 200,
+                                                ),
+                                                itemBuilder: (context, item,
+                                                    isSelected) {
+                                                  return DropDownItemRota(
+                                                    timeout: checkTimeoutRota(
+                                                        item.timeFrom
+                                                            as DateTime,
+                                                        item.timeTo
+                                                            as DateTime),
+                                                    title:
+                                                        '${formatRotaShift(item.timeFrom as DateTime)} - ${formatRotaShift(item.timeTo as DateTime)}',
+                                                    isSelected: item.Id ==
+                                                        locations.rotaShift?.Id,
+                                                  );
+                                                },
+                                              ),
+                                              onChanged: (value) {
+                                                RotaWithLocation
+                                                    rotaShiftSelected =
+                                                    locationWithRotaList
+                                                        .firstWhere(
+                                                  (item) =>
+                                                      item.Id == value!.Id,
+                                                );
+                                                locations.onSelectedRotaShift(
+                                                    rotaShiftSelected);
+                                                locationListFilterByRota(
+                                                  rotaShiftSelected.timeFrom,
+                                                  rotaShiftSelected.timeTo,
+                                                );
+                                                locations.onSelectedLocation(
+                                                  listFilterByRota[0]
+                                                      .locations![0],
+                                                );
+                                                goToDestination(
+                                                    latitude:
+                                                        listFilterByRota[0]
+                                                                .locations?[0]
+                                                                .Latitude ??
+                                                            0,
+                                                    longitude:
+                                                        listFilterByRota[0]
+                                                                .locations?[0]
+                                                                .Longitude ??
+                                                            0);
+                                                setZoneWhenSelectedLocation(
+                                                    rotaShiftSelected
+                                                        .locations![0]);
+                                              },
+                                              validator: ((value) {
+                                                if (value == null) {
+                                                  return 'Please select rota shift';
+                                                }
+                                                return null;
+                                              }),
+                                              autoValidateMode: AutovalidateMode
+                                                  .onUserInteraction,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     const SizedBox(
                                       height: 20,
                                     ),
@@ -501,13 +597,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                             hintText: 'Select location',
                                           ),
                                         ),
-                                        items: locations.rotaShift != null
-                                            ? locations.rotaShift!.locations!
-                                                    .isNotEmpty
-                                                ? locations.rotaShift!.locations
-                                                    as List<LocationWithZones>
-                                                : []
-                                            : [],
+                                        items: getLocations(),
                                         selectedItem: locations.location,
                                         itemAsString: (item) => item.Name,
                                         popupProps: PopupProps.menu(
@@ -521,7 +611,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                               now: getNowNTP,
                                               title: item.Name,
                                               subTitle:
-                                                  '${(handelDistanceInMeters(endLatitude: item.Latitude ?? 0, endLongitude: item.Longitude ?? 0) / 1000).toStringAsFixed(3)}km',
+                                                  '${numberFormatHelper.getNumberFormat((handelDistanceInMeters(endLatitude: item.Latitude ?? 0, endLongitude: item.Longitude ?? 0) / metersInKilometer))}km',
                                               isSelected: item.Id ==
                                                   locations.location!.Id,
                                               operationalPeriodsList:
@@ -531,10 +621,15 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                           },
                                         ),
                                         onChanged: (value) async {
-                                          LocationWithZones locationSelected =
-                                              locations.rotaShift!.locations!
-                                                  .firstWhere(
-                                                      (f) => f.Id == value!.Id);
+                                          LocationWithZones locationSelected;
+                                          if (userInfo.isStsUser) {
+                                            locationSelected = value!;
+                                          } else {
+                                            locationSelected = locations
+                                                .rotaShift!.locations!
+                                                .firstWhere(
+                                                    (f) => f.Id == value!.Id);
+                                          }
                                           locations.onSelectedLocation(
                                             locationSelected,
                                           );

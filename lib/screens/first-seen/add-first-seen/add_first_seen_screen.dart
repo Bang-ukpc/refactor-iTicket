@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +14,6 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/id_helper.dart';
-import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/time_ntp.dart';
@@ -63,31 +61,6 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
   AutovalidateMode validateMode = AutovalidateMode.disabled;
   bool isCheckedPermit = false;
   String _errorMessage = '';
-
-  Future<void> getLocationList(Locations locations) async {
-    List<RotaWithLocation> rotas = [];
-
-    try {
-      await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    } catch (e) {
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    }
-
-    for (int i = 0; i < rotas.length; i++) {
-      for (int j = 0; j < rotas[i].locations!.length; j++) {
-        if (rotas[i].locations![j].Id == locations.location!.Id) {
-          locations.onSelectedLocation(rotas[i].locations![j]);
-          var zoneSelected = rotas[i]
-              .locations![j]
-              .Zones!
-              .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
-          locations.onSelectedZone(zoneSelected);
-          return;
-        }
-      }
-    }
-  }
 
   void setError(String msg) {
     if (_errorMessage != msg) {
@@ -318,7 +291,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
             ),
           )
           .toList();
-      await getLocationList(locationProvider).then((value) {
+      await locationProvider.onResetLocationAndZone().then((value) {
         vehicleInfo.ExpiredAt = now.add(
           Duration(
             seconds: locationProvider.expiringTimeFirstSeen,

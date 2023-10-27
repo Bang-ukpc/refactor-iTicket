@@ -135,31 +135,6 @@ class _IssuePCNFirstSeenScreenState
     }
   }
 
-  Future<void> getLocationList(Locations locations) async {
-    List<RotaWithLocation> rotas = [];
-
-    try {
-      await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    } catch (e) {
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    }
-
-    for (int i = 0; i < rotas.length; i++) {
-      for (int j = 0; j < rotas[i].locations!.length; j++) {
-        if (rotas[i].locations![j].Id == locations.location!.Id) {
-          locations.onSelectedLocation(rotas[i].locations![j]);
-          var zoneSelected = rotas[i]
-              .locations![j]
-              .Zones!
-              .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
-          locations.onSelectedZone(zoneSelected);
-          return;
-        }
-      }
-    }
-  }
-
   List<String> arrMake = DataInfoCar().make;
   List<String> arrColor = DataInfoCar().color;
 
@@ -391,7 +366,7 @@ class _IssuePCNFirstSeenScreenState
             .replaceAll(')', '');
       }
       setSelectedTypeOfPCN(locationProvider, contraventionData);
-      await getLocationList(locationProvider).then((value) {
+      await locationProvider.onResetLocationAndZone().then((value) {
         setSelectedTypeOfPCN(locationProvider, contraventionData);
       });
       getContraventions();
@@ -1067,7 +1042,7 @@ class _IssuePCNFirstSeenScreenState
     }
 
     Future<void> refresh() async {
-      await getLocationList(locationProvider).then((value) {
+      await locationProvider.onResetLocationAndZone().then((value) {
         setSelectedTypeOfPCN(
             locationProvider, contraventionProvider.contravention);
       });

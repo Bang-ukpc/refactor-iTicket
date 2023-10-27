@@ -146,6 +146,7 @@ void onStart(ServiceInstance service) async {
 
       var userCachedService = UserCachedService();
       final Wardens? warden = await userCachedService.get();
+      bool isStsUser = warden?.wardenType == WardenType.sts.index;
       final String? rotaShift = await SharedPreferencesHelper.getStringValue(
           PreferencesKeys.rotaShiftSelectedByWarden);
       final String? locations = await SharedPreferencesHelper.getStringValue(
@@ -175,8 +176,8 @@ void onStart(ServiceInstance service) async {
         latitude: currentLocationPosition.currentLocation?.latitude ?? 0,
         longitude: currentLocationPosition.currentLocation?.longitude ?? 0,
         wardenId: warden?.Id ?? 0,
-        rotaTimeFrom: rotaShiftSelected?.timeFrom,
-        rotaTimeTo: rotaShiftSelected?.timeTo,
+        rotaTimeFrom: isStsUser ? null : rotaShiftSelected?.timeFrom,
+        rotaTimeTo: isStsUser ? null : rotaShiftSelected?.timeTo,
         locationId: locationSelected?.Id,
         zoneId: zoneSelected?.Id,
         Created: ntp,

@@ -46,6 +46,20 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
     return [];
   }
 
+  Future<List<LocationWithZones>> getAllLocations() async {
+    var rotaWithLocations = await getAll();
+    if (rotaWithLocations.isNotEmpty) {
+      var groupLocations =
+          rotaWithLocations.map((e) => e.locations ?? []).toList();
+
+      var locations = groupLocations
+          .reduce((allLocations, locations) => [...allLocations, ...locations]);
+
+      return locations;
+    }
+    return [];
+  }
+
   syncContraventionReasonForAllZones(
       {void Function(int total, int processingIndex)? progressCallback}) async {
     var zones = await _getAllZonesFromRotas();

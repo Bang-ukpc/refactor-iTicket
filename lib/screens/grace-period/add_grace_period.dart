@@ -53,31 +53,6 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
   bool isCheckedPermit = false;
   String _errorMessage = '';
 
-  Future<void> getLocationList(Locations locations) async {
-    List<RotaWithLocation> rotas = [];
-
-    try {
-      await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    } catch (e) {
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    }
-
-    for (int i = 0; i < rotas.length; i++) {
-      for (int j = 0; j < rotas[i].locations!.length; j++) {
-        if (rotas[i].locations![j].Id == locations.location!.Id) {
-          locations.onSelectedLocation(rotas[i].locations![j]);
-          var zoneSelected = rotas[i]
-              .locations![j]
-              .Zones!
-              .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
-          locations.onSelectedZone(zoneSelected);
-          return;
-        }
-      }
-    }
-  }
-
   void setError(String msg) {
     if (_errorMessage != msg) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -167,7 +142,7 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
             ),
           )
           .toList();
-      await getLocationList(locationProvider).then((value) {
+      await locationProvider.onResetLocationAndZone().then((value) {
         vehicleInfo.ExpiredAt = now.add(
           Duration(
             seconds: locationProvider.expiringTimeGracePeriod,

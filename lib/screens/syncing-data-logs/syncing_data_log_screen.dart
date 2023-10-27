@@ -267,7 +267,7 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
             ),
             const SizedBox(
               height: 16,
-            )
+            ),
           ],
         );
 
