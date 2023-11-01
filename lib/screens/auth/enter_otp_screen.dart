@@ -1,7 +1,12 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:iWarden/common/show_loading.dart';
+import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/helpers/alert_helper.dart';
+import 'package:iWarden/helpers/auth.dart';
 import 'package:iWarden/screens/auth/layouts/login_layout.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -43,30 +48,47 @@ class _EnterOTPScreenState extends State<EnterOTPScreen> {
   }
 
   Future<void> resendOtp() async {
+    showCircularProgressIndicator(context: context);
+    try {
+      await userController.sendOtpLogin(widget.emailToSendOtp).then((value) {
+        Navigator.of(context).pop();
+        alertHelper.success("OTP code re-sent successfully.");
+        _otpController.clear();
+        _focusNode.requestFocus();
+      });
+    } on DioError catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      _otpController.clear();
+      alertHelper.error(e);
+    }
     _startCountDown();
   }
 
-  void onConfirm() {
+  void onConfirm() async {
     final isValid = _otpController.text.length == 6;
     if (!isValid) {
       _errorAnimationController?.add(ErrorAnimationType.shake);
       return;
-    } else {
-      // EasyLoading.show();
-      // authProvider.verifyOtpLogin(email, otpText.text).then((value) {
-      //   _timer.cancel();
-      //   EasyLoading.dismiss();
-      //   Navigator.pushNamed(
-      //     context,
-      //     ConfigurationScreen.routeName,
-      //   );
-      // }).catchError((err) {
-      //   otpText.clear();
-      //   logger.e(err);
-      //   EasyLoading.dismiss();
-      //   errorController?.add(ErrorAnimationType.shake);
-      //   // EasyLoading.showError(message);
-      // });
+    }
+
+    _focusNode.unfocus();
+    showCircularProgressIndicator(context: context);
+    try {
+      await userController
+          .loginWithEmailOtp(
+              email: widget.emailToSendOtp, otp: _otpController.text)
+          .then((token) async {
+        Navigator.of(context).pop();
+        await authentication.loginWithEmailOtp(token, context);
+      });
+    } on DioError catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      _otpController.clear();
+      alertHelper.error(e);
     }
   }
 

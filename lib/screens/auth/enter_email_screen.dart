@@ -1,4 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:iWarden/common/show_loading.dart';
+import 'package:iWarden/controllers/user_controller.dart';
+import 'package:iWarden/helpers/alert_helper.dart';
 import 'package:iWarden/screens/auth/layouts/login_layout.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -29,12 +33,24 @@ class _EnterEmailToLoginState extends State<EnterEmailToLogin> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController(text: "bangvu.dev@gmail.com");
 
-  void onContinue() {
+  void onContinue() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       return;
     }
-    widget.onContinue(_emailController.text);
+
+    showCircularProgressIndicator(context: context);
+    try {
+      await userController.sendOtpLogin(_emailController.text).then((value) {
+        Navigator.of(context).pop();
+        widget.onContinue(_emailController.text);
+      });
+    } on DioError catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      alertHelper.error(e);
+    }
   }
 
   @override

@@ -11,7 +11,7 @@ class UserInfo {
 
   bool get isStsUser {
     if (_user != null) {
-      return _user!.wardenType == WardenType.sts.index;
+      return _user!.WardenType == WardenType.STS.index;
     }
     return false;
   }
@@ -23,6 +23,7 @@ class UserInfo {
   Future<void> setUser() async {
     try {
       var user = await userCachedService.get();
+      print('[USER INFO] ${user?.toJson()}');
       if (user != null) {
         _user = user;
       }

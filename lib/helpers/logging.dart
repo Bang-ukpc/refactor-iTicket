@@ -21,7 +21,7 @@ class Logging extends Interceptor {
     String version = packageInfo.version;
     options.headers["x-application-version"] = version;
     options.headers['content-Type'] = 'application/json';
-    options.headers["authorization"] = accessToken;
+    options.headers["authorization"] = 'Bearer $accessToken';
     return super.onRequest(options, handler);
   }
 

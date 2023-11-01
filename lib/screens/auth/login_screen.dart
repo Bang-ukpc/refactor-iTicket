@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/helpers/auth.dart';
 import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/screens/auth/enter_email_screen.dart';
 import 'package:iWarden/screens/auth/enter_otp_screen.dart';
@@ -38,8 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<Auth>(context);
-
     Widget buildLoginScreen(LoginProcess loginProcess) {
       switch (loginProcess) {
         case LoginProcess.enterEmail:
@@ -77,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      authProvider.loginWithMicrosoft(context);
+                      authentication.loginWithMicrosoft(context);
                     },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(width: 1.0, color: ColorTheme.primary),

@@ -10,13 +10,12 @@ import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/helpers/check_turn_on_net_work.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/models/log.dart';
-import 'package:iWarden/providers/auth.dart';
-import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
+import 'package:iWarden/helpers/auth.dart';
 import 'package:iWarden/screens/auth/login_screen.dart';
+import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 import 'package:iWarden/widgets/drawer/info_drawer.dart';
-import 'package:provider/provider.dart';
 
 import '../../services/local/created_vehicle_data_local_service.dart';
 import '../../services/local/created_warden_event_local_service .dart';
@@ -181,12 +180,11 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<Auth>(context);
     final args = ModalRoute.of(context)!.settings.arguments as dynamic;
     int action = args != null ? args['action'] : -1;
 
     Future userLogOut() async {
-      await auth.logout().then((value) {
+      await authentication.logout().then((value) {
         Navigator.of(context).pop();
         Navigator.of(context).pushNamedAndRemoveUntil(
             LoginScreen.routeName, (Route<dynamic> route) => false);

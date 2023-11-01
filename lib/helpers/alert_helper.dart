@@ -6,8 +6,13 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 class AlertHelper {
-  void error(DioError err) {
-    String message = err.response?.data?['message'] ?? err.message;
+  void error(DioError err, {BuildContext? ctx}) {
+    String message = "";
+    if (err.response?.statusCode == 401) {
+      message = err.response?.data?['message']['message'] ?? err.message;
+    } else {
+      message = err.response?.data?['message'] ?? err.message;
+    }
     print('[ERROR MESSAGE] $message');
     CherryToast.error(
       toastDuration: const Duration(seconds: 3),
@@ -18,7 +23,19 @@ class AlertHelper {
       toastPosition: Position.bottom,
       borderRadius: 5,
       displayCloseButton: false,
-    ).show(NavigationService.navigatorKey.currentContext!);
+    ).show(ctx ?? NavigationService.navigatorKey.currentContext!);
+  }
+
+  void success(String message, {BuildContext? ctx}) {
+    CherryToast.success(
+      displayCloseButton: false,
+      title: Text(
+        message,
+        style: CustomTextStyle.h4.copyWith(color: ColorTheme.success),
+      ),
+      toastPosition: Position.bottom,
+      borderRadius: 5,
+    ).show(ctx ?? NavigationService.navigatorKey.currentContext!);
   }
 }
 

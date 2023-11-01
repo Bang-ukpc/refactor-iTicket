@@ -82,7 +82,7 @@ void onStart(ServiceInstance service) async {
   String version = packageInfo.version;
   dio.options.headers["x-application-version"] = version;
   dio.options.headers['content-Type'] = 'application/json';
-  dio.options.headers["authorization"] = accessToken;
+  dio.options.headers["authorization"] = 'Bearer $accessToken';
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -146,7 +146,7 @@ void onStart(ServiceInstance service) async {
 
       var userCachedService = UserCachedService();
       final Wardens? warden = await userCachedService.get();
-      bool isStsUser = warden?.wardenType == WardenType.sts.index;
+      bool isStsUser = warden?.WardenType == WardenType.STS.index;
       final String? rotaShift = await SharedPreferencesHelper.getStringValue(
           PreferencesKeys.rotaShiftSelectedByWarden);
       final String? locations = await SharedPreferencesHelper.getStringValue(

@@ -1,6 +1,11 @@
 import 'package:iWarden/models/base_model.dart';
 
-enum WardenType { po, sts }
+enum WardenType {
+  PERMANENT_STAFF,
+  TEMPORARY_STAFF,
+  STS,
+  ITICKET_LITE,
+}
 
 class Wardens extends BaseModel {
   final String? ExternalId;
@@ -14,7 +19,7 @@ class Wardens extends BaseModel {
   final String? Picture;
   final double? Latitude;
   final double? Longitude;
-  final int? wardenType;
+  final int? WardenType;
 
   Wardens({
     int? Id,
@@ -31,7 +36,7 @@ class Wardens extends BaseModel {
     this.Picture,
     this.Latitude,
     this.Longitude,
-    this.wardenType,
+    this.WardenType,
   }) : super(Id: Id, Created: Created, Deleted: Deleted);
 
   factory Wardens.fromJson(Map<String, dynamic> json) =>
@@ -52,6 +57,7 @@ class Wardens extends BaseModel {
         'Picture': Picture,
         'Latitude': Latitude,
         'Longitude': Longitude,
+        'WardenType': WardenType,
       };
 }
 
@@ -70,7 +76,7 @@ Wardens _$WardensFromJson(Map<String, dynamic> json) => Wardens(
       Picture: json['Picture'],
       Latitude: json['Latitude'] == null ? 0 : json['Latitude'].toDouble(),
       Longitude: json['Longitude'] == null ? 0 : json['Longitude'].toDouble(),
-      wardenType: WardenType.po.index,
+      WardenType: json['WardenType'],
     );
 
 class WardenEvent extends BaseModel {

@@ -23,7 +23,7 @@ import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/helpers/auth.dart';
 import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -502,7 +502,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       });
     }
 
-    void onLogout(Auth auth) async {
+    void onLogout() async {
       await syncData.getQuantity();
       if (syncData.totalDataNeedToSync > 0) {
         if (await checkTurnOnNetWork.turnOnWifiAndMobile()) {
@@ -554,7 +554,7 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       } else {
         if (!mounted) return;
         showCircularProgressIndicator(context: context, text: "Logging out");
-        await auth.logout().then((value) {
+        await authentication.logout().then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushNamedAndRemoveUntil(
               LoginScreen.routeName, (Route<dynamic> route) => false);
@@ -778,36 +778,32 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                       child: Row(
                         children: [
                           if (isCheckoutScreen)
-                            Consumer<Auth>(
-                              builder: (context, auth, _) {
-                                return Expanded(
-                                  child: ElevatedButton.icon(
-                                    icon: SvgPicture.asset(
-                                      "assets/svg/IconEndShift.svg",
-                                      width: 18,
-                                      height: 18,
-                                      color: ColorTheme.textPrimary,
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      shadowColor: Colors.transparent,
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 10),
-                                      backgroundColor: ColorTheme.grey300,
-                                    ),
-                                    onPressed: () {
-                                      onLogout(auth);
-                                    },
-                                    label: Text(
-                                      "Log out",
-                                      style: CustomTextStyle.h5.copyWith(
-                                        color: ColorTheme.textPrimary,
-                                        fontSize: 16,
-                                      ),
-                                    ),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: SvgPicture.asset(
+                                  "assets/svg/IconEndShift.svg",
+                                  width: 18,
+                                  height: 18,
+                                  color: ColorTheme.textPrimary,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  shadowColor: Colors.transparent,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  backgroundColor: ColorTheme.grey300,
+                                ),
+                                onPressed: () {
+                                  onLogout();
+                                },
+                                label: Text(
+                                  "Log out",
+                                  style: CustomTextStyle.h5.copyWith(
+                                    color: ColorTheme.textPrimary,
+                                    fontSize: 16,
                                   ),
-                                );
-                              },
+                                ),
+                              ),
                             ),
                           if (isCheckoutScreen)
                             const SizedBox(
