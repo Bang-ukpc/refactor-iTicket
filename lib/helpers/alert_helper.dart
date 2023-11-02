@@ -6,7 +6,7 @@ import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
 
 class AlertHelper {
-  void error(DioError err, {BuildContext? ctx}) {
+  void errorResponseApi(DioError err, {BuildContext? ctx}) {
     String message = "";
     if (err.response?.statusCode == 401) {
       message = err.response?.data?['message']['message'] ?? err.message;
@@ -23,6 +23,18 @@ class AlertHelper {
       toastPosition: Position.bottom,
       borderRadius: 5,
       displayCloseButton: false,
+    ).show(ctx ?? NavigationService.navigatorKey.currentContext!);
+  }
+
+  void error(String message, {BuildContext? ctx}) {
+    CherryToast.error(
+      displayCloseButton: false,
+      title: Text(
+        message,
+        style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
+      ),
+      toastPosition: Position.bottom,
+      borderRadius: 5,
     ).show(ctx ?? NavigationService.navigatorKey.currentContext!);
   }
 

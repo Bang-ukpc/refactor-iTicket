@@ -25,18 +25,8 @@ class Authentication {
 
   Future<void> loginWithEmailOtp(String token, BuildContext ctx) async {
     showCircularProgressIndicator(context: ctx, text: 'Signing in');
-    try {
-      await userController.verifyToken(token).then((accessToken) async {
-        SharedPreferencesHelper.setStringValue(
-            PreferencesKeys.accessToken, accessToken);
-        await loginWithJwt(accessToken, ctx);
-      });
-    } on DioError catch (e) {
-      if (ctx.mounted) {
-        Navigator.of(ctx).pop();
-        alertHelper.error(e, ctx: ctx);
-      }
-    }
+    SharedPreferencesHelper.setStringValue(PreferencesKeys.accessToken, token);
+    await loginWithJwt(token, ctx);
   }
 
   Future<void> loginWithMicrosoft(BuildContext ctx) async {
@@ -47,6 +37,8 @@ class Authentication {
       final token = await oauth.getIdToken();
 
       if (token != null && ctx.mounted) {
+        SharedPreferencesHelper.setStringValue(
+            PreferencesKeys.accessToken, token);
         try {
           showCircularProgressIndicator(context: ctx, text: 'Signing in');
           await userController.verifyToken(token).then((accessToken) async {
@@ -55,12 +47,15 @@ class Authentication {
             await loginWithJwt(accessToken, ctx);
           });
         } on DioError catch (e) {
+          if (e.response?.statusCode == 401) {
+            await logout().then((value) {
+              alertHelper.errorResponseApi(e, ctx: ctx);
+            });
+            return;
+          }
           if (ctx.mounted) {
             Navigator.of(ctx).pop();
-            alertHelper.error(e, ctx: ctx);
-            if (e.response?.statusCode == 401) {
-              await logout();
-            }
+            alertHelper.errorResponseApi(e, ctx: ctx);
           }
         }
       }
@@ -82,19 +77,19 @@ class Authentication {
     } on DioError catch (error) {
       if (error.response?.statusCode == 401) {
         await logout().then((value) {
-          alertHelper.error(error, ctx: context);
+          alertHelper.errorResponseApi(error, ctx: context);
         });
         return;
       }
       if (!context.mounted) return;
       if (error.type == DioErrorType.other) {
         Navigator.of(context).pop();
-        alertHelper.error(error, ctx: context);
+        alertHelper.errorResponseApi(error, ctx: context);
         return;
       }
       Navigator.of(context).pop();
       await logout().then((value) {
-        alertHelper.error(error, ctx: context);
+        alertHelper.errorResponseApi(error, ctx: context);
       });
     }
   }

@@ -12,6 +12,7 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/alert_helper.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -106,26 +107,9 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
         Created: now,
         CreatedBy: wardensProvider.wardens?.Id ?? 0,
       );
-      final isValid = _formKey.currentState!.validate();
       setState(() {
         evidencePhotoList.clear();
       });
-      if (arrayImage.isEmpty) {
-        // ignore: use_build_context_synchronously
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            'Please take at least 1 picture',
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-        return false;
-      }
-      if (!isValid) {
-        return false;
-      }
 
       if (!mounted) return false;
       showCircularProgressIndicator(context: context);
@@ -363,11 +347,22 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
         bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () async {
+              final isValid = _formKey.currentState!.validate();
+              if (arrayImage.isEmpty) {
+                alertHelper.error("Please take at least 1 picture");
+                return;
+              }
+              if (!isValid) {
+                return;
+              }
               bool checkTurnOnNetwork =
                   await checkTurnOnNetWork.turnOnWifiAndMobile();
               if (checkTurnOnNetwork) {
                 if (!mounted) return;
-                showCircularProgressIndicator(context: context);
+                showCircularProgressIndicator(
+                  context: context,
+                  text: "Checking permit",
+                );
                 DateTime now = await timeNTP.get();
                 Permit permit = Permit(
                   Plate: _vrnController.text,
@@ -412,11 +407,22 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
           ),
           BottomNavyBarItem(
             onPressed: () async {
+              final isValid = _formKey.currentState!.validate();
+              if (arrayImage.isEmpty) {
+                alertHelper.error("Please take at least 1 picture");
+                return;
+              }
+              if (!isValid) {
+                return;
+              }
               bool checkTurnOnNetwork =
                   await checkTurnOnNetWork.turnOnWifiAndMobile();
               if (checkTurnOnNetwork) {
                 if (!mounted) return;
-                showCircularProgressIndicator(context: context);
+                showCircularProgressIndicator(
+                  context: context,
+                  text: "Checking permit",
+                );
                 DateTime now = await timeNTP.get();
                 Permit permit = Permit(
                     Plate: _vrnController.text,
@@ -563,7 +569,9 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
                                           if (checkTurnOnNetwork) {
                                             if (!mounted) return;
                                             showCircularProgressIndicator(
-                                                context: context);
+                                              context: context,
+                                              text: "Checking permit",
+                                            );
                                             DateTime now = await timeNTP.get();
                                             Permit permit = Permit(
                                                 Plate: _vrnController.text,

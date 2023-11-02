@@ -57,12 +57,7 @@ class UserController {
 
   Future<String> verifyToken(String token) async {
     try {
-      final response = await dio.post(
-        '/account/warden/verify-token',
-        data: {
-          "token": token,
-        },
-      );
+      final response = await dio.get('/account/warden/verify-azure-ad-token');
       return response.data['access_token'];
     } on DioError catch (error) {
       print(error.response);

@@ -31,7 +31,7 @@ class EnterEmailToLogin extends StatefulWidget {
 
 class _EnterEmailToLoginState extends State<EnterEmailToLogin> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: "bangvu.dev@gmail.com");
+  final _emailController = TextEditingController();
 
   void onContinue() async {
     final isValid = _formKey.currentState?.validate() ?? false;
@@ -49,7 +49,7 @@ class _EnterEmailToLoginState extends State<EnterEmailToLogin> {
       if (mounted) {
         Navigator.of(context).pop();
       }
-      alertHelper.error(e);
+      alertHelper.errorResponseApi(e);
     }
   }
 
@@ -79,7 +79,6 @@ class _EnterEmailToLoginState extends State<EnterEmailToLogin> {
               child: Form(
                 key: _formKey,
                 child: TextFormField(
-                  textCapitalization: TextCapitalization.characters,
                   controller: _emailController,
                   style: CustomTextStyle.h5.copyWith(fontSize: 16),
                   decoration: const InputDecoration(

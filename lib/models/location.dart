@@ -181,7 +181,6 @@ LocationWithZones _$LocationWithZonesFromJson(Map<String, dynamic> json) {
     Longitude: json['Longitude'],
     Latitude: json['Latitude'],
     Notes: json['Notes'],
-    Distance: json['Distance'].toDouble(),
     Zones: zonesList,
     operationalPeriodHistories: operationalPeriodsList,
     UpperAmount: json['UpperAmount'] ?? double.tryParse(upperAmount.toString()),

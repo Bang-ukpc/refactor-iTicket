@@ -61,7 +61,7 @@ class _EnterOTPScreenState extends State<EnterOTPScreen> {
         Navigator.of(context).pop();
       }
       _otpController.clear();
-      alertHelper.error(e);
+      alertHelper.errorResponseApi(e);
     }
     _startCountDown();
   }
@@ -88,7 +88,7 @@ class _EnterOTPScreenState extends State<EnterOTPScreen> {
         Navigator.of(context).pop();
       }
       _otpController.clear();
-      alertHelper.error(e);
+      alertHelper.errorResponseApi(e);
     }
   }
 
