@@ -21,6 +21,7 @@ import 'package:iWarden/helpers/check_background_service_status_helper.dart';
 import 'package:iWarden/helpers/check_turn_on_net_work.dart';
 import 'package:iWarden/helpers/logger.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/helpers/user_info.dart';
 import 'package:iWarden/models/contravention.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/helpers/auth.dart';
@@ -308,7 +309,9 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       setState(() {
         isSyncedRota = rotas.isNotEmpty;
         errorMessage = rotas.isEmpty
-            ? "Check with systems admin, that rota shift has been allocated."
+            ? userInfo.isStsUser
+                ? "There are currently no locations available."
+                : "Check with systems admin, that rota shift has been allocated."
             : errorMessage;
       });
     } catch (e) {
@@ -639,50 +642,38 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
                         const SizedBox(
                           height: 12,
                         ),
-                        isPending == false
-                            ? pendingGetCurrentLocation == false
-                                ? _buildConnect(
-                                    "Network (Mobile or WiFi)",
-                                    checkState(
+                        pendingGetCurrentLocation == false
+                            ? _buildConnect(
+                                "Network (Mobile or WiFi)",
+                                checkState(
+                                  _connectionStatus ==
+                                          ConnectivityResult.mobile ||
                                       _connectionStatus ==
-                                              ConnectivityResult.mobile ||
-                                          _connectionStatus ==
-                                              ConnectivityResult.wifi,
-                                    ),
-                                  )
-                                : _buildConnect('Network (Mobile or WiFi)',
-                                    StateDevice.pending)
+                                          ConnectivityResult.wifi,
+                                ),
+                              )
                             : _buildConnect('Network (Mobile or WiFi)',
                                 StateDevice.pending),
-                        isPending == false
-                            ? pendingGetCurrentLocation == false
-                                ? _buildConnect(
-                                    required: true,
-                                    "GPS",
-                                    checkState(gpsConnectionStatus ==
-                                            ServiceStatus.enabled &&
-                                        isLocationPermission))
-                                : _buildConnect(
-                                    required: true, 'GPS', StateDevice.pending)
+                        pendingGetCurrentLocation == false
+                            ? _buildConnect(
+                                required: true,
+                                "GPS",
+                                checkState(gpsConnectionStatus ==
+                                        ServiceStatus.enabled &&
+                                    isLocationPermission))
                             : _buildConnect(
                                 required: true, 'GPS', StateDevice.pending),
-                        isPending == false
-                            ? _buildConnect("Bluetooth",
-                                checkState(checkBluetoothIsOn == true))
-                            : _buildConnect('Bluetooth', StateDevice.pending),
-                        isPending == false
-                            ? checkBluetoothIsOn == true
-                                ? bluetoothPrinterHelper.isConnected
-                                    ? _buildConnect(
-                                        "Connected to printer ${bluetoothPrinterHelper.selectedPrinter?.deviceName}",
-                                        checkState(
-                                            isBluetoothConnected == true))
-                                    : _buildConnect(
-                                        "Connect to printer", checkState(false))
+                        _buildConnect("Bluetooth",
+                            checkState(checkBluetoothIsOn == true)),
+                        checkBluetoothIsOn == true
+                            ? bluetoothPrinterHelper.isConnected
+                                ? _buildConnect(
+                                    "Connected to printer ${bluetoothPrinterHelper.selectedPrinter?.deviceName}",
+                                    checkState(isBluetoothConnected == true))
                                 : _buildConnect(
                                     "Connect to printer", checkState(false))
                             : _buildConnect(
-                                "Connect to printer", StateDevice.pending),
+                                "Connect to printer", checkState(false)),
                         const SizedBox(
                           height: 8,
                         ),

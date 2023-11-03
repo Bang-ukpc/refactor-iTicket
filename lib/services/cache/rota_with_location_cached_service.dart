@@ -38,9 +38,12 @@ class RotaWithLocationCachedService extends CacheService<RotaWithLocation> {
       var locations = groupLocations
           .reduce((allLocations, locations) => [...allLocations, ...locations]);
 
-      var zones = locations
+      List<Zone> zones = locations
           .map((l) => l.Zones ?? [])
-          .reduce((allZones, zones) => [...allZones, ...zones]);
+          .where((zones) => zones.isNotEmpty)
+          .expand((zones) => zones)
+          .toList();
+
       return zones;
     }
     return [];

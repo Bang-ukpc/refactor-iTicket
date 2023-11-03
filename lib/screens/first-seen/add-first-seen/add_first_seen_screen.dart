@@ -238,15 +238,8 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
 
       if (isExisted) {
         if (!mounted) return false;
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            'It is not permitted to issue more than one First seen per VRN.',
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
+        alertHelper.error(
+            "It is not permitted to issue more than one First seen per VRN.");
         return false;
       }
 

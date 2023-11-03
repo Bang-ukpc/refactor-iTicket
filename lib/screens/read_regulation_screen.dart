@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iWarden/common/custom_checkbox.dart';
 import 'package:iWarden/common/show_loading.dart';
-import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/index.dart';
+import 'package:iWarden/helpers/alert_helper.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/time_ntp.dart';
@@ -69,15 +69,7 @@ class _ReadRegulationScreenState
       } else {
         if (!checkbox) {
           if (!mounted) return;
-          CherryToast.error(
-            displayCloseButton: false,
-            title: Text(
-              'Please tick to confirm and go next',
-              style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-            ),
-            toastPosition: Position.bottom,
-            borderRadius: 5,
-          ).show(context);
+          alertHelper.error("Please tick to confirm and go next");
         } else {
           wardenEvent.Created ??= now;
           if (!mounted) return;

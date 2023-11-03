@@ -19,6 +19,7 @@ import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/controllers/index.dart';
+import 'package:iWarden/helpers/alert_helper.dart';
 import 'package:iWarden/helpers/contravention_reference_helper.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/models/ContraventionService.dart';
@@ -198,19 +199,7 @@ class _IssuePCNFirstSeenScreenState
       }
       Navigator.of(context).pop();
       print(error.response);
-      CherryToast.error(
-        toastDuration: const Duration(seconds: 3),
-        displayCloseButton: true,
-        title: Text(
-          (error.response?.data['message'].toString().length ?? 0) >
-                  Constant.errorMaxLength
-              ? 'Internal server error'
-              : error.response?.data['message'],
-          style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-        ),
-        toastPosition: Position.bottom,
-        borderRadius: 5,
-      ).show(context);
+      alertHelper.errorResponseApi(error);
       return;
     }
   }
@@ -1117,19 +1106,7 @@ class _IssuePCNFirstSeenScreenState
                           return;
                         }
                         Navigator.of(context).pop();
-                        CherryToast.error(
-                          displayCloseButton: false,
-                          title: Text(
-                            error.response!.data['message'].toString().length >
-                                    Constant.errorMaxLength
-                                ? 'Internal server error'
-                                : error.response!.data['message'],
-                            style: CustomTextStyle.h4
-                                .copyWith(color: ColorTheme.danger),
-                          ),
-                          toastPosition: Position.bottom,
-                          borderRadius: 5,
-                        ).show(context);
+                        alertHelper.errorResponseApi(error);
                         return;
                       }
                     } else {
@@ -1196,19 +1173,7 @@ class _IssuePCNFirstSeenScreenState
                           return;
                         }
                         Navigator.of(context).pop();
-                        CherryToast.error(
-                          displayCloseButton: false,
-                          title: Text(
-                            error.response!.data['message'].toString().length >
-                                    Constant.errorMaxLength
-                                ? 'Internal server error'
-                                : error.response!.data['message'],
-                            style: CustomTextStyle.h4
-                                .copyWith(color: ColorTheme.danger),
-                          ),
-                          toastPosition: Position.bottom,
-                          borderRadius: 5,
-                        ).show(context);
+                        alertHelper.errorResponseApi(error);
                         return;
                       }
                     } else {
