@@ -42,7 +42,6 @@ import '../../helpers/my_navigator_observer.dart';
 import '../../models/location.dart';
 import '../../providers/print_issue_providers.dart' as prefix;
 import '../../providers/time_ntp.dart';
-import '../../services/cache/factory/cache_factory.dart';
 import '../../widgets/parking-charge/step_issue_pcn.dart';
 
 List<SelectModel> typeOfPCN = [
@@ -75,7 +74,6 @@ class _IssuePCNFirstSeenScreenState
   List<RotaWithLocation> locationWithRotaList = [];
   List<Contravention> contraventionList = [];
   late ZoneCachedServiceFactory zoneCachedServiceFactory;
-  late CachedServiceFactory cachedServiceFactory;
   final Connectivity _connectivity = Connectivity();
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
@@ -306,8 +304,6 @@ class _IssuePCNFirstSeenScreenState
           Provider.of<ContraventionProvider>(context, listen: false);
       final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
       zoneCachedServiceFactory = locationProvider.zoneCachedServiceFactory;
-      cachedServiceFactory =
-          CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
 
       await getContraventionReasonList();
 

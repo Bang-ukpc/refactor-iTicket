@@ -6,6 +6,7 @@ import 'package:iWarden/common/drop_down_button_style.dart';
 import 'package:iWarden/common/label_require.dart';
 import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/user_info.dart';
 import 'package:iWarden/models/abort_pcn.dart';
 import 'package:iWarden/models/wardens.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
@@ -38,7 +39,8 @@ class _AbortScreenState extends BaseStatefulState<AbortScreen> {
       TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   bool isLoading = true;
-  late CachedServiceFactory cachedServiceFactory;
+  final CachedServiceFactory cachedServiceFactory =
+      CachedServiceFactory(userInfo.user?.Id ?? 0);
 
   Future<void> getCancellationReasons() async {
     await cachedServiceFactory.cancellationReasonCachedService
@@ -58,11 +60,7 @@ class _AbortScreenState extends BaseStatefulState<AbortScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final wardensInfo = Provider.of<WardensInfo>(context, listen: false);
-      cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
-      getCancellationReasons();
-    });
+    getCancellationReasons();
   }
 
   @override

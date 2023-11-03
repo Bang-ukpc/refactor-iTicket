@@ -52,7 +52,8 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   Position? currentLocation;
-  late CachedServiceFactory cachedServiceFactory;
+  final CachedServiceFactory cachedServiceFactory =
+      CachedServiceFactory(userInfo.user?.Id ?? 0);
   DateTime getNowNTP = DateTime.now();
 
   String formatRotaShift(DateTime date) {
@@ -169,14 +170,12 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      print('[WARDEN INFO] ${userInfo.user?.Id}');
       await setTimeNTP();
       await currentLocationPosition.getCurrentLocation();
       if (!mounted) return;
       final locations = Provider.of<Locations>(context, listen: false);
       locations.resetLocationWithZones();
-      final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
-      cachedServiceFactory =
-          CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
       await getRotas();
       rotaList(locationWithRotaList);
       if (userInfo.isStsUser) {

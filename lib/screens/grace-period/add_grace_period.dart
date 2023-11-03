@@ -18,7 +18,6 @@ import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
-import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -47,7 +46,6 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
   final _bayNumberController = TextEditingController();
   List<VehicleInfoImage> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
-  late CachedServiceFactory cachedServiceFactory;
   AutovalidateMode validateMode = AutovalidateMode.disabled;
   bool isCheckedPermit = false;
   String _errorMessage = '';
@@ -60,16 +58,6 @@ class _AddGracePeriodState extends BaseStatefulState<AddGracePeriod> {
         });
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
-      cachedServiceFactory =
-          CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
-    });
   }
 
   @override
