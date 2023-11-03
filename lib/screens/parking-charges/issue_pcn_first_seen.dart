@@ -455,12 +455,6 @@ class _IssuePCNFirstSeenScreenState
         IsPermitVerifiedByPO: contraventionProvider.getStatusPermitVerified,
       );
 
-      final isValid = _formKey.currentState!.validate();
-
-      if (!isValid) {
-        return;
-      }
-
       var reason = contraventionReasonList
           .firstWhere((e) => e.code == physicalPCN.ContraventionReasonCode);
 
@@ -634,11 +628,6 @@ class _IssuePCNFirstSeenScreenState
         Id: randomNumber2,
         IsPermitVerifiedByPO: contraventionProvider.getStatusPermitVerified,
       );
-      final isValid = _formKey.currentState!.validate();
-
-      if (!isValid) {
-        return;
-      }
 
       var reason = contraventionReasonList
           .firstWhere((e) => e.code == virtualTicket.ContraventionReasonCode);
@@ -1079,6 +1068,11 @@ class _IssuePCNFirstSeenScreenState
               if (_selectedItemTypePCN?.value == 1)
                 BottomNavyBarItem(
                   onPressed: () async {
+                    final isValid = _formKey.currentState!.validate();
+                    if (!isValid) {
+                      return;
+                    }
+
                     ConnectivityResult connectionStatus =
                         await (Connectivity().checkConnectivity());
                     if (connectionStatus == ConnectivityResult.wifi ||
@@ -1152,6 +1146,11 @@ class _IssuePCNFirstSeenScreenState
               if (_selectedItemTypePCN?.value == 0)
                 BottomNavyBarItem(
                   onPressed: () async {
+                    final isValid = _formKey.currentState!.validate();
+                    if (!isValid) {
+                      return;
+                    }
+
                     ConnectivityResult connectionStatus =
                         await (Connectivity().checkConnectivity());
                     if (connectionStatus == ConnectivityResult.wifi ||
