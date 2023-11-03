@@ -103,11 +103,6 @@ class _EnterEmailToLoginState extends State<EnterEmailToLogin> {
                       return null;
                     }
                   }),
-                  onChanged: (value) {
-                    setState(() {
-                      _emailController.text = value;
-                    });
-                  },
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
               ),
