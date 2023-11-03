@@ -14,7 +14,7 @@ final weakNetworkRotaWithLocationController =
 final weakNetworkVehicleInfoController =
     VehicleInfoController.fromDio(DioHelper.weakNetWorkApiClient);
 final weakNetworkContraventionController =
-    ContraventionController.fromDio(DioHelper.weakNetWorkApiClient2);
+    ContraventionController.fromDio(DioHelper.weakNetWorkApiClient);
 final weakNetworkStatisticController =
     StatisticController.fromDio(DioHelper.weakNetWorkApiClient);
 final weakNetworkUserController =
