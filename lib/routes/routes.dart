@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:iWarden/common/locate_car_screen.dart';
 import 'package:iWarden/screens/abort-screen/abort_screen.dart';
 import 'package:iWarden/screens/connecting-status/connecting_screen.dart';
-import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/active_detail_first_seen.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
+import 'package:iWarden/screens/first-seen/add-first-seen/add_first_seen_screen.dart';
 import 'package:iWarden/screens/first-seen/expired_detail_first_seen.dart';
 import 'package:iWarden/screens/grace-period/add_grace_period.dart';
 import 'package:iWarden/screens/grace-period/index.dart';
@@ -15,8 +15,8 @@ import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_d
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_info.dart';
 import 'package:iWarden/screens/parking-charges/pcn_information/parking_charge_list.dart';
 import 'package:iWarden/screens/parking-charges/preview_photo.dart';
-import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/screens/parking-charges/print_issue.dart';
+import 'package:iWarden/screens/parking-charges/print_pcn.dart';
 import 'package:iWarden/screens/read_regulation_screen.dart';
 import 'package:iWarden/screens/send_form_screen.dart';
 import 'package:iWarden/screens/start-break-screen/start_break_screen.dart';
@@ -24,13 +24,16 @@ import 'package:iWarden/screens/statistics_screen.dart';
 import 'package:iWarden/screens/sync-data/syncing_request_screen.dart';
 import 'package:iWarden/screens/sync-zone-data/sync_zone_data_screen.dart';
 import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';
-import '../screens/login_screens.dart';
+
+import '../screens/auth/login_screen.dart';
 import '../screens/syncing-data-logs/syncing_data_log_screen.dart';
 
 final Map<String, WidgetBuilder> routes = {
+  // login
+  LoginScreen.routeName: (context) => const LoginScreen(),
+
   HomeOverview.routeName: (context) => const HomeOverview(),
   LocationScreen.routeName: (context) => const LocationScreen(),
-  LoginScreen.routeName: (context) => const LoginScreen(),
   // first seen
   ActiveFirstSeenScreen.routeName: (context) => const ActiveFirstSeenScreen(),
   DetailActiveFirstSeen.routeName: (context) => const DetailActiveFirstSeen(),

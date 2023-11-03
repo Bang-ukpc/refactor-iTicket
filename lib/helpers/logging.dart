@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:iWarden/configs/configs.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
-import 'package:iWarden/screens/login_screens.dart';
+import 'package:iWarden/screens/auth/login_screen.dart';
 import 'package:iWarden/services/cache/user_cached_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -21,7 +21,7 @@ class Logging extends Interceptor {
     String version = packageInfo.version;
     options.headers["x-application-version"] = version;
     options.headers['content-Type'] = 'application/json';
-    options.headers["authorization"] = accessToken;
+    options.headers["authorization"] = 'Bearer $accessToken';
     return super.onRequest(options, handler);
   }
 

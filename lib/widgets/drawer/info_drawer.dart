@@ -8,12 +8,12 @@ import 'package:iWarden/configs/current_location.dart';
 import 'package:iWarden/helpers/check_background_service_status_helper.dart';
 import 'package:iWarden/helpers/check_turn_on_net_work.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/helpers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/location/location_screen.dart';
-import 'package:iWarden/screens/login_screens.dart';
+import 'package:iWarden/screens/auth/login_screen.dart';
 import 'package:iWarden/screens/syncing-data-logs/syncing_data_log_screen.dart';
 import 'package:iWarden/services/local/created_warden_event_local_service%20.dart';
 import 'package:iWarden/theme/color.dart';
@@ -97,7 +97,7 @@ class _InfoDrawerState extends State<InfoDrawer> {
       });
     }
 
-    Future onLogout(Auth auth) async {
+    Future onLogout() async {
       await syncData.getQuantity();
       if (syncData.totalDataNeedToSync > 0) {
         if (await checkTurnOnNetWork.turnOnWifiAndMobile()) {
@@ -149,7 +149,7 @@ class _InfoDrawerState extends State<InfoDrawer> {
       } else {
         if (!mounted) return;
         showCircularProgressIndicator(context: context, text: "Logging out");
-        await auth.logout().then((value) {
+        await authentication.logout().then((value) {
           Navigator.of(context).pop();
           Navigator.of(context).pushNamedAndRemoveUntil(
               LoginScreen.routeName, (Route<dynamic> route) => false);
@@ -366,42 +366,33 @@ class _InfoDrawerState extends State<InfoDrawer> {
             ],
           ),
           if (widget.isLogout == true)
-            Consumer<Auth>(
-              builder: (context, auth, _) {
-                return ElevatedButton(
-                  onPressed: () {
-                    // eventAnalytics.clickButton(
-                    //   button: "Log out",
-                    //   user: wardersProvider.wardens!.Email,
-                    // );
-                    onLogout(auth);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: ColorTheme.lightDanger,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "Log out",
-                        style: CustomTextStyle.h5.copyWith(
-                            color: ColorTheme.danger,
-                            fontWeight: FontWeight.w400),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      SvgPicture.asset(
-                        "assets/svg/IconEndShift.svg",
-                        width: 18,
-                        color: ColorTheme.danger,
-                      ),
-                    ],
-                  ),
-                );
+            ElevatedButton(
+              onPressed: () {
+                onLogout();
               },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: ColorTheme.lightDanger,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Log out",
+                    style: CustomTextStyle.h5.copyWith(
+                        color: ColorTheme.danger, fontWeight: FontWeight.w400),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  SvgPicture.asset(
+                    "assets/svg/IconEndShift.svg",
+                    width: 18,
+                    color: ColorTheme.danger,
+                  ),
+                ],
+              ),
             ),
         ],
       ),

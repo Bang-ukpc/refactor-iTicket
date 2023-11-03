@@ -12,8 +12,8 @@ import 'package:iWarden/helpers/check_background_service_status_helper.dart';
 import 'package:iWarden/helpers/check_turn_on_net_work.dart';
 import 'package:iWarden/helpers/debouncer.dart';
 import 'package:iWarden/helpers/shared_preferences_helper.dart';
+import 'package:iWarden/helpers/user_info.dart';
 import 'package:iWarden/models/wardens.dart';
-import 'package:iWarden/providers/auth.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/wardens_info.dart';
@@ -148,7 +148,7 @@ class _MyDrawerState extends State<MyDrawer> {
       });
     }
 
-    void onEndShift(Auth auth) async {
+    void onEndShift() async {
       showCircularProgressIndicator(context: context);
       final service = FlutterBackgroundService();
       service.invoke("endShiftService");
@@ -417,23 +417,20 @@ class _MyDrawerState extends State<MyDrawer> {
                     const SizedBox(
                       height: 8,
                     ),
-                    Consumer<Auth>(
-                      builder: (context, auth, _) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: ItemMenuWidget(
-                            itemMenu: ItemMenu(
-                              "End shift",
-                              'assets/svg/IconEndShift.svg',
-                              null,
-                            ),
-                            onTap: () {
-                              onEndShift(auth);
-                            },
+                    if (!userInfo.isStsUser)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: ItemMenuWidget(
+                          itemMenu: ItemMenu(
+                            "End shift",
+                            'assets/svg/IconEndShift.svg',
+                            null,
                           ),
-                        );
-                      },
-                    ),
+                          onTap: () {
+                            onEndShift();
+                          },
+                        ),
+                      ),
                   ],
                 ),
                 Column(

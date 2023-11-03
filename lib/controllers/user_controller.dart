@@ -15,8 +15,50 @@ class UserController {
 
   Future<Wardens> getMe() async {
     try {
-      final response = await dio.get('/warden/get-me');
+      final response = await dio.get('/account/warden/get-me');
       return Wardens.fromJson(response.data);
+    } on DioError catch (error) {
+      print(error.response);
+      rethrow;
+    }
+  }
+
+  Future<void> sendOtpLogin(String email) async {
+    try {
+      final response = await dio.post(
+        '/account/warden/send-otp-login-with-sts',
+        data: {
+          "email": email,
+        },
+      );
+      return response.data;
+    } on DioError catch (error) {
+      print(error.response);
+      rethrow;
+    }
+  }
+
+  Future<String> loginWithEmailOtp(
+      {required String email, required String otp}) async {
+    try {
+      final response = await dio.post(
+        '/account/warden/login-otp-sts',
+        data: {
+          "email": email,
+          "otp": otp,
+        },
+      );
+      return response.data['access_token'];
+    } on DioError catch (error) {
+      print(error.response);
+      rethrow;
+    }
+  }
+
+  Future<String> verifyToken(String token) async {
+    try {
+      final response = await dio.get('/account/warden/verify-azure-ad-token');
+      return response.data['access_token'];
     } on DioError catch (error) {
       print(error.response);
       rethrow;

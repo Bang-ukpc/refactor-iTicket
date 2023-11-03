@@ -6,14 +6,14 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:iWarden/configs/configs.dart';
-import 'package:iWarden/providers/auth.dart';
+import 'package:iWarden/helpers/auth.dart';
 import 'package:iWarden/providers/contravention_provider.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/print_issue_providers.dart' as print_issue;
 import 'package:iWarden/providers/sync_data.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/routes/routes.dart';
-import 'package:iWarden/screens/login_screens.dart';
+import 'package:iWarden/screens/auth/login_screen.dart';
 import 'package:iWarden/settings/app_settings.dart';
 import 'package:iWarden/theme/theme.dart';
 import 'package:iWarden/widgets/layouts/check_sync_data_layout.dart';
@@ -49,7 +49,6 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => print_issue.PrintIssueProviders(),
         ),
-        ChangeNotifierProvider(create: (_) => Auth()),
         ChangeNotifierProvider(create: (_) => ContraventionProvider()),
         ChangeNotifierProvider(create: (_) => SyncData()),
       ],
@@ -72,17 +71,15 @@ class MyApp extends StatelessWidget {
       navigatorKey: NavigationService.navigatorKey,
       home: Scaffold(
         body: NetworkLayout(
-          myWidget: Consumer<Auth>(
-            builder: (ctx, auth, _) => FutureBuilder<bool>(
-              future: auth.isAuth(),
-              builder: ((context, snapshot) {
-                if (snapshot.data == true) {
-                  return const CheckSyncDataLayout();
-                } else {
-                  return const LoginScreen();
-                }
-              }),
-            ),
+          myWidget: FutureBuilder<bool>(
+            future: authentication.isAuth(),
+            builder: ((context, snapshot) {
+              if (snapshot.data == true) {
+                return const CheckSyncDataLayout();
+              } else {
+                return const LoginScreen();
+              }
+            }),
           ),
         ),
       ),

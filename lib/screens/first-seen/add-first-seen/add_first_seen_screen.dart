@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,15 +13,14 @@ import 'package:iWarden/common/show_loading.dart';
 import 'package:iWarden/common/toast.dart';
 import 'package:iWarden/configs/const.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/alert_helper.dart';
 import 'package:iWarden/helpers/id_helper.dart';
-import 'package:iWarden/models/location.dart';
 import 'package:iWarden/models/vehicle_information.dart';
 import 'package:iWarden/providers/locations.dart';
 import 'package:iWarden/providers/time_ntp.dart';
 import 'package:iWarden/providers/wardens_info.dart';
 import 'package:iWarden/screens/first-seen/active_first_seen_screen.dart';
 import 'package:iWarden/screens/parking-charges/alert_check_vrn.dart';
-import 'package:iWarden/services/cache/factory/cache_factory.dart';
 import 'package:iWarden/services/local/created_vehicle_data_local_service.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -59,35 +57,9 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
   final _bayNumberController = TextEditingController();
   List<VehicleInfoImage> arrayImage = [];
   List<EvidencePhoto> evidencePhotoList = [];
-  late CachedServiceFactory cachedServiceFactory;
   AutovalidateMode validateMode = AutovalidateMode.disabled;
   bool isCheckedPermit = false;
   String _errorMessage = '';
-
-  Future<void> getLocationList(Locations locations) async {
-    List<RotaWithLocation> rotas = [];
-
-    try {
-      await cachedServiceFactory.rotaWithLocationCachedService.syncFromServer();
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    } catch (e) {
-      rotas = await cachedServiceFactory.rotaWithLocationCachedService.getAll();
-    }
-
-    for (int i = 0; i < rotas.length; i++) {
-      for (int j = 0; j < rotas[i].locations!.length; j++) {
-        if (rotas[i].locations![j].Id == locations.location!.Id) {
-          locations.onSelectedLocation(rotas[i].locations![j]);
-          var zoneSelected = rotas[i]
-              .locations![j]
-              .Zones!
-              .firstWhereOrNull((e) => e.Id == locations.zone!.Id);
-          locations.onSelectedZone(zoneSelected);
-          return;
-        }
-      }
-    }
-  }
 
   void setError(String msg) {
     if (_errorMessage != msg) {
@@ -97,14 +69,6 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
         });
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    final wardensProvider = Provider.of<WardensInfo>(context, listen: false);
-    cachedServiceFactory =
-        CachedServiceFactory(wardensProvider.wardens?.Id ?? 0);
   }
 
   @override
@@ -253,28 +217,9 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
         Created: now,
         CreatedBy: wardenProvider.wardens?.Id ?? 0,
       );
-
-      final isValid = _formKey.currentState!.validate();
-
       setState(() {
         evidencePhotoList.clear();
       });
-      if (arrayImage.isEmpty) {
-        // ignore: use_build_context_synchronously
-        CherryToast.error(
-          displayCloseButton: false,
-          title: Text(
-            'Please take at least 1 picture',
-            style: CustomTextStyle.h4.copyWith(color: ColorTheme.danger),
-          ),
-          toastPosition: Position.bottom,
-          borderRadius: 5,
-        ).show(context);
-        return false;
-      }
-      if (!isValid) {
-        return false;
-      }
 
       var isExistsWithOverStaying = await zoneCachedServiceFactory
           .firstSeenCachedService
@@ -318,7 +263,7 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
             ),
           )
           .toList();
-      await getLocationList(locationProvider).then((value) {
+      await locationProvider.onResetLocationAndZone().then((value) {
         vehicleInfo.ExpiredAt = now.add(
           Duration(
             seconds: locationProvider.expiringTimeFirstSeen,
@@ -433,11 +378,22 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
         bottomNavigationBar: BottomSheet2(buttonList: [
           BottomNavyBarItem(
             onPressed: () async {
+              final isValid = _formKey.currentState!.validate();
+              if (arrayImage.isEmpty) {
+                alertHelper.error("Please take at least 1 picture");
+                return;
+              }
+              if (!isValid) {
+                return;
+              }
               bool checkTurnOnNetwork =
                   await checkTurnOnNetWork.turnOnWifiAndMobile();
               if (checkTurnOnNetwork) {
                 if (!mounted) return;
-                showCircularProgressIndicator(context: context);
+                showCircularProgressIndicator(
+                  context: context,
+                  text: "Checking permit",
+                );
                 DateTime now = await timeNTP.get();
                 Permit permit = Permit(
                   Plate: _vrnController.text,
@@ -482,11 +438,22 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
           ),
           BottomNavyBarItem(
             onPressed: () async {
+              final isValid = _formKey.currentState!.validate();
+              if (arrayImage.isEmpty) {
+                alertHelper.error("Please take at least 1 picture");
+                return;
+              }
+              if (!isValid) {
+                return;
+              }
               bool checkTurnOnNetwork =
                   await checkTurnOnNetWork.turnOnWifiAndMobile();
               if (checkTurnOnNetwork) {
                 if (!mounted) return;
-                showCircularProgressIndicator(context: context);
+                showCircularProgressIndicator(
+                  context: context,
+                  text: "Checking permit",
+                );
                 DateTime now = await timeNTP.get();
                 Permit permit = Permit(
                     Plate: _vrnController.text,
@@ -634,7 +601,9 @@ class _AddFirstSeenScreenState extends BaseStatefulState<AddFirstSeenScreen> {
                                           if (checkTurnOnNetwork) {
                                             if (!mounted) return;
                                             showCircularProgressIndicator(
-                                                context: context);
+                                              context: context,
+                                              text: "Checking permit",
+                                            );
                                             DateTime now = await timeNTP.get();
                                             Permit permit = Permit(
                                                 Plate: _vrnController.text,

@@ -1,3 +1,4 @@
+import 'package:iWarden/helpers/user_info.dart';
 import 'package:intl/intl.dart';
 import 'package:jiffy/jiffy.dart';
 
@@ -27,7 +28,7 @@ class ContraventionReferenceHelper {
       {required int prefixNumber,
       required int wardenID,
       required DateTime dateTime}) {
-    String prefix = prefixNumber.toString();
+    String prefix = userInfo.isStsUser ? '1' : prefixNumber.toString();
     String y = getLastTwoDigitsOfYear();
     String hh = DateFormat('HH').format(dateTime.toUtc());
     String mm = DateFormat('mm').format(dateTime.toUtc());
