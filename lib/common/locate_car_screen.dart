@@ -6,8 +6,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/common/version_name.dart';
 import 'package:iWarden/configs/current_location.dart';
+import 'package:iWarden/helpers/number_format.dart';
 import 'package:iWarden/models/directions.dart';
 import 'package:iWarden/models/vehicle_information.dart';
+import 'package:iWarden/screens/location/location_screen.dart';
 import 'package:iWarden/screens/map-screen/map_screen.dart';
 import 'package:iWarden/theme/color.dart';
 import 'package:iWarden/theme/text_theme.dart';
@@ -28,41 +30,6 @@ class _LocateCarScreenState extends BaseStatefulState<LocateCarScreen> {
   Directions? _info;
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
-
-  // Future<void> goToDestination(
-  //     {required LatLng sourceLocation, required LatLng destination}) async {
-  //   final GoogleMapController controller = await _mapController.future;
-  //   controller.animateCamera(
-  //     CameraUpdate.newLatLngBounds(
-  //       LatLngBounds(
-  //         southwest: sourceLocation,
-  //         northeast: destination,
-  //       ),
-  //       48,
-  //     ),
-  //   );
-  //   final directions = await directionsRepository.getDirections(
-  //       origin: sourceLocation, destination: destination);
-  //   setState(() => _info = directions);
-  // }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-  //     final vehicleInfo =
-  //         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
-  //     final sourceLocation = LatLng(
-  //       currentLocationPosition.currentLocation?.latitude ?? 0,
-  //       currentLocationPosition.currentLocation?.longitude ?? 0,
-  //     );
-  //     final destination = LatLng(
-  //       vehicleInfo.Latitude,
-  //       vehicleInfo.Longitude,
-  //     );
-  //     goToDestination(sourceLocation: sourceLocation, destination: destination);
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +52,14 @@ class _LocateCarScreenState extends BaseStatefulState<LocateCarScreen> {
       vehicleInfo.Latitude,
       vehicleInfo.Longitude,
     );
+
+    String minWithKilometer() {
+      double averageTime =
+          ((distance / metersInKilometer) / averageSpeed * minutesInAnHour);
+      double distanceInKilometers = distance / metersInKilometer;
+
+      return "${numberFormatHelper.getNumberFormat(averageTime)}min (${numberFormatHelper.getNumberFormat(distanceInKilometers)}km)";
+    }
 
     return Scaffold(
       bottomNavigationBar: const VersionName(),
@@ -120,7 +95,7 @@ class _LocateCarScreenState extends BaseStatefulState<LocateCarScreen> {
                       width: 10,
                     ),
                     Text(
-                      "${(((distance / 1000) / 15) * 60).ceil()}min (${(distance / 1000).toStringAsFixed(2)}km)",
+                      minWithKilometer(),
                       style: CustomTextStyle.h4.copyWith(
                         color: ColorTheme.textPrimary,
                         fontWeight: FontWeight.w500,
