@@ -397,11 +397,11 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
       await getCurrentLocationOfWarden();
       await checkBluetoothConnectionStatus();
       await syncData.getQuantity();
-      await wardensInfo.getWardensInfoLogging().then((value) async {
+      try {
+        await wardensInfo.getWardensInfoLogging();
+      } catch (e) {
         return;
-      }).catchError((err) {
-        return;
-      });
+      }
       await ntpHelper.getOffset();
       cachedServiceFactory = CachedServiceFactory(wardensInfo.wardens?.Id ?? 0);
       await syncAllRequiredData();
@@ -454,22 +454,6 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     }
   }
 
-  Future<void> refreshPermissionGPS() async {
-    var check = await permission.Permission.locationAlways.isGranted;
-    setState(() {
-      isLocationPermission = check;
-      isPending = true;
-    });
-    await getCurrentLocationOfWarden();
-    await checkBluetoothConnectionStatus();
-    await ntpHelper.getOffset();
-    await syncAllRequiredData();
-    await syncTime();
-    setState(() {
-      isPending = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final wardensProvider = Provider.of<WardensInfo>(context);
@@ -502,6 +486,27 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
         if (!mounted) return;
         Navigator.of(context).pop();
         Navigator.of(context).pushReplacementNamed(LocationScreen.routeName);
+      });
+    }
+
+    Future<void> refreshPermissionGPS() async {
+      var check = await permission.Permission.locationAlways.isGranted;
+      setState(() {
+        isLocationPermission = check;
+        isPending = true;
+      });
+      await getCurrentLocationOfWarden();
+      await checkBluetoothConnectionStatus();
+      try {
+        await wardensProvider.getWardensInfoLogging();
+      } catch (e) {
+        return;
+      }
+      await ntpHelper.getOffset();
+      await syncAllRequiredData();
+      await syncTime();
+      setState(() {
+        isPending = false;
       });
     }
 

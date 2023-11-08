@@ -4,6 +4,13 @@ import 'package:iWarden/providers/time_ntp.dart';
 abstract class BaseStatefulState<T extends StatefulWidget> extends State<T>
     with WidgetsBindingObserver {
   @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
