@@ -106,6 +106,7 @@ class ContraventionController {
       final response = await dio.post(
         '/contravention/check-has-permit',
         data: permit.toJson(),
+        options: Options(extra: {'priority': 'high'}),
       );
       print('check permit: ${response.data}');
       CheckPermit data = CheckPermit.fromJson(response.data);

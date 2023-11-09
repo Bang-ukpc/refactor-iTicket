@@ -30,13 +30,6 @@ import 'package:skeletons/skeletons.dart';
 
 import '../helpers/my_navigator_observer.dart';
 
-List<String> fakeImages = [
-  '/data/user/0/com.example.iWarden/cache/CAP1317129956677019721.jpg',
-  '/data/user/0/com.example.iWarden/cache/CAP505075306031560444.jpg',
-  '/data/user/0/com.example.iWarden/cache/CAP4469024442255754578.jpg',
-  '/data/user/0/com.example.iWarden/cache/CAP4011318888943806994.jpg',
-];
-
 class HomeOverview extends StatefulWidget {
   static const routeName = '/home';
   const HomeOverview({Key? key}) : super(key: key);
