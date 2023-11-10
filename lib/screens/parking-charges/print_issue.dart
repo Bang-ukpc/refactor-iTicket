@@ -112,7 +112,6 @@ class _PrintIssueState extends BaseStatefulState<PrintIssue> {
 
   @override
   void dispose() {
-    print('disposed');
     bluetoothPrinterHelper.disposePrinter();
     if (_debouncer.timer != null) {
       _debouncer.timer!.cancel();

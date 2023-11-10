@@ -28,8 +28,6 @@ class ContraventionReasonCachedService
           totalPages: 1,
           rows: cachedItems);
     });
-    print(
-        '[CONTRAVENTION REASON TRANSLATION] ${paging.rows.map((e) => json.encode(e))}');
     await set(paging.rows as List<ContraventionReasonTranslations>);
     return paging.rows as List<ContraventionReasonTranslations>;
   }

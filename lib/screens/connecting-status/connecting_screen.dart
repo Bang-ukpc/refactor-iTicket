@@ -339,11 +339,8 @@ class _ConnectingScreenState extends BaseStatefulState<ConnectingScreen> {
     setState(() {
       errorMessage = defaultErrorMessage;
     });
-    print('GET ROTA');
     await syncRotaList();
-    print('GET CANCELLATION REASON');
     await syncCancellationReasonList();
-    print('GET CONTRAVENTION REASON');
     await syncContraventionReasonList();
   }
 

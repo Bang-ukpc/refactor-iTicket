@@ -33,8 +33,6 @@ class _LocateCarScreenState extends BaseStatefulState<LocateCarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     final vehicleInfo =
         ModalRoute.of(context)!.settings.arguments as VehicleInformation;
 
@@ -68,57 +66,56 @@ class _LocateCarScreenState extends BaseStatefulState<LocateCarScreen> {
         automaticallyImplyLeading: true,
       ),
       drawer: const MyDrawer(),
-      body: Column(children: [
-        const SizedBox(
-          height: 20,
-        ),
-        Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height - 120,
-          color: ColorTheme.white,
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 20,
-              ),
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      child: SvgPicture.asset(
-                        "assets/svg/IconLocation3.svg",
-                        width: 28,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      minWithKilometer(),
-                      style: CustomTextStyle.h4.copyWith(
-                        color: ColorTheme.textPrimary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              MapScreen(
-                screenHeight: MediaQuery.of(context).size.width < 400
-                    ? screenHeight - 200
-                    : screenHeight / 2,
-                mapController: _controller,
-                initialPosition: initialPosition,
-                info: _info,
-              ),
-            ],
+      body: SingleChildScrollView(
+        child: Column(children: [
+          const SizedBox(
+            height: 20,
           ),
-        ),
-      ]),
+          Container(
+            color: ColorTheme.white,
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 16,
+                ),
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        child: SvgPicture.asset(
+                          "assets/svg/IconLocation3.svg",
+                          width: 28,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        minWithKilometer(),
+                        style: CustomTextStyle.h4.copyWith(
+                          color: ColorTheme.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                MapScreen(
+                  screenHeight: 500,
+                  mapController: _controller,
+                  initialPosition: initialPosition,
+                  info: _info,
+                ),
+              ],
+            ),
+          ),
+        ]),
+      ),
     );
   }
 }

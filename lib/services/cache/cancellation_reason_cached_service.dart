@@ -13,7 +13,6 @@ class CancellationReasonCachedService extends CacheService<CancellationReason> {
         .catchError((err) async {
       return await getAll();
     });
-    print('[CANCELLATION REASON LENGTH] ${cancellationReasons.length}');
     await set(cancellationReasons);
     return cancellationReasons;
   }

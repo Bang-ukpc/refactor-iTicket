@@ -53,7 +53,6 @@ class VehicleInfoController {
         '/vehicleInformation',
         data: vehicleInfo.toJson(),
       );
-      print('[RESPONSE DATA VEHICLE INFO] ${response.data}');
       if (response.data != null) {
         final vehicleFromJson = VehicleInformation.fromJson(response.data);
         return vehicleFromJson;
