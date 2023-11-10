@@ -113,7 +113,6 @@ class CameraPicker extends HookWidget {
         File img,
         DateTime photoCreated,
         CameraController cameraController) async {
-      print("titleCamera $titleCamera");
       showGeneralDialog(
           context: context,
           barrierDismissible: true,

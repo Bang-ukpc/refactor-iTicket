@@ -170,7 +170,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      print('[WARDEN INFO] ${userInfo.user?.Id}');
       await setTimeNTP();
       await currentLocationPosition.getCurrentLocation();
       if (!mounted) return;
@@ -214,7 +213,6 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).viewPadding.top;
-    final screenHeight = MediaQuery.of(context).size.height;
     final locations = Provider.of<Locations>(context);
     final wardensProvider = Provider.of<WardensInfo>(context);
     double handelDistanceInMeters(
@@ -436,10 +434,12 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                     isLogout: true,
                   ),
                   Container(
-                    margin: const EdgeInsets.only(top: 8),
+                    margin: const EdgeInsets.only(top: 8, bottom: 64),
                     color: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 15),
+                      horizontal: 16,
+                      vertical: 32,
+                    ),
                     child: isLoading == false
                         ? Column(
                             children: [
@@ -459,7 +459,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                       Column(
                                         children: [
                                           const SizedBox(
-                                            height: 20,
+                                            height: 24,
                                           ),
                                           SizedBox(
                                             child: DropdownSearch<
@@ -570,7 +570,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                         ],
                                       ),
                                     const SizedBox(
-                                      height: 20,
+                                      height: 24,
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<LocationWithZones>(
@@ -650,7 +650,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                       ),
                                     ),
                                     const SizedBox(
-                                      height: 20,
+                                      height: 24,
                                     ),
                                     SizedBox(
                                       child: DropdownSearch<Zone>(
@@ -759,18 +759,12 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                                       ),
                                     ),
                                     const SizedBox(
-                                      height: 10,
+                                      height: 24,
                                     ),
                                     Container(
                                       child: locations.location != null
                                           ? MapScreen(
-                                              screenHeight:
-                                                  MediaQuery.of(context)
-                                                              .size
-                                                              .width <
-                                                          400
-                                                      ? screenHeight / 3
-                                                      : screenHeight / 1.5,
+                                              screenHeight: 250,
                                               mapController: _controller,
                                               initialPosition: initialPosition,
                                               info: _info,

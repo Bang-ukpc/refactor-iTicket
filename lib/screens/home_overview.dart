@@ -71,7 +71,6 @@ class _HomeOverviewState extends BaseStatefulState<HomeOverview> {
     var listFirstSeen = await zoneCachedServiceFactory.firstSeenCachedService
         .getAllWithCreatedOnTheOffline();
     DateTime nowNTP = await timeNTP.get();
-    print('[HomeOverview] $nowNTP');
     getFirstSeenActiveAndExpired(listFirstSeen, nowNTP);
     var gracePeriods = await zoneCachedServiceFactory.gracePeriodCachedService
         .getAllWithCreatedOnTheOffline();

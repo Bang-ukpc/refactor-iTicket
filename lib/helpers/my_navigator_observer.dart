@@ -30,10 +30,8 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T>
         if (dateTime == null) {
           timeNTP.showDialogTime();
         }
-        print("[AppLifecycleState] resumed");
         break;
       case AppLifecycleState.paused:
-        print("[AppLifecycleState] paused");
         break;
       default:
         break;

@@ -43,7 +43,6 @@ class TakePhotoItem extends StatelessWidget {
     }
 
     Future<void> showMyDialog() async {
-      print("show dialog");
       return showDialog<void>(
         context: context,
         barrierDismissible: true,

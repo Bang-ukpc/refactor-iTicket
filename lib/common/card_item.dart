@@ -96,7 +96,7 @@ class CardItem extends StatelessWidget {
                   IconButton(
                     padding: EdgeInsets.zero,
                     constraints:
-                        const BoxConstraints(minWidth: 40, minHeight: 40),
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
                     onPressed: () {
                       Navigator.of(context).pushNamed(
                         IssuePCNFirstSeenScreen.routeName,
@@ -114,7 +114,7 @@ class CardItem extends StatelessWidget {
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints:
-                      const BoxConstraints(minWidth: 40, minHeight: 40),
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
                   onPressed: () {
                     Navigator.of(context).pushNamed(
                       LocateCarScreen.routeName,
@@ -131,7 +131,7 @@ class CardItem extends StatelessWidget {
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints:
-                      const BoxConstraints(minWidth: 40, minHeight: 40),
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
                   onPressed: () {
                     onCarLeft();
                   },

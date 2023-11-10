@@ -25,7 +25,6 @@ class ContraventionController {
         data: pcn.toJson(),
       );
       Contravention contraventionResult = Contravention.fromJson(response.data);
-      print('Api create PCN: ${response.data}');
       return contraventionResult;
     } on DioError catch (error) {
       print(error.response);
@@ -48,12 +47,8 @@ class ContraventionController {
         },
       );
       Pagination contraventionPagination = Pagination.fromJson(response.data);
-
-      print('[Contravention paging] ${contraventionPagination.rows.length}');
-
       contraventionPagination.rows = jsonDecodeFactory
           .decodeList<Contravention>(contraventionPagination.rows);
-      print('[Contravention result] ${contraventionPagination.rows}');
       return contraventionPagination;
     } on DioError catch (error) {
       print(error.response);
@@ -72,7 +67,6 @@ class ContraventionController {
           "filter": {},
         },
       );
-      print('[CONTRAVENTION REASON] ${response.data}');
       Pagination contraventionReasonPagination =
           Pagination.fromJson(response.data);
       contraventionReasonPagination.rows =
@@ -91,7 +85,6 @@ class ContraventionController {
       final response = await dio.get(
         '/contravention/vehicle-details/$plate',
       );
-      print(response.data);
       VehicleRegistration vehicleRegistration =
           VehicleRegistration.fromJson(response.data);
       return vehicleRegistration;
@@ -123,8 +116,6 @@ class ContraventionController {
     required DateTime timeIssue,
     required String reasonId,
   }) async {
-    print(
-        '[DATA] {plate: $plate, zoneId: $zoneId, timeIssue: $timeIssue, reasonId: $reasonId}');
     try {
       final response = await dio.post(
         '/contravention/check-duplicate-pcn',
@@ -136,7 +127,6 @@ class ContraventionController {
         },
       );
       bool responseData = response.data['isDuplicate'];
-      print('[CHECK DUPLICATE PCN] ${response.data}');
       return responseData;
     } on DioError catch (error) {
       print(error.response);

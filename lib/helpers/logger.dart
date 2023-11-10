@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 class Logger<T> {
@@ -27,6 +28,8 @@ class Logger<T> {
   }
 
   _log(Object obj, String level) {
-    print("$level - [$key] - $obj");
+    if (kDebugMode) {
+      print("$level - [$key] - $obj");
+    }
   }
 }

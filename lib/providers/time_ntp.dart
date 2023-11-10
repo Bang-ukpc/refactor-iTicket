@@ -58,10 +58,8 @@ class TimeNTP with ChangeNotifier {
   Future<dynamic> get() async {
     DateTime? now = await FlutterKronos.getNtpDateTime;
     if (now == null) {
-      print('[Time server] null');
       return DateTime.now().toUtc();
     } else {
-      print('[Time server] not null');
       return now.toUtc();
     }
   }

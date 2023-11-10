@@ -58,6 +58,13 @@ class _InfoDrawerState extends State<InfoDrawer> {
   }
 
   @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -257,8 +264,8 @@ class _InfoDrawerState extends State<InfoDrawer> {
 
     return Container(
       padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
+        left: 8,
+        right: 16,
         top: !widget.isDrawer
             ? (widget.zone == null && widget.location == null)
                 ? 5

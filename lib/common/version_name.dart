@@ -20,6 +20,13 @@ class _VersionNameState extends State<VersionName> {
   }
 
   @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   void initState() {
     setVerisonName();
     super.initState();

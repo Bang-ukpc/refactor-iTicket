@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iWarden/models/directions.dart';
@@ -51,6 +53,13 @@ class _MapScreenState extends State<MapScreen> {
         minMaxZoomPreference: const MinMaxZoomPreference(0, 16),
         myLocationEnabled: true,
         initialCameraPosition: widget.initialPosition,
+        scrollGesturesEnabled: true,
+        gestureRecognizers: Set()
+          ..add(Factory<PanGestureRecognizer>(() => PanGestureRecognizer()))
+          ..add(Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()))
+          ..add(Factory<TapGestureRecognizer>(() => TapGestureRecognizer()))
+          ..add(Factory<VerticalDragGestureRecognizer>(
+              () => VerticalDragGestureRecognizer())),
         markers: {
           // Marker(
           //   icon: BitmapDescriptor.defaultMarkerWithHue(

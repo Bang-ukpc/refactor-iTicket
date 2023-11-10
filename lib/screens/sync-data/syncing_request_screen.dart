@@ -52,6 +52,13 @@ class _SyncingRequestScreenState extends State<SyncingRequestScreen> {
   }
 
   @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     onStartBackgroundService();

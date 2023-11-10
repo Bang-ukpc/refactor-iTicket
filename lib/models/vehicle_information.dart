@@ -21,7 +21,6 @@ class EvidencePhoto extends BaseModel {
 }
 
 EvidencePhoto _$EvidencePhotoFromJson(Map<String, dynamic> json) {
-  // print('[VEHICLE INFO] to json evident photo $json');
   return EvidencePhoto(
     VehicleInformationId: json['VehicleInformationId'],
     BlobName: json['BlobName'],

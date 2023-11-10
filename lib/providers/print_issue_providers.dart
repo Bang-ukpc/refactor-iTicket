@@ -147,12 +147,6 @@ class PrintIssueProviders with ChangeNotifier {
   }
 
   void addImageToIssue(int id, File image, DateTime photoCreated) async {
-    print('[PHOTO CREATION TIME] $photoCreated');
-    print({
-      id,
-      image,
-    });
-
     final PrintIssue temp = _data.firstWhere((element) => element.id == id);
     temp.image = image;
     temp.created = photoCreated;

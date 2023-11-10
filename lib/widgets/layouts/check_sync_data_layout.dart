@@ -29,6 +29,13 @@ class _CheckSyncDataLayoutState extends State<CheckSyncDataLayout> {
   }
 
   @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     getQuantityOfSyncData();

@@ -168,6 +168,13 @@ class _SyncingDataLogScreenState extends State<SyncingDataLogScreen> {
   }
 
   @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     onPauseBackgroundService();
