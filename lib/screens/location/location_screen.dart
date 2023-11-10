@@ -436,10 +436,7 @@ class _LocationScreenState extends BaseStatefulState<LocationScreen> {
                   Container(
                     margin: const EdgeInsets.only(top: 8, bottom: 64),
                     color: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 32,
-                    ),
+                    padding: const EdgeInsets.all(16),
                     child: isLoading == false
                         ? Column(
                             children: [
