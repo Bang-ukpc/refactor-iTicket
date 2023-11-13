@@ -489,6 +489,7 @@ class _IssuePCNFirstSeenScreenState
             contraventionImageList.add(ContraventionPhotos(
               blobName: printIssue.data[i].image!.path,
               contraventionId: contraventionProvider.contravention?.id ?? 0,
+              created: printIssue.data[i].created,
             ));
           }
         }
@@ -663,6 +664,7 @@ class _IssuePCNFirstSeenScreenState
             contraventionImageList.add(ContraventionPhotos(
               blobName: printIssue.data[i].image!.path,
               contraventionId: contraventionProvider.contravention?.id ?? 0,
+              created: printIssue.data[i].created,
             ));
           }
         }
