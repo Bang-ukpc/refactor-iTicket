@@ -1,4 +1,5 @@
 import 'package:iWarden/helpers/user_info.dart';
+import 'package:iWarden/models/ContraventionService.dart';
 import 'package:intl/intl.dart';
 import 'package:jiffy/jiffy.dart';
 
@@ -7,6 +8,22 @@ extension E on String {
 }
 
 class ContraventionReferenceHelper {
+  // Prefix contravention reference
+  // - STS user
+  // Physical: 4, Virtual: 5
+  // - Permanent staff or Temporary staff
+  // Physical: 2, Virtual: 3
+  int prefixNumber(TypePCN typePCN) {
+    switch (typePCN) {
+      case TypePCN.Physical:
+        return userInfo.isStsUser ? 4 : 2;
+      case TypePCN.Virtual:
+        return userInfo.isStsUser ? 5 : 3;
+      default:
+        throw ArgumentError("Unsupported TypePCN: $typePCN");
+    }
+  }
+
   String getLastTwoDigitsOfYear() {
     int year = DateTime.now().year;
     return year.toString().substring(year.toString().length - 1);
@@ -25,10 +42,10 @@ class ContraventionReferenceHelper {
   }
 
   String getContraventionReference(
-      {required int prefixNumber,
+      {required TypePCN typePCN,
       required int wardenID,
       required DateTime dateTime}) {
-    String prefix = userInfo.isStsUser ? '1' : prefixNumber.toString();
+    String prefix = prefixNumber(typePCN).toString();
     String y = getLastTwoDigitsOfYear();
     String hh = DateFormat('HH').format(dateTime.toUtc());
     String mm = DateFormat('mm').format(dateTime.toUtc());

@@ -46,8 +46,14 @@ import '../../providers/time_ntp.dart';
 import '../../widgets/parking-charge/step_issue_pcn.dart';
 
 List<SelectModel> typeOfPCN = [
-  SelectModel(label: 'Virtual ticket (Highly recommended)', value: 1),
-  SelectModel(label: 'Physical PCN', value: 0),
+  SelectModel(
+    label: 'Virtual ticket (Highly recommended)',
+    value: TypePCN.Virtual.index,
+  ),
+  SelectModel(
+    label: 'Physical PCN',
+    value: TypePCN.Physical.index,
+  ),
 ];
 
 class IssuePCNFirstSeenScreen extends StatefulWidget {
@@ -266,9 +272,9 @@ class _IssuePCNFirstSeenScreenState
       {required ContraventionProvider contraventionProvider,
       required int wardenId}) async {
     var virtualRef = contraventionReferenceHelper.getContraventionReference(
-        prefixNumber: 3, wardenID: wardenId, dateTime: getNow);
+        typePCN: TypePCN.Virtual, wardenID: wardenId, dateTime: getNow);
     var physicalRef = contraventionReferenceHelper.getContraventionReference(
-        prefixNumber: 2, wardenID: wardenId, dateTime: getNow);
+        typePCN: TypePCN.Physical, wardenID: wardenId, dateTime: getNow);
     bool isVirtualRefExisted = await checkDuplicateContravention(virtualRef);
     bool isPhysicalRefExisted = await checkDuplicateContravention(physicalRef);
     if (!isVirtualRefExisted) {
@@ -387,7 +393,7 @@ class _IssuePCNFirstSeenScreenState
       ZoneId: locationProvider.zone?.Id ?? 0,
       ContraventionReference: contraventionProvider.getPhysicalReference ??
           contraventionReferenceHelper.getContraventionReference(
-              prefixNumber: 2,
+              typePCN: TypePCN.Physical,
               wardenID: wardensProvider.wardens?.Id ?? 0,
               dateTime: getNow),
       Plate: _vrnController.text,
@@ -415,7 +421,7 @@ class _IssuePCNFirstSeenScreenState
       DateTime now = await timeNTP.get();
       var physicalRefPrefix =
           contraventionReferenceHelper.getContraventionReference(
-              prefixNumber: 2,
+              typePCN: TypePCN.Physical,
               wardenID: wardensProvider.wardens?.Id ?? 0,
               dateTime: now);
       if (contraventionProvider.getPhysicalReference == null) {
@@ -563,7 +569,7 @@ class _IssuePCNFirstSeenScreenState
       ZoneId: locationProvider.zone?.Id ?? 0,
       ContraventionReference: contraventionProvider.getVirtualReference ??
           contraventionReferenceHelper.getContraventionReference(
-              prefixNumber: 3,
+              typePCN: TypePCN.Virtual,
               wardenID: wardensProvider.wardens?.Id ?? 0,
               dateTime: getNow),
       Plate: _vrnController.text,
@@ -590,7 +596,7 @@ class _IssuePCNFirstSeenScreenState
       DateTime now = await timeNTP.get();
       var virtualRefPrefix =
           contraventionReferenceHelper.getContraventionReference(
-              prefixNumber: 3,
+              typePCN: TypePCN.Virtual,
               wardenID: wardensProvider.wardens?.Id ?? 0,
               dateTime: now);
       if (contraventionProvider.getVirtualReference == null) {
