@@ -1,0 +1,34 @@
+{
+    "logs": [
+        {
+            "outputFile": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/sqflite/intermediates/merged_res/release/values-ne/values-ne.xml",
+            "map": [
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/values-ne/values-ne.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/sqflite/intermediates/incremental/mergeReleaseResources/merged.dir/values-ne/values-ne.xml",
+            "map": [
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/values-ne/values-ne.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/app/intermediates/incremental/mergeReleaseResources/merged.dir/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/dc6d8f56492c1a76010dc15a5a80103b/transformed/appcompat-1.0.2/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}

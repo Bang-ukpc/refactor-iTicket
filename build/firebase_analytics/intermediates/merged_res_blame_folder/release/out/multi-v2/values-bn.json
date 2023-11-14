@@ -1,0 +1,82 @@
+{
+    "logs": [
+        {
+            "outputFile": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/firebase_analytics/intermediates/merged_res/release/values-bn/values-bn.xml",
+            "map": [
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/e6325f0c63d362f316420863829bffea/transformed/jetified-play-services-basement-18.1.0/res/values-bn/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "147",
+                        "endOffsets": "342"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "151",
+                        "endOffsets": "202"
+                    }
+                },
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/values-bn/values-bn.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "207",
+                        "endColumns": "100",
+                        "endOffsets": "303"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/firebase_analytics/intermediates/incremental/mergeReleaseResources/merged.dir/values-bn/values-bn.xml",
+            "map": [
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/e6325f0c63d362f316420863829bffea/transformed/jetified-play-services-basement-18.1.0/res/values-bn/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "147",
+                        "endOffsets": "342"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "151",
+                        "endOffsets": "202"
+                    }
+                },
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/values-bn/values-bn.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "207",
+                        "endColumns": "100",
+                        "endOffsets": "303"
+                    }
+                }
+            ]
+        }
+    ]
+}

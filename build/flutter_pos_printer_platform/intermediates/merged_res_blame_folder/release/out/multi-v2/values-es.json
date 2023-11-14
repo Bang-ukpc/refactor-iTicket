@@ -1,0 +1,82 @@
+{
+    "logs": [
+        {
+            "outputFile": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/flutter_pos_printer_platform/intermediates/incremental/mergeReleaseResources/merged.dir/values-es/values-es.xml",
+            "map": [
+                {
+                    "source": "/home/bang-ukpc/.pub-cache/hosted/pub.dev/flutter_pos_printer_platform-1.1.0/android/src/main/res/values-es/strings.xml",
+                    "from": {
+                        "startLines": "9,7,2,5,3,4,8,6",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "723,522,57,334,144,225,597,427",
+                        "endColumns": "66,73,85,91,79,107,124,93",
+                        "endOffsets": "785,591,138,421,219,328,717,516"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,10",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,122,196,282,374,454,562,788",
+                        "endColumns": "66,73,85,91,79,107,124,93",
+                        "endOffsets": "117,191,277,369,449,557,682,877"
+                    }
+                },
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/values-es/values-es.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "9",
+                        "startColumns": "4",
+                        "startOffsets": "687",
+                        "endColumns": "100",
+                        "endOffsets": "783"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/flutter_pos_printer_platform/intermediates/merged_res/release/values-es/values-es.xml",
+            "map": [
+                {
+                    "source": "/home/bang-ukpc/.pub-cache/hosted/pub.dev/flutter_pos_printer_platform-1.1.0/android/src/main/res/values-es/strings.xml",
+                    "from": {
+                        "startLines": "9,7,2,5,3,4,8,6",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "723,522,57,334,144,225,597,427",
+                        "endColumns": "66,73,85,91,79,107,124,93",
+                        "endOffsets": "785,591,138,421,219,328,717,516"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,10",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,122,196,282,374,454,562,788",
+                        "endColumns": "66,73,85,91,79,107,124,93",
+                        "endOffsets": "117,191,277,369,449,557,682,877"
+                    }
+                },
+                {
+                    "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/values-es/values-es.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "9",
+                        "startColumns": "4",
+                        "startOffsets": "687",
+                        "endColumns": "100",
+                        "endOffsets": "783"
+                    }
+                }
+            ]
+        }
+    ]
+}

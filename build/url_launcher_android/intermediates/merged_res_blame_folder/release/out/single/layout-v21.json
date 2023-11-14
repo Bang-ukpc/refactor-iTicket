@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/url_launcher_android/intermediates/merged_res/release/layout-v21/notification_action_tombstone.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout-v21/notification_action_tombstone.xml"
+    },
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/url_launcher_android/intermediates/merged_res/release/layout-v21/notification_action.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout-v21/notification_action.xml"
+    },
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/url_launcher_android/intermediates/merged_res/release/layout-v21/notification_template_icon_group.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout-v21/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/url_launcher_android/intermediates/merged_res/release/layout-v21/notification_template_custom_big.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout-v21/notification_template_custom_big.xml"
+    }
+]

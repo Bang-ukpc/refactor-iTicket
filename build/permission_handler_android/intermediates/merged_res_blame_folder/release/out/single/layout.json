@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/permission_handler_android/intermediates/merged_res/release/layout/notification_action_tombstone.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout/notification_action_tombstone.xml"
+    },
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/permission_handler_android/intermediates/merged_res/release/layout/notification_template_part_chronometer.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout/notification_template_part_chronometer.xml"
+    },
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/permission_handler_android/intermediates/merged_res/release/layout/notification_template_icon_group.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/permission_handler_android/intermediates/merged_res/release/layout/notification_template_part_time.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout/notification_template_part_time.xml"
+    },
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/permission_handler_android/intermediates/merged_res/release/layout/notification_action.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout/notification_action.xml"
+    },
+    {
+        "merged": "/home/bang-ukpc/projects/ale-tech/iwarden/iWarden/build/permission_handler_android/intermediates/merged_res/release/layout/custom_dialog.xml",
+        "source": "/home/bang-ukpc/.gradle/caches/transforms-3/eeb7b2d4c653b2ae54476d7eb21bd978/transformed/core-1.6.0/res/layout/custom_dialog.xml"
+    }
+]
