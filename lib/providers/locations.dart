@@ -124,14 +124,14 @@ class Locations with ChangeNotifier {
     } else {
       logger.info("[IS STS USER] ${userInfo.isStsUser}");
       for (final rota in rotas) {
-        final selectedLocation = rota.locations!.firstWhereOrNull(
+        final selectedLocation = rota.locations?.firstWhereOrNull(
           (l) => l.Id == location?.Id,
         );
 
         if (selectedLocation != null) {
           logger.info("[LOCATION] ${selectedLocation.toJson()}");
           onSelectedLocation(selectedLocation);
-          final zoneSelected = selectedLocation.Zones!.firstWhereOrNull(
+          final zoneSelected = selectedLocation.Zones?.firstWhereOrNull(
             (z) => z.Id == zone?.Id,
           );
           logger.info(zoneSelected != null

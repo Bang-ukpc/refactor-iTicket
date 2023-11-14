@@ -8,7 +8,7 @@ class Location extends BaseModel {
   final String Name;
   final String? LocationType;
   final int? CountryRegionId;
-  final int CountrySubRegionId;
+  final int? CountrySubRegionId;
   final int? ClusterId;
   final double? Longitude;
   final double? Latitude;
@@ -36,7 +36,7 @@ class Location extends BaseModel {
     required this.Name,
     this.LocationType,
     this.CountryRegionId,
-    required this.CountrySubRegionId,
+    this.CountrySubRegionId,
     this.ClusterId,
     this.Longitude,
     this.Latitude,
@@ -64,7 +64,7 @@ class LocationWithZones extends Location {
     required String Name,
     String? LocationType,
     int? CountryRegionId,
-    required int CountrySubRegionId,
+    int? CountrySubRegionId,
     int? ClusterId,
     double? Longitude,
     double? Latitude,
